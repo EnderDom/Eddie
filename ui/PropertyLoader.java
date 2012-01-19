@@ -1,6 +1,6 @@
 package ui;
 
-import gui.BioDesktopGUI;
+import gui.EddieGUI;
 import gui.utilities.SpringUtilities;
 
 import java.awt.Container;
@@ -48,8 +48,8 @@ import tools.systemTools;
 public class PropertyLoader implements Module{
 
     private Properties props;
-    public static String propertyfilename = new String("BioDesktop.properties");
-    public static String infoFile = new String("BioDesktop.info");
+    public static String propertyfilename = new String("eddie.properties");
+    public static String infoFile = new String("eddie.info");
     public String rootfolder;
     Options options;
     public static double version = 0.06;
@@ -106,7 +106,7 @@ public class PropertyLoader implements Module{
 			buildOptions();
 		}
 		HelpFormatter help = new HelpFormatter();
-		help.printHelp("ls", "-- BioDesktop v"+version+" Help Menu --", options, "-- Share And Enjoy! --");
+		help.printHelp("ls", "-- Eddie v"+version+" Help Menu --", options, "-- Share And Enjoy! --");
 	}
 
 	public void loadPropertiesCLI(){
@@ -118,7 +118,7 @@ public class PropertyLoader implements Module{
     	/*
     	 * Create properties file in current folder
     	 */
-        File BioDesktop_prop = new File(getEnvirons()+propertyfilename);
+        File prop = new File(getEnvirons()+propertyfilename);
         
         /*
          * This defines whether properties loaded
@@ -128,12 +128,12 @@ public class PropertyLoader implements Module{
         /*
          * Check to see if it exists, if it does, set rootfolder to current folder
          */
-        if(BioDesktop_prop.exists()){
+        if(prop.exists()){
         	rootfolder = getEnvirons();
         	/*
         	 * File exists, so try and load it
         	 */
-        	propsbeenloaded = loadPropertyFile(BioDesktop_prop);
+        	propsbeenloaded = loadPropertyFile(prop);
         }
         /*
          * If not, then see if file exists in the default user home directory
@@ -162,14 +162,14 @@ public class PropertyLoader implements Module{
         if(propsbeenloaded){
         	//Get Workspace if not set
 	        if(!props.containsKey("WORKSPACE")){
-	           	String defaulthome = System.getProperty("user.home")+System.getProperty("file.separator")+"biodesktop";
-	            Object input = JOptionPane.showInputDialog(pane, "Create BioDesktopGUI Workspace folder at default location: ?", "Default BioDesktopGUI Workspace Folder", 1, null, new Object[] {
+	           	String defaulthome = System.getProperty("user.home")+System.getProperty("file.separator")+"eddie";
+	            Object input = JOptionPane.showInputDialog(pane, "Create EddieGUI Workspace folder at default location: ?", "Default EddieGUI Workspace Folder", 1, null, new Object[] {
 	                defaulthome, "Choose Another Location"}, "OK");
 	            if(input != null){
 	                if(input.toString().contentEquals("Choose Another Location")){
 	                    JFileChooser choose = new JFileChooser();
 	                    choose.setFileSelectionMode(1);
-	                    choose.setDialogTitle("Please Choose Folder to Create BioDesktopGUI Workspace in:");
+	                    choose.setDialogTitle("Please Choose Folder to Create EddieGUI Workspace in:");
 	                    int opt = choose.showOpenDialog(pane);
 	                    if(opt != 1){
 	                        if(choose.getSelectedFile() != null)
@@ -253,7 +253,7 @@ public class PropertyLoader implements Module{
 		Properties defaults = new Properties();
 		//Set Log File Properties
 		defaults.setProperty("log4j.appender.rollingFile", "org.apache.log4j.RollingFileAppender");
-		defaults.setProperty("log4j.appender.rollingFile.File", logfilepath+"biodesktop.log");
+		defaults.setProperty("log4j.appender.rollingFile.File", logfilepath+"eddie.log");
 		defaults.setProperty("log4j.appender.rollingFile.MaxFileSize", "10MB");
 		defaults.setProperty("log4j.appender.rollingFile.MaxBackupIndex", "3");
 		defaults.setProperty("log4j.appender.rollingFile.layout", "org.apache.log4j.PatternLayout");
@@ -307,10 +307,10 @@ public class PropertyLoader implements Module{
 		boolean ret = false;
 		if (workspace.exists()) {
 			ret = true;
-			File biodesktop = new File(path	+ System.getProperty("file.separator") + "BioDesktop.nfo");
+			File eddie = new File(path	+ System.getProperty("file.separator") + infoFile);
 			String in = new String("");
-			if (biodesktop.isFile()) {
-				in = fileTools.quickRead(biodesktop);
+			if (eddie.isFile()) {
+				in = fileTools.quickRead(eddie);
 				if (in.length() > 0) {
 					int start = 0;
 					if ((start = in.indexOf("VERS:")) != -1) {
@@ -321,21 +321,21 @@ public class PropertyLoader implements Module{
 					}
 				}
 			} else {
-				saveInfoFile(biodesktop);
+				saveInfoFile(eddie);
 			}
 		} else {
 			ret = workspace.mkdir();
 			if (ret) {
 				saveInfoFile(new File(path
 						+ System.getProperty("file.separator")
-						+ "biodesktop_info"));
+						+ infoFile));
 			}
 		}
 		return ret;
 	}
 
-	private boolean saveInfoFile(File biodesktop) {
-		return fileTools.quickWrite("VERS:" + version, biodesktop, false);
+	private boolean saveInfoFile(File file) {
+		return fileTools.quickWrite("VERS:" + version, file, false);
 	}
 
 	public static String getEnvirons() {
@@ -430,7 +430,7 @@ public class PropertyLoader implements Module{
 		return moduleTools.ownsThisAction(actions, s);
 	}
 
-	public void actOnAction(String s, BioDesktopGUI gui) {
+	public void actOnAction(String s, EddieGUI gui) {
 		Logger.getRootLogger().debug("PropertyLoader acting upon command "+s);
 		if(s.contentEquals(this.modulename)){
 			Logger.getRootLogger().debug("Building General Properties Frame");
@@ -493,22 +493,22 @@ public class PropertyLoader implements Module{
 		} 	
 	}
 
-	public void addToGui(BioDesktopGUI biodesktopgui) {
+	public void addToGui(EddieGUI eddiegui) {
 		actions = new String[1]; 
 		JMenuItem menuItem = new JMenuItem("General Properties");
 		menuItem.setMnemonic(KeyEvent.VK_P);
 	    menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.ALT_MASK));
 	    menuItem.setActionCommand(this.modulename);
 	    actions[0] = this.modulename;
-	    menuItem.addActionListener(biodesktopgui);
-	    moduleTools.add2JMenuBar(biodesktopgui.getMenu(), menuItem, "Properties");
+	    menuItem.addActionListener(eddiegui);
+	    moduleTools.add2JMenuBar(eddiegui.getMenu(), menuItem, "Properties");
 	}
 
 	public boolean uninstallWithoutRestart() {
 		return false;
 	}
 
-	public boolean uninstall(BioDesktopGUI gui) {
+	public boolean uninstall(EddieGUI gui) {
 		return false;
 	}
 

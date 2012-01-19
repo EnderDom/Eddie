@@ -1,5 +1,5 @@
 package ui;
-import gui.BioDesktopGUI;
+import gui.EddieGUI;
 import gui.utilities.SpringUtilities;
 
 import java.awt.event.ActionEvent;
@@ -120,7 +120,7 @@ public class ModuleLoader implements Module{
 		return moduleTools.ownsThisAction(actions, s);
 	}
 
-	public void actOnAction(String s, BioDesktopGUI gui) {
+	public void actOnAction(String s, EddieGUI gui) {
 		Logger.getRootLogger().debug("ModuleLoader acting upon command "+s);
 		if(s.contentEquals(this.modulename)){
 			Logger.getRootLogger().debug("Building General Properties Frame");
@@ -195,7 +195,7 @@ public class ModuleLoader implements Module{
 		}	
 	}
 
-	public void addToGui(BioDesktopGUI biodesktopgui) {
+	public void addToGui(EddieGUI biodesktopgui) {
 		actions = new String[1]; 
 		JMenuItem menuItem = new JMenuItem("Modules");
 		menuItem.setMnemonic(KeyEvent.VK_M);
@@ -210,7 +210,7 @@ public class ModuleLoader implements Module{
 		return false;
 	}
 
-	public boolean uninstall(BioDesktopGUI gui) {
+	public boolean uninstall(EddieGUI gui) {
 		return false;
 	}
     

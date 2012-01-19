@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 import tools.UITools;
 import tools.stringTools;
 
-import gui.BioDesktopGUI;
+import gui.EddieGUI;
 import modules.Module;
 import modules.moduleTools;
 
@@ -27,17 +27,17 @@ public class DefaultLNF implements Module{
 		return moduleTools.ownsThisAction(actions, s);
 	}
 
-	public void actOnAction(String s, BioDesktopGUI biodesktopgui) {
+	public void actOnAction(String s, EddieGUI biodesktopgui) {
 		changeAppear(stringTools.parseString2Int(s.substring(s.indexOf(modulename) + new String(modulename).length(), s.length())), biodesktopgui);
 	}
 
 	
-	public void addToGui(BioDesktopGUI biodesktopgui) {
+	public void addToGui(EddieGUI biodesktopgui) {
 		JMenuBar menu = biodesktopgui.getJMenuBar();
 		build(menu, biodesktopgui);
 	}
 	
-	public void build(JMenuBar menubar, BioDesktopGUI gui){
+	public void build(JMenuBar menubar, EddieGUI gui){
 		uis = getLooknFeels();
 		appears = new JRadioButtonMenuItem[uis.length];
 		actions = new String[uis.length];
@@ -59,7 +59,7 @@ public class DefaultLNF implements Module{
 		}
 	}
 	
-	protected void changeAppear(int numb, BioDesktopGUI gui){
+	protected void changeAppear(int numb, EddieGUI gui){
 		if(numb > -1 && numb < uis.length){
     		boolean returna = UITools.changeLnF(uis[numb], gui);
     		if(returna){
@@ -73,7 +73,7 @@ public class DefaultLNF implements Module{
     	}
 	}
 	
-	protected void changeAppearanceRadio(BioDesktopGUI biodesktopgui, int ip){
+	protected void changeAppearanceRadio(EddieGUI biodesktopgui, int ip){
 		JMenuBar menu = biodesktopgui.getJMenuBar();	
 		for(int i =0; i < menu.getMenuCount(); i++){
 			if(menu.getMenu(i).getText().contentEquals(menuname)){
@@ -118,7 +118,7 @@ public class DefaultLNF implements Module{
 		return false;
 	}
 
-	public boolean uninstall(BioDesktopGUI gui) {
+	public boolean uninstall(EddieGUI gui) {
 		return false;
 	}
 }

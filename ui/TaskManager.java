@@ -6,7 +6,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import tasks.Task;
 
 
-import gui.BioDesktopGUI;
+import gui.EddieGUI;
 import interfaces.DBInterface;
 import interfaces.FileInterface;
 
@@ -29,7 +29,7 @@ public class TaskManager extends Thread{
 	Stack<Task> futures;
 	private boolean started;
 	int taskcounter;
-	BioDesktopGUI desktop;
+	EddieGUI desktop;
 	
 	public TaskManager(int i, int j){
 		this.corepoollimit = i;

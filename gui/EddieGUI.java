@@ -45,7 +45,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
     DesktopPane desktop;
 	
 	public EddieGUI(PropertyLoader loader){
-		super("BioDesktopGUI v"+PropertyLoader.version);
+		super("EddieGUI v"+PropertyLoader.version);
 		this.version= PropertyLoader.version;
 		//View Size
 		this.setBounds(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
@@ -73,7 +73,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		
-		Logger.getRootLogger().info("BioDesktopGUI Constructed");
+		Logger.getRootLogger().info("EddieGUI Constructed");
 		//Create Desktop
 		desktop = new DesktopPane();
 		desktop.setSize(this.getBounds().getSize());
@@ -82,7 +82,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		//Modules
 		for(int i =0; i < modules.length; i++)modules[i].addToGui(this);
 		
-		Logger.getRootLogger().debug("Set BioDesktopGUI to Visible");
+		Logger.getRootLogger().debug("Set EddieGUI to Visible");
 		//Finish
 		pack();
 		setVisible(true);
@@ -90,11 +90,11 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	}
 
 	public void exit(){
-		int i = JOptionPane.showConfirmDialog(this, "Exit BioDesktopGUI v"+version+"?", "Exit?", JOptionPane.YES_NO_OPTION);
+		int i = JOptionPane.showConfirmDialog(this, "Exit EddieGUI v"+version+"?", "Exit?", JOptionPane.YES_NO_OPTION);
 		if(i !=1){
 			 PropertyLoader.save((new StringBuilder(String.valueOf(load.rootfolder))).append(PropertyLoader.propertyfilename).toString(), load.getProps());
 			 
-	         Logger.getRootLogger().info((new StringBuilder("Closing BioDesktop @ ")).append(systemTools.getDateNow()).toString());
+	         Logger.getRootLogger().info((new StringBuilder("Closing Eddie @ ")).append(systemTools.getDateNow()).toString());
 	         LogManager.shutdown();
 	         setVisible(false);
 	         dispose();
