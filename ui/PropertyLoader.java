@@ -39,7 +39,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import tools.UITools;
+import tools.uiTools;
 import tools.arrayTools;
 import tools.fileTools;
 import tools.stringTools;
@@ -53,7 +53,7 @@ public class PropertyLoader implements Module{
     public static String infoFile = new String("eddie.info");
     public String rootfolder;
     Options options;
-    public static double version = 0.06;
+    public static double version = 0.07;
     Level level;
     public static Logger logger;
     private String modulename = "MOD_ui.PropertyLoader";
@@ -79,7 +79,12 @@ public class PropertyLoader implements Module{
 			}
 			else{
 				if(cmd.hasOption("c")){ /*If Command Line iNterface*/
-					retvalue = 3;
+					if(cmd.hasOption("persist")){
+						retvalue = 3;
+					}
+					else{
+						retvalue = 2;
+					}
 					/*
 					 * Store arguments for further parsing by CLI
 					 */
@@ -116,6 +121,8 @@ public class PropertyLoader implements Module{
 		}
 		HelpFormatter help = new HelpFormatter();
 		help.printHelp("ls", "-- Eddie v"+version+" Help Menu --", options, "-- Share And Enjoy! --");
+		System.out.println();
+		System.out.println("Type -c -task for list of command line tasks");
 	}
 
 	public boolean loadPropertiesInit(){
@@ -348,10 +355,11 @@ public class PropertyLoader implements Module{
 				if (in.length() > 0) {
 					int start = 0;
 					if ((start = in.indexOf("VERS:")) != -1) {
-						// TODO check compatibility of stuff???
-						@SuppressWarnings("unused")
 						double oldvers = stringTools.parseString2Double(in
 								.substring(start, in.length()));
+						if(oldvers != version){
+							//TODO Compatibilaty
+						}
 					}
 				}
 			} else {
@@ -468,7 +476,7 @@ public class PropertyLoader implements Module{
 		Logger.getRootLogger().debug("PropertyLoader acting upon command "+s);
 		if(s.contentEquals(this.modulename)){
 			Logger.getRootLogger().debug("Building General Properties Frame");
-			propsframe = UITools.getGenericPropertiesMenu();
+			propsframe = uiTools.getGenericPropertiesMenu();
 			propsframe.setTitle("General Properties");
 			int  num = 0;
 			JPanel p = new JPanel(new SpringLayout());
@@ -550,18 +558,22 @@ public class PropertyLoader implements Module{
 		return this.modulename;
 	}	
 
-	public void addToCli(EddieCLI cli) {
-		cli.setArgs(this.args);
-	}
-
 	public boolean ownsThisTask(String s) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	public void actOnTask(String s) {
+	public void printTasks() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void actOnTask(String s, UI ui) {
 		// TODO Auto-generated method stub
 		
 	}
 	
+	public void addToCli(EddieCLI cli) {
+		cli.setArgs(this.args);
+	}
 }

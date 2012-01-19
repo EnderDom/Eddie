@@ -22,7 +22,8 @@ import org.apache.log4j.Logger;
 
 import cli.EddieCLI;
 
-import tools.UITools;
+
+import tools.uiTools;
 import tools.arrayTools;
 
 import modules.Module;
@@ -99,6 +100,9 @@ public class ModuleLoader implements Module{
         defaults.setProperty("NAME_modules.lnf.DefaultLNF", "Look&Feel Changer");
         defaults.setProperty("MOD_modules.lnf.JTatoo", "no");
         defaults.setProperty("NAME_modules.lnf.JTatoo", "JTattoo Look&Feel Extension");
+        defaults.setProperty("MOD_modules.bio.fastaTools", "yes");
+        defaults.setProperty("NAME_modules.bio.fastaTools", "Add Fasta Tools to Functionality");
+        
         return defaults;
     }
     
@@ -126,7 +130,7 @@ public class ModuleLoader implements Module{
 		Logger.getRootLogger().debug("ModuleLoader acting upon command "+s);
 		if(s.contentEquals(this.modulename)){
 			Logger.getRootLogger().debug("Building General Properties Frame");
-			propsframe = UITools.getGenericPropertiesMenu();
+			propsframe = uiTools.getGenericPropertiesMenu();
 			propsframe.setTitle("Modules");
 			int  num = 0;
 			JPanel p = new JPanel(new SpringLayout());
@@ -224,20 +228,25 @@ public class ModuleLoader implements Module{
 		return this.modulename;
 	}
 
-	public void addToCli(EddieCLI cli) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public boolean ownsThisTask(String s) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	public void actOnTask(String s) {
+	public void printTasks() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void actOnTask(String s, UI ui) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void addToCli(EddieCLI cli) {
 		// TODO Auto-generated method stub
 		
 	}
     
-    
+
 }

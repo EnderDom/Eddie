@@ -40,10 +40,15 @@ public class Task implements Runnable, Future<Object> {
 	}
 	
 	public void run() {
-		
+		System.out.println();
+		System.out.println("--This is the default Task run message--");
+		System.out.println();
+		System.out.println("If you're seeing this message it means the Task Manager is working,");
+	    System.out.println("But that you are running the default Task class for some reason.");
+	    System.out.println();
 	}
 	
-	public void parseArgs(String args){
+	public void parseArgs(String[] args){
 		
 	}
 	

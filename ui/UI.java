@@ -10,4 +10,6 @@ public interface UI {
 	
 	public void buildTaskManager();
 	
+	public void update(Task task);
+		
 }

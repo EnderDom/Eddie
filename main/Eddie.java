@@ -26,7 +26,7 @@ public class Eddie {
 				@SuppressWarnings("unused")
 				EddieCLI cli = new EddieCLI(loader, false);
 			}
-			if(retvalue == 3){//Persisting CLI mode
+			else if(retvalue == 3){//Persisting CLI mode
 				@SuppressWarnings("unused")
 				EddieCLI cli = new EddieCLI(loader, true);
 			}	

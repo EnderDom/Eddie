@@ -1,6 +1,5 @@
 package cli;
 
-import java.util.HashMap;
 import java.util.Scanner;
 
 
@@ -13,7 +12,7 @@ import org.apache.log4j.Logger;
 
 import modules.Module;
 import tasks.Task;
-import tools.UITools;
+import tools.uiTools;
 import tools.funTools;
 import tools.stringTools;
 import ui.ModuleLoader;
@@ -29,14 +28,11 @@ public class EddieCLI implements UI {
 	TaskManager manager;
 	String[] args;
 	Options options;
-	HashMap<String, String> tasklist;
 	
 	public  EddieCLI(PropertyLoader loader, boolean persist){
-		System.out.println("Eddie CLI v" + PropertyLoader.version);
+		System.out.println("Eddie v" + PropertyLoader.version);
 		load = loader;
 		load.loadPropertiesCLI();
-		
-		tasklist = new HashMap<String, String>();
 		/*
 		 * Builds basic options, primarily grabbing "-task"
 		 * Needs to be done before parseFurther is run
@@ -99,12 +95,20 @@ public class EddieCLI implements UI {
 		try {
 			CommandLine cmd = parser.parse(options, args);
 			if(cmd.hasOption("task")){
-				String task = tasklist.get(cmd.getOptionValue("task"));
 				int owner = -1;
-				for(int i =0; i < modules.length; i++)if(modules[i].ownsThisTask(task)) owner =i;
-				if(owner!=-1)modules[owner].actOnTask(task);
+				String task = cmd.getOptionValue("task");
+				if(task != null && task.length() > 0){
+					for(int i =0; i < modules.length; i++)if(modules[i].ownsThisTask(task)) owner =i;
+					if(owner!=-1){
+						modules[owner].actOnTask(task, this);
+					}
+					else {
+						Logger.getRootLogger().error("No Tasks with the name "+task+" available");
+						printTaskList();
+					}
+				}
 				else {
-					Logger.getRootLogger().error("No Tasks with the name "+task+" available");
+					Logger.getRootLogger().error("Empty Task Argument");
 					printTaskList();
 				}
 			}
@@ -125,28 +129,38 @@ public class EddieCLI implements UI {
 		// TODO Auto-generated method stub
 		
 	}
-
+	
 	public void addTask(Task task) {
-		// TODO Auto-generated method stub
-		
+		if(this.manager == null){
+			buildTaskManager();
+		}
+		this.manager.addTask(task);
 	}
 
 	public void buildTaskManager() {
-		this.manager = UITools.buildTaskManager(stringTools.parseString2Int(load.getCore()),  stringTools.parseString2Int(load.getAuxil()));
+		this.manager = uiTools.buildTaskManager(stringTools.parseString2Int(load.getCore()),  stringTools.parseString2Int(load.getAuxil()));
 	}
 	
 	public void buildOptions(){
-		options.addOption(new Option("task", false, "Select a task to run"));
+		options.addOption(new Option("task", true, "Select a task to run"));
 	}
 
 	public void printTaskList(){
 		System.out.println("List of tasks available:");
-		for(String key : tasklist.keySet()){
-			System.out.println(key +"		" + tasklist.get(key));
+		System.out.println();
+		System.out.println();
+		for(int i =0; i < this.modules.length; i++){
+			modules[i].printTasks();
 		}
-		
+		System.out.println();
+		System.out.println();
 		System.out.println("include after -task");
 		System.out.println("Example: -task taskname -arg1 one -arg2 two");
+	}
+
+	public void update(Task task) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

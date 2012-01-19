@@ -3,10 +3,11 @@ package ui;
 import java.util.Stack;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import org.apache.log4j.Logger;
+
+
 import tasks.Task;
 
-
-import gui.EddieGUI;
 import interfaces.DBInterface;
 import interfaces.FileInterface;
 
@@ -29,7 +30,7 @@ public class TaskManager extends Thread{
 	Stack<Task> futures;
 	private boolean started;
 	int taskcounter;
-	EddieGUI desktop;
+	UI top;
 	
 	public TaskManager(int i, int j){
 		this.corepoollimit = i;
@@ -40,6 +41,7 @@ public class TaskManager extends Thread{
 	}
 	
 	public void addTask(Task task) {
+		Logger.getRootLogger().debug("Task add to the task list");
 		if(task.isCore()){
 			CoreTasks.push(task);
 			task.setID(taskcounter);
@@ -51,6 +53,9 @@ public class TaskManager extends Thread{
 			task.setID(taskcounter);
 			logTask(task);
 			taskcounter++;
+		}
+		if(!started){
+			run();
 		}
 	}
 	
@@ -95,11 +100,12 @@ public class TaskManager extends Thread{
 	}
 
 	public synchronized void update(Task task){
-		desktop.updateTaskManagerGui(task);
+		top.update(task);
 	}
 	
 	public void run() {
 		started = true;
+		Logger.getRootLogger().debug("Task Manager has been started");
 		coretasklist = new Task[corepoollimit];
 		auxiltasklist = new Task[auxilpoollimit];
 		Core = new ScheduledThreadPoolExecutor(corepoollimit);
@@ -125,6 +131,7 @@ public class TaskManager extends Thread{
 		Core.shutdown();
 		Auxil.shutdown();
 		started = false;
+		Logger.getRootLogger().debug("Task Manager has no more tasks, shutting down");
 	}
 	
 }

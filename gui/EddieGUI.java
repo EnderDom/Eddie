@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 import modules.Module;
 
 import tasks.*;
-import tools.UITools;
+import tools.uiTools;
 import tools.stringTools;
 import tools.systemTools;
 import ui.ModuleLoader;
@@ -45,7 +45,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
     DesktopPane desktop;
 	
 	public EddieGUI(PropertyLoader loader){
-		super("EddieGUI v"+PropertyLoader.version);
+		super("Eddie v"+PropertyLoader.version);
 		this.version= PropertyLoader.version;
 		//View Size
 		this.setBounds(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
@@ -54,7 +54,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		//Load Properties
 		load = loader;
 		load.loadPropertiesGUI(this);
-		UITools.changeLnF(load.getLastLNF(), this);
+		uiTools.changeLnF(load.getLastLNF(), this);
 		
 		modular = new ModuleLoader(load.getModuleFolder());
 		/*
@@ -179,12 +179,12 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		exit();
 	}
 	
-	public void updateTaskManagerGui(Task task) {
+	public void update(Task task) {
 		//
 	}
 
 	public void buildTaskManager() {
-		this.manager = UITools.buildTaskManager(stringTools.parseString2Int(load.getCore()),  stringTools.parseString2Int(load.getAuxil()));
+		this.manager = uiTools.buildTaskManager(stringTools.parseString2Int(load.getCore()),  stringTools.parseString2Int(load.getAuxil()));
 	}
 
 	public JMenuBar getMenu() {

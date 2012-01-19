@@ -8,8 +8,9 @@ import org.apache.log4j.Logger;
 
 import cli.EddieCLI;
 
-import tools.UITools;
+import tools.uiTools;
 import tools.stringTools;
+import ui.UI;
 
 import gui.EddieGUI;
 import modules.Module;
@@ -50,8 +51,8 @@ public class DefaultLNF implements Module{
 				name = uis[i].substring(numb, uis[i].length());
 				name = name.replaceAll(namereplace, "");
 			}
-			boolean selected = uis[i].equalsIgnoreCase(UITools.getLookAndFeel());
-			if(selected)UITools.changeLnF(uis[i], gui);
+			boolean selected = uis[i].equalsIgnoreCase(uiTools.getLookAndFeel());
+			if(selected)uiTools.changeLnF(uis[i], gui);
 			JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem(name,selected);
 	        menuItem.setActionCommand(getModuleName()+i);
 	        actions[i] = getModuleName()+i;
@@ -63,7 +64,7 @@ public class DefaultLNF implements Module{
 	
 	protected void changeAppear(int numb, EddieGUI gui){
 		if(numb > -1 && numb < uis.length){
-    		boolean returna = UITools.changeLnF(uis[numb], gui);
+    		boolean returna = uiTools.changeLnF(uis[numb], gui);
     		if(returna){
     			changeAppearanceRadio(gui, numb);
     			Logger.getRootLogger().debug("Changed look and feel to " + uis[numb]);
@@ -109,7 +110,7 @@ public class DefaultLNF implements Module{
 	
 	
 	public String[] getLooknFeels(){
-		return UITools.getInstalledLnFs();
+		return uiTools.getInstalledLnFs();
 	}
 	
 	public String getModuleName(){
@@ -124,17 +125,21 @@ public class DefaultLNF implements Module{
 		return false;
 	}
 
-	public void addToCli(EddieCLI cli) {
-		//Redudant
-		
-	}
-
 	public boolean ownsThisTask(String s) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	public void actOnTask(String s) {
+	public void printTasks() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void actOnTask(String s, UI ui) {
+		// TODO Auto-generated method stub
+	}
+	
+	public void addToCli(EddieCLI cli) {
 		// TODO Auto-generated method stub
 		
 	}
