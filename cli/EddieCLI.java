@@ -3,7 +3,7 @@ package cli;
 import tasks.Task;
 import ui.UI;
 
-public class BioDesktopCLI implements UI {
+public class EddieCLI implements UI {
 
 	public void parseArgs(String[] args) {
 		// TODO Auto-generated method stub
