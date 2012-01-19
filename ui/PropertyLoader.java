@@ -24,6 +24,8 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SpringLayout;
 
+import cli.EddieCLI;
+import cli.LazyPosixParser;
 import modules.Module;
 import modules.moduleTools;
 
@@ -33,7 +35,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -60,27 +61,32 @@ public class PropertyLoader implements Module{
     JInternalFrame propsframe;
 	JTextField[] fields;
 	public static String defaultlnf =  "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
+	public String[] args;
 
 	public PropertyLoader() {
 		level = Level.WARN;
         props = new Properties();
 	}
 	
-	public int loadArguments(String[] args){
+	public int loadBasicArguments(String[] args){
 		int retvalue = 0;
 		buildOptions();
-		CommandLineParser parser = new PosixParser();
+		CommandLineParser parser = new LazyPosixParser();
 		try {
-			CommandLine cmd = parser.parse( options, args);
+			CommandLine cmd = parser.parse(options, args);
 			if(cmd.hasOption("h")){
 				retvalue = 1;
 			}
 			else{
-				if(cmd.hasOption("c")){
-					retvalue = 2;
+				if(cmd.hasOption("c")){ /*If Command Line iNterface*/
+					retvalue = 3;
+					/*
+					 * Store arguments for further parsing by CLI
+					 */
+					this.args=args;
 				}
 				else{
-					retvalue = 3;
+					retvalue = 4;
 				}
 			}
 			if(cmd.hasOption("l")){
@@ -89,6 +95,7 @@ public class PropertyLoader implements Module{
 			}
 		} catch (ParseException e) {
 			System.out.println("Failed To Parse Input Options");
+			e.printStackTrace();
 			retvalue = -1;
 		}
 		return retvalue;
@@ -96,7 +103,9 @@ public class PropertyLoader implements Module{
 	
 	public void buildOptions(){
 		options = new Options();
+		options.addOption(new Option("p", "props", true, "Use this as default properties file"));
 		options.addOption(new Option("c", "cli", false, "Set to CLI rather than GUI"));
+		options.addOption(new Option("persist", false, "If CLI set, this will stop CLI from closing without further args"));
 		options.addOption(new Option("h", "help", false, "Help Menu"));
 		options.addOption(new Option("l", "log", true, "Set Log Level {TRACE,DEBUG,INFO,WARN,ERROR,FATAL}"));
 	}
@@ -109,13 +118,8 @@ public class PropertyLoader implements Module{
 		help.printHelp("ls", "-- Eddie v"+version+" Help Menu --", options, "-- Share And Enjoy! --");
 	}
 
-	public void loadPropertiesCLI(){
-
-	}
-	
-    public void loadPropertiesGUI(Container pane){
-    	
-    	/*
+	public boolean loadPropertiesInit(){
+		/*
     	 * Create properties file in current folder
     	 */
         File prop = new File(getEnvirons()+propertyfilename);
@@ -143,10 +147,40 @@ public class PropertyLoader implements Module{
             rootfolder = System.getProperty("user.home")+System.getProperty("file.separator");
             propsbeenloaded = loadPropertyFile(new File(System.getProperty("user.home")+System.getProperty("file.separator")+propertyfilename));
         }
-        /*
-         * If neither exist, choose environment folder as default
-         */
-        else{
+        return propsbeenloaded;
+	}
+	
+	public void loadPropertiesCLI(){
+    	boolean propsbeenloaded = loadPropertiesInit();
+
+        if(!propsbeenloaded){
+        	/*
+        	 * Alert user that there is properties file 
+        	 */
+            preLog("Properties File is not found. Creating properties.");
+            
+            /*
+             * Set root folder to environment
+             */
+            rootfolder = getEnvirons();
+            loadDefaultProperties();
+            propsbeenloaded = save(rootfolder+propertyfilename, props);
+        }
+        if(propsbeenloaded){
+        	//Get Workspace if not set
+	        if(!props.containsKey("WORKSPACE")){
+	        	setWorkspacePath(rootfolder);
+	        }
+	        startLog();
+	        Logger.getRootLogger().info("Workspace set as root folder " + rootfolder +" to change this change "+ propertyfilename);
+        }
+	}
+	
+    public void loadPropertiesGUI(Container pane){
+    	
+    	boolean propsbeenloaded = loadPropertiesInit();
+
+        if(!propsbeenloaded){
         	/*
         	 * Alert user that there is properties file 
         	 */
@@ -205,7 +239,7 @@ public class PropertyLoader implements Module{
     	boolean load = false;
     	 try{
              props.load(new FileInputStream(file));
-             System.out.println("[PRE-LOG] Trying to load Properties File From Previous Session");
+             preLog("Trying to load Properties File From Previous Session");
              load = true;
          }
          catch(FileNotFoundException filenotfoundexception) {load=false;}
@@ -215,7 +249,7 @@ public class PropertyLoader implements Module{
     
 	public void startLog() {
 		File logfolder = new File(getWorkspace()+ System.getProperty("file.separator") + "logs");
-		System.out.println("[PRE-LOG] Initialising Log...");
+		preLog("Initialising Log...");
 		if (logfolder.isFile()) {
 			System.out.println("Failed To log is standard location!!");
 			int i = 0;
@@ -244,12 +278,12 @@ public class PropertyLoader implements Module{
             Logger.getRootLogger().info("Logger Initialised LVL: "+level.toString()+" @ "+systemTools.getDateNow());
         } 
 		else{
-            System.out.println("[PRE-LOG] Logging has failed. Can Not Continue.");
+            preLog("Logging has failed. Can Not Continue.");
             System.exit(0);
         }
 	}
 	
-	public Properties getDefaultLogProperties(String logfilepath){
+	public static Properties getDefaultLogProperties(String logfilepath){
 		Properties defaults = new Properties();
 		//Set Log File Properties
 		defaults.setProperty("log4j.appender.rollingFile", "org.apache.log4j.RollingFileAppender");
@@ -268,7 +302,7 @@ public class PropertyLoader implements Module{
 	}
 
 	public String getModuleFolder(){
-		return getPropOrSet("MODULES", rootfolder+"Modules/");
+		return getPropOrSet("MODULES", rootfolder+"Modules"+System.getProperty("file.separator"));
 	}
 
 	public static boolean save(String filepath, Properties props1) {
@@ -291,7 +325,7 @@ public class PropertyLoader implements Module{
 		}
 		if (!success) {
 			if(logger == null){
-				System.out.println("[PRE-LOG] [ERROR] failed to Saved Properties @ "+filepath);
+				preLog("[ERROR] failed to Saved Properties @ "+filepath);
 			}
 			else{
 				Logger.getRootLogger().error("Saved Properties @ "+filepath);
@@ -301,7 +335,7 @@ public class PropertyLoader implements Module{
 	}
 
 	private boolean setWorkspacePath(String path) {
-		System.out.println("[PRE-LOG] Setting workspace location to " + path);
+		preLog("Setting workspace location to " + path);
 		props.put("WORKSPACE", path);
 		File workspace = new File(path);
 		boolean ret = false;
@@ -378,7 +412,7 @@ public class PropertyLoader implements Module{
 	
 	public String[][] getUnchangableStats(){
 		String[] stats = new String[]{"PRELNF","MODULES"};
-		String[] stats_val = new String[]{defaultlnf,rootfolder+"Modules/"};
+		String[] stats_val = new String[]{defaultlnf, rootfolder+"Modules"+System.getProperty("file.separator")};
 		String[][] ret = new String[2][stats.length];
 		ret[0] = stats;
 		ret[1] = stats_val;
@@ -514,6 +548,20 @@ public class PropertyLoader implements Module{
 
 	public String getModuleName() {
 		return this.modulename;
+	}	
+
+	public void addToCli(EddieCLI cli) {
+		cli.setArgs(this.args);
+	}
+
+	public boolean ownsThisTask(String s) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public void actOnTask(String s) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

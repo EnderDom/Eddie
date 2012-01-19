@@ -6,6 +6,8 @@ import javax.swing.JRadioButtonMenuItem;
 
 import org.apache.log4j.Logger;
 
+import cli.EddieCLI;
+
 import tools.UITools;
 import tools.stringTools;
 
@@ -120,5 +122,20 @@ public class DefaultLNF implements Module{
 
 	public boolean uninstall(EddieGUI gui) {
 		return false;
+	}
+
+	public void addToCli(EddieCLI cli) {
+		//Redudant
+		
+	}
+
+	public boolean ownsThisTask(String s) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public void actOnTask(String s) {
+		// TODO Auto-generated method stub
+		
 	}
 }

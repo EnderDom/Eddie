@@ -3,6 +3,7 @@
  */
 package main;
 
+import cli.EddieCLI;
 import ui.PropertyLoader;
 import gui.EddieGUI;
 
@@ -16,15 +17,20 @@ public class Eddie {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-			int retvalue = 3;
+			int retvalue = 4;
 			
 			PropertyLoader loader = new PropertyLoader();
-			retvalue = loader.loadArguments(args);
+			retvalue = loader.loadBasicArguments(args);
 		
 			if(retvalue == 2){
-				//TODO CLI
-			}		
-			else if(retvalue == 3){
+				@SuppressWarnings("unused")
+				EddieCLI cli = new EddieCLI(loader, false);
+			}
+			if(retvalue == 3){//Persisting CLI mode
+				@SuppressWarnings("unused")
+				EddieCLI cli = new EddieCLI(loader, true);
+			}	
+			else if(retvalue == 4){
 				 @SuppressWarnings("unused")
 				EddieGUI desk = new EddieGUI(loader);
 			}

@@ -6,6 +6,10 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.JInternalFrame;
 
+import org.apache.log4j.Logger;
+
+import ui.TaskManager;
+
 public class UITools {
 	
 	//Gets available look and feels
@@ -49,12 +53,18 @@ public class UITools {
 			return new String("");
 		}
 	}
-
 	
 	public static JInternalFrame getGenericPropertiesMenu(){
 		JInternalFrame frame = new JInternalFrame("Properties", true, true, true, true);
 		frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
 		frame.setSize(300, 500);
 		return frame;
+	}
+	
+	public static TaskManager buildTaskManager(int core, int auxil){
+		Logger.getRootLogger().debug("Building Task Manager");
+		if(core < 0)core = 1;
+		if(auxil < 5)auxil = 5;
+		return new TaskManager(core, auxil);
 	}
 }

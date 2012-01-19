@@ -20,6 +20,8 @@ import javax.swing.SpringLayout;
 
 import org.apache.log4j.Logger;
 
+import cli.EddieCLI;
+
 import tools.UITools;
 import tools.arrayTools;
 
@@ -220,6 +222,21 @@ public class ModuleLoader implements Module{
 
 	public String getModuleName() {
 		return this.modulename;
+	}
+
+	public void addToCli(EddieCLI cli) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public boolean ownsThisTask(String s) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public void actOnTask(String s) {
+		// TODO Auto-generated method stub
+		
 	}
     
     

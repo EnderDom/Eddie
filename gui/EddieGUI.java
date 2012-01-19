@@ -65,7 +65,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		/*
 		 * Extend GUI with more peripheral modules
 		 */
-        modules = modular.addModules(modules);        
+        modules = modular.addModules(modules);
 		
 		//Options
 		addWindowListener(this);
@@ -93,7 +93,6 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		int i = JOptionPane.showConfirmDialog(this, "Exit EddieGUI v"+version+"?", "Exit?", JOptionPane.YES_NO_OPTION);
 		if(i !=1){
 			 PropertyLoader.save((new StringBuilder(String.valueOf(load.rootfolder))).append(PropertyLoader.propertyfilename).toString(), load.getProps());
-			 
 	         Logger.getRootLogger().info((new StringBuilder("Closing Eddie @ ")).append(systemTools.getDateNow()).toString());
 	         LogManager.shutdown();
 	         setVisible(false);
@@ -185,11 +184,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	}
 
 	public void buildTaskManager() {
-		int core = stringTools.parseString2Int(load.getCore());
-		int auxil = stringTools.parseString2Int(load.getAuxil());
-		if(core < 0)core = 1;
-		if(auxil < 5)auxil = 5;
-		this.manager = new TaskManager(core, auxil);
+		this.manager = UITools.buildTaskManager(stringTools.parseString2Int(load.getCore()),  stringTools.parseString2Int(load.getAuxil()));
 	}
 
 	public JMenuBar getMenu() {
