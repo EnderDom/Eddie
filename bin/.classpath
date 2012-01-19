@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path=""/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/usr/share/java/utils/apache-log4j-1.2.16/log4j-1.2.16.jar" sourcepath="/usr/share/java/utils/apache-log4j-1.2.16/src"/>
+	<classpathentry kind="lib" path="/usr/share/java/utils/commons-cli-1.2/commons-cli-1.2.jar" sourcepath="/usr/share/java/utils/commons-cli-1.2/commons-cli-1.2-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/usr/share/java/utils/commons-cli-1.2-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/usr/share/java/lnf/JTattoo.jar" sourcepath="/usr/share/java/lnf/JTattooSource.zip"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

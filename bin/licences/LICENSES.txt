@@ -1,0 +1,45 @@
+##################      Biodesktop License       ##################
+
+ Copyright (C) 2011  Dominic Wood
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+  Dominic Wood, hereby disclaims all copyright interest in the
+  libraries 'log4j' (An Apache Logging Library Under the Apache v2.0 license) and
+  'commons-cli' (An Apache Command Line Interface Library Under the Apache v2.0 license)
+  
+  Copyright 2001-2011 The Apache Software Foundation
+  	- Apache v2.0 License is included alongside this @ Apache2_License.txt
+  	- Apache v2.0 License can also be found at 
+  		http://www.apache.org/licenses/LICENSE-2.0.html (As of Nov, 2011)
+  
+
+  Dominic Wood,
+  dominicwood1988@googlemail.com
+
+
+##################  External Libraries Licenses  ##################
+
+#Please See The Relevant Text File for license of each Package
+
+#Libraries under Apache License, Version 2.0
+#
+# LICENSE@Apache2_License.txt
+#
+
+log4j-1.2.15
+commons-cli-1.2.jar
+
+#Libraries under LGPL
