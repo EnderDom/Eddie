@@ -62,9 +62,9 @@ public class ModuleBasic implements Module{
 		JMenuItem menuItem = new JMenuItem(getMenuItemName());
 	    menuItem.setActionCommand(getModuleName()+i);
 	    actions1[i] = getModuleName()+i;
+	    setActions(actions1);
 	    menuItem.addActionListener(gui);
 	    moduleTools.add2JMenuBar(menubar, menuItem, new String(getMenuString()));
-	    setActions(actions);
 	}
 
 	public boolean ownsThisTask(String s) {
@@ -121,7 +121,7 @@ public class ModuleBasic implements Module{
 	}
 
 	public String[] getActions() {
-		return actions;
+		return this.actions;
 	}
 
 	public void setActions(String[] actions) {

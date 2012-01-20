@@ -1,7 +1,9 @@
 package modules.bio;
 
+import tasks.Task;
 import tasks.bio.fasta.fastaConverter;
 import gui.EddieGUI;
+import gui.FileAdderer;
 import cli.EddieCLI;
 
 import modules.ModuleBasic;
@@ -25,7 +27,14 @@ public class fastaTools extends ModuleBasic{
 	
 	public void actOnAction(String s, EddieGUI gui) {
 		if(s.contentEquals(actions[0])){
-			gui.addTask(new fastaConverter());
+			
+			FileAdderer fileinput = new FileAdderer(gui);
+			
+			gui.add2Desktop(fileinput);
+			
+			Task task = new fastaConverter();
+			
+			gui.addTask(task);
 		}
 	}
 	

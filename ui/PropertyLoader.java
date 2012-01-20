@@ -53,7 +53,7 @@ public class PropertyLoader implements Module{
     public static String infoFile = new String("eddie.info");
     public String rootfolder;
     Options options;
-    public static double version = 0.07;
+    public static double version = 0.08;
     Level level;
     public static Logger logger;
     private String modulename = "MOD_ui.PropertyLoader";

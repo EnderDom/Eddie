@@ -98,8 +98,6 @@ public class ModuleLoader implements Module{
         Properties defaults = new Properties();
         defaults.setProperty("MOD_modules.lnf.DefaultLNF", "yes");
         defaults.setProperty("NAME_modules.lnf.DefaultLNF", "Look&Feel Changer");
-        defaults.setProperty("MOD_modules.lnf.JTatoo", "no");
-        defaults.setProperty("NAME_modules.lnf.JTatoo", "JTattoo Look&Feel Extension");
         defaults.setProperty("MOD_modules.bio.fastaTools", "yes");
         defaults.setProperty("NAME_modules.bio.fastaTools", "Fasta Tools");
         

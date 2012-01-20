@@ -24,7 +24,7 @@ public class moduleTools {
 		if(!topmenu){
 			menu = new JMenu(split[0]);
 			bar.add(menu);
-			Logger.getRootLogger().debug("Built and Added Menu "+ split[0]);
+			Logger.getRootLogger().trace("Built and Added Menu "+ split[0]);
 		}
 		for(int i =1; i < split.length; i++){
 			boolean found = false;
@@ -41,7 +41,7 @@ public class moduleTools {
 			}
 		}
 		menu.add(item);
-		Logger.getRootLogger().debug("Built and Added MenuItem "+ item.getText());
+		Logger.getRootLogger().trace("Built and Added MenuItem "+ item.getText());
 		return bar;
 	}
 	
