@@ -22,12 +22,12 @@ import ui.UI;
 
 public class EddieCLI implements UI {
 
-	PropertyLoader load;
-	ModuleLoader modular;
-	Module modules[];
-	TaskManager manager;
-	String[] args;
-	Options options;
+	private PropertyLoader load;
+	private ModuleLoader modular;
+	private Module modules[];
+	private TaskManager manager;
+	private String[] args;
+	private Options options;
 	
 	public  EddieCLI(PropertyLoader loader, boolean persist){
 		System.out.println("Eddie v" + PropertyLoader.version);
@@ -65,9 +65,9 @@ public class EddieCLI implements UI {
 	
 	private void persist(){
 		Logger.getRootLogger().debug("Eddie Persisting Command Line Interface");
-		System.out.println("/******************/");
+		System.out.println("/***********************/");
 		System.out.println("/    SHARE AND ENJOY    /");
-		System.out.println("/******************/");
+		System.out.println("/***********************/");
 		
 		System.out.println("Close at any time by inputing: exit");
 		System.out.println("Control-C will usually close command line programs if you run into trouble");
@@ -124,6 +124,10 @@ public class EddieCLI implements UI {
 		this.args = args;
 	}
 	
+	public String[] getArgs(){
+		return this.args;
+	}
+	
 
 	public void exit() {
 		// TODO Auto-generated method stub
@@ -134,6 +138,8 @@ public class EddieCLI implements UI {
 		if(this.manager == null){
 			buildTaskManager();
 		}
+		if(getArgs() != null)task.parseArgs(getArgs());
+		task.parseOpts(this.load.getProps());
 		this.manager.addTask(task);
 	}
 

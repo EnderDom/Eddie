@@ -106,7 +106,7 @@ public class PropertyLoader implements Module{
 		return retvalue;
 	}
 	
-	public void buildOptions(){
+	private void buildOptions(){
 		options = new Options();
 		options.addOption(new Option("p", "props", true, "Use this as default properties file"));
 		options.addOption(new Option("c", "cli", false, "Set to CLI rather than GUI"));
@@ -125,7 +125,7 @@ public class PropertyLoader implements Module{
 		System.out.println("Type -c -task for list of command line tasks");
 	}
 
-	public boolean loadPropertiesInit(){
+	private boolean loadPropertiesInit(){
 		/*
     	 * Create properties file in current folder
     	 */
@@ -254,7 +254,7 @@ public class PropertyLoader implements Module{
     	 return load;
     }
     
-	public void startLog() {
+	private void startLog() {
 		File logfolder = new File(getWorkspace()+ System.getProperty("file.separator") + "logs");
 		preLog("Initialising Log...");
 		if (logfolder.isFile()) {
@@ -290,7 +290,7 @@ public class PropertyLoader implements Module{
         }
 	}
 	
-	public static Properties getDefaultLogProperties(String logfilepath){
+	private static Properties getDefaultLogProperties(String logfilepath){
 		Properties defaults = new Properties();
 		//Set Log File Properties
 		defaults.setProperty("log4j.appender.rollingFile", "org.apache.log4j.RollingFileAppender");
@@ -546,9 +546,7 @@ public class PropertyLoader implements Module{
 	    moduleTools.add2JMenuBar(eddiegui.getMenu(), menuItem, "Properties");
 	}
 
-	public boolean uninstallWithoutRestart() {
-		return false;
-	}
+
 
 	public boolean uninstall(EddieGUI gui) {
 		return false;
@@ -570,7 +568,6 @@ public class PropertyLoader implements Module{
 
 	public void actOnTask(String s, UI ui) {
 		// TODO Auto-generated method stub
-		
 	}
 	
 	public void addToCli(EddieCLI cli) {

@@ -151,6 +151,9 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		if(this.manager == null){
 			buildTaskManager();
 		}
+		//TODO
+		
+		task.parseOpts(this.load.getProps());
 		this.manager.addTask(task);
 		if(!this.manager.isStarted()){
 			this.manager.run();

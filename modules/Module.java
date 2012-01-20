@@ -21,7 +21,7 @@ public interface Module
     
     public abstract void addToCli(EddieCLI cli);
     
-    public abstract boolean uninstall(EddieGUI gui);
+    //public abstract boolean uninstall(EddieGUI gui);
     
     public abstract String getModuleName();
     

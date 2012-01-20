@@ -1,13 +1,19 @@
 package tasks;
 
-import interfaces.DBInterface;
-import interfaces.FileInterface;
-
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+
+import cli.LazyPosixParser;
 
 import ui.TaskManager;
 
@@ -15,10 +21,15 @@ public class Task implements Runnable, Future<Object> {
 
 	private int id;
 	private boolean core;
-	private DBInterface database;
-	private FileInterface files;
 	private TaskManager manager;
 	protected int complete;
+	public static int unstarted = -1;
+	public static int started = 0;
+	public static int finished = 1;
+	public static int cancelled = 2;
+	public static int error = 3;
+	public Options options; 
+	
 	/*
 	 * complete note:
 	 * -1 == unstarted, but init
@@ -40,15 +51,33 @@ public class Task implements Runnable, Future<Object> {
 	}
 	
 	public void run() {
+		setComplete(started);
 		System.out.println();
 		System.out.println("--This is the default Task run message--");
 		System.out.println();
 		System.out.println("If you're seeing this message it means the Task Manager is working,");
 	    System.out.println("But that you are running the default Task class for some reason.");
 	    System.out.println();
+	    setComplete(finished);
 	}
 	
 	public void parseArgs(String[] args){
+		buildOptions();
+		CommandLineParser parser = new LazyPosixParser();
+		try {
+			CommandLine cmd = parser.parse(getOptions(), args);
+			if(cmd.hasOption("opts")){
+				printHelpMessage();
+			}
+			else{
+				parseArgsSub(cmd);
+			}
+		}
+		catch(ParseException e){
+		}
+	}
+	
+	public void parseArgsSub(CommandLine cmd){
 		
 	}
 	
@@ -56,29 +85,10 @@ public class Task implements Runnable, Future<Object> {
 		
 	}
 	
-	public void SetInterfaces(DBInterface database, FileInterface files){
-		this.setFiles(files);
-		this.setDatabase(database);
-	}
-
-	public DBInterface getDatabase() {
-		return database;
-	}
-
-	public void setDatabase(DBInterface database) {
-		this.database = database;
-	}
-
-	public FileInterface getFiles() {
-		return files;
-	}
-
-	public void setFiles(FileInterface files) {
-		this.files = files;
-	}
-	
-	public String getHelpMessage(){
-		return new String("--This is the Help Message of the Default Task--");
+	public void printHelpMessage(){
+		System.out.println("--This is the Help Message of the Default Task--");
+		HelpFormatter help = new HelpFormatter();
+		help.printHelp("ls", "-- Task Help Menu --", options, "-- Share And Enjoy! --");
 	}
 	
 	public synchronized void update(){
@@ -148,5 +158,12 @@ public class Task implements Runnable, Future<Object> {
 		return this.id;
 	}
 	
-
+	public void buildOptions(){
+		options = new Options();
+		options.addOption(new Option("opts", false, "Options for this specific task"));
+	}
+	
+	public Options getOptions(){
+		return this.options;
+	}
 }

@@ -70,8 +70,11 @@ public class TaskManager extends Thread{
 			}
 			else{
 				if(currentTask[i].isDone()){
+					//Send task to logger
 					logTask(currentTask[i]);
+					//Add new task
 					currentTask[i] = pops.pop();
+					//Submit
 					exe.submit(currentTask[i]);
 					submitted++;
 				}
@@ -99,6 +102,9 @@ public class TaskManager extends Thread{
 		this.started = started;
 	}
 
+	/*
+	 * Work in progress, not yet completely familiar with thread safety yet
+	 */
 	public synchronized void update(Task task){
 		top.update(task);
 	}
@@ -130,8 +136,8 @@ public class TaskManager extends Thread{
 		}
 		Core.shutdown();
 		Auxil.shutdown();
-		started = false;
 		Logger.getRootLogger().debug("Task Manager has no more tasks, shutting down");
+		started = false;
 	}
 	
 }

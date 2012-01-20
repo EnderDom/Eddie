@@ -13,5 +13,4 @@ public class systemTools{
         return sdf.format(cal.getTime());
     }
 
-
 }

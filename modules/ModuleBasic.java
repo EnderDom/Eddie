@@ -5,6 +5,9 @@ import gui.EddieGUI;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
+import org.apache.log4j.Logger;
+
+import tasks.Task;
 import ui.UI;
 
 import cli.EddieCLI;
@@ -18,19 +21,33 @@ import cli.EddieCLI;
 
 public class ModuleBasic implements Module{
 	public String modulename = "MOD_modules.default";
-	public static String menustring = "Windows"+moduleTools.menudivider+"Tools";
+	public String menustring = "Window"+moduleTools.menudivider+"Tools";
 	public String menuItemName = "Basic";
-	public String[] actions;
-	public String[] tasks;
-	public String[] taskinfo;
+	protected String[] actions;
+	protected String[] tasks;
+	protected String[] taskinfo;
+	protected String[] classes;
 	public String taskname;
 	
 	public boolean ownsThisAction(String s) {
-		return moduleTools.ownsThisAction(actions, s);
+		return moduleTools.ownsThisAction(getActions(), s);
 	}
 
-	public void actOnAction(String s, EddieGUI biodesktopgui) {
-		//Do Something Here?
+	public void actOnTask(String s, UI cli) {
+		Logger.getRootLogger().debug("Action "+ s + " sent");
+		for(int i =0; i < getTasks().length; i++){
+			if(s.contentEquals(getTasks()[i])){
+				try {
+					Task t = (Task) Class.forName(getClasses()[i]).getConstructor().newInstance();
+					if(t != null){
+						cli.addTask(t);
+					}
+				} 					
+				catch (Exception e) {
+					Logger.getRootLogger().fatal("Task class does not exist, please report this bug:", e);
+				}
+			}
+		}
 	}
 
 	
@@ -41,16 +58,17 @@ public class ModuleBasic implements Module{
 	
 	public void build(JMenuBar menubar, EddieGUI gui){
 		int i =0;
-		actions = new String[1];
-		JMenuItem menuItem = new JMenuItem(menuItemName);
+		String[] actions1 = new String[1];
+		JMenuItem menuItem = new JMenuItem(getMenuItemName());
 	    menuItem.setActionCommand(getModuleName()+i);
-	    actions[i] = getModuleName()+i;
+	    actions1[i] = getModuleName()+i;
 	    menuItem.addActionListener(gui);
-	    moduleTools.add2JMenuBar(menubar, menuItem, new String(menustring));
+	    moduleTools.add2JMenuBar(menubar, menuItem, new String(getMenuString()));
+	    setActions(actions);
 	}
 
 	public boolean ownsThisTask(String s) {
-		return moduleTools.ownsThisAction(tasks, s);
+		return moduleTools.ownsThisAction(getTasks(), s);
 	}
 
 	public void actOnTask(String s) {
@@ -65,22 +83,63 @@ public class ModuleBasic implements Module{
 	public String getModuleName() {
 		return this.modulename;
 	}
+	
+	public String getMenuItemName(){
+		return this.menuItemName;
+	}
 
 	public void printTasks() {
-		if(tasks != null && taskinfo != null){
-			for(int i =0; i < tasks.length; i++){
-				System.out.println(tasks[i] + "		"+ taskinfo[i]);
+		if(getTasks() != null && getTaskinfo() != null){
+			for(int i =0; i < getTasks().length; i++){
+				System.out.println(getTasks()[i] + "		"+ getTaskinfo()[i]);
 			}
 		}
 	}
-
-	public void actOnTask(String s, UI ui) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public void addToCli(EddieCLI cli) {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	public String getMenuString(){
+		return this.menustring;
+	}
+
+	public String[] getTasks() {
+		return tasks;
+	}
+
+	public void setTasks(String[] tasks) {
+		this.tasks = tasks;
+	}
+
+	public String[] getTaskinfo() {
+		return taskinfo;
+	}
+
+	public void setTaskinfo(String[] taskinfo) {
+		this.taskinfo = taskinfo;
+	}
+
+	public String[] getActions() {
+		return actions;
+	}
+
+	public void setActions(String[] actions) {
+		this.actions = actions;
+	}
+
+	public String[] getClasses() {
+		return classes;
+	}
+
+	public void setClasses(String[] classes) {
+		this.classes = classes;
+	}
+
+	public void actOnAction(String s, EddieGUI biodesktopgui) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	
 }

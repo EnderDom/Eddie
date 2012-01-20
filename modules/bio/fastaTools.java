@@ -1,42 +1,70 @@
 package modules.bio;
 
-import org.apache.log4j.Logger;
-
 import tasks.bio.fasta.fastaConverter;
-import ui.UI;
 import gui.EddieGUI;
 import cli.EddieCLI;
 
 import modules.ModuleBasic;
-import modules.moduleTools;
 
 public class fastaTools extends ModuleBasic{
 	
 	String modulename = "MOD_modules.bio.fastaTools";
-	public static String menustring = "Windows"+moduleTools.menudivider+"Tools";
+	public String menustring = "Tools";
 	public String menuItemName = "Fasta Tools";
+	protected String[] tasks = new String[]{"convert"}; 
+	protected String[] taskinfo = new String[]{"converts fasta & qual to fastq"};
+	/*
+	 * This needs to match the class ->
+	 * Will not be changed if class name is changed!!!
+	 */
+	protected String[] classes = new String[]{"tasks.bio.fasta.fastaConverter"};
 	
 	public fastaTools(){
 		
 	}
 	
-	public void actOnAction(String s, EddieGUI biodesktopgui) {
-		//TODO implement the GUI side of this
+	public void actOnAction(String s, EddieGUI gui) {
+		if(s.contentEquals(actions[0])){
+			gui.addTask(new fastaConverter());
+		}
 	}
 	
 	public void addToCli(EddieCLI cli) {
-		tasks = new String[]{"convert"};
-		taskinfo = new String[]{"converts fasta & qual to fastq"};
+		
 	}
 	
-	public void actOnTask(String s, UI cli) {
-		Logger.getRootLogger().debug("Action "+ s + " sent to fastaTools");
-		if(s.contentEquals(tasks[0])){
-			cli.addTask(new fastaConverter());
-		}
-		else{
-			
-		}
+	public String getMenuString(){
+		return this.menustring;
+	}
+	
+	public String getMenuItemName(){
+		return this.menuItemName;
 	}
 
+	public String[] getTasks() {
+		return tasks;
+	}
+
+	public void setTasks(String[] tasks) {
+		this.tasks = tasks;
+	}
+
+	public String[] getTaskinfo() {
+		return taskinfo;
+	}
+
+	public void setTaskinfo(String[] taskinfo) {
+		this.taskinfo = taskinfo;
+	}
+
+	public String[] getClasses() {
+		return classes;
+	}
+
+	public void setClasses(String[] classes) {
+		this.classes = classes;
+	}
+	
+	
+	
 }
