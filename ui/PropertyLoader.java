@@ -408,9 +408,9 @@ public class PropertyLoader implements Module{
 	}
 	
 	public String[][] getChangableStats(){
-		String[] stats = new String[]{"DBHOST", "DBNAME", "DBUSER","AUXILTHREAD","CORETHREAD"};
-		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1"};
-		String[] tool_tips = new String[]{"Host Database IP/Name", "Database Name", "Database Username","Max number of auxiliary threads","Max number of primary threads"};
+		String[] stats = new String[]{"DBHOST", "DBNAME", "DBUSER","AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR"};
+		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1", "/usr/bin/", getWorkspace()+File.pathSeparator+"blas_db"+File.pathSeparator};
+		String[] tool_tips = new String[]{"Host Database IP/Name", "Database Name", "Database Username","Max number of auxiliary threads","Max number of primary threads", "Directory that contains blast executables"};
 		String[][] ret = new String[3][stats.length];
 		ret[0] = stats;
 		ret[1] = stats_val;

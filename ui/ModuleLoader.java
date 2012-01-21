@@ -100,7 +100,8 @@ public class ModuleLoader implements Module{
         defaults.setProperty("NAME_modules.lnf.DefaultLNF", "Look&Feel Changer");
         defaults.setProperty("MOD_modules.bio.fastaTools", "yes");
         defaults.setProperty("NAME_modules.bio.fastaTools", "Fasta Tools");
-        
+        defaults.setProperty("MOD_modules.bio.blastTools", "yes");
+        defaults.setProperty("NAME_modules.bio.blastTools", "Blast Tools");
         return defaults;
     }
     

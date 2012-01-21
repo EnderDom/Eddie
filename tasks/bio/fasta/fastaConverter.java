@@ -58,10 +58,9 @@ public class fastaConverter extends TaskXT{
 	
 	public void buildOptions(){
 		super.buildOptions();
-		options.addOption(new Option("i", "input", true, "Input fasta file"));
+		options.getOption("i").setDescription("Input fasta file");
 		options.addOption(new Option("q", "qual", true, "Optional quality file for convert fasta & qual -> fastq"));
-		options.addOption(new Option("o", "output", true, "Output file or files"));
-		options.addOption(new Option("w", "overwrite", false, "Overwrite output if it exists"));
+		options.getOption("o").setDescription("Output file or files");		
 	}
 	
 	public Options getOptions(){

@@ -3,6 +3,7 @@ package tasks;
 import java.io.File;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
 
 /*
@@ -84,6 +85,12 @@ public class TaskXT extends Task{
 		this.overwrite = overwrite;
 	}
 	
+	public void buildOptions(){
+		super.buildOptions();
+		options.addOption(new Option("i", "input", true, "Input"));
+		options.addOption(new Option("o", "output", true, "Output"));
+		options.addOption(new Option("w", "overwrite", false, "Overwrite output if it exists"));
+	}
 	
 	
 }
