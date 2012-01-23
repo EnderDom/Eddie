@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 
 import ui.TaskManager;
 
-public class uiTools {
+public abstract class uiTools {
 	
 	//Gets available look and feels
 	public static String[] getInstalledLnFs(){

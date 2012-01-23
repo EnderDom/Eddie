@@ -12,7 +12,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.log4j.Logger;
 
 import cli.LazyPosixParser;
 
@@ -29,7 +28,8 @@ public class Task implements Runnable, Future<Object> {
 	public static int finished = 1;
 	public static int cancelled = 2;
 	public static int error = 3;
-	public Options options; 
+	public Options options;
+	public boolean helpmode;
 	
 	/*
 	 * complete note:
@@ -60,7 +60,7 @@ public class Task implements Runnable, Future<Object> {
 	    System.out.println("But that you are running the default Task class for some reason.");
 	    System.out.println();
 	    System.out.println("Quick Test of Process Runner");
-	    System.out.println(runProcess("dir", true)[0].toString());
+	    System.out.println(taskTools.runProcess("dir", true)[0].toString());
 	    System.out.println();
 	    System.out.println();
 	    System.out.println("That should be where we're at?");
@@ -75,6 +75,7 @@ public class Task implements Runnable, Future<Object> {
 			CommandLine cmd = parser.parse(getOptions(), args);
 			if(cmd.hasOption("opts")){
 				printHelpMessage();
+				helpmode = true;
 			}
 			else{
 				parseArgsSub(cmd);
@@ -93,9 +94,13 @@ public class Task implements Runnable, Future<Object> {
 	}
 	
 	public void printHelpMessage(){
+		System.out.println("");
+		System.out.println("");
 		System.out.println("--This is the Help Message of the Default Task--");
 		HelpFormatter help = new HelpFormatter();
 		help.printHelp("ls", "-- Task Help Menu --", options, "-- Share And Enjoy! --");
+		System.out.println("");
+		System.out.println("");
 	}
 	
 	public synchronized void update(){
@@ -167,76 +172,21 @@ public class Task implements Runnable, Future<Object> {
 	
 	public void buildOptions(){
 		options = new Options();
-		options.addOption(new Option("opts", false, "Options for this specific task"));
+		options.addOption(new Option("opts", false, "Help Menu for this specific task"));
 	}
 	
 	public Options getOptions(){
 		return this.options;
 	}
 
-	/*
-	 * Laziness next to godliness
-	 */
-	public static StringBuffer[] runProcess(String coms, boolean cache){
-		return runProcess(new String[]{coms}, cache);
+	public boolean isHelpmode() {
+		return helpmode;
 	}
+
+	public void setHelpmode(boolean helpmode) {
+		this.helpmode = helpmode;
+	}
+
 	
-	public static StringBuffer[] runProcess(String[] coms, boolean cache){
-		StringBuffer[] output = null;
-		String osName = System.getProperty("os.name" );
-		String[] cmd =  new String[coms.length+2];
-        if( osName.indexOf("Windows NT" ) != -1 ){
-            cmd[0] = "command.com" ;
-            cmd[1] = "/C" ;
-            Logger.getRootLogger().debug("Man your computer's old! You dug this up?");
-        }
-        else if ( osName.indexOf( "Windows") != -1){
-        	 cmd[0] = "cmd.exe" ;
-             cmd[1] = "/C" ;
-             Logger.getRootLogger().debug("Using process commands for Windows 95 and higher");
-        }
-        else{ 
-        	cmd[0] = "/bin/sh";
-			cmd[1] = "-c";
-			Logger.getRootLogger().debug("Using process command for Unix (AKA Boss Mode)");
-        }
-        for(int i =0; i < coms.length; i++){
-			cmd[i+2] = coms[i];
-		}
-        try{
-	        
-	        Logger.getRootLogger().debug("Execing " + cmd[0] + " " + cmd[1] 
-	                           + " " + cmd[2]);
-	        Runtime rt = Runtime.getRuntime();
-	        Process proc = rt.exec(cmd);
-	        // any error message
-	        StreamGobbler errorGobbler = new 
-	            StreamGobbler(proc.getErrorStream(), "ERROR", cache);
-	        
-	        // any output?
-	        StreamGobbler outputGobbler = new 
-	            StreamGobbler(proc.getInputStream(), "OUTPUT", cache);
-	        
-	        // kick them off
-	        errorGobbler.start();
-	        outputGobbler.start();
-	                                
-	        // any error???
-	        int exitVal = proc.waitFor(); //Note:: This will pause the thread
-	        if(exitVal == 0){Logger.getRootLogger().debug("Process Exited Normally");}
-	        else Logger.getRootLogger().error("Abnormal exit value");
-	        
-	        if(cache){
-	        	output = new StringBuffer[]{outputGobbler.getOutput(), errorGobbler.getOutput()};
-	        }
-	        
-	        errorGobbler.close();
-	        outputGobbler.close();
-        } 
-        catch (Throwable t){
-        	Logger.getRootLogger().error("Process Error", t);
-        }
-        return output;
-	}
 	
 }

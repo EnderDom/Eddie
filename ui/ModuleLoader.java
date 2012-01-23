@@ -42,6 +42,25 @@ public class ModuleLoader implements Module{
    	JRadioButton[] buttons;
    	boolean[] selected;
     
+   	/*
+   	 * Urgh..
+   	 * I've already changed about this implementation
+   	 * 
+   	 * but we'll go with it for now and see how it does
+   	 * 
+   	 * my main concern is loading all these modules as
+   	 * objects rather than just calling them as needed.
+   	 * 
+   	 * A better idea might be to have a list of modules
+   	 * each module's GUI/CLI methods are called, but the module 
+   	 * isn't actually instatiated. Then a list of commands are added
+   	 * and linked to the class, so it can be created on request. 
+   	 * This modular system is a bit of an experiment so we'll see how 
+   	 * it goes for now.
+   	 * 
+   	 * 
+   	 */
+   	
     public ModuleLoader(String modulesfolder){
     	this.modulesfolder = modulesfolder;
     	props = new Properties();
@@ -65,6 +84,10 @@ public class ModuleLoader implements Module{
         }
     }
 
+    /*
+     * Gets module names from properties file and 
+     * tries to create them, then passes them on.
+     */
     public Module[] addModules(Module[] oldmods){
     	LinkedList<Module> mods = new LinkedList<Module>();
     	if(this.modules == null){
@@ -94,14 +117,21 @@ public class ModuleLoader implements Module{
         return newMods;
     }
 
+    /*
+     * This is one of the problems with this method
+     * for a class to be used as a module it most be
+     * described here. On the one hand it means I can just 'unplug'
+     * classes, which might be useful for more experimental ones..? 
+     * 
+     */
     public Properties getDefaultProperties(){
         Properties defaults = new Properties();
         defaults.setProperty("MOD_modules.lnf.DefaultLNF", "yes");
         defaults.setProperty("NAME_modules.lnf.DefaultLNF", "Look&Feel Changer");
-        defaults.setProperty("MOD_modules.bio.fastaTools", "yes");
-        defaults.setProperty("NAME_modules.bio.fastaTools", "Fasta Tools");
-        defaults.setProperty("MOD_modules.bio.blastTools", "yes");
-        defaults.setProperty("NAME_modules.bio.blastTools", "Blast Tools");
+        defaults.setProperty("MOD_modules.bio.Module_Fasta", "yes");
+        defaults.setProperty("NAME_modules.bio.Module_Fasta", "Fasta Tools");
+        defaults.setProperty("MOD_modules.bio.Module_Blast", "yes");
+        defaults.setProperty("NAME_modules.bio.Module_Blast", "Blast Tools");
         return defaults;
     }
     
@@ -121,6 +151,18 @@ public class ModuleLoader implements Module{
     	return ret;
     }
 
+    /* So ModuleLoader is itself a module.(But a default one) 
+     * 
+     * */
+    
+    /******************************************
+     * 
+     * 
+     * Module Specific Methods
+     * 
+     * 
+     ******************************************/
+    
 	public boolean ownsThisAction(String s) {
 		return moduleTools.ownsThisAction(actions, s);
 	}

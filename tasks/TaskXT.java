@@ -60,6 +60,20 @@ public class TaskXT extends Task{
 			return tmp;
 		}
 	}
+	
+	
+	public File getStdInput(){
+		// Method assumes input should exist as a file (not folder)
+		return getFile(this.input, 2);
+	}
+	
+	public File getStdOutput(){
+		//Method assumes output shouldn't be a file unless overwrite
+		if(!overwrite){
+			return getFile(this.output, 0); 
+		}
+		else return getFile(this.output, 4);
+	}
 
 	public String getInput() {
 		return input;

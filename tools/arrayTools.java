@@ -1,6 +1,6 @@
 package tools;
 
-public class arrayTools {
+public abstract class arrayTools {
 
 	public static String[] mergeStrings(String[] a, String[] b){
 		String[] c = new String[a.length+b.length];

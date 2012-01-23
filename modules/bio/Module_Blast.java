@@ -4,8 +4,8 @@ import modules.ModuleBasic;
 import gui.EddieGUI;
 import cli.EddieCLI;
 
-public class blastTools extends ModuleBasic{
-	String modulename = "MOD_modules.bio.blastTools";
+public class Module_Blast extends ModuleBasic{
+	String modulename = "MOD_modules.bio.Module_Blast";
 	public String menustring = "Tools";
 	public String menuItemName = "Blast Tools";
 	protected String[] tasks = new String[]{"blast", "webblast", "blast2sql"}; 
@@ -16,7 +16,7 @@ public class blastTools extends ModuleBasic{
 	 */
 	protected String[] classes = new String[]{"tasks.bio.blast.localBlast","tasks.bio.blast.localBlast","tasks.bio.blast.localBlast"};
 	
-	public blastTools(){
+	public Module_Blast(){
 		
 	}
 	

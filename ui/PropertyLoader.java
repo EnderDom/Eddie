@@ -53,7 +53,10 @@ public class PropertyLoader implements Module{
     public static String infoFile = new String("eddie.info");
     public String rootfolder;
     Options options;
-    public static double version = 0.08;
+    /* This is actually the 4th iteration of Eddie, 
+     * though this one has been written from scratch
+     */
+    public static double version = 4.08; 
     Level level;
     public static Logger logger;
     private String modulename = "MOD_ui.PropertyLoader";
@@ -76,6 +79,9 @@ public class PropertyLoader implements Module{
 			CommandLine cmd = parser.parse(options, args);
 			if(cmd.hasOption("h")){
 				retvalue = 1;
+			}
+			else if(cmd.hasOption("about")){
+				retvalue = 5;
 			}
 			else{
 				if(cmd.hasOption("c")){ /*If Command Line iNterface*/
@@ -113,6 +119,7 @@ public class PropertyLoader implements Module{
 		options.addOption(new Option("persist", false, "If CLI set, this will stop CLI from closing without further args"));
 		options.addOption(new Option("h", "help", false, "Help Menu"));
 		options.addOption(new Option("l", "log", true, "Set Log Level {TRACE,DEBUG,INFO,WARN,ERROR,FATAL}"));
+		options.addOption(new Option("about", false, "About the author"));
 	}
 	
 	public void printHelp(){
@@ -122,7 +129,8 @@ public class PropertyLoader implements Module{
 		HelpFormatter help = new HelpFormatter();
 		help.printHelp("ls", "-- Eddie v"+version+" Help Menu --", options, "-- Share And Enjoy! --");
 		System.out.println();
-		System.out.println("Type -c -task for list of command line tasks");
+		System.out.println("Use -c -task for list of command line tasks");
+		System.out.println("Use -c -task taskname -opts for that task's helpmenu");
 	}
 
 	private boolean loadPropertiesInit(){

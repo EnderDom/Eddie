@@ -4,6 +4,7 @@
 package main;
 
 import cli.EddieCLI;
+import tools.funTools;
 import ui.PropertyLoader;
 import gui.EddieGUI;
 
@@ -18,7 +19,6 @@ public class Eddie {
 	 */
 	public static void main(String[] args) {
 			int retvalue = 4;
-			
 			PropertyLoader loader = new PropertyLoader();
 			retvalue = loader.loadBasicArguments(args);
 		
@@ -33,6 +33,9 @@ public class Eddie {
 			else if(retvalue == 4){
 				 @SuppressWarnings("unused")
 				EddieGUI desk = new EddieGUI(loader);
+			}
+			else if(retvalue == 5){
+				funTools.printAbout();
 			}
 			else{
 				loader.printHelp();

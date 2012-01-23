@@ -1,6 +1,6 @@
 package tools;
 
-public class stringTools {
+public abstract class stringTools {
 	
 	public static int parseString2Int(String sun){
 		try{

@@ -42,20 +42,25 @@ public class TaskManager extends Thread{
 	
 	public void addTask(Task task) {
 		Logger.getRootLogger().debug("Task add to the task list");
-		if(task.isCore()){
-			CoreTasks.push(task);
-			task.setID(taskcounter);
-			taskcounter++;
-			logTask(task);
+		if(task.isHelpmode()){
+			Logger.getRootLogger().debug("Task went to helpmode, not adding to Task Manager");
 		}
 		else{
-			AuxilTasks.push(task);
-			task.setID(taskcounter);
-			logTask(task);
-			taskcounter++;
-		}
-		if(!started){
-			run();
+			if(task.isCore()){
+				CoreTasks.push(task);
+				task.setID(taskcounter);
+				taskcounter++;
+				logTask(task);
+			}
+			else{
+				AuxilTasks.push(task);
+				task.setID(taskcounter);
+				logTask(task);
+				taskcounter++;
+			}
+			if(!started){
+				run();
+			}
 		}
 	}
 	

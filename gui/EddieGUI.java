@@ -47,6 +47,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	public EddieGUI(PropertyLoader loader){
 		super("Eddie v"+PropertyLoader.version);
 		this.version= PropertyLoader.version;
+		System.out.println("Eddie v" + version + " by (S.C.Corp.)");
 		//View Size
 		this.setBounds(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
 		this.setPreferredSize(this.getBounds().getSize());

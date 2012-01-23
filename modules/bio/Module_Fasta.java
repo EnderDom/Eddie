@@ -8,9 +8,9 @@ import cli.EddieCLI;
 
 import modules.ModuleBasic;
 
-public class fastaTools extends ModuleBasic{
+public class Module_Fasta extends ModuleBasic{
 	
-	String modulename = "MOD_modules.bio.fastaTools";
+	String modulename = "MOD_modules.bio.Module_Fasta";
 	public String menustring = "Tools";
 	public String menuItemName = "Fasta Tools";
 	protected String[] tasks = new String[]{"convert"}; 
@@ -21,7 +21,7 @@ public class fastaTools extends ModuleBasic{
 	 */
 	protected String[] classes = new String[]{"tasks.bio.fasta.fastaConverter"};
 	
-	public fastaTools(){
+	public Module_Fasta(){
 		
 	}
 	
