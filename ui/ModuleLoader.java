@@ -23,11 +23,11 @@ import org.apache.log4j.Logger;
 import cli.EddieCLI;
 
 
-import tools.uiTools;
-import tools.arrayTools;
+import tools.Tools_Modules;
+import tools.Tools_UI;
+import tools.Tools_Array;
 
 import modules.Module;
-import modules.moduleTools;
 
 public class ModuleLoader implements Module{
 
@@ -132,6 +132,8 @@ public class ModuleLoader implements Module{
         defaults.setProperty("NAME_modules.bio.Module_Fasta", "Fasta Tools");
         defaults.setProperty("MOD_modules.bio.Module_Blast", "yes");
         defaults.setProperty("NAME_modules.bio.Module_Blast", "Blast Tools");
+        defaults.setProperty("MOD_modules.bio.Module_Assembly", "yes");
+        defaults.setProperty("NAME_modules.bio.Module_Assembly", "Assembly File Tools");
         return defaults;
     }
     
@@ -164,14 +166,14 @@ public class ModuleLoader implements Module{
      ******************************************/
     
 	public boolean ownsThisAction(String s) {
-		return moduleTools.ownsThisAction(actions, s);
+		return Tools_Modules.ownsThisAction(actions, s);
 	}
 
 	public void actOnAction(String s, EddieGUI gui) {
 		Logger.getRootLogger().debug("ModuleLoader acting upon command "+s);
 		if(s.contentEquals(this.modulename)){
 			Logger.getRootLogger().debug("Building General Properties Frame");
-			propsframe = uiTools.getGenericPropertiesMenu();
+			propsframe = Tools_UI.getGenericPropertiesMenu();
 			propsframe.setTitle("Modules");
 			int  num = 0;
 			JPanel p = new JPanel(new SpringLayout());
@@ -196,7 +198,7 @@ public class ModuleLoader implements Module{
 			JButton button2 = new JButton("Cancel");
 			button1.setActionCommand(modulename+"_PROPS_SAVE");
 			button2.setActionCommand(modulename+"_PROPS_CLOSE");
-			actions = arrayTools.mergeStrings(actions, new String[]{modulename+"_PROPS_SAVE",modulename+"_PROPS_CLOSE" });
+			actions = Tools_Array.mergeStrings(actions, new String[]{modulename+"_PROPS_SAVE",modulename+"_PROPS_CLOSE" });
 			button1.addActionListener(gui);
 			button2.addActionListener(gui);
 			p.add(button1);
@@ -250,7 +252,7 @@ public class ModuleLoader implements Module{
 	    menuItem.setActionCommand(this.modulename);
 	    actions[0] = this.modulename;
 	    menuItem.addActionListener(biodesktopgui);
-	    moduleTools.add2JMenuBar(biodesktopgui.getMenu(), menuItem, "Properties");
+	    Tools_Modules.add2JMenuBar(biodesktopgui.getMenu(), menuItem, "Properties");
 	}
 
 	public boolean uninstallWithoutRestart() {

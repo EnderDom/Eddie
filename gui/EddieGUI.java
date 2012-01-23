@@ -23,9 +23,9 @@ import org.apache.log4j.Logger;
 import modules.Module;
 
 import tasks.*;
-import tools.uiTools;
-import tools.stringTools;
-import tools.systemTools;
+import tools.Tools_UI;
+import tools.Tools_String;
+import tools.Tools_System;
 import ui.ModuleLoader;
 import ui.PropertyLoader;
 import ui.TaskManager;
@@ -55,7 +55,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		//Load Properties
 		load = loader;
 		load.loadPropertiesGUI(this);
-		uiTools.changeLnF(load.getLastLNF(), this);
+		Tools_UI.changeLnF(load.getLastLNF(), this);
 		
 		modular = new ModuleLoader(load.getModuleFolder());
 		/*
@@ -94,7 +94,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		int i = JOptionPane.showConfirmDialog(this, "Exit EddieGUI v"+version+"?", "Exit?", JOptionPane.YES_NO_OPTION);
 		if(i !=1){
 			 PropertyLoader.save((new StringBuilder(String.valueOf(load.rootfolder))).append(PropertyLoader.propertyfilename).toString(), load.getProps());
-	         Logger.getRootLogger().info((new StringBuilder("Closing Eddie @ ")).append(systemTools.getDateNow()).toString());
+	         Logger.getRootLogger().info((new StringBuilder("Closing Eddie @ ")).append(Tools_System.getDateNow()).toString());
 	         LogManager.shutdown();
 	         setVisible(false);
 	         dispose();
@@ -188,7 +188,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	}
 
 	public void buildTaskManager() {
-		this.manager = uiTools.buildTaskManager(stringTools.parseString2Int(load.getCore()),  stringTools.parseString2Int(load.getAuxil()));
+		this.manager = Tools_UI.buildTaskManager(Tools_String.parseString2Int(load.getCore()),  Tools_String.parseString2Int(load.getAuxil()));
 	}
 
 	public JMenuBar getMenu() {

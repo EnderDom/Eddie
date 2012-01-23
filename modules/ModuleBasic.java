@@ -8,6 +8,7 @@ import javax.swing.JMenuItem;
 import org.apache.log4j.Logger;
 
 import tasks.Task;
+import tools.Tools_Modules;
 import ui.UI;
 
 import cli.EddieCLI;
@@ -21,7 +22,7 @@ import cli.EddieCLI;
 
 public class ModuleBasic implements Module{
 	public String modulename = "MOD_modules.default";
-	public String menustring = "Window"+moduleTools.menudivider+"Tools";
+	public String menustring = "Window"+Tools_Modules.menudivider+"Tools";
 	public String menuItemName = "Basic";
 	protected String[] actions;
 	protected String[] tasks;
@@ -30,7 +31,7 @@ public class ModuleBasic implements Module{
 	public String taskname;
 	
 	public boolean ownsThisAction(String s) {
-		return moduleTools.ownsThisAction(getActions(), s);
+		return Tools_Modules.ownsThisAction(getActions(), s);
 	}
 
 	public void actOnTask(String s, UI cli) {
@@ -64,11 +65,11 @@ public class ModuleBasic implements Module{
 	    actions1[i] = getModuleName()+i;
 	    setActions(actions1);
 	    menuItem.addActionListener(gui);
-	    moduleTools.add2JMenuBar(menubar, menuItem, new String(getMenuString()));
+	    Tools_Modules.add2JMenuBar(menubar, menuItem, new String(getMenuString()));
 	}
 
 	public boolean ownsThisTask(String s) {
-		return moduleTools.ownsThisAction(getTasks(), s);
+		return Tools_Modules.ownsThisAction(getTasks(), s);
 	}
 
 	public void actOnTask(String s) {

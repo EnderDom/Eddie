@@ -1,7 +1,7 @@
 package modules.bio;
 
 import tasks.Task;
-import tasks.bio.fasta.fastaConverter;
+import tasks.bio.fasta.Task_Fasta;
 import gui.EddieGUI;
 import gui.FileAdderer;
 import cli.EddieCLI;
@@ -13,7 +13,7 @@ public class Module_Fasta extends ModuleBasic{
 	String modulename = "MOD_modules.bio.Module_Fasta";
 	public String menustring = "Tools";
 	public String menuItemName = "Fasta Tools";
-	protected String[] tasks = new String[]{"convert"}; 
+	protected String[] tasks = new String[]{"convertFasta"}; 
 	protected String[] taskinfo = new String[]{"converts fasta & qual to fastq"};
 	/*
 	 * This needs to match the class ->
@@ -32,7 +32,7 @@ public class Module_Fasta extends ModuleBasic{
 			
 			gui.add2Desktop(fileinput);
 			
-			Task task = new fastaConverter();
+			Task task = new Task_Fasta();
 			
 			gui.addTask(task);
 		}

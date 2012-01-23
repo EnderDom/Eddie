@@ -12,9 +12,9 @@ import org.apache.log4j.Logger;
 
 import modules.Module;
 import tasks.Task;
-import tools.uiTools;
-import tools.funTools;
-import tools.stringTools;
+import tools.Tools_UI;
+import tools.Tools_Fun;
+import tools.Tools_String;
 import ui.ModuleLoader;
 import ui.PropertyLoader;
 import ui.TaskManager;
@@ -79,7 +79,7 @@ public class EddieCLI implements UI {
 		while(sc.hasNext()){
 			response = sc.next();
 			if(response.contentEquals("exit")){
-				System.out.println("Eddie>"+funTools.getExitMessage());
+				System.out.println("Eddie>"+Tools_Fun.getExitMessage());
 				break;
 			}
 			else{
@@ -144,7 +144,7 @@ public class EddieCLI implements UI {
 	}
 
 	public void buildTaskManager() {
-		this.manager = uiTools.buildTaskManager(stringTools.parseString2Int(load.getCore()),  stringTools.parseString2Int(load.getAuxil()));
+		this.manager = Tools_UI.buildTaskManager(Tools_String.parseString2Int(load.getCore()),  Tools_String.parseString2Int(load.getAuxil()));
 	}
 	
 	public void buildOptions(){

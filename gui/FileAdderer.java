@@ -18,7 +18,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.log4j.Logger;
 
-import tools.stringTools;
+import tools.Tools_String;
 
 public class FileAdderer extends JInternalFrame implements ActionListener{
 
@@ -127,7 +127,7 @@ public class FileAdderer extends JInternalFrame implements ActionListener{
 			int returnVal = chooser.showOpenDialog(parent);
 			if(returnVal == JFileChooser.APPROVE_OPTION) {
 				Logger.getRootLogger().debug("User selected file: " +   chooser.getSelectedFile().getName());
-				int value = stringTools.parseString2Int(arg0.getActionCommand().substring(arg0.getActionCommand().indexOf("FILE_") + 5, arg0.getActionCommand().length()));
+				int value = Tools_String.parseString2Int(arg0.getActionCommand().substring(arg0.getActionCommand().indexOf("FILE_") + 5, arg0.getActionCommand().length()));
 				if(value == -1) Logger.getRootLogger().error("Button Action Command is named illegally, should be File_{integer_value} ie 'File_1', but is " + arg0.getActionCommand());
 				else inputs.get(value).setText(chooser.getSelectedFile().getPath());
 			}

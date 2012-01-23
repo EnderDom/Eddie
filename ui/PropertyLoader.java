@@ -27,7 +27,6 @@ import javax.swing.SpringLayout;
 import cli.EddieCLI;
 import cli.LazyPosixParser;
 import modules.Module;
-import modules.moduleTools;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -39,11 +38,12 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import tools.uiTools;
-import tools.arrayTools;
-import tools.fileTools;
-import tools.stringTools;
-import tools.systemTools;
+import tools.Tools_Modules;
+import tools.Tools_UI;
+import tools.Tools_Array;
+import tools.Tools_File;
+import tools.Tools_String;
+import tools.Tools_System;
 
 
 public class PropertyLoader implements Module{
@@ -290,7 +290,7 @@ public class PropertyLoader implements Module{
                 
             }
             Logger.getRootLogger().setLevel(level);
-            Logger.getRootLogger().info("Logger Initialised LVL: "+level.toString()+" @ "+systemTools.getDateNow());
+            Logger.getRootLogger().info("Logger Initialised LVL: "+level.toString()+" @ "+Tools_System.getDateNow());
         } 
 		else{
             preLog("Logging has failed. Can Not Continue.");
@@ -359,11 +359,11 @@ public class PropertyLoader implements Module{
 			File eddie = new File(path	+ System.getProperty("file.separator") + infoFile);
 			String in = new String("");
 			if (eddie.isFile()) {
-				in = fileTools.quickRead(eddie);
+				in = Tools_File.quickRead(eddie);
 				if (in.length() > 0) {
 					int start = 0;
 					if ((start = in.indexOf("VERS:")) != -1) {
-						double oldvers = stringTools.parseString2Double(in
+						double oldvers = Tools_String.parseString2Double(in
 								.substring(start, in.length()));
 						if(oldvers != version){
 							//TODO Compatibilaty
@@ -385,7 +385,7 @@ public class PropertyLoader implements Module{
 	}
 
 	private boolean saveInfoFile(File file) {
-		return fileTools.quickWrite("VERS:" + version, file, false);
+		return Tools_File.quickWrite("VERS:" + version, file, false);
 	}
 
 	public static String getEnvirons() {
@@ -477,14 +477,14 @@ public class PropertyLoader implements Module{
 	 *																			*/
 	/****************************************************************************/
 	public boolean ownsThisAction(String s) {
-		return moduleTools.ownsThisAction(actions, s);
+		return Tools_Modules.ownsThisAction(actions, s);
 	}
 
 	public void actOnAction(String s, EddieGUI gui) {
 		Logger.getRootLogger().debug("PropertyLoader acting upon command "+s);
 		if(s.contentEquals(this.modulename)){
 			Logger.getRootLogger().debug("Building General Properties Frame");
-			propsframe = uiTools.getGenericPropertiesMenu();
+			propsframe = Tools_UI.getGenericPropertiesMenu();
 			propsframe.setTitle("General Properties");
 			int  num = 0;
 			JPanel p = new JPanel(new SpringLayout());
@@ -506,7 +506,7 @@ public class PropertyLoader implements Module{
 			JButton button2 = new JButton("Cancel");
 			button1.setActionCommand(modulename+"_PROPS_SAVE");
 			button2.setActionCommand(modulename+"_PROPS_CLOSE");
-			actions = arrayTools.mergeStrings(actions, new String[]{modulename+"_PROPS_SAVE",modulename+"_PROPS_CLOSE" });
+			actions = Tools_Array.mergeStrings(actions, new String[]{modulename+"_PROPS_SAVE",modulename+"_PROPS_CLOSE" });
 			button1.addActionListener(gui);
 			button2.addActionListener(gui);
 			p.add(button1);
@@ -551,7 +551,7 @@ public class PropertyLoader implements Module{
 	    menuItem.setActionCommand(this.modulename);
 	    actions[0] = this.modulename;
 	    menuItem.addActionListener(eddiegui);
-	    moduleTools.add2JMenuBar(eddiegui.getMenu(), menuItem, "Properties");
+	    Tools_Modules.add2JMenuBar(eddiegui.getMenu(), menuItem, "Properties");
 	}
 
 

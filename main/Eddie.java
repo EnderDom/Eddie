@@ -4,7 +4,7 @@
 package main;
 
 import cli.EddieCLI;
-import tools.funTools;
+import tools.Tools_Fun;
 import ui.PropertyLoader;
 import gui.EddieGUI;
 
@@ -35,7 +35,7 @@ public class Eddie {
 				EddieGUI desk = new EddieGUI(loader);
 			}
 			else if(retvalue == 5){
-				funTools.printAbout();
+				Tools_Fun.printAbout();
 			}
 			else{
 				loader.printHelp();
