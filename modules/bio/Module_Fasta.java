@@ -1,7 +1,7 @@
 package modules.bio;
 
 import tasks.Task;
-import tasks.bio.fasta.Task_Fasta;
+import tasks.bio.Task_Fasta;
 import gui.EddieGUI;
 import gui.FileAdderer;
 import cli.EddieCLI;
@@ -19,7 +19,7 @@ public class Module_Fasta extends ModuleBasic{
 	 * This needs to match the class ->
 	 * Will not be changed if class name is changed!!!
 	 */
-	protected String[] classes = new String[]{"tasks.bio.fasta.fastaConverter"};
+	protected String[] classes = new String[]{"tasks.bio.Task_Fasta"};
 	
 	public Module_Fasta(){
 		

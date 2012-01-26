@@ -2,17 +2,55 @@ package bio.assembly;
 
 import java.util.LinkedHashMap;
 
-import org.apache.log4j.Logger;
-
-public class SAMObject implements SAMHandler{
+public class BasicAssemblyObject implements SAMHandler, ACEHandler{
 	
 	LinkedHashMap<String, Integer> contigs;
 	LinkedHashMap<String, String> reads;
 	LinkedHashMap<String, String> cigars;
 	LinkedHashMap<String, String> rpos;
 	
-	public SAMObject(){
+	public BasicAssemblyObject(){
 		contigs = new LinkedHashMap<String, Integer>();
+	}
+
+	public void setRefConsensus(String buffer) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public String getRefConsensus(String refname) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setRefConsensusQuality(String buffer) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public String getRefConsensusQuality(String refname) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setNoOfBases(int i) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setNoOfReads(int i) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setBaseSegments(int i) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void setOrientation(char orient) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	public void setFormatVersion(String format) {
@@ -40,7 +78,7 @@ public class SAMObject implements SAMHandler{
 		
 	}
 
-	public String getRefName() {
+	public String getRefName(int i) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -50,7 +88,7 @@ public class SAMObject implements SAMHandler{
 		
 	}
 
-	public int getRefLength() {
+	public int getRefLength(String refname) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
@@ -60,7 +98,7 @@ public class SAMObject implements SAMHandler{
 		
 	}
 
-	public String getGenomeAssemblyID() {
+	public String getGenomeAssemblyID(String refname) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -70,7 +108,7 @@ public class SAMObject implements SAMHandler{
 		
 	}
 
-	public String getSequenceMD5() {
+	public String getSequenceMD5(String refname) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -80,7 +118,7 @@ public class SAMObject implements SAMHandler{
 		
 	}
 
-	public String getSpecies() {
+	public String getSpecies(String refname) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -90,13 +128,14 @@ public class SAMObject implements SAMHandler{
 		
 	}
 
-	public String getURI() {
+	public String getURI(String refname) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public void setProgramID(String substring) {
-		Logger.getRootLogger().info("Program ID for this assemlby is" + substring);
+		// TODO Auto-generated method stub
+		
 	}
 
 	public String getProgramID() {
@@ -159,52 +198,67 @@ public class SAMObject implements SAMHandler{
 		
 	}
 
-	public void addFLAG(int parseString2Int) {
+	public void addFLAG(int parseString2Int, String qname) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void addRNAME(String string) {
+	public void addRNAME(String string, String qname) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void addPOS(int parseString2Int) {
+	public void addPOS(int parseString2Int, String qname) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void addMAPQ(int parseString2Int) {
+	public void addMAPQ(int parseString2Int, String qname) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void addRNEXT(String string) {
+	public void addRNEXT(String string, String qname) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void addCIGAR(String string) {
+	public void addCIGAR(String string, String qname) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void addPNEXT(int parseString2Int) {
+	public void addPNEXT(int parseString2Int, String qname) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void addTLEN(int parseString2Int) {
+	public void addTLEN(int parseString2Int, String qname) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void addSEQ(String string) {
+	public void addSEQ(String string, String qname) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void addQUAL(String string) {
+	public void addQUAL(String string, String qname) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void addOrientation(char orient, String qname) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void addRange(int start, int end, String qname) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void addRangePadded(int start, int end, String qname) {
 		// TODO Auto-generated method stub
 		
 	}

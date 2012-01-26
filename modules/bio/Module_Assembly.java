@@ -13,7 +13,7 @@ public class Module_Assembly extends ModuleBasic {
 	 * This needs to match the class ->
 	 * Will not be changed if class name is changed!!!
 	 */
-	protected String[] classes = new String[]{"tasks.bio.assembly."};
+	protected String[] classes = new String[]{"tasks.bio.Task_Assembly","tasks.bio.Task_Assembly"};
 	
 	public Module_Assembly(){
 		

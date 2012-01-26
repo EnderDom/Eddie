@@ -1,4 +1,4 @@
-package tasks.bio.blast;
+package tasks.bio;
 
 import java.io.File;
 import java.util.Properties;
@@ -8,7 +8,6 @@ import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
 
 import tasks.TaskXT;
-import tools.Tools_System;
 import tools.bio.Tools_Blast;
 
 public class Task_BlastLocal extends TaskXT{
@@ -24,39 +23,6 @@ public class Task_BlastLocal extends TaskXT{
 		 * due to it being high cpu usage
 		 */
 		setCore(true);
-	}
-	
-	public void run(){
-		setComplete(started);
-		Logger.getRootLogger().debug("Started running task @ "+Tools_System.getDateNow());
-		if(blastparams == null)blastparams = "";
-		/*
-		 * TODO remove test
-		 * 
-		 * But just incase I forget, will only run for me in debug
-		 */
-		if((System.getProperty("user.name").contains("dominic")) && Logger.getRootLogger().isDebugEnabled()){
-			Logger.getRootLogger().debug("\nRUNNING TEST!\n");
-			this.input = "/home/dominic/apps/eclipse/testfiles/fasta/test_single.fasta";
-			this.output = "/home/dominic/apps/eclipse/testfiles/fasta/test_single_blast";
-			this.overwrite = true;
-			this.blast_prg = "blastn";
-			this.blast_db = blast_db+"deroceras_combi";
-		}
-		File input = null;
-		File output = null;
-		if((input = getStdInput()) != null && (output = getStdOutput()) != null){
-			Tools_Blast.runLocalBlast(input, blast_prg, blast_bin, blast_db, blastparams, output);
-		}
-		else if(input == null){
-			Logger.getRootLogger().error("Input "+this.input+" does not exist! " );
-		}
-		else{
-			Logger.getRootLogger().error("Output "+this.output+" exists! Change or set overwrite");
-		}
-		
-		Logger.getRootLogger().debug("Finished running task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
 	}
 	
 
@@ -90,6 +56,34 @@ public class Task_BlastLocal extends TaskXT{
 		options.addOption(new Option("bbb", "blast_bin", true, "Specify blast bin directory"));
 		options.addOption(new Option("bpr", "blast_prog", true, "Specify blast program"));
 		options.addOption(new Option("p", "params", true, "Additional Parameters"));
+	}
+	
+	public void runTest(){
+		if(blastparams == null)blastparams = "";
+		/*
+		 * TODO remove test
+		 * 
+		 * But just incase I forget, will only run for me in debug
+		 */
+		if((System.getProperty("user.name").contains("dominic")) && Logger.getRootLogger().isDebugEnabled()){
+			Logger.getRootLogger().debug("\nRUNNING TEST!\n");
+			this.input = "/home/dominic/apps/eclipse/testfiles/fasta/test_single.fasta";
+			this.output = "/home/dominic/apps/eclipse/testfiles/fasta/test_single_blast";
+			this.overwrite = true;
+			this.blast_prg = "blastn";
+			this.blast_db = blast_db+"deroceras_combi";
+		}
+		File input = null;
+		File output = null;
+		if((input = getStdInput()) != null && (output = getStdOutput()) != null){
+			Tools_Blast.runLocalBlast(input, blast_prg, blast_bin, blast_db, blastparams, output);
+		}
+		else if(input == null){
+			Logger.getRootLogger().error("Input "+this.input+" does not exist! " );
+		}
+		else{
+			Logger.getRootLogger().error("Output "+this.output+" exists! Change or set overwrite");
+		}
 	}
 
 }

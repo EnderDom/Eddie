@@ -5,7 +5,7 @@ public interface SAMHandler {
 	public static String[] sorttypes = {"unknown", "unsorted", "queryname", "coordinate"};
 	
 	/* 
-	 * Header File Values
+	 * Header File Values @HD
 	 */
 	public void setFormatVersion(String format);
 	
@@ -17,7 +17,7 @@ public interface SAMHandler {
 	
 	
 	/*
-	 * Reference sequence dictionary
+	 * Reference sequence dictionary @SQ
 	 */
 	
 	/*
@@ -27,29 +27,29 @@ public interface SAMHandler {
 	
 	public void setRefName(String format);
 	
-	public String getRefName();
+	public String getRefName(int i);
 	
 	/*
 	 * Mandatory Contig Length
 	 */
 	public void setRefLength(int i);
 	
-	public int getRefLength();
+	public int getRefLength(String refname);
 
 	/*
 	 * Non-Mandatory Fields
 	 */
 	public void setGenomeAssemblyID(String substring);
 	
-	public String getGenomeAssemblyID();
+	public String getGenomeAssemblyID(String refname);
 
 	public void setSequenceMD5(String substring);
 	
-	public String getSequenceMD5();
+	public String getSequenceMD5(String refname);
 
 	public void setSpecies(String substring);
 	
-	public String getSpecies();
+	public String getSpecies(String refname);
 
 	/*
 	 * Leave it to the Handler to convert this to 
@@ -57,19 +57,19 @@ public interface SAMHandler {
 	 */
 	public void setURI(String substring);
 	
-	public String getURI();
+	public String getURI(String refname);
 
 	
 	/*
 	 * 
-	 * Read Grouping
+	 * Read Grouping @RG
 	 * TODO
 	 * 
 	 */
 	
 	/*
 	 * 
-	 * Program Details
+	 * Program Details @PG
 	 * 
 	 */
 
@@ -82,8 +82,8 @@ public interface SAMHandler {
 	public String getProgramName();
 
 	/*
-	 * Hmm... I guess this is the command line args for the
-	 * above program? 
+	 * Hmm... I guess this is the command line args
+	 * for the above program? 
 	 */
 	
 	public void setCommandLine(String substring);
@@ -91,7 +91,7 @@ public interface SAMHandler {
 	public String getCommandLine();
 
 	/*
-	 * Hah, like i'll ever implement this 
+	 * Hah, like i'll ever implement this
 	 */
 	public void setPGIDChain(String substring);
 	
@@ -104,28 +104,30 @@ public interface SAMHandler {
 	public void setComment(String substring);
 	
 	public String getComment();
+	
+	//Read Data
 
 	public void addQNAME(String string);
 
-	public void addFLAG(int parseString2Int);
+	public void addFLAG(int parseString2Int, String qname);
 
-	public void addRNAME(String string);
+	public void addRNAME(String string, String qname);
 
-	public void addPOS(int parseString2Int);
+	public void addPOS(int parseString2Int, String qname);
 
-	public void addMAPQ(int parseString2Int);
+	public void addMAPQ(int parseString2Int, String qname);
 
-	public void addRNEXT(String string);
+	public void addRNEXT(String string, String qname);
 
-	public void addCIGAR(String string);
+	public void addCIGAR(String string, String qname);
 
-	public void addPNEXT(int parseString2Int);
+	public void addPNEXT(int parseString2Int, String qname);
 
-	public void addTLEN(int parseString2Int);
+	public void addTLEN(int parseString2Int, String qname);
 
-	public void addSEQ(String string);
+	public void addSEQ(String string, String qname);
 
-	public void addQUAL(String string);
+	public void addQUAL(String string, String qname);
 	
 	
 }

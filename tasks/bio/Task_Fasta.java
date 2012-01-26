@@ -1,4 +1,4 @@
-package tasks.bio.fasta;
+package tasks.bio;
 
 import java.util.Properties;
 

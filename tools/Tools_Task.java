@@ -1,8 +1,10 @@
-package tasks;
+package tools;
 
 import org.apache.log4j.Logger;
 
-public abstract class taskTools {
+import tasks.StreamGobbler;
+
+public abstract class Tools_Task {
 	/*
 	 * Laziness next to godliness
 	 */

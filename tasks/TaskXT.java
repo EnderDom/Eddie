@@ -18,16 +18,18 @@ public class TaskXT extends Task{
 	
 	public void parseArgsSub(CommandLine cmd){
 		if(!cmd.hasOption("input")){
-			Logger.getRootLogger().error("Input file has not been set!");
-		}
-		else if(!cmd.hasOption("output")){
-			Logger.getRootLogger().error("Output file has not been set!");
+			Logger.getRootLogger().warn("Input file has not been set.");
 		}
 		else{
 			setInput(cmd.getOptionValue("input"));
-			setOutput(cmd.getOptionValue("output"));
-			setOverwrite(cmd.hasOption("w"));
 		}
+		if(!cmd.hasOption("output")){
+			Logger.getRootLogger().debug("Output file has not been set.");
+		}
+		else{
+			setOutput(cmd.getOptionValue("output"));
+		}
+		setOverwrite(cmd.hasOption("w"));
 	}
 	
 	/*
@@ -101,6 +103,7 @@ public class TaskXT extends Task{
 	
 	public void buildOptions(){
 		super.buildOptions();
+		
 		options.addOption(new Option("i", "input", true, "Input"));
 		options.addOption(new Option("o", "output", true, "Output"));
 		options.addOption(new Option("w", "overwrite", false, "Overwrite output if it exists"));

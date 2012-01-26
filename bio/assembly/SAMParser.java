@@ -31,8 +31,9 @@ public class SAMParser {
 	}
 	
 	public int parseSAM(File samfile) throws IOException{
+		if(handler == null)throw new IOException("No Handler set for this parser");
 		int count=0;
-
+		int multi=0;
 		FileInputStream fis = new FileInputStream(samfile);
 		InputStreamReader in = new InputStreamReader(fis, "UTF-8");
 		BufferedReader reader = new BufferedReader(in);
@@ -41,9 +42,8 @@ public class SAMParser {
 		boolean warn1 = false;//Just so don't fill the screen full of warnings
 		boolean warn2 = false; 
 		while((line = reader.readLine()) != null){
-			linecount++;
+			
 			if(line.startsWith("@")){
-				
 				/*
 				 * Header Line
 				 * 
@@ -109,7 +109,6 @@ public class SAMParser {
 				}
 				else if(line.startsWith("@RG")){
 					//TODO Support this part of the file
-					Logger.getRootLogger().debug("This is to remind Dominic, that he hasn't completed the full implementation of this class parser.");
 				}
 				else if(line.startsWith("@PG")){
 					String[] bits = line.split("	");
@@ -148,7 +147,14 @@ public class SAMParser {
 					throw new IOException("SAM file type not supported. Too few variables in String");
 				}
 			}
+			if(multi==1000){
+				multi=0;
+				System.out.print("\rParsing Line: "+linecount);
+			}
+			multi++;
+			linecount++;
 		}
+		System.out.println("");
 		Logger.getRootLogger().info("Parsed "+ linecount+ " lines into "+ count+ " sequences");
 		return count;
 	}
@@ -160,21 +166,20 @@ public class SAMParser {
 		 * Default Fields to be parsed
 		 */
 		handler.addQNAME(bits[0]);
-		handler.addFLAG(Tools_String.parseString2Int(bits[1]));
-		handler.addRNAME(bits[2]);
-		handler.addPOS(Tools_String.parseString2Int(bits[3]));
-		handler.addMAPQ(Tools_String.parseString2Int(bits[4]));
-		handler.addCIGAR(bits[5]);
-		handler.addRNEXT(bits[6]);
-		handler.addPNEXT(Tools_String.parseString2Int(bits[7]));
-		handler.addTLEN(Tools_String.parseString2Int(bits[8]));
-		handler.addSEQ(bits[9]);
-		handler.addQUAL(bits[10]);
+		handler.addFLAG(Tools_String.parseString2Int(bits[1]), bits[0]);
+		handler.addRNAME(bits[2], bits[0]);
+		handler.addPOS(Tools_String.parseString2Int(bits[3]), bits[0]);
+		handler.addMAPQ(Tools_String.parseString2Int(bits[4]), bits[0]);
+		handler.addCIGAR(bits[5], bits[0]);
+		handler.addRNEXT(bits[6], bits[0]);
+		handler.addPNEXT(Tools_String.parseString2Int(bits[7]), bits[0]);
+		handler.addTLEN(Tools_String.parseString2Int(bits[8]), bits[0]);
+		handler.addSEQ(bits[9], bits[0]);
+		handler.addQUAL(bits[10], bits[0]);
 		/*
 		 *Additional fields  
 		 */
 		if(bits.length > 10){
-			Logger.getRootLogger().debug("This is to remind Dominic, that he hasn't completed the full implementation of this class parser.");
 			for(int i =11; i < bits.length; i++){
 				//TODO
 			}

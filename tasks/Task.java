@@ -12,9 +12,12 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.log4j.Logger;
 
 import cli.LazyPosixParser;
 
+import tools.Tools_System;
+import tools.Tools_Task;
 import ui.TaskManager;
 
 public class Task implements Runnable, Future<Object> {
@@ -30,6 +33,7 @@ public class Task implements Runnable, Future<Object> {
 	public static int error = 3;
 	public Options options;
 	public boolean helpmode;
+	private boolean testmode;
 	
 	/*
 	 * complete note:
@@ -53,18 +57,25 @@ public class Task implements Runnable, Future<Object> {
 	
 	public void run() {
 		setComplete(started);
-		System.out.println();
-		System.out.println("--This is the default Task run message--");
-		System.out.println();
-		System.out.println("If you're seeing this message it means the Task Manager is working,");
-	    System.out.println("But that you are running the default Task class for some reason.");
-	    System.out.println();
-	    System.out.println("Quick Test of Process Runner");
-	    System.out.println(taskTools.runProcess("dir", true)[0].toString());
-	    System.out.println();
-	    System.out.println();
-	    System.out.println("That should be where we're at?");
-	    System.out.println();
+		Logger.getRootLogger().debug("Started running task @ "+Tools_System.getDateNow());
+		if(testmode){
+			runTest();
+		}
+		else{
+			System.out.println();
+			System.out.println("--This is the default Task run message--");
+			System.out.println();
+			System.out.println("If you're seeing this message it means the Task Manager is working,");
+		    System.out.println("But that you are running the default Task class for some reason.");
+		    System.out.println();
+		    System.out.println("Quick Test of Process Runner");
+		    System.out.println(Tools_Task.runProcess("dir", true)[0].toString());
+		    System.out.println();
+		    System.out.println();
+		    System.out.println("That should be where we're at?");
+		    System.out.println();
+		}
+		Logger.getRootLogger().debug("Finished running task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
 	}
 	
@@ -73,6 +84,9 @@ public class Task implements Runnable, Future<Object> {
 		CommandLineParser parser = new LazyPosixParser();
 		try {
 			CommandLine cmd = parser.parse(getOptions(), args);
+			if(cmd.hasOption("test")){
+				testmode =true;
+			}
 			if(cmd.hasOption("opts")){
 				printHelpMessage();
 				helpmode = true;
@@ -173,6 +187,7 @@ public class Task implements Runnable, Future<Object> {
 	public void buildOptions(){
 		options = new Options();
 		options.addOption(new Option("opts", false, "Help Menu for this specific task"));
+		options.addOption(new Option("test", false, "Runs any test for this task"));
 	}
 	
 	public Options getOptions(){
@@ -187,6 +202,10 @@ public class Task implements Runnable, Future<Object> {
 		this.helpmode = helpmode;
 	}
 
-	
+	public void runTest(){
+		System.out.println("");
+		System.out.println("--TEST MODE--");
+		System.out.println("");
+	}
 	
 }

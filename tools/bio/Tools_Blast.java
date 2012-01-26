@@ -4,8 +4,8 @@ import java.io.File;
 
 import org.apache.log4j.Logger;
 
-import tasks.taskTools;
 import tools.Tools_System;
+import tools.Tools_Task;
 
 public abstract class Tools_Blast {
 
@@ -21,7 +21,7 @@ public abstract class Tools_Blast {
 		}
 		String exec = blastbin + blastprg+ " " + blastparams + " -db " + blastdb + " -query " + blastquery.getPath() + " -out " +output.getPath();
 		Logger.getRootLogger().debug("blast_executable");
-		StringBuffer[] buffer = taskTools.runProcess(exec, true);
+		StringBuffer[] buffer = Tools_Task.runProcess(exec, true);
 		System.out.println("Complete");
 		return buffer;
 	}

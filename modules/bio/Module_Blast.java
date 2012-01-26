@@ -14,7 +14,7 @@ public class Module_Blast extends ModuleBasic{
 	 * This needs to match the class ->
 	 * Will not be changed if class name is changed!!!
 	 */
-	protected String[] classes = new String[]{"tasks.bio.blast.localBlast","tasks.bio.blast.localBlast","tasks.bio.blast.localBlast"};
+	protected String[] classes = new String[]{"tasks.bio.Task_BlastLocal","tasks.bio.Task_BlastLocal","tasks.bio.Task_BlastLocal"};
 	
 	public Module_Blast(){
 		
