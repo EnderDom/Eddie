@@ -21,7 +21,7 @@ public class FastaParser {
 	 */
 			
 	public FastaParser(){
-		
+		shorttitles =false;
 	}
 	public FastaParser(FastaHandler handler){
 		this.handler = handler;
@@ -29,13 +29,15 @@ public class FastaParser {
 	
 	public int parseFastq(File fasta) throws IOException{
 		int count = 0;
+		int linecount = 0;
+		int multi =0;
 		FileInputStream fis = new FileInputStream(fasta);
 		InputStreamReader in = new InputStreamReader(fis, "UTF-8");
 		BufferedReader reader = new BufferedReader(in);
 		
 		String line = null;
-		StringBuffer sequence = new StringBuffer();
-		StringBuffer quality = new StringBuffer();
+		StringBuilder sequence = new StringBuilder();
+		StringBuilder quality = new StringBuilder();
 		String title = "";
 		boolean qual = false;
 		while ((line = reader.readLine()) != null){
@@ -43,8 +45,8 @@ public class FastaParser {
 				if(sequence.length() > 0){
 					count++;				
 					handler.addAll(title, sequence.toString(), quality.toString());
-					sequence = new StringBuffer();
-					quality = new StringBuffer();
+					sequence = new StringBuilder();
+					quality = new StringBuilder();
 				}
 				if(this.shorttitles && title.indexOf(" ") != 0){
 					title = line.substring(1, line.indexOf(" "));
@@ -77,7 +79,14 @@ public class FastaParser {
 					}
 				}
 			}
+			if(multi==5000){
+				multi=0;
+				System.out.print("\rParsing Line: "+linecount);
+			}
+			multi++;
+			linecount++;
 		}
+		System.out.println();
 		if(sequence.length() > 0){
 			count++;
 			handler.addAll(title, sequence.toString(), quality.toString());
@@ -87,14 +96,15 @@ public class FastaParser {
 	
 	
 	/*
-	 * Parses fasta and quality file at the same time
+	 * This method might be borked, //TODO fix
 	 * 
-	 * Probably not a good idea
 	 */
 	public int parseFastawQual(File fasta, File qual)  throws IOException{
+		Logger.getRootLogger().error("Using Borked Method!!");
 		int count = 0;
 		int count2=0;
-		
+		int linecount=0;
+		int multi=0;
 		FileInputStream fis = new FileInputStream(fasta);
 		InputStreamReader in = new InputStreamReader(fis, "UTF-8");
 		BufferedReader reader = new BufferedReader(in);
@@ -103,9 +113,9 @@ public class FastaParser {
 		InputStreamReader in2 = new InputStreamReader(fis2, "UTF-8");
 		BufferedReader reader2 = new BufferedReader(in2);
 		
-		String line = null;
-		StringBuffer sequence = new StringBuffer();
-		StringBuffer quality = new StringBuffer();
+		String line = "";
+		StringBuilder sequence = new StringBuilder();
+		StringBuilder quality = new StringBuilder();
 		String title = "";
 		while(line != null){
 			while ((line = reader.readLine()) != null){
@@ -113,7 +123,7 @@ public class FastaParser {
 				if(line.startsWith(">")){
 					if(sequence.length() > 0){
 						handler.addSequence(title, sequence.toString());
-						sequence = new StringBuffer();
+						sequence = new StringBuilder();
 						count++;
 					}
 					if(this.shorttitles && title.indexOf(" ") != 0){
@@ -131,7 +141,7 @@ public class FastaParser {
 				if(line.startsWith(">")){
 					if(quality.length() > 0){
 						handler.addQuality(title, quality.toString());
-						sequence = new StringBuffer();
+						sequence = new StringBuilder();
 						count2++;
 					}
 					if(this.shorttitles && title.indexOf(" ") != 0){
@@ -145,7 +155,14 @@ public class FastaParser {
 					quality =quality.append(line);
 				}
 			}
+			if(multi==5000){
+				multi=0;
+				System.out.print("\rParsing Line: "+linecount);
+			}
+			multi++;
+			linecount++;
 		}
+		System.out.println();
 		if(sequence.length() > 0){
 			handler.addSequence(title, sequence.toString());
 			count++;
@@ -161,20 +178,23 @@ public class FastaParser {
 		return count;
 	}
 	
-	public int parseFasta(File fasta)  throws IOException{
+	public int parseFasta(File fasta, boolean qual)  throws IOException{
 		int count = 0;
+		int linecount=0;
+		int multi =0;
 		FileInputStream fis = new FileInputStream(fasta);
 		InputStreamReader in = new InputStreamReader(fis, "UTF-8");
 		BufferedReader reader = new BufferedReader(in);
 		
 		String line = null;
-		StringBuffer sequence = new StringBuffer();
+		StringBuilder sequence = new StringBuilder();
 		String title = "";
 		while ((line = reader.readLine()) != null){
 			if(line.startsWith(">")){
 				if(sequence.length() > 0){
-					handler.addSequence(title, sequence.toString());
-					sequence = new StringBuffer();
+					if(!qual)handler.addSequence(title, sequence.toString());
+					else handler.addQuality(title, sequence.toString());
+					sequence = new StringBuilder();
 					count++;
 				}
 				if(this.shorttitles && title.indexOf(" ") != 0){
@@ -187,12 +207,29 @@ public class FastaParser {
 			else{
 				sequence = sequence.append(line);
 			}
+			if(multi==5000){
+				multi=0;
+				System.out.print("\rParsing Line: "+linecount);
+			}
+			multi++;
+			linecount++;
 		}
+		System.out.println();
 		if(sequence.length() > 0){
-			handler.addSequence(title, sequence.toString());
+			if(!qual)handler.addSequence(title, sequence.toString());
+			else handler.addQuality(title, sequence.toString());
 			count++;
 		}
 		return count;
+	}
+	
+	public int parseFasta(File fasta)  throws IOException{
+		return parseFasta(fasta, false);
+	}
+	
+	public int parseQual(File fasta)  throws IOException{
+		if(handler.isFastq())handler.setFastq(false);
+		return parseFasta(fasta, true);
 	}
 	
 	public boolean isShorttitles() {
@@ -201,4 +238,6 @@ public class FastaParser {
 	public void setShorttitles(boolean shorttitles) {
 		this.shorttitles = shorttitles;
 	}
+	
+	
 }

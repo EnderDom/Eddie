@@ -1,5 +1,9 @@
 package bio.fasta;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -11,11 +15,11 @@ public class Fasta implements FastaHandler{
 	private LinkedHashMap<String, String> qualities;
 	private boolean fastq;
 	
-	public void MultiFasta(){
+	public Fasta(){
 		sequences = new LinkedHashMap<String, String>();
 	}
 	
-	public void MultiFasta(int fastasize){
+	public Fasta(int fastasize){
 		sequences = new LinkedHashMap<String, String>(fastasize);
 	}
 	
@@ -36,7 +40,7 @@ public class Fasta implements FastaHandler{
 	}
 
 	public void setFastq(boolean fastq) {
-		this.fastq =true;
+		this.fastq =fastq;
 		if(qualities == null)qualities = new LinkedHashMap<String, String>();
 	}
 
@@ -81,4 +85,32 @@ public class Fasta implements FastaHandler{
 		return ret;
 	}
 	
+	public void save2Fastq(File output) throws IOException{
+		FileWriter fstream = new FileWriter(output);
+		BufferedWriter out = new BufferedWriter(fstream);
+		for(String str : sequences.keySet()){
+			if(Tools_Fasta.checkFastq(str, sequences.get(str), qualities.get(str))){
+				Tools_Fasta.saveFastq(str, sequences.get(str), qualities.get(str), out);
+			}
+			else{
+				throw new IOException("Fastq failed QC check");
+			}
+		}
+	}
+	
+	public void save2FastaAndQual(File output, File quality)throws IOException{
+		FileWriter fstream = new FileWriter(output);
+		BufferedWriter out = new BufferedWriter(fstream);
+		FileWriter fstream2 = new FileWriter(quality);
+		BufferedWriter out2 = new BufferedWriter(fstream2);
+		for(String str : sequences.keySet()){
+			if(Tools_Fasta.checkFastq(str, sequences.get(str), qualities.get(str))){
+				Tools_Fasta.saveFasta(str, sequences.get(str), out);
+				Tools_Fasta.saveFasta(str, Tools_Fasta.Fastq2Qual(qualities.get(str)), out2);
+			}
+			else{
+				throw new IOException("Fasta failed QC check");
+			}
+		}
+	}
 }

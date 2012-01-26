@@ -15,6 +15,11 @@ public class TaskXT extends Task{
 	protected String input;
 	protected String output;
 	protected boolean overwrite;
+	public static int NOT_FILE_OR_DIRECTORY = 0;
+	public static int IS_FILE_OR_DIRECTORY = 1;
+	public static int IS_FILE = 2;
+	public static int IS_DIRECTORY = 3;
+	public static int IS_OR_NOT = 4;
 	
 	public void parseArgsSub(CommandLine cmd){
 		if(!cmd.hasOption("input")){
