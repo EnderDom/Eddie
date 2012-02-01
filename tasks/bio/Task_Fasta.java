@@ -36,7 +36,7 @@ public class Task_Fasta extends TaskXT{
 		output = output.replaceAll(".qual", "");
 		File infile = null;
 		File qualfile = null;
-		File outfile = new File(output);
+		File outfile = null;
 		if((infile=getFile(input, IS_FILE)) != null){//This is getting a bit messy...
 			Logger.getRootLogger().debug("Input File is good");
 			/*
@@ -45,7 +45,9 @@ public class Task_Fasta extends TaskXT{
 			if(getQual() != null){
 				Logger.getRootLogger().debug("Set to Converting fasta 2 fastq");
 				if((qualfile = getFile(getQual(), IS_FILE)) !=null){
-					if(isOverwrite() || !outfile.exists()){
+					outfile = getFile(output+".fastq", NOT_FILE_OR_DIRECTORY);
+					if(isOverwrite() || outfile != null){
+						if(outfile == null)outfile = new File(output+".fastq");//Quick fix //TODO sort this out
 						fasta = new Fasta();
 						fasta.setFastq(false);
 						FastaParser parser = new FastaParser(fasta);
@@ -72,8 +74,11 @@ public class Task_Fasta extends TaskXT{
 			 */
 			else{
 				Logger.getRootLogger().debug("Set to Converting fastq 2 fasta and qual");
-				File outfile2 = null;
-				if(isOverwrite() || ( (outfile = getFile(output+".fasta", NOT_FILE_OR_DIRECTORY)) != null || (outfile2 = getFile(output+".qual", NOT_FILE_OR_DIRECTORY)) != null)){
+				File outfile2 = getFile(output+".qual", NOT_FILE_OR_DIRECTORY);
+				outfile = getFile(output+".fasta", NOT_FILE_OR_DIRECTORY);
+				if(isOverwrite() || (outfile != null && outfile2 != null)){
+					if(outfile == null)outfile = new File(output+".fasta");//Quick fix //TODO sort this out
+					if(outfile2 == null)outfile2 = new File(output+".qual");//Quick fix //TODO sort this out
 					fasta = new Fasta();
 					fasta.setFastq(true);
 					FastaParser parser = new FastaParser(fasta);

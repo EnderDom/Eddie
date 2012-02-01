@@ -62,20 +62,21 @@ public class Tools_Fasta {
 	public static void saveFastq(String description, String sequence, String quality, BufferedWriter out) throws IOException{
 		out.write("@"+description+newline);
 		out.flush();
-		writeFasta(out, sequence);
+		writeFasta(out, sequence, false);
 		out.write("+"+description+newline);
 		out.flush();
-		writeFasta(out, quality);
+		writeFasta(out, quality, false);
 	}
 	
 	public static void saveFasta(String description, String seqOrQual, BufferedWriter out) throws IOException{
 		out.write(">"+description+newline);
 		out.flush();
-		writeFasta(out, seqOrQual);
+		writeFasta(out, seqOrQual, true);
 	}
 	
-	public static void writeFasta(BufferedWriter out, String towrite) throws IOException{
-		out.write(Tools_String.splitintolines(Tools_String.fastadefaultlength, towrite));
+	public static void writeFasta(BufferedWriter out, String towrite, boolean split) throws IOException{
+		if(split)out.write(Tools_String.splitintolines(Tools_String.fastadefaultlength, towrite));
+		else out.write(towrite + newline);
 		out.flush();
 	}
 	
