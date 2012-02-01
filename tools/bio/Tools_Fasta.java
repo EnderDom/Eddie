@@ -1,13 +1,14 @@
 package tools.bio;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 
 import tools.Tools_Array;
 import tools.Tools_String;
 
 public class Tools_Fasta {
+	
+	public static String newline = System.getProperty("line.separator");
 	/*
 	 * Convert from fastq ascii quality into
 	 * qual file integer quality, separated by
@@ -59,16 +60,16 @@ public class Tools_Fasta {
 	}
 	
 	public static void saveFastq(String description, String sequence, String quality, BufferedWriter out) throws IOException{
-		out.write("@"+description+File.pathSeparator);
+		out.write("@"+description+newline);
 		out.flush();
 		writeFasta(out, sequence);
-		out.write("+"+description+File.pathSeparator);
+		out.write("+"+description+newline);
 		out.flush();
 		writeFasta(out, quality);
 	}
 	
 	public static void saveFasta(String description, String seqOrQual, BufferedWriter out) throws IOException{
-		out.write(">"+description+File.pathSeparator);
+		out.write(">"+description+newline);
 		out.flush();
 		writeFasta(out, seqOrQual);
 	}
@@ -84,7 +85,6 @@ public class Tools_Fasta {
 			return false;
 		}
 		else if(sequence.length() != quality.length()){
-			System.out.println(quality);
 			return false;
 		}
 		else return true;

@@ -205,7 +205,12 @@ public class FastaParser {
 				}
 			}
 			else{
-				sequence = sequence.append(line);
+				if(!qual)sequence = sequence.append(line);
+				else sequence = sequence.append(line + " "); /*Space is important as 
+				the quality string is broken into an int array based on spaces.
+				Without adding the space the last and first numbers on each line are
+				parsed as a single number.
+				*/
 			}
 			if(multi==5000){
 				multi=0;

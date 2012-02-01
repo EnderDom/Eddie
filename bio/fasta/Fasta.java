@@ -96,6 +96,7 @@ public class Fasta implements FastaHandler{
 				throw new IOException("Fastq failed QC check");
 			}
 		}
+		out.close();fstream.close();
 	}
 	
 	public void save2FastaAndQual(File output, File quality)throws IOException{
@@ -112,5 +113,6 @@ public class Fasta implements FastaHandler{
 				throw new IOException("Fasta failed QC check");
 			}
 		}
+		out.close();out2.close();fstream.close();fstream2.close();
 	}
 }

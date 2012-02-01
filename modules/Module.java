@@ -25,7 +25,7 @@ public interface Module
     
     public abstract String getModuleName();
     
-    
+    //public abstract boolean install();
     
     //TODO 
     /*

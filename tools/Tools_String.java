@@ -1,6 +1,5 @@
 package tools;
 
-import java.io.File;
 
 public abstract class Tools_String {
 	
@@ -26,9 +25,9 @@ public abstract class Tools_String {
 	
 	//Splits a string into a lines of length splitsize
 	public static String splitintolines(int splitsize, String seq){
-		String newline = File.pathSeparator;
+		String newline = System.getProperty("line.separator");
 		int i = 0;
-		StringBuffer newstring = new StringBuffer();
+		StringBuilder newstring = new StringBuilder();
 		while(i < seq.length()-splitsize){
 			newstring.append(seq.substring(i, i+splitsize) + newline);
 			i= i+splitsize;

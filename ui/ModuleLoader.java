@@ -44,12 +44,15 @@ public class ModuleLoader implements Module{
     
    	/*
    	 * Urgh..
-   	 * I've already changed about this implementation
+   	 * I've already changed my mind about this implementation
    	 * 
    	 * but we'll go with it for now and see how it does
    	 * 
    	 * my main concern is loading all these modules as
-   	 * objects rather than just calling them as needed.
+   	 * objects rather than just calling them as needed
+   	 * is actually a really bad way of managing this. Particularly
+   	 * in the longer term as increased functionality is going to create
+   	 * more and more objects, which will just sit there.
    	 * 
    	 * A better idea might be to have a list of modules
    	 * each module's GUI/CLI methods are called, but the module 
