@@ -416,9 +416,10 @@ public class PropertyLoader implements Module{
 	}
 	
 	public String[][] getChangableStats(){
-		String[] stats = new String[]{"DBHOST", "DBNAME", "DBUSER","AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR"};
-		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1", "/usr/bin/", getWorkspace()+File.pathSeparator+"blas_db"+File.pathSeparator};
-		String[] tool_tips = new String[]{"Host Database IP/Name", "Database Name", "Database Username","Max number of auxiliary threads","Max number of primary threads", "Directory that contains blast executables"};
+		String[] stats = new String[]{"DBHOST", "DBNAME", "DBUSER","AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR", "FILES_XML"};
+		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1", "/usr/bin/", getWorkspace()+File.pathSeparator+"blas_db"+File.pathSeparator, getWorkspace()+File.pathSeparator+"filedb.xml"};
+		String[] tool_tips = new String[]{"Host Database IP/Name", "Database Name", "Database Username","Max number of auxiliary threads","Max number of primary threads", "Directory that contains blast executables", 
+				"XML file which list current files in project"};
 		String[][] ret = new String[3][stats.length];
 		ret[0] = stats;
 		ret[1] = stats_val;
@@ -441,6 +442,14 @@ public class PropertyLoader implements Module{
 		} else {
 			props.put(prop, defaultvalue);
 			return defaultvalue;
+		}
+	}
+	
+	public String getProp(String prop) {
+		if (props.containsKey(prop)) {
+			return props.getProperty(prop);
+		} else {
+			return null;
 		}
 	}
 	

@@ -9,12 +9,10 @@ import org.apache.log4j.Logger;
 import tasks.Task;
 
 import interfaces.DBInterface;
-import interfaces.FileInterface;
 
 public class TaskManager extends Thread{
 
 	DBInterface db;
-	FileInterface face;
 	int corepoollimit;
 	int auxilpoollimit;
 	private Stack<Task> CoreTasks; // Holds Awaiting Tasks
