@@ -20,8 +20,7 @@ import cli.EddieCLI;
  * a modulename in ModuleLoader elsewise it won't be loaded at all.
  */
 
-public class ModuleBasic implements Module{
-	public String modulename = "MOD_modules.default";
+public abstract class Module_Basic implements Module{
 	public String menustring = "Window"+Tools_Modules.menudivider+"Tools";
 	public String menuItemName = "Basic";
 	protected String[] actions;
@@ -29,11 +28,8 @@ public class ModuleBasic implements Module{
 	protected String[] taskinfo;
 	protected String[] classes;
 	public String taskname;
+	protected boolean persistance;
 	
-	public boolean ownsThisAction(String s) {
-		return Tools_Modules.ownsThisAction(getActions(), s);
-	}
-
 	public void actOnTask(String s, UI cli) {
 		Logger.getRootLogger().debug("Action "+ s + " sent");
 		for(int i =0; i < getTasks().length; i++){
@@ -50,7 +46,6 @@ public class ModuleBasic implements Module{
 			}
 		}
 	}
-
 	
 	public void addToGui(EddieGUI biodesktopgui) {
 		JMenuBar menu = biodesktopgui.getJMenuBar();
@@ -68,23 +63,11 @@ public class ModuleBasic implements Module{
 	    Tools_Modules.add2JMenuBar(menubar, menuItem, new String(getMenuString()));
 	}
 
-	public boolean ownsThisTask(String s) {
-		return Tools_Modules.ownsThisAction(getTasks(), s);
-	}
-
 	public void actOnTask(String s) {
 		//--> Act here
 	}
 
-	public boolean uninstall(EddieGUI gui) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
-	public String getModuleName() {
-		return this.modulename;
-	}
-	
 	public String getMenuItemName(){
 		return this.menuItemName;
 	}
@@ -99,6 +82,10 @@ public class ModuleBasic implements Module{
 	public void addToCli(EddieCLI cli) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public String getModuleName(){
+		return this.getClass().getName();
 	}
 	
 	public String getMenuString(){
@@ -121,10 +108,6 @@ public class ModuleBasic implements Module{
 		this.taskinfo = taskinfo;
 	}
 
-	public String[] getActions() {
-		return this.actions;
-	}
-
 	public void setActions(String[] actions) {
 		this.actions = actions;
 	}
@@ -139,8 +122,13 @@ public class ModuleBasic implements Module{
 
 	public void actOnAction(String s, EddieGUI biodesktopgui) {
 		// TODO Auto-generated method stub
-		
 	}
 	
+	public String[] getActions(){
+		return this.actions;
+	}
 	
+	public boolean isPersistant(){
+		return persistance;
+	}
 }

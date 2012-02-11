@@ -1,4 +1,4 @@
-package modules.bio;
+	package modules.bio;
 
 import tasks.Task;
 import tasks.bio.Task_Fasta;
@@ -6,20 +6,20 @@ import gui.EddieGUI;
 import gui.FileAdderer;
 import cli.EddieCLI;
 
-import modules.ModuleBasic;
+import modules.Module_Basic;
 
-public class Module_Fasta extends ModuleBasic{
+public class Module_Fasta extends Module_Basic{
 	
-	String modulename = "MOD_modules.bio.Module_Fasta";
 	public String menustring = "Tools";
 	public String menuItemName = "Fasta Tools";
 	protected String[] tasks = new String[]{"convertFasta"}; 
 	protected String[] taskinfo = new String[]{"converts fasta & qual to fastq"};
+	
 	/*
 	 * This needs to match the class ->
 	 * Will not be changed if class name is changed!!!
 	 */
-	protected String[] classes = new String[]{"tasks.bio.Task_Fasta"};
+	protected String[] classes = new String[]{Task_Fasta.class.getName()};
 	
 	public Module_Fasta(){
 		
@@ -37,6 +37,7 @@ public class Module_Fasta extends ModuleBasic{
 			gui.addTask(task);
 		}
 	}
+	
 	
 	public void addToCli(EddieCLI cli) {
 		
@@ -74,6 +75,7 @@ public class Module_Fasta extends ModuleBasic{
 		this.classes = classes;
 	}
 	
-	
-	
+	public String getModuleName(){
+		return this.getClass().getName();
+	}
 }

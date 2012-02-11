@@ -56,19 +56,20 @@ public class PropertyLoader implements Module{
     /* This is actually the 4th iteration of Eddie, 
      * though this one has been written from scratch
      */
-    public static double version = 4.08; 
+    public static double version = 4.09; 
     Level level;
     public static Logger logger;
-    private String modulename = "MOD_ui.PropertyLoader";
     public String[] actions;
     JInternalFrame propsframe;
 	JTextField[] fields;
 	public static String defaultlnf =  "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
 	public String[] args;
-
+	public String modulename;
+	
 	public PropertyLoader() {
 		level = Level.WARN;
         props = new Properties();
+        modulename = this.getClass().getName();
 	}
 	
 	public int loadBasicArguments(String[] args){
@@ -563,24 +564,11 @@ public class PropertyLoader implements Module{
 	    Tools_Modules.add2JMenuBar(eddiegui.getMenu(), menuItem, "Properties");
 	}
 
-
-
-	public boolean uninstall(EddieGUI gui) {
-		return false;
-	}
-
 	public String getModuleName() {
 		return this.modulename;
 	}	
-
-	public boolean ownsThisTask(String s) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 	public void printTasks() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	public void actOnTask(String s, UI ui) {
@@ -589,5 +577,18 @@ public class PropertyLoader implements Module{
 	
 	public void addToCli(EddieCLI cli) {
 		cli.setArgs(this.args);
+	}
+
+	public boolean isPersistant() {
+		return true;
+	}
+
+	public String[] getTasks() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String[] getActions() {
+		return actions;
 	}
 }

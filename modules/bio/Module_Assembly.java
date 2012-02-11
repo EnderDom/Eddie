@@ -1,9 +1,10 @@
 package modules.bio;
 
+import tasks.bio.Task_Assembly;
 import gui.EddieGUI;
-import modules.ModuleBasic;
+import modules.Module_Basic;
 
-public class Module_Assembly extends ModuleBasic {
+public class Module_Assembly extends Module_Basic {
 	String modulename = "MOD_modules.bio.Module_Fasta";
 	public String menustring = "Tools";
 	public String menuItemName = "Assembly Tools";
@@ -13,16 +14,14 @@ public class Module_Assembly extends ModuleBasic {
 	 * This needs to match the class ->
 	 * Will not be changed if class name is changed!!!
 	 */
-	protected String[] classes = new String[]{"tasks.bio.Task_Assembly","tasks.bio.Task_Assembly"};
+	protected String[] classes = new String[]{Task_Assembly.class.getName(),Task_Assembly.class.getName()};
 	
 	public Module_Assembly(){
 		
 	}
 	
 	public void actOnAction(String s, EddieGUI gui) {
-		if(s.contentEquals(actions[0])){
 
-		}
 	}
 	
 	public String getMenuString(){
@@ -55,5 +54,8 @@ public class Module_Assembly extends ModuleBasic {
 
 	public void setClasses(String[] classes) {
 		this.classes = classes;
+	}
+	public String getModuleName(){
+		return this.getClass().getName();
 	}
 }

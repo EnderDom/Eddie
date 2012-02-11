@@ -20,13 +20,11 @@ import javax.swing.KeyStroke;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import modules.Module;
-
 import tasks.*;
 import tools.Tools_UI;
 import tools.Tools_String;
 import tools.Tools_System;
-import ui.ModuleLoader;
+import ui.ModuleManager;
 import ui.PropertyLoader;
 import ui.TaskManager;
 import ui.UI;
@@ -38,10 +36,9 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
     private JMenuBar menu;
     JRadioButtonMenuItem appears[];
     TaskManager manager;
-    ModuleLoader modular;
+    ModuleManager modmanager;
     public static boolean testmode = true;
     public double version;
-    Module modules[];
     DesktopPane desktop;
 	
 	public EddieGUI(PropertyLoader loader){
@@ -57,17 +54,13 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		load.loadPropertiesGUI(this);
 		Tools_UI.changeLnF(load.getLastLNF(), this);
 		
-		modular = new ModuleLoader(load.getModuleFolder());
-		/*
-		 * ModuleLoader and PropertyLoader implements Module interface
-		 * So they can add relevant parts to GUI
-		 */
-		modules = new Module[]{load, modular};
-		/*
-		 * Extend GUI with more peripheral modules
-		 */
-        modules = modular.addModules(modules);
+		//Module Build
+		modmanager = new ModuleManager(load.getModuleFolder());
+		modmanager.addPrebuiltModule("PROPERTYLOADER", load);
+		modmanager.addPrebuiltModule("MYSELF", modmanager);
+		modmanager.init();
 		
+        
 		//Options
 		addWindowListener(this);
 		setJMenuBar((this.menu = createMenuBar()));
@@ -79,9 +72,8 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		desktop = new DesktopPane();
 		desktop.setSize(this.getBounds().getSize());
 		setContentPane(desktop);
-		
-		//Modules
-		for(int i =0; i < modules.length; i++)modules[i].addToGui(this);
+	
+		modmanager.setupGUI(this);	
 		
 		Logger.getRootLogger().debug("Set EddieGUI to Visible");
 		//Finish
@@ -102,23 +94,17 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	}
 	
 	 public void actionPerformed(ActionEvent e) {
-	        if ("quit".equals(e.getActionCommand())) { //quit
-	            exit();
-	        }
-	        else if(e.getActionCommand().indexOf("MOD_") != -1){
-                Module amodule[];
-                int j = (amodule = modules).length;
-                for(int i = 0; i < j; i++)
-                {
-                    Module mod = amodule[i];
-                    if(mod.ownsThisAction(e.getActionCommand()))
-                        mod.actOnAction(e.getActionCommand(), this);
-                }
-            }
-	        else{
-	        	 Logger.getRootLogger().warn("Unattached Action Performed" + e.getActionCommand());
-	        }
-	    }
+		String actionclass = "";
+        if ("quit".equals(e.getActionCommand())) { //quit
+            exit();
+        }
+        else if((actionclass =modmanager.getActionClass(e.getActionCommand())) != null){
+        	modmanager.runAction(this, actionclass, e.getActionCommand());
+        }
+        else{
+        	 Logger.getRootLogger().warn("Unattached Action Performed" + e.getActionCommand());
+        }
+	 }
 	
 	private JMenuBar createMenuBar(){
 		JMenuBar menuBar = new JMenuBar();
@@ -159,6 +145,10 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		if(!this.manager.isStarted()){
 			this.manager.run();
 		}
+	}
+	
+	public void addAction(String action, String classpath){
+		this.modmanager.addAction(action, classpath);
 	}
 
 	public void windowOpened(WindowEvent paramWindowEvent) {

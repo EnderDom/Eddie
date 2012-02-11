@@ -1,29 +1,32 @@
 package modules.bio;
 
-import modules.ModuleBasic;
+
+import tasks.bio.Task_BlastLocal;
+import modules.Module_Basic;
 import gui.EddieGUI;
 import cli.EddieCLI;
 
-public class Module_Blast extends ModuleBasic{
+public class Module_Blast extends Module_Basic{
 	String modulename = "MOD_modules.bio.Module_Blast";
 	public String menustring = "Tools";
 	public String menuItemName = "Blast Tools";
 	protected String[] tasks = new String[]{"blast", "webblast", "blast2sql"}; 
 	protected String[] taskinfo = new String[]{"run a blast program", "run web blast", "Upload blast results to mysql db"};
+
 	/*
 	 * This needs to match the class ->
 	 * Will not be changed if class name is changed!!!
 	 */
-	protected String[] classes = new String[]{"tasks.bio.Task_BlastLocal","tasks.bio.Task_BlastLocal","tasks.bio.Task_BlastLocal"};
+	protected String[] classes = new String[]{Task_BlastLocal.class.getName(),Task_BlastLocal.class.getName(),Task_BlastLocal.class.getName()};
+	
+	
 	
 	public Module_Blast(){
 		
 	}
 	
 	public void actOnAction(String s, EddieGUI gui) {
-		if(s.contentEquals(actions[0])){
-		
-		}
+
 	}
 	
 	public void addToCli(EddieCLI cli) {
@@ -61,4 +64,8 @@ public class Module_Blast extends ModuleBasic{
 	public void setClasses(String[] classes) {
 		this.classes = classes;
 	}
+	public String getModuleName(){
+		return this.getClass().getName();
+	}
+	
 }

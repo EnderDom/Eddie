@@ -4,6 +4,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JRadioButtonMenuItem;
 
+import modules.Module;
+
 import org.apache.log4j.Logger;
 
 import cli.EddieCLI;
@@ -14,11 +16,10 @@ import tools.Tools_String;
 import ui.UI;
 
 import gui.EddieGUI;
-import modules.Module;
+
 
 public class DefaultLNF implements Module{
 	
-	private String modulename = "MOD_modules.lnf.DefaultLNF";
 	public static String menuname = "Window";
 	public static String menuname1 = "Look&Feel";
 	public String uis[];
@@ -31,7 +32,9 @@ public class DefaultLNF implements Module{
 	}
 
 	public void actOnAction(String s, EddieGUI biodesktopgui) {
-		changeAppear(Tools_String.parseString2Int(s.substring(s.indexOf(modulename) + new String(modulename).length(), s.length())), biodesktopgui);
+		int appear = Tools_String.parseString2Int(s.substring(s.indexOf(getModuleName()) + new String(getModuleName()).length(), s.length()));
+		Logger.getRootLogger().trace("Appear value setting to " + appear);
+		changeAppear(appear, biodesktopgui);
 	}
 
 	
@@ -107,27 +110,12 @@ public class DefaultLNF implements Module{
 		}
 	}
 	
-	
+	public String getModuleName(){
+		return this.getClass().getName();
+	}
 	
 	public String[] getLooknFeels(){
 		return Tools_UI.getInstalledLnFs();
-	}
-	
-	public String getModuleName(){
-		return this.modulename;
-	}
-
-	public boolean uninstallWithoutRestart() {
-		return false;
-	}
-
-	public boolean uninstall(EddieGUI gui) {
-		return false;
-	}
-
-	public boolean ownsThisTask(String s) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	public void printTasks() {
@@ -141,6 +129,19 @@ public class DefaultLNF implements Module{
 	
 	public void addToCli(EddieCLI cli) {
 		// TODO Auto-generated method stub
-		
 	}
+
+	public boolean isPersistant() {
+		return true;
+	}
+
+	public String[] getActions() {
+		return actions;
+	}
+
+	public String[] getTasks() {
+		return null;
+	}
+	
+	
 }
