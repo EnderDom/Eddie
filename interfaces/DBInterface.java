@@ -1,8 +1,8 @@
 package interfaces;
 
-import bioobjects.BlastXML;
-import bioobjects.GOTermData;
-import bioobjects.IPRResultXML;
+import bio.objects.GOTermData;
+import bio.xml.BlastXML;
+import bio.xml.IPRResultXML;
 
 //Still To Finish
 

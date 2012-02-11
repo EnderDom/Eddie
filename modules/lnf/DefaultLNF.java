@@ -4,21 +4,22 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JRadioButtonMenuItem;
 
+import modules.Module;
+
 import org.apache.log4j.Logger;
 
 import cli.EddieCLI;
 
-import tools.uiTools;
-import tools.stringTools;
+import tools.Tools_Modules;
+import tools.Tools_UI;
+import tools.Tools_String;
 import ui.UI;
 
 import gui.EddieGUI;
-import modules.Module;
-import modules.moduleTools;
+
 
 public class DefaultLNF implements Module{
 	
-	private String modulename = "MOD_modules.lnf.DefaultLNF";
 	public static String menuname = "Window";
 	public static String menuname1 = "Look&Feel";
 	public String uis[];
@@ -27,11 +28,13 @@ public class DefaultLNF implements Module{
 	public static String namereplace = "LookAndFeel";
 
 	public boolean ownsThisAction(String s) {
-		return moduleTools.ownsThisAction(actions, s);
+		return Tools_Modules.ownsThisAction(actions, s);
 	}
 
 	public void actOnAction(String s, EddieGUI biodesktopgui) {
-		changeAppear(stringTools.parseString2Int(s.substring(s.indexOf(modulename) + new String(modulename).length(), s.length())), biodesktopgui);
+		int appear = Tools_String.parseString2Int(s.substring(s.indexOf(getModuleName()) + new String(getModuleName()).length(), s.length()));
+		Logger.getRootLogger().trace("Appear value setting to " + appear);
+		changeAppear(appear, biodesktopgui);
 	}
 
 	
@@ -51,20 +54,20 @@ public class DefaultLNF implements Module{
 				name = uis[i].substring(numb, uis[i].length());
 				name = name.replaceAll(namereplace, "");
 			}
-			boolean selected = uis[i].equalsIgnoreCase(uiTools.getLookAndFeel());
-			if(selected)uiTools.changeLnF(uis[i], gui);
+			boolean selected = uis[i].equalsIgnoreCase(Tools_UI.getLookAndFeel());
+			if(selected)Tools_UI.changeLnF(uis[i], gui);
 			JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem(name,selected);
 	        menuItem.setActionCommand(getModuleName()+i);
 	        actions[i] = getModuleName()+i;
 	        menuItem.addActionListener(gui);
 	        appears[i] = menuItem;
-	        moduleTools.add2JMenuBar(menubar, menuItem, new String(menuname+moduleTools.menudivider+menuname1));
+	        Tools_Modules.add2JMenuBar(menubar, menuItem, new String(menuname+Tools_Modules.menudivider+menuname1));
 		}
 	}
 	
 	protected void changeAppear(int numb, EddieGUI gui){
 		if(numb > -1 && numb < uis.length){
-    		boolean returna = uiTools.changeLnF(uis[numb], gui);
+    		boolean returna = Tools_UI.changeLnF(uis[numb], gui);
     		if(returna){
     			changeAppearanceRadio(gui, numb);
     			Logger.getRootLogger().debug("Changed look and feel to " + uis[numb]);
@@ -107,27 +110,12 @@ public class DefaultLNF implements Module{
 		}
 	}
 	
-	
+	public String getModuleName(){
+		return this.getClass().getName();
+	}
 	
 	public String[] getLooknFeels(){
-		return uiTools.getInstalledLnFs();
-	}
-	
-	public String getModuleName(){
-		return this.modulename;
-	}
-
-	public boolean uninstallWithoutRestart() {
-		return false;
-	}
-
-	public boolean uninstall(EddieGUI gui) {
-		return false;
-	}
-
-	public boolean ownsThisTask(String s) {
-		// TODO Auto-generated method stub
-		return false;
+		return Tools_UI.getInstalledLnFs();
 	}
 
 	public void printTasks() {
@@ -141,6 +129,19 @@ public class DefaultLNF implements Module{
 	
 	public void addToCli(EddieCLI cli) {
 		// TODO Auto-generated method stub
-		
 	}
+
+	public boolean isPersistant() {
+		return true;
+	}
+
+	public String[] getActions() {
+		return actions;
+	}
+
+	public String[] getTasks() {
+		return null;
+	}
+	
+	
 }

@@ -20,13 +20,11 @@ import javax.swing.KeyStroke;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import modules.Module;
-
 import tasks.*;
-import tools.uiTools;
-import tools.stringTools;
-import tools.systemTools;
-import ui.ModuleLoader;
+import tools.Tools_UI;
+import tools.Tools_String;
+import tools.Tools_System;
+import ui.ModuleManager;
 import ui.PropertyLoader;
 import ui.TaskManager;
 import ui.UI;
@@ -38,15 +36,15 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
     private JMenuBar menu;
     JRadioButtonMenuItem appears[];
     TaskManager manager;
-    ModuleLoader modular;
+    ModuleManager modmanager;
     public static boolean testmode = true;
     public double version;
-    Module modules[];
     DesktopPane desktop;
 	
 	public EddieGUI(PropertyLoader loader){
 		super("Eddie v"+PropertyLoader.version);
 		this.version= PropertyLoader.version;
+		System.out.println("Eddie v" + version + " by (S.C.Corp.)");
 		//View Size
 		this.setBounds(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
 		this.setPreferredSize(this.getBounds().getSize());
@@ -54,19 +52,15 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		//Load Properties
 		load = loader;
 		load.loadPropertiesGUI(this);
-		uiTools.changeLnF(load.getLastLNF(), this);
+		Tools_UI.changeLnF(load.getLastLNF(), this);
 		
-		modular = new ModuleLoader(load.getModuleFolder());
-		/*
-		 * ModuleLoader and PropertyLoader implements Module interface
-		 * So they can add relevant parts to GUI
-		 */
-		modules = new Module[]{load, modular};
-		/*
-		 * Extend GUI with more peripheral modules
-		 */
-        modules = modular.addModules(modules);
+		//Module Build
+		modmanager = new ModuleManager(load.getModuleFolder());
+		modmanager.addPrebuiltModule("PROPERTYLOADER", load);
+		modmanager.addPrebuiltModule("MYSELF", modmanager);
+		modmanager.init();
 		
+        
 		//Options
 		addWindowListener(this);
 		setJMenuBar((this.menu = createMenuBar()));
@@ -78,9 +72,8 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		desktop = new DesktopPane();
 		desktop.setSize(this.getBounds().getSize());
 		setContentPane(desktop);
-		
-		//Modules
-		for(int i =0; i < modules.length; i++)modules[i].addToGui(this);
+	
+		modmanager.setupGUI(this);	
 		
 		Logger.getRootLogger().debug("Set EddieGUI to Visible");
 		//Finish
@@ -93,7 +86,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		int i = JOptionPane.showConfirmDialog(this, "Exit EddieGUI v"+version+"?", "Exit?", JOptionPane.YES_NO_OPTION);
 		if(i !=1){
 			 PropertyLoader.save((new StringBuilder(String.valueOf(load.rootfolder))).append(PropertyLoader.propertyfilename).toString(), load.getProps());
-	         Logger.getRootLogger().info((new StringBuilder("Closing Eddie @ ")).append(systemTools.getDateNow()).toString());
+	         Logger.getRootLogger().info((new StringBuilder("Closing Eddie @ ")).append(Tools_System.getDateNow()).toString());
 	         LogManager.shutdown();
 	         setVisible(false);
 	         dispose();
@@ -101,23 +94,17 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	}
 	
 	 public void actionPerformed(ActionEvent e) {
-	        if ("quit".equals(e.getActionCommand())) { //quit
-	            exit();
-	        }
-	        else if(e.getActionCommand().indexOf("MOD_") != -1){
-                Module amodule[];
-                int j = (amodule = modules).length;
-                for(int i = 0; i < j; i++)
-                {
-                    Module mod = amodule[i];
-                    if(mod.ownsThisAction(e.getActionCommand()))
-                        mod.actOnAction(e.getActionCommand(), this);
-                }
-            }
-	        else{
-	        	 Logger.getRootLogger().warn("Unattached Action Performed" + e.getActionCommand());
-	        }
-	    }
+		String actionclass = "";
+        if ("quit".equals(e.getActionCommand())) { //quit
+            exit();
+        }
+        else if((actionclass =modmanager.getActionClass(e.getActionCommand())) != null){
+        	modmanager.runAction(this, actionclass, e.getActionCommand());
+        }
+        else{
+        	 Logger.getRootLogger().warn("Unattached Action Performed" + e.getActionCommand());
+        }
+	 }
 	
 	private JMenuBar createMenuBar(){
 		JMenuBar menuBar = new JMenuBar();
@@ -159,6 +146,10 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 			this.manager.run();
 		}
 	}
+	
+	public void addAction(String action, String classpath){
+		this.modmanager.addAction(action, classpath);
+	}
 
 	public void windowOpened(WindowEvent paramWindowEvent) {
 	}
@@ -187,7 +178,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	}
 
 	public void buildTaskManager() {
-		this.manager = uiTools.buildTaskManager(stringTools.parseString2Int(load.getCore()),  stringTools.parseString2Int(load.getAuxil()));
+		this.manager = Tools_UI.buildTaskManager(Tools_String.parseString2Int(load.getCore()),  Tools_String.parseString2Int(load.getAuxil()));
 	}
 
 	public JMenuBar getMenu() {

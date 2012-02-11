@@ -10,12 +10,11 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
-import modules.Module;
 import tasks.Task;
-import tools.uiTools;
-import tools.funTools;
-import tools.stringTools;
-import ui.ModuleLoader;
+import tools.Tools_UI;
+import tools.Tools_Fun;
+import tools.Tools_String;
+import ui.ModuleManager;
 import ui.PropertyLoader;
 import ui.TaskManager;
 import ui.UI;
@@ -23,14 +22,13 @@ import ui.UI;
 public class EddieCLI implements UI {
 
 	private PropertyLoader load;
-	private ModuleLoader modular;
-	private Module modules[];
+	private ModuleManager modmanager;
 	private TaskManager manager;
 	private String[] args;
 	private Options options;
 	
 	public  EddieCLI(PropertyLoader loader, boolean persist){
-		System.out.println("Eddie v" + PropertyLoader.version);
+		System.out.println("Eddie v" + PropertyLoader.version + " by (S.C.Corp.)");
 		load = loader;
 		load.loadPropertiesCLI();
 		/*
@@ -40,21 +38,16 @@ public class EddieCLI implements UI {
 		options = new Options();
 		buildOptions();
 		
-		modular = new ModuleLoader(load.getModuleFolder());
-		/*
-		 * ModuleLoader and PropertyLoader implements Module interface
-		 * So they can add relevant parts to interface
-		 */
-		modules = new Module[]{load, modular};
-		/*
-		 * Extend GUI with more peripheral modules
-		 */
-        modules = modular.addModules(modules);
+		//Module Build
+		modmanager = new ModuleManager(load.getModuleFolder());
+		modmanager.addPrebuiltModule("PROPERTYLOADER", load);
+		modmanager.addPrebuiltModule("MYSELF", modmanager);
+		modmanager.init();
+		modmanager.setupCLI(this);
         
         /*
          * Adds relevant stuff to the Object
          */
-        for(int i =0; i < modules.length; i++)modules[i].addToCli(this);
         
         parseFurther(args);
         
@@ -79,7 +72,7 @@ public class EddieCLI implements UI {
 		while(sc.hasNext()){
 			response = sc.next();
 			if(response.contentEquals("exit")){
-				System.out.println("Eddie>"+funTools.getExitMessage());
+				System.out.println("Eddie>"+Tools_Fun.getExitMessage());
 				break;
 			}
 			else{
@@ -95,12 +88,11 @@ public class EddieCLI implements UI {
 		try {
 			CommandLine cmd = parser.parse(options, args);
 			if(cmd.hasOption("task")){
-				int owner = -1;
 				String task = cmd.getOptionValue("task");
 				if(task != null && task.length() > 0){
-					for(int i =0; i < modules.length; i++)if(modules[i].ownsThisTask(task)) owner =i;
-					if(owner!=-1){
-						modules[owner].actOnTask(task, this);
+					String taskclass =modmanager.getTaskClass(task);
+					if(taskclass != null){
+						modmanager.actOnTask(taskclass, this);
 					}
 					else {
 						Logger.getRootLogger().error("No Tasks with the name "+task+" available");
@@ -144,7 +136,7 @@ public class EddieCLI implements UI {
 	}
 
 	public void buildTaskManager() {
-		this.manager = uiTools.buildTaskManager(stringTools.parseString2Int(load.getCore()),  stringTools.parseString2Int(load.getAuxil()));
+		this.manager = Tools_UI.buildTaskManager(Tools_String.parseString2Int(load.getCore()),  Tools_String.parseString2Int(load.getAuxil()));
 	}
 	
 	public void buildOptions(){
@@ -155,9 +147,7 @@ public class EddieCLI implements UI {
 		System.out.println("List of tasks available:");
 		System.out.println();
 		System.out.println();
-		for(int i =0; i < this.modules.length; i++){
-			modules[i].printTasks();
-		}
+		modmanager.printAllTasks();
 		System.out.println();
 		System.out.println();
 		System.out.println("include after -task");

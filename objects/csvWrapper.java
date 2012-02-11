@@ -6,7 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import tools.fileTools;
+import tools.Tools_File;
 
 public class csvWrapper {
 
@@ -40,7 +40,7 @@ public class csvWrapper {
 		if(this.file.isFile()){
 			try {
 				System.out.println("Parsing CSV File");
-				this.rows = fileTools.countLines(file);
+				this.rows = Tools_File.countLines(file);
 				System.out.println(this.rows+" Rows found in CSV");
 				FileInputStream fis = new FileInputStream(file);
 				InputStreamReader in = new InputStreamReader(fis, "UTF-8");

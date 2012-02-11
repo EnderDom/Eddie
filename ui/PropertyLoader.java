@@ -27,7 +27,6 @@ import javax.swing.SpringLayout;
 import cli.EddieCLI;
 import cli.LazyPosixParser;
 import modules.Module;
-import modules.moduleTools;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -39,11 +38,12 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import tools.uiTools;
-import tools.arrayTools;
-import tools.fileTools;
-import tools.stringTools;
-import tools.systemTools;
+import tools.Tools_Modules;
+import tools.Tools_UI;
+import tools.Tools_Array;
+import tools.Tools_File;
+import tools.Tools_String;
+import tools.Tools_System;
 
 
 public class PropertyLoader implements Module{
@@ -53,19 +53,23 @@ public class PropertyLoader implements Module{
     public static String infoFile = new String("eddie.info");
     public String rootfolder;
     Options options;
-    public static double version = 0.08;
+    /* This is actually the 4th iteration of Eddie, 
+     * though this one has been written from scratch
+     */
+    public static double version = 4.09; 
     Level level;
     public static Logger logger;
-    private String modulename = "MOD_ui.PropertyLoader";
     public String[] actions;
     JInternalFrame propsframe;
 	JTextField[] fields;
 	public static String defaultlnf =  "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
 	public String[] args;
-
+	public String modulename;
+	
 	public PropertyLoader() {
 		level = Level.WARN;
         props = new Properties();
+        modulename = this.getClass().getName();
 	}
 	
 	public int loadBasicArguments(String[] args){
@@ -76,6 +80,9 @@ public class PropertyLoader implements Module{
 			CommandLine cmd = parser.parse(options, args);
 			if(cmd.hasOption("h")){
 				retvalue = 1;
+			}
+			else if(cmd.hasOption("about")){
+				retvalue = 5;
 			}
 			else{
 				if(cmd.hasOption("c")){ /*If Command Line iNterface*/
@@ -113,6 +120,7 @@ public class PropertyLoader implements Module{
 		options.addOption(new Option("persist", false, "If CLI set, this will stop CLI from closing without further args"));
 		options.addOption(new Option("h", "help", false, "Help Menu"));
 		options.addOption(new Option("l", "log", true, "Set Log Level {TRACE,DEBUG,INFO,WARN,ERROR,FATAL}"));
+		options.addOption(new Option("about", false, "About the author"));
 	}
 	
 	public void printHelp(){
@@ -122,7 +130,8 @@ public class PropertyLoader implements Module{
 		HelpFormatter help = new HelpFormatter();
 		help.printHelp("ls", "-- Eddie v"+version+" Help Menu --", options, "-- Share And Enjoy! --");
 		System.out.println();
-		System.out.println("Type -c -task for list of command line tasks");
+		System.out.println("Use -c -task for list of command line tasks");
+		System.out.println("Use -c -task taskname -opts for that task's helpmenu");
 	}
 
 	private boolean loadPropertiesInit(){
@@ -282,7 +291,7 @@ public class PropertyLoader implements Module{
                 
             }
             Logger.getRootLogger().setLevel(level);
-            Logger.getRootLogger().info("Logger Initialised LVL: "+level.toString()+" @ "+systemTools.getDateNow());
+            Logger.getRootLogger().info("Logger Initialised LVL: "+level.toString()+" @ "+Tools_System.getDateNow());
         } 
 		else{
             preLog("Logging has failed. Can Not Continue.");
@@ -351,11 +360,11 @@ public class PropertyLoader implements Module{
 			File eddie = new File(path	+ System.getProperty("file.separator") + infoFile);
 			String in = new String("");
 			if (eddie.isFile()) {
-				in = fileTools.quickRead(eddie);
+				in = Tools_File.quickRead(eddie);
 				if (in.length() > 0) {
 					int start = 0;
 					if ((start = in.indexOf("VERS:")) != -1) {
-						double oldvers = stringTools.parseString2Double(in
+						double oldvers = Tools_String.parseString2Double(in
 								.substring(start, in.length()));
 						if(oldvers != version){
 							//TODO Compatibilaty
@@ -377,7 +386,7 @@ public class PropertyLoader implements Module{
 	}
 
 	private boolean saveInfoFile(File file) {
-		return fileTools.quickWrite("VERS:" + version, file, false);
+		return Tools_File.quickWrite("VERS:" + version, file, false);
 	}
 
 	public static String getEnvirons() {
@@ -408,9 +417,10 @@ public class PropertyLoader implements Module{
 	}
 	
 	public String[][] getChangableStats(){
-		String[] stats = new String[]{"DBHOST", "DBNAME", "DBUSER","AUXILTHREAD","CORETHREAD"};
-		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1"};
-		String[] tool_tips = new String[]{"Host Database IP/Name", "Database Name", "Database Username","Max number of auxiliary threads","Max number of primary threads"};
+		String[] stats = new String[]{"DBHOST", "DBNAME", "DBUSER","AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR", "FILES_XML"};
+		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1", "/usr/bin/", getWorkspace()+File.pathSeparator+"blas_db"+File.pathSeparator, getWorkspace()+File.pathSeparator+"filedb.xml"};
+		String[] tool_tips = new String[]{"Host Database IP/Name", "Database Name", "Database Username","Max number of auxiliary threads","Max number of primary threads", "Directory that contains blast executables", 
+				"XML file which list current files in project"};
 		String[][] ret = new String[3][stats.length];
 		ret[0] = stats;
 		ret[1] = stats_val;
@@ -433,6 +443,14 @@ public class PropertyLoader implements Module{
 		} else {
 			props.put(prop, defaultvalue);
 			return defaultvalue;
+		}
+	}
+	
+	public String getProp(String prop) {
+		if (props.containsKey(prop)) {
+			return props.getProperty(prop);
+		} else {
+			return null;
 		}
 	}
 	
@@ -469,14 +487,14 @@ public class PropertyLoader implements Module{
 	 *																			*/
 	/****************************************************************************/
 	public boolean ownsThisAction(String s) {
-		return moduleTools.ownsThisAction(actions, s);
+		return Tools_Modules.ownsThisAction(actions, s);
 	}
 
 	public void actOnAction(String s, EddieGUI gui) {
 		Logger.getRootLogger().debug("PropertyLoader acting upon command "+s);
 		if(s.contentEquals(this.modulename)){
 			Logger.getRootLogger().debug("Building General Properties Frame");
-			propsframe = uiTools.getGenericPropertiesMenu();
+			propsframe = Tools_UI.getGenericPropertiesMenu();
 			propsframe.setTitle("General Properties");
 			int  num = 0;
 			JPanel p = new JPanel(new SpringLayout());
@@ -498,7 +516,7 @@ public class PropertyLoader implements Module{
 			JButton button2 = new JButton("Cancel");
 			button1.setActionCommand(modulename+"_PROPS_SAVE");
 			button2.setActionCommand(modulename+"_PROPS_CLOSE");
-			actions = arrayTools.mergeStrings(actions, new String[]{modulename+"_PROPS_SAVE",modulename+"_PROPS_CLOSE" });
+			actions = Tools_Array.mergeStrings(actions, new String[]{modulename+"_PROPS_SAVE",modulename+"_PROPS_CLOSE" });
 			button1.addActionListener(gui);
 			button2.addActionListener(gui);
 			p.add(button1);
@@ -543,27 +561,14 @@ public class PropertyLoader implements Module{
 	    menuItem.setActionCommand(this.modulename);
 	    actions[0] = this.modulename;
 	    menuItem.addActionListener(eddiegui);
-	    moduleTools.add2JMenuBar(eddiegui.getMenu(), menuItem, "Properties");
-	}
-
-
-
-	public boolean uninstall(EddieGUI gui) {
-		return false;
+	    Tools_Modules.add2JMenuBar(eddiegui.getMenu(), menuItem, "Properties");
 	}
 
 	public String getModuleName() {
 		return this.modulename;
 	}	
-
-	public boolean ownsThisTask(String s) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 	public void printTasks() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	public void actOnTask(String s, UI ui) {
@@ -572,5 +577,18 @@ public class PropertyLoader implements Module{
 	
 	public void addToCli(EddieCLI cli) {
 		cli.setArgs(this.args);
+	}
+
+	public boolean isPersistant() {
+		return true;
+	}
+
+	public String[] getTasks() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String[] getActions() {
+		return actions;
 	}
 }

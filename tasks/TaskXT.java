@@ -3,6 +3,7 @@ package tasks;
 import java.io.File;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
 
 /*
@@ -14,19 +15,26 @@ public class TaskXT extends Task{
 	protected String input;
 	protected String output;
 	protected boolean overwrite;
+	public static int NOT_FILE_OR_DIRECTORY = 0;
+	public static int IS_FILE_OR_DIRECTORY = 1;
+	public static int IS_FILE = 2;
+	public static int IS_DIRECTORY = 3;
+	public static int IS_OR_NOT = 4;
 	
 	public void parseArgsSub(CommandLine cmd){
 		if(!cmd.hasOption("input")){
-			Logger.getRootLogger().error("Input file has not been set!");
-		}
-		else if(!cmd.hasOption("output")){
-			Logger.getRootLogger().error("Output file has not been set!");
+			Logger.getRootLogger().warn("Input file has not been set.");
 		}
 		else{
 			setInput(cmd.getOptionValue("input"));
-			setOutput(cmd.getOptionValue("output"));
-			setOverwrite(cmd.hasOption("w"));
 		}
+		if(!cmd.hasOption("output")){
+			Logger.getRootLogger().debug("Output file has not been set.");
+		}
+		else{
+			setOutput(cmd.getOptionValue("output"));
+		}
+		setOverwrite(cmd.hasOption("w"));
 	}
 	
 	/*
@@ -59,6 +67,20 @@ public class TaskXT extends Task{
 			return tmp;
 		}
 	}
+	
+	
+	public File getStdInput(){
+		// Method assumes input should exist as a file (not folder)
+		return getFile(this.input, 2);
+	}
+	
+	public File getStdOutput(){
+		//Method assumes output shouldn't be a file unless overwrite
+		if(!overwrite){
+			return getFile(this.output, 0); 
+		}
+		else return getFile(this.output, 4);
+	}
 
 	public String getInput() {
 		return input;
@@ -84,6 +106,13 @@ public class TaskXT extends Task{
 		this.overwrite = overwrite;
 	}
 	
+	public void buildOptions(){
+		super.buildOptions();
+		
+		options.addOption(new Option("i", "input", true, "Input"));
+		options.addOption(new Option("o", "output", true, "Output"));
+		options.addOption(new Option("w", "overwrite", false, "Overwrite output if it exists"));
+	}
 	
 	
 }
