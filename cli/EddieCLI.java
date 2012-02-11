@@ -41,7 +41,9 @@ public class EddieCLI implements UI {
 		//Module Build
 		modmanager = new ModuleManager(load.getModuleFolder());
 		modmanager.addPrebuiltModule("PROPERTYLOADER", load);
+		load.addToCli(this);
 		modmanager.addPrebuiltModule("MYSELF", modmanager);
+		modmanager.addToCli(this);
 		modmanager.init();
 		modmanager.setupCLI(this);
         
@@ -91,8 +93,9 @@ public class EddieCLI implements UI {
 				String task = cmd.getOptionValue("task");
 				if(task != null && task.length() > 0){
 					String taskclass =modmanager.getTaskClass(task);
+					Logger.getRootLogger().trace("Retrieved Task Class "+ taskclass);
 					if(taskclass != null){
-						modmanager.actOnTask(taskclass, this);
+						modmanager.runTask(this, taskclass, task);
 					}
 					else {
 						Logger.getRootLogger().error("No Tasks with the name "+task+" available");
@@ -105,6 +108,7 @@ public class EddieCLI implements UI {
 				}
 			}
 			else{
+				Logger.getRootLogger().trace("No Task Set");
 				printTaskList();
 			}
 		} catch (ParseException e) {
@@ -127,6 +131,7 @@ public class EddieCLI implements UI {
 	}
 	
 	public void addTask(Task task) {
+		Logger.getRootLogger().debug("CLI recieve task, sending to task manager...");
 		if(this.manager == null){
 			buildTaskManager();
 		}

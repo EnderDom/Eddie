@@ -25,7 +25,6 @@ import org.xml.sax.SAXException;
 
 import cli.EddieCLI;
 
-import tools.Tools_String;
 import tools.Tools_XML;
 
 public class ModuleManager implements Module{
@@ -151,7 +150,7 @@ public class ModuleManager implements Module{
 		if(actions != null){
 			for(String act : actions)this.module_actions.put(act, key);
 		}
-		String[] tasks = temp.getActions();
+		String[] tasks = temp.getTasks();
 		if(tasks != null){
 			for(String task : tasks)this.module_tasks.put(task, key);
 		}
@@ -297,14 +296,18 @@ public class ModuleManager implements Module{
 	
 	public void runTask(UI ui, String taskclass, String task){
 		try {
-			String classname = module_classpath.get(taskclass);
-			if(!classname.startsWith(persistkeyword)){
-				Module temp =(Module)Class.forName(classname).getConstructor().newInstance();
+			if(!taskclass.startsWith(persistkeyword)){
+				Module temp =(Module)Class.forName(taskclass).getConstructor().newInstance();
 				temp.actOnTask(task, ui);
 			}
 			else{
-				int i = Tools_String.parseString2Int(classname.substring(7, classname.length()));
-				modules[i].actOnTask(task, ui);
+				Integer index = -1;
+				if((index = persistedObjectIndex.get(taskclass)) != null){
+					modules[index].actOnTask(task, ui);
+				}
+				else{
+					Logger.getRootLogger().error("An error occured attempting to retrieve persistant object"+ taskclass);
+				}
 			}			
 		} catch (IllegalArgumentException e) {
 			Logger.getRootLogger().error("An error running task "+task, e);
@@ -324,17 +327,15 @@ public class ModuleManager implements Module{
 	}
 	
 	public void printAllTasks(){
-		
 		for(String key : module_classpath.keySet()){
 			try {
-			if(!key.startsWith(persistkeyword)){
-				Module temp =(Module)Class.forName(module_classpath.get(key)).getConstructor().newInstance();
-				temp.printTasks();
-			}
-			else{
-				int i = Tools_String.parseString2Int(key.substring(7, key.length()));
-				modules[i].printTasks();
-			}
+				if(!module_classpath.get(key).startsWith(persistkeyword)){
+					Module temp =(Module)Class.forName(module_classpath.get(key)).getConstructor().newInstance();
+					temp.printTasks();
+				}
+				else{
+					modules[this.persistedObjectIndex.get(module_classpath.get(key))].printTasks();
+				}
 			} catch (IllegalArgumentException e) {
 				Logger.getRootLogger().error("Error printing tasks for key "+key, e);
 			} catch (SecurityException e) {

@@ -31,7 +31,7 @@ public abstract class Module_Basic implements Module{
 	protected boolean persistance;
 	
 	public void actOnTask(String s, UI cli) {
-		Logger.getRootLogger().debug("Action "+ s + " sent");
+		Logger.getRootLogger().debug("Task "+ s + " sent");
 		for(int i =0; i < getTasks().length; i++){
 			if(s.contentEquals(getTasks()[i])){
 				try {
