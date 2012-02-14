@@ -163,11 +163,11 @@ public class ModuleManager implements Module{
 			if(!module_classpath.get(key).startsWith(persistkeyword)){
 				try {
 					Module temp =(Module)Class.forName(module_classpath.get(key)).getConstructor().newInstance();
-					temp.addToGui(gui);
 					if(temp.isPersistant()){
-						addPrebuiltModule(key, temp);
+						addPrebuiltModule(key, temp, gui);
 					}
-				else{
+					else{
+						temp.addToGui(gui);
 						pullTaskAndActions(temp, key);
 						temp = null;
 					}
@@ -195,11 +195,11 @@ public class ModuleManager implements Module{
 			if(!module_classpath.get(key).startsWith(persistkeyword)){
 				try {
 					Module temp =(Module)Class.forName(module_classpath.get(key)).getConstructor().newInstance();
-					temp.addToCli(cli);
 					if(temp.isPersistant()){
-						addPrebuiltModule(key, temp);
+						addPrebuiltModule(key, temp, cli);
 					}
 					else{
+						temp.addToCli(cli);
 						pullTaskAndActions(temp, key);
 						temp = null;
 					}
@@ -239,7 +239,13 @@ public class ModuleManager implements Module{
 	 * In some cases modules will be held elsewhere
 	 * So here we 
 	 */
-	public void addPrebuiltModule(String key, Module mod){
+	public void addPrebuiltModule(String key, Module mod, UI ui){
+		if(ui.isGUI()){
+			mod.addToGui((EddieGUI)ui);
+		}
+		else{
+			mod.addToCli((EddieCLI)ui);
+		}
 		if(modules == null){
 			modules = new Module[5];
 		}

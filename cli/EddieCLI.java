@@ -40,12 +40,12 @@ public class EddieCLI implements UI {
 		
 		//Module Build
 		modmanager = new ModuleManager(load.getModuleFolder());
-		modmanager.addPrebuiltModule("PROPERTYLOADER", load);
-		load.addToCli(this);
-		modmanager.addPrebuiltModule("MYSELF", modmanager);
-		modmanager.addToCli(this);
 		modmanager.init();
 		modmanager.setupCLI(this);
+		modmanager.addPrebuiltModule("PROPERTYLOADER", load, this);
+		modmanager.addPrebuiltModule("MYSELF", modmanager, this);
+		
+
         
         /*
          * Adds relevant stuff to the Object
@@ -162,6 +162,11 @@ public class EddieCLI implements UI {
 	public void update(Task task) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public boolean isGUI() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
 }

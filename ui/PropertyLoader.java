@@ -417,10 +417,11 @@ public class PropertyLoader implements Module{
 	}
 	
 	public String[][] getChangableStats(){
+		//These need to all be the same length
 		String[] stats = new String[]{"DBHOST", "DBNAME", "DBUSER","AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR", "FILES_XML"};
 		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1", "/usr/bin/", getWorkspace()+File.pathSeparator+"blas_db"+File.pathSeparator, getWorkspace()+File.pathSeparator+"filedb.xml"};
 		String[] tool_tips = new String[]{"Host Database IP/Name", "Database Name", "Database Username","Max number of auxiliary threads","Max number of primary threads", "Directory that contains blast executables", 
-				"XML file which list current files in project"};
+				"XML file which list current files in project", "File XML list location"};
 		String[][] ret = new String[3][stats.length];
 		ret[0] = stats;
 		ret[1] = stats_val;
@@ -514,11 +515,13 @@ public class PropertyLoader implements Module{
 			}
 			JButton button1 = new JButton("Save");
 			JButton button2 = new JButton("Cancel");
+			//TODO fix issue
 			button1.setActionCommand(modulename+"_PROPS_SAVE");
 			button2.setActionCommand(modulename+"_PROPS_CLOSE");
 			actions = Tools_Array.mergeStrings(actions, new String[]{modulename+"_PROPS_SAVE",modulename+"_PROPS_CLOSE" });
 			button1.addActionListener(gui);
 			button2.addActionListener(gui);
+			
 			p.add(button1);
 			p.add(button2);
 			num++;

@@ -1,5 +1,7 @@
 package modules;
 
+import gui.EddieGUI;
+
 import tasks.Task_Test;
 
 /*
@@ -30,4 +32,7 @@ public class Module_Test extends Module_Basic{
 		return classes;
 	}
 	
+	public void addToGui(EddieGUI biodesktopgui) {
+	
+	}
 }

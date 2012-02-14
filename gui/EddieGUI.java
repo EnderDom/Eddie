@@ -56,17 +56,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		
 		//Module Build
 		modmanager = new ModuleManager(load.getModuleFolder());
-		modmanager.addPrebuiltModule("PROPERTYLOADER", load);
-<<<<<<< HEAD
-
-		modmanager.addPrebuiltModule("MYSELF", modmanager);
-		
-=======
-		modmanager.addPrebuiltModule("MYSELF", modmanager);
->>>>>>> 7f2faaf4549143d8dcb0408e9a70367cf3768411
-		modmanager.init();
-		
-        
+     
 		//Options
 		addWindowListener(this);
 		setJMenuBar((this.menu = createMenuBar()));
@@ -79,13 +69,12 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		desktop.setSize(this.getBounds().getSize());
 		setContentPane(desktop);
 	
+		modmanager.init();
 		modmanager.setupGUI(this);	
-		load.addToGui(this);
-<<<<<<< HEAD
-		modmanager.addToGui(this);
-=======
+		modmanager.addPrebuiltModule("PROPERTYLOADER", load, this);
+		modmanager.addPrebuiltModule("MYSELF", modmanager, this);
 		
->>>>>>> 7f2faaf4549143d8dcb0408e9a70367cf3768411
+
 		Logger.getRootLogger().debug("Set EddieGUI to Visible");
 		//Finish
 		pack();
@@ -207,6 +196,10 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	
 	public PropertyLoader getPropertyLoader(){
 		return this.load;
+	}
+
+	public boolean isGUI() {
+		return true;
 	}
 	
 }
