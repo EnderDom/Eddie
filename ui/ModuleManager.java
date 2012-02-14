@@ -198,7 +198,7 @@ public class ModuleManager implements Module{
 						addPrebuiltModule(key, temp);
 					}
 					else{
-						pullTaskAndActions(temp, module_classpath.get(key));
+						pullTaskAndActions(temp, key);
 						temp = null;
 					}
 				} catch (IllegalArgumentException e) {
@@ -252,6 +252,7 @@ public class ModuleManager implements Module{
 		persistedObjectIndex.put(persistkeyword+modulecount, modulecount);
 		modulecount++;
 	}
+	
 	
 	public String getActionClass(String actioncommand){
 		return this.module_actions.get(actioncommand);
