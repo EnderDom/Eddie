@@ -13,6 +13,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 
 import modules.Module;
+import modules.Module_Test;
 import modules.bio.Module_Assembly;
 import modules.bio.Module_Blast;
 import modules.bio.Module_Fasta;
@@ -76,6 +77,7 @@ public class ModuleManager implements Module{
 		module_classpath.put("FASTA", Module_Fasta.class.getName());
 		module_classpath.put("BLAST", Module_Blast.class.getName());
 		module_classpath.put("ASSEMBLY", Module_Assembly.class.getName());
+		module_classpath.put("TEST", Module_Test.class.getName());
 	}
 	
 	public boolean loadXML(){

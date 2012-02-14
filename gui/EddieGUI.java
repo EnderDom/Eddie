@@ -57,9 +57,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		//Module Build
 		modmanager = new ModuleManager(load.getModuleFolder());
 		modmanager.addPrebuiltModule("PROPERTYLOADER", load);
-		load.addToGui(this);
 		modmanager.addPrebuiltModule("MYSELF", modmanager);
-		modmanager.addToGui(this);
 		modmanager.init();
 		
         
@@ -76,6 +74,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		setContentPane(desktop);
 	
 		modmanager.setupGUI(this);	
+		load.addToGui(this);
 		
 		Logger.getRootLogger().debug("Set EddieGUI to Visible");
 		//Finish

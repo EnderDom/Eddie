@@ -2,6 +2,8 @@ package bio.assembly;
 
 import java.util.LinkedHashMap;
 
+
+//TODO Complete
 public class BasicAssemblyObject implements SAMHandler, ACEHandler{
 	
 	LinkedHashMap<String, Integer> contigs;
