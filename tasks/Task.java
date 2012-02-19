@@ -33,7 +33,7 @@ public class Task implements Runnable, Future<Object> {
 	public static int error = 3;
 	public Options options;
 	public boolean helpmode;
-	private boolean testmode;
+	protected boolean testmode;
 	
 	/*
 	 * complete note:
@@ -69,7 +69,8 @@ public class Task implements Runnable, Future<Object> {
 		    System.out.println("But that you are running the default Task class for some reason.");
 		    System.out.println();
 		    System.out.println("Quick Test of Process Runner");
-		    System.out.println(Tools_Task.runProcess("dir", true)[0].toString());
+		    if(Tools_System.isWindows())System.out.println(Tools_Task.runProcess("dir", true)[0].toString());
+		    else System.out.println(Tools_Task.runProcess("ls", true)[0].toString());
 		    System.out.println();
 		    System.out.println();
 		    System.out.println("That should be where we're at?");

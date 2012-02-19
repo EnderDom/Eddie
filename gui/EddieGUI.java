@@ -93,13 +93,12 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		}
 	}
 	
-	 public void actionPerformed(ActionEvent e) {
-		String actionclass = "";
+	 public void actionPerformed(ActionEvent e) { 	
         if ("quit".equals(e.getActionCommand())) { //quit
             exit();
         }
-        else if((actionclass =modmanager.getActionClass(e.getActionCommand())) != null){
-        	modmanager.runAction(this, actionclass, e.getActionCommand());
+        else if(modmanager.isAction(e.getActionCommand())){
+        	modmanager.runAction(this, e.getActionCommand());
         }
         else{
         	 Logger.getRootLogger().warn("Unattached Action Performed" + e.getActionCommand());

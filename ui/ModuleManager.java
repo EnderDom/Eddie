@@ -43,13 +43,43 @@ public class ModuleManager implements Module{
 	Document xmlModuleList;
 	private String modulefolder;
 	private boolean loaded;
+	/*
+	* Key is the module name, holds either the classpath
+	* or a id to the object if the object is persistant
+	*/
 	HashMap<String, String> module_classpath;
+	/*
+	 * Key is the action command, holds the classpath or 
+	 * link to object which deals with the action.
+	 */
 	HashMap<String, String> module_actions;
+	/*
+	 * Like actions, only for tasks, tasks tend to be called
+	 * for specific 'scripts' to be run, and example is 'testrun'
+	 * which should call the Task_Test class
+	 */
 	HashMap<String, String> module_tasks;
+	/*
+	 * Holds a quick index of the persistant object
+	 * I feel this is quicker than actually parsing the string
+	 * for the intege, integer returned relates to the modules array 
+	 */
 	HashMap<String, Integer> persistedObjectIndex;
+	/*
+	 * Holds persistant objects for referencing
+	 */
 	Module[] modules;
+	/*
+	 * Current modulecount id, used so all modules have unique id
+	 */
 	int modulecount;
+	/*
+	 * Just a keyword to differentiate classpaths from
+	 * objects
+	 */
 	private static String persistkeyword = "PERSIST";
+	
+	String modulename = this.getClass().getName();
 	
 	public ModuleManager(String modulefolder){
 		modulecount=0;
@@ -73,11 +103,11 @@ public class ModuleManager implements Module{
 	 * Add all the default modules
 	 */
 	public void addDefaultModules(){
-		module_classpath.put("LNF", DefaultLNF.class.getName());
-		module_classpath.put("FASTA", Module_Fasta.class.getName());
-		module_classpath.put("BLAST", Module_Blast.class.getName());
-		module_classpath.put("ASSEMBLY", Module_Assembly.class.getName());
-		module_classpath.put("TEST", Module_Test.class.getName());
+		addModule("LNF", DefaultLNF.class.getName());
+		addModule("FASTA", Module_Fasta.class.getName());
+		addModule("BLAST", Module_Blast.class.getName());
+		addModule("ASSEMBLY", Module_Assembly.class.getName());
+		addModule("TEST", Module_Test.class.getName());
 	}
 	
 	public boolean loadXML(){
@@ -150,12 +180,24 @@ public class ModuleManager implements Module{
 	public void pullTaskAndActions(Module temp, String key){
 		String[] actions = temp.getActions();
 		if(actions != null){
-			for(String act : actions)this.module_actions.put(act, key);
+			for(String act : actions)addAction(act, getModule(key));
 		}
 		String[] tasks = temp.getTasks();
 		if(tasks != null){
-			for(String task : tasks)this.module_tasks.put(task, key);
+			for(String task : tasks)addTask(task, getModule(key));
 		}
+	}
+	
+	public String getModule(String key){
+		return this.module_classpath.get(key);
+	}
+	
+	public boolean isTask(String task){
+		return this.module_tasks.containsKey(task);
+	}
+	
+	public boolean isAction(String action){
+		return this.module_actions.containsKey(action);
 	}
 	
 	public void setupGUI(EddieGUI gui){
@@ -224,28 +266,27 @@ public class ModuleManager implements Module{
 	
 	
 	public void addAction(String action, String classpath){
+		Logger.getRootLogger().trace("Adding action "+ action  + " to class or object " + classpath);
 		this.module_actions.put(action, classpath);
 	}
 	
 	public void addTask(String taskName, String taskclasspath){
-		this.module_actions.put(taskName, taskclasspath);
+		Logger.getRootLogger().trace("Adding task "+ taskName  + " to class or object " + taskclasspath);
+		this.module_tasks.put(taskName, taskclasspath);
 	}
 	
 	public void addModule(String modulename, String moduleclasspath){
+		Logger.getRootLogger().trace("Adding ModuleName "+ modulename  + " with path / object name " + moduleclasspath);
 		this.module_classpath.put(modulename, moduleclasspath);
 	}
 	
-	/*
-	 * In some cases modules will be held elsewhere
-	 * So here we 
-	 */
 	public void addPrebuiltModule(String key, Module mod, UI ui){
-		if(ui.isGUI()){
-			mod.addToGui((EddieGUI)ui);
-		}
-		else{
-			mod.addToCli((EddieCLI)ui);
-		}
+		Logger.getRootLogger().debug("Loading Module "+ key);
+		String modname = persistkeyword+modulecount;
+		modulecount++;
+		mod.resetModuleName(modname);/*<- Important to set, else any downstream 
+									actions added will be set to default not persisting
+									*/
 		if(modules == null){
 			modules = new Module[5];
 		}
@@ -254,25 +295,22 @@ public class ModuleManager implements Module{
 			for(int i =0;i < modules.length; i++)placeholder[i]=modules[i];
 			modules = placeholder;
 		}
+		if(ui.isGUI()){
+			mod.addToGui((EddieGUI)ui);
+		}
+		else{
+			mod.addToCli((EddieCLI)ui);
+		}
 		modules[modulecount] = mod;
-		module_classpath.put(key,persistkeyword+modulecount);
-		pullTaskAndActions(mod, persistkeyword+modulecount);
-		persistedObjectIndex.put(persistkeyword+modulecount, modulecount);
-		modulecount++;
+		persistedObjectIndex.put(modname, modulecount);
+		module_classpath.put(key,modname);
+		pullTaskAndActions(mod, key);
 	}
-	
-	
-	public String getActionClass(String actioncommand){
-		return this.module_actions.get(actioncommand);
-	}
-	
-	public String getTaskClass(String taskcommand){
-		return this.module_tasks.get(taskcommand);
-	}
-	
-	public void runAction(EddieGUI gui, String actionclass, String action){
+			
+	public void runAction(EddieGUI gui, String action){
 		try {
-			Logger.getRootLogger().debug("Responding to action "+ action + " and actionclass "  + actionclass);
+			String actionclass = this.module_actions.get(action);
+			Logger.getRootLogger().debug("Responding to action "+ action + " class : " + actionclass);
 			if(!actionclass.startsWith(persistkeyword)){
 				Module temp =(Module)Class.forName(actionclass).getConstructor().newInstance();
 				temp.actOnAction(action, gui);
@@ -303,8 +341,9 @@ public class ModuleManager implements Module{
 		}
 	}
 	
-	public void runTask(UI ui, String taskclass, String task){
+	public void runTask(UI ui, String task){
 		try {
+			String taskclass = this.module_tasks.get(task);
 			if(!taskclass.startsWith(persistkeyword)){
 				Module temp =(Module)Class.forName(taskclass).getConstructor().newInstance();
 				temp.actOnTask(task, ui);
@@ -413,5 +452,9 @@ public class ModuleManager implements Module{
 	public String[] getTasks() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public void resetModuleName(String name) {
+		this.modulename = name;
 	}
 }

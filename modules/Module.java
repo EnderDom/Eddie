@@ -17,8 +17,7 @@ public interface Module
     
     public abstract void addToCli(EddieCLI cli);    
     
-
-    
+        
 	public abstract String[] getActions();
 
 	public abstract String[] getTasks();
@@ -48,4 +47,12 @@ public interface Module
      */
     
     public abstract boolean isPersistant();
+    
+    /*
+     * Needed if the module becomes persistant, module name changes
+     * from the default a classpath, to a name 
+     */
+
+    public abstract void resetModuleName(String name);
+
 }

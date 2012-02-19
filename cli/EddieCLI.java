@@ -92,10 +92,9 @@ public class EddieCLI implements UI {
 			if(cmd.hasOption("task")){
 				String task = cmd.getOptionValue("task");
 				if(task != null && task.length() > 0){
-					String taskclass =modmanager.getTaskClass(task);
-					Logger.getRootLogger().trace("Retrieved Task Class "+ taskclass);
-					if(taskclass != null){
-						modmanager.runTask(this, taskclass, task);
+					Logger.getRootLogger().trace("Retrieved Task Class "+ task);
+					if(modmanager.isTask(task)){
+						modmanager.runTask(this,task);
 					}
 					else {
 						Logger.getRootLogger().error("No Tasks with the name "+task+" available");

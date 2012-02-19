@@ -29,6 +29,7 @@ public abstract class Module_Basic implements Module{
 	protected String[] classes;
 	public String taskname;
 	protected boolean persistance;
+	protected String modulename;
 	
 	public void actOnTask(String s, UI cli) {
 		Logger.getRootLogger().debug("Task "+ s + " sent");
@@ -130,5 +131,9 @@ public abstract class Module_Basic implements Module{
 	
 	public boolean isPersistant(){
 		return persistance;
+	}
+	
+	public void resetModuleName(String name){
+		this.modulename = name;
 	}
 }

@@ -517,6 +517,8 @@ public class PropertyLoader implements Module{
 			JButton button2 = new JButton("Cancel");
 			//TODO fix issue
 			button1.setActionCommand(modulename+"_PROPS_SAVE");
+			gui.addAction(modulename+"_PROPS_SAVE",modulename);
+			gui.addAction(modulename+"_PROPS_CLOSE",modulename);
 			button2.setActionCommand(modulename+"_PROPS_CLOSE");
 			actions = Tools_Array.mergeStrings(actions, new String[]{modulename+"_PROPS_SAVE",modulename+"_PROPS_CLOSE" });
 			button1.addActionListener(gui);
@@ -593,5 +595,9 @@ public class PropertyLoader implements Module{
 
 	public String[] getActions() {
 		return actions;
+	}
+	
+	public void resetModuleName(String name){
+		this.modulename = name;
 	}
 }

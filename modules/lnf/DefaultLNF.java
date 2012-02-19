@@ -26,6 +26,7 @@ public class DefaultLNF implements Module{
 	JRadioButtonMenuItem appears[];
 	public String[] actions;
 	public static String namereplace = "LookAndFeel";
+	protected String modulename;
 
 	public boolean ownsThisAction(String s) {
 		return Tools_Modules.ownsThisAction(actions, s);
@@ -141,6 +142,10 @@ public class DefaultLNF implements Module{
 
 	public String[] getTasks() {
 		return null;
+	}
+
+	public void resetModuleName(String name) {
+		this.modulename = name;
 	}
 	
 	
