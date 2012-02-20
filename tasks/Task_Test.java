@@ -14,7 +14,9 @@ public class Task_Test extends Task{
 	
 	public void runTest(){
 		String dna = "ATAGATGATGATGATGATGATGACCCCYYWWVVBBNN";
-		FourBitSequence sequence = new FourBitSequence();
+		System.out.println("BEFORE:" + dna);
+		FourBitSequence sequence = new FourBitSequence(dna);
+		System.out.println("AFTER:" + sequence.getAsString());
 		System.out.println("Test has completed");
 	}
 	
