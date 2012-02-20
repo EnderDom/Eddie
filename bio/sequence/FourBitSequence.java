@@ -1,5 +1,7 @@
 package bio.sequence;
 
+import org.apache.log4j.Logger;
+
 /*
  * 
  * Experimental 4 bit sequence object
@@ -24,7 +26,7 @@ public class FourBitSequence {
 	 */
 	int bitmask = 0xff;
 	
-	int bitoff = 8; //2 more powers from BitSet's 6 as DNA is 4 bits large
+	int bitoff = 4; //2 less powers from BitSet's 6 as DNA is 4 bits large
 	
 	int length;
 	
@@ -58,7 +60,8 @@ public class FourBitSequence {
 		 * 64 then we need an length+1
 		 * to accommodate the size
 		 */
-		if ((nlength & bitmask) != 0)	++length_long;
+		if ((nlength & bitmask) != 0)length_long++;
+		Logger.getRootLogger().debug("Length of Sequence "+ nlength + " fits into array of "+length_long+ " longs");
 		dna = new long[length_long];
 	}
 	
@@ -82,37 +85,35 @@ public class FourBitSequence {
 	public void parseString(String sequence){
 		sequence = sequence.toUpperCase();
 		char[] arr = sequence.toCharArray();
-		for(int  i =0; i < sequence.length(); i=+16){
+		for(int  i =0; i < sequence.length(); i++){
 			int offset = i >> bitoff;
-			for(int j=i; j < i+16; j++){
-				switch (arr[j]) {
-					case 'A' : dna[offset] <<= 2; dna[offset] |= 0x1; break;
-					case 'C' : dna[offset] <<= 2; dna[offset] |= 0x2; break;
-					case 'G' : dna[offset] <<= 2; dna[offset] |= 0x4; break;
-					case 'T' : dna[offset] <<= 2; dna[offset] |= 0x8; break;
-					
-					case 'R' : dna[offset] <<= 2; dna[offset] |= 0x5; break;
-					case 'Y' : dna[offset] <<= 2; dna[offset] |= 0xa; break;
-					case 'S' : dna[offset] <<= 2; dna[offset] |= 0x6; break;
-					case 'W' : dna[offset] <<= 2; dna[offset] |= 0x9; break;
-					case 'K' : dna[offset] <<= 2; dna[offset] |= 0xc; break;
-					case 'M' : dna[offset] <<= 2; dna[offset] |= 0x3; break;
-					
-					case 'B' : dna[offset] <<= 2; dna[offset] |= 0xe; break;
-					case 'D' : dna[offset] <<= 2; dna[offset] |= 0xd; break;
-					case 'H' : dna[offset] <<= 2; dna[offset] |= 0xb; break;
-					case 'V' : dna[offset] <<= 2; dna[offset] |= 0x7; break;
-					
-					case 'N' : dna[offset] <<= 2; dna[offset] |= 0xf; break;
-					case 'X' : dna[offset] <<= 2; dna[offset] |= 0xf; break;
-					case '-' : dna[offset] <<= 2; dna[offset] |= 0x0; break;
-					case '*' : dna[offset] <<= 2; dna[offset] |= 0x0; break;
-				}
-				debugSeq(offset);
-				if(j >= sequence.length())break;
+			switch (arr[i]) {
+				case 'A' : dna[offset] <<= 4; dna[offset] |= 0x1; break;
+				case 'C' : dna[offset] <<= 4; dna[offset] |= 0x2; break;
+				case 'G' : dna[offset] <<= 4; dna[offset] |= 0x4; break;
+				case 'T' : dna[offset] <<= 4; dna[offset] |= 0x8; break;
+				
+				case 'R' : dna[offset] <<= 4; dna[offset] |= 0x5; break;
+				case 'Y' : dna[offset] <<= 4; dna[offset] |= 0xa; break;
+				case 'S' : dna[offset] <<= 4; dna[offset] |= 0x6; break;
+				case 'W' : dna[offset] <<= 4; dna[offset] |= 0x9; break;
+				case 'K' : dna[offset] <<= 4; dna[offset] |= 0xc; break;
+				case 'M' : dna[offset] <<= 4; dna[offset] |= 0x3; break;
+				
+				case 'B' : dna[offset] <<= 4; dna[offset] |= 0xe; break;
+				case 'D' : dna[offset] <<= 4; dna[offset] |= 0xd; break;
+				case 'H' : dna[offset] <<= 4; dna[offset] |= 0xb; break;
+				case 'V' : dna[offset] <<= 4; dna[offset] |= 0x7; break;
+				
+				case 'N' : dna[offset] <<= 4; dna[offset] |= 0xf; break;
+				case 'X' : dna[offset] <<= 4; dna[offset] |= 0xf; break;
+				case '-' : dna[offset] <<= 4; dna[offset] |= 0x0; break;
+				case '*' : dna[offset] <<= 4; dna[offset] |= 0x0; break;
 			}
-			
+			debugSeq(offset);
+			System.out.print(arr[i] + " ");
 		}
+		System.out.print("\n");
 	}
 
 	public String getAsString(){
@@ -122,12 +123,16 @@ public class FourBitSequence {
 	public char[] getAsCharArray(){
 		char[] array = new char[this.length];
 		int arraycount=0;
-		if(LorR){
+		if(!LorR){
 			for(int i =0; i < dna.length; i++){
-				long mask = 0xf;
+				long mask = 0xf;			
+				//mask<<=60;
+				System.out.println(print(mask));
+				System.out.println();
 				long charvalue = 0x0;
-				for(int j = 0; j < 64; j<<=4){
-					charvalue = (mask & dna[i]) >> j;
+				for(int j = 0; j <64; j+=4){
+					charvalue = (mask & dna[i])>>j;
+					System.out.println(print(charvalue));
 					if(charvalue==0x1)array[arraycount] = 'A';
 					else if(charvalue==0x2) array[arraycount] = 'C';
 					else if(charvalue==0x4) array[arraycount] = 'G';
@@ -158,25 +163,26 @@ public class FourBitSequence {
 		else{
 			
 		}
-		return null;
+		return array;
 	}
 	
 	public void debugSeq(int i){
 		if(i != currentdebug){
-			System.out.println(print(dna[currentdebug]));
+			System.out.print("\n");
 		}
 		String r = print(dna[i]);
-		System.out.print("\r" + r);
+		System.out.print("\n" + r);
 		currentdebug = i;
 	}
 	
 	public String print(long p){
 		String st = new String();
 		long mask = 0x1;
-		long z = p;
+		long z = 0x0+p;
 		for(int i =0; i < 64; i ++){
 			st = st + (int)(mask&z);
 			z>>=1;
+			if((i+1)%4==0)st +=" ";
 		}
 		return st;
 	}
