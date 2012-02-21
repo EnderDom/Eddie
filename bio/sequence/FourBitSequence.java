@@ -2,6 +2,8 @@ package bio.sequence;
 
 import org.apache.log4j.Logger;
 
+import tools.Tools_Bit;
+
 /*
  * 
  * Experimental 4 bit sequence object
@@ -127,12 +129,12 @@ public class FourBitSequence {
 			for(int i =0; i < dna.length; i++){
 				long mask = 0xf;			
 				//mask<<=60;
-				System.out.println(print(mask));
+				System.out.println(Tools_Bit.LongAsBitString(mask));
 				System.out.println();
 				long charvalue = 0x0;
 				for(int j = 0; j <64; j+=4){
 					charvalue = (mask & dna[i])>>j;
-					System.out.println(print(charvalue));
+					System.out.println(Tools_Bit.LongAsBitString(charvalue));
 					if(charvalue==0x1)array[arraycount] = 'A';
 					else if(charvalue==0x2) array[arraycount] = 'C';
 					else if(charvalue==0x4) array[arraycount] = 'G';
@@ -170,20 +172,10 @@ public class FourBitSequence {
 		if(i != currentdebug){
 			System.out.print("\n");
 		}
-		String r = print(dna[i]);
+		String r = Tools_Bit.LongAsBitString(dna[i]);
 		System.out.print("\n" + r);
 		currentdebug = i;
 	}
 	
-	public String print(long p){
-		String st = new String();
-		long mask = 0x1;
-		long z = 0x0+p;
-		for(int i =0; i < 64; i ++){
-			st = st + (int)(mask&z);
-			z>>=1;
-			if((i+1)%4==0)st +=" ";
-		}
-		return st;
-	}
+	
 }
