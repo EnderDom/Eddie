@@ -135,7 +135,7 @@ public class FourBitSequence {
 				for(int j = 0; j <64; j+=4){
 					charvalue = (mask & dna[i])>>j;
 					System.out.println(Tools_Bit.LongAsBitString(charvalue));
-					if(charvalue==0x1)array[arraycount] = 'A';
+						 if(charvalue==0x1) array[arraycount] = 'A';
 					else if(charvalue==0x2) array[arraycount] = 'C';
 					else if(charvalue==0x4) array[arraycount] = 'G';
 					else if(charvalue==0x8) array[arraycount] = 'T';
