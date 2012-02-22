@@ -77,11 +77,20 @@ public class FourBitSequence {
 		if(pos >= this.length) throw new ArrayIndexOutOfBoundsException();
 		if(!LorR){
 			int offset = pos >> bitoff;
-			int sub_numb = pos % 16;
-			return getAsChar(this.dna[offset]<<sub_numb, this.LorR);
+			System.out.println("OFFSET : " + offset);
+			int sub_numb = (pos % 16)*4;
+			System.out.println("SUBNUM : " + sub_numb);
+			System.out.println(Tools_Bit.LongAsBitString(this.dna[offset]));
+			System.out.println(Tools_Bit.LongAsBitString(this.dna[offset]>>sub_numb));
+			System.out.println(Tools_Bit.LongAsBitString(0xf<<60));
+			System.out.println(Tools_Bit.LongAsBitString((0xf&(this.dna[offset]>>sub_numb))));
+			System.out.println("");
+			return getAsChar(0xf&(this.dna[offset]>>sub_numb), this.LorR);
 		}
 		else{
-			return '-';
+			int offset = pos >> bitoff;
+			int sub_numb = (64-(pos % 16))*4;
+			return getAsChar(0xf&(this.dna[this.dna.length-offset-1])<<sub_numb, this.LorR);
 		}
 	}
 	
@@ -168,7 +177,6 @@ public class FourBitSequence {
 					shift = (this.length % 16)*4;
 					jshift = (64-shift);
 					mask<<=jshift;
-					
 				}
 				for(int j = 0; j <shift; j+=4){
 					charvalue = (mask & dna[i])>>j+jshift;
@@ -183,8 +191,8 @@ public class FourBitSequence {
 		return array;
 	}
 	
-	public char getAsChar(long charvalue, boolean invert){
-		if(invert){
+	private static char getAsChar(long charvalue, boolean invert){
+		if(!invert){
 			if(charvalue==0x1) return 'A';
 			else if(charvalue==0x2) return 'C';
 			else if(charvalue==0x4) return 'G';
@@ -206,8 +214,7 @@ public class FourBitSequence {
 			else return '-';
 		}
 		else{
-			//System.out.println(Tools_Bit.LongAsBitString(charvalue));
-			 if(charvalue==0x1) return'T';
+				 if(charvalue==0x1) return'T';
 			else if(charvalue==0x2) return'G';
 			else if(charvalue==0x4) return'C';
 			else if(charvalue==0x8) return'A';
@@ -229,7 +236,9 @@ public class FourBitSequence {
 		}
 	}
 	
-	public void debugSeq(int i){
+	
+	@SuppressWarnings("unused")
+	private void debugSeq(int i){
 		if(i != currentdebug){
 			System.out.print("\n");
 		}
@@ -237,6 +246,5 @@ public class FourBitSequence {
 		System.out.print("\n" + r);
 		currentdebug = i;
 	}
-	
 	
 }
