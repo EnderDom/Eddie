@@ -24,9 +24,9 @@ public class FourBitSequence {
 	 * Mask:
 	 * needs to equal to the amount
 	 * offset by the right bitwise shift
-	 * ie ..11111111 
+	 * ie ..1111 
 	 */
-	int bitmask = 0xff;
+	int bitmask = 0xf;
 	
 	int bitoff = 4; //2 less powers from BitSet's 6 as DNA is 4 bits large
 	
@@ -72,13 +72,17 @@ public class FourBitSequence {
 		parseString(sequence);
 	}
 	
-	//TODO complete
-	public boolean get(int pos){
-		int offset = pos >> bitoff;
-		if (offset >= dna.length){
-			
+	public char get(int pos){
+		//TODO add if revo
+		if(pos >= this.length) throw new ArrayIndexOutOfBoundsException();
+		if(!LorR){
+			int offset = pos >> bitoff;
+			int sub_numb = pos % 16;
+			return getAsChar(this.dna[offset]<<sub_numb, this.LorR);
 		}
-		return false;
+		else{
+			return '-';
+		}
 	}
 	
 	/*
@@ -111,61 +115,118 @@ public class FourBitSequence {
 				case 'X' : dna[offset] <<= 4; dna[offset] |= 0xf; break;
 				case '-' : dna[offset] <<= 4; dna[offset] |= 0x0; break;
 				case '*' : dna[offset] <<= 4; dna[offset] |= 0x0; break;
+				case '.' : dna[offset] <<= 4; dna[offset] |= 0x0; break;
+				default  : Logger.getRootLogger().warn("Input Non-DNA character" + arr[i]); break;
 			}
-			debugSeq(offset);
-			System.out.print(arr[i] + " ");
+			//debugSeq(offset);
+			//System.out.print(arr[i] + " ");
 		}
-		System.out.print("\n");
+		
+		dna[dna.length-1]<<= (16-(sequence.length() % 16))*4; /*
+		 													   * This shifts the incomplete 
+		 													   * long fully to the right,
+		 													   * there most be a simpler way
+		 													   * but I can't think of one atm.
+		 													   */ 
+		//debugSeq(dna.length-1);
+		//System.out.print("\n");
+	}
+	
+	public String getAsStringRevComp(){
+		return new String(getAsCharArray(!this.LorR));
 	}
 
 	public String getAsString(){
-		return new String(getAsCharArray());
+		return new String(getAsCharArray(this.LorR));
 	}
 	
-	public char[] getAsCharArray(){
+	public char[] getAsCharArray(boolean leftorright){
 		char[] array = new char[this.length];
 		int arraycount=0;
-		if(!LorR){
+		if(!leftorright){
 			for(int i =0; i < dna.length; i++){
 				long mask = 0xf;			
-				//mask<<=60;
-				System.out.println(Tools_Bit.LongAsBitString(mask));
-				System.out.println();
+				mask<<=60;				
 				long charvalue = 0x0;
 				for(int j = 0; j <64; j+=4){
-					charvalue = (mask & dna[i])>>j;
-					System.out.println(Tools_Bit.LongAsBitString(charvalue));
-						 if(charvalue==0x1) array[arraycount] = 'A';
-					else if(charvalue==0x2) array[arraycount] = 'C';
-					else if(charvalue==0x4) array[arraycount] = 'G';
-					else if(charvalue==0x8) array[arraycount] = 'T';
+					charvalue = (mask & dna[i])>>(60-j);
+					//System.out.println(Tools_Bit.LongAsBitString(charvalue));
+					array[arraycount] = getAsChar(charvalue, leftorright);
+					arraycount++;
+					if(arraycount == this.length)break;
+					mask>>>=4;
+				}
+			}
+		}
+		else{
+			for(int i =dna.length-1; i > -1; i--){
+				long mask = 0xf;			
+				long charvalue = 0x0;
+				int shift = 64;
+				int jshift = 0;
+				if(i==dna.length-1){ 
+					shift = (this.length % 16)*4;
+					jshift = (64-shift);
+					mask<<=jshift;
 					
-					else if(charvalue==0x5) array[arraycount] = 'R';
-					else if(charvalue==0xa) array[arraycount] = 'Y';
-					else if(charvalue==0x6) array[arraycount] = 'S';
-					else if(charvalue==0x9) array[arraycount] = 'W';
-					else if(charvalue==0xc) array[arraycount] = 'K';
-					else if(charvalue==0x3) array[arraycount] = 'M';
-					
-					else if(charvalue==0xe) array[arraycount] = 'B';
-					else if(charvalue==0xd) array[arraycount] = 'D';
-					else if(charvalue==0xb) array[arraycount] = 'H';
-					else if(charvalue==0x7) array[arraycount] = 'V';
-					
-					else if(charvalue==0xf) array[arraycount] = 'N';
-					else if(charvalue==0xf) array[arraycount] = 'X';
-					else if(charvalue==0x0) array[arraycount] = '-';
-					else if(charvalue==0x0) array[arraycount] = '*';
+				}
+				for(int j = 0; j <shift; j+=4){
+					charvalue = (mask & dna[i])>>j+jshift;
+					//System.out.println(Tools_Bit.LongAsBitString(charvalue));
+					array[arraycount] = getAsChar(charvalue, leftorright);
 					arraycount++;
 					if(arraycount == this.length)break;
 					mask<<=4;
 				}
 			}
 		}
-		else{
-			
-		}
 		return array;
+	}
+	
+	public char getAsChar(long charvalue, boolean invert){
+		if(invert){
+			if(charvalue==0x1) return 'A';
+			else if(charvalue==0x2) return 'C';
+			else if(charvalue==0x4) return 'G';
+			else if(charvalue==0x8) return 'T';
+			
+			else if(charvalue==0x5) return 'R';
+			else if(charvalue==0xa) return 'Y';
+			else if(charvalue==0x6) return 'S';
+			else if(charvalue==0x9) return 'W';
+			else if(charvalue==0xc) return 'K';
+			else if(charvalue==0x3) return 'M';
+			
+			else if(charvalue==0xe) return 'B';
+			else if(charvalue==0xd) return 'D';
+			else if(charvalue==0xb) return 'H';
+			else if(charvalue==0x7) return 'V';
+			
+			else if(charvalue==0xf) return 'N';
+			else return '-';
+		}
+		else{
+			//System.out.println(Tools_Bit.LongAsBitString(charvalue));
+			 if(charvalue==0x1) return'T';
+			else if(charvalue==0x2) return'G';
+			else if(charvalue==0x4) return'C';
+			else if(charvalue==0x8) return'A';
+			
+			else if(charvalue==0x5) return'Y';
+			else if(charvalue==0xa) return'R';
+			else if(charvalue==0x6) return'S';
+			else if(charvalue==0x9) return'W';
+			else if(charvalue==0xc) return'M';
+			else if(charvalue==0x3) return'K';
+			
+			else if(charvalue==0xe) return'V';
+			else if(charvalue==0xd) return'H';
+			else if(charvalue==0xb) return'D';
+			else if(charvalue==0x7) return'B';
+			
+			else if(charvalue==0xf) return'N';
+			else return '-';
+		}
 	}
 	
 	public void debugSeq(int i){
