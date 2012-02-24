@@ -42,12 +42,20 @@ public class FourBitSequence {
 	int currentdebug=0;
 	
 	public FourBitSequence(){
-		this(16);
+		init(16);
 	}
 	
 	//Length of Sequence
 	public FourBitSequence(int nlength){
-		
+		init(nlength);
+	}
+	
+	public FourBitSequence(String sequence){
+		init( sequence.length());
+		parseString(sequence);
+	}
+	
+	public void init(int nlength){
 		if(nlength < 0) throw new NegativeArraySizeException();
 		this.length = nlength;
 		/*
@@ -66,12 +74,7 @@ public class FourBitSequence {
 		Logger.getRootLogger().debug("Length of Sequence "+ nlength + " fits into array of "+length_long+ " longs");
 		dna = new long[length_long];
 	}
-	
-	public FourBitSequence(String sequence){
-		this( sequence.length());
-		parseString(sequence);
-	}
-	
+	//TODO finish this, still buggy
 	public char get(int pos){
 		//TODO add if revo
 		if(pos >= this.length) throw new ArrayIndexOutOfBoundsException();
@@ -82,7 +85,7 @@ public class FourBitSequence {
 			System.out.println("SUBNUM : " + sub_numb);
 			System.out.println(Tools_Bit.LongAsBitString(this.dna[offset]));
 			System.out.println(Tools_Bit.LongAsBitString(this.dna[offset]>>sub_numb));
-			System.out.println(Tools_Bit.LongAsBitString(0xf<<60));
+			System.out.println(Tools_Bit.LongAsBitString(0xf));
 			System.out.println(Tools_Bit.LongAsBitString((0xf&(this.dna[offset]>>sub_numb))));
 			System.out.println("");
 			return getAsChar(0xf&(this.dna[offset]>>sub_numb), this.LorR);
@@ -98,10 +101,12 @@ public class FourBitSequence {
 	 *  Any information held by case will be lost
 	 */
 	public void parseString(String sequence){
+		if (this.length == 0)init(sequence.length());
 		sequence = sequence.toUpperCase();
 		char[] arr = sequence.toCharArray();
 		for(int  i =0; i < sequence.length(); i++){
 			int offset = i >> bitoff;
+			if(offset == dna.length)this.extend(16); //Should only be necessary if this is instatiated without string
 			switch (arr[i]) {
 				case 'A' : dna[offset] <<= 4; dna[offset] |= 0x1; break;
 				case 'C' : dna[offset] <<= 4; dna[offset] |= 0x2; break;
@@ -125,7 +130,7 @@ public class FourBitSequence {
 				case '-' : dna[offset] <<= 4; dna[offset] |= 0x0; break;
 				case '*' : dna[offset] <<= 4; dna[offset] |= 0x0; break;
 				case '.' : dna[offset] <<= 4; dna[offset] |= 0x0; break;
-				default  : Logger.getRootLogger().warn("Input Non-DNA character" + arr[i]); break;
+				default  : Logger.getRootLogger().warn("Input Non-DNA character: " + arr[i]); break;
 			}
 			//debugSeq(offset);
 			//System.out.print(arr[i] + " ");
@@ -234,6 +239,19 @@ public class FourBitSequence {
 			else if(charvalue==0xf) return'N';
 			else return '-';
 		}
+	}
+	
+	//TODO implement
+	public void append(String input){
+		Logger.getRootLogger().warn("Method Not Yet Implemented!!!");
+	}
+	
+	private void extend(int len){
+		long[] newdna = new long[dna.length+len];
+		for(int i =0; i < dna.length ; i++){
+			newdna[i] = dna[i];
+		}
+		this.dna=newdna;
 	}
 	
 	
