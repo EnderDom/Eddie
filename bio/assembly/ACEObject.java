@@ -1,51 +1,67 @@
 package bio.assembly;
 
+import java.util.LinkedHashMap;
+
 public class ACEObject implements ACEHandler, Assembly {
 
+	LinkedHashMap<Integer, String> contignumb;
+	LinkedHashMap<String, String> contigs;
+	LinkedHashMap<String, String> qualities;
+	
+	LinkedHashMap<String, String> reads;
+	LinkedHashMap<String, String> read2contig;
+	
+	LinkedHashMap<String, Integer> offset;
+	LinkedHashMap<String, Integer> rangeleft;
+	LinkedHashMap<String, Integer> rangeright;
+	LinkedHashMap<String, Integer> orient;
+	
+	int currentcontig = -1;
+	
+	public ACEObject(){
+		contigs = new LinkedHashMap<String, String>();
+		read2contig = new LinkedHashMap<String, String>();
+		reads = new LinkedHashMap<String, String>();
+	}
 	
 	public void setRefName(String name) {
-		// TODO Auto-generated method stub
-		
+		currentcontig++;
+		contigs.put(name, "");
+		contignumb.put(currentcontig, name);
 	}
 
 	public String getRefName(int i) {
-		// TODO Auto-generated method stub
-		return null;
+		return contignumb.get(i);
 	}
 
 	public void setRefConsensus(String buffer) {
-		// TODO Auto-generated method stub
-		
+		contigs.put(contignumb.get(currentcontig), buffer);
 	}
 
 	public String getRefConsensus(String refname) {
-		// TODO Auto-generated method stub
-		return null;
+		return contigs.get(refname);
 	}
 
-	public void setRefConsensusQuality(String buffer) {
-		// TODO Auto-generated method stub
-		
+	public void setRefConsensusQuality(String buffer) { 
+		qualities.put(contignumb.get(currentcontig), buffer);
 	}
 
 	public String getRefConsensusQuality(String refname) {
-		// TODO Auto-generated method stub
-		return null;
+		return qualities.get(refname);
 	}
 
+	
+	//TODO implement
 	public void setRefLength(int i) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	public int getRefLength(String refname) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	public void setNoOfBases(int i) {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void setNoOfReads(int i) {
@@ -64,28 +80,23 @@ public class ACEObject implements ACEHandler, Assembly {
 	}
 
 	public void addQNAME(String name) {
-		// TODO Auto-generated method stub
-		
+		reads.put(name, "");	
 	}
 
 	public void addSEQ(String sequence, String qname) {
-		// TODO Auto-generated method stub
-		
+		reads.put(qname, sequence);
 	}
 
 	public void addPOS(int start, String qname) {
-		// TODO Auto-generated method stub
-		
+		offset.put(qname, start);
 	}
 
 	public void addOrientation(char orient, String qname) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	public void addRange(int start, int end, String qname) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	public void addRangePadded(int start, int end, String qname) {
