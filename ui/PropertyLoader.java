@@ -56,7 +56,7 @@ public class PropertyLoader implements Module{
     /* This is actually the 4th iteration of Eddie, 
      * though this one has been written from scratch
      */
-    public static double version = 4.09; 
+    public static double version = 4.10; 
     Level level;
     public static Logger logger;
     public String[] actions;

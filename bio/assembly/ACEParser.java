@@ -51,7 +51,6 @@ public class ACEParser {
 				swit = 0;
 				if(consensus.length() > 0){
 					handler.setRefConsensus(consensus.toString());
-					handler.setRefLength(consensus.length());
 					consensus = new StringBuilder();
 				}
 				String[] bits = line.split(" ");
@@ -107,9 +106,12 @@ public class ACEParser {
 			}
 			else if(line.startsWith("QA")){
 				String[] bits = line.split(" ");
-				if(bits.length > 5){
-					handler.addRange(Tools_String.parseString2Int(bits[2]), Tools_String.parseString2Int(bits[3]), readlate);
-					handler.addRangePadded(Tools_String.parseString2Int(bits[4]), Tools_String.parseString2Int(bits[5]), readlate);
+				if(bits.length > 4){
+					handler.addRange(Tools_String.parseString2Int(bits[1]), Tools_String.parseString2Int(bits[2]), readlate);
+					handler.addRangePadded(Tools_String.parseString2Int(bits[3]), Tools_String.parseString2Int(bits[4]), readlate);
+				}
+				else{
+					Logger.getRootLogger().warn("Length of QA to small");
 				}
 			}
 			else{

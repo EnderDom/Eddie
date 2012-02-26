@@ -17,12 +17,12 @@ public interface Assembly {
 	/*
 	 * Returns the depth of coverage at the bp position
 	 */
-	public int getDepthofContigAtPos(int contigindex, int position);
+	public int getDepthofContigAtPos(String contig, int position);
 	
 	/*
 	 * Gets the average coverage for this contig at this position
 	 */
-	public double getAverageCoverageDepth(int contigindex);
+	public double getAverageCoverageDepth(String contig);
 	
 	/*
 	 * Get global Average Coverage 
@@ -38,15 +38,15 @@ public interface Assembly {
 	/*
 	 * Get Number of reads that makes up this contig
 	 */
-	public int getReadsSize(int contigindex);
+	public int getReadsSize(String contigindex);
 	
 	/*
 	 * Get Average Read Length
 	 */
-	public int getAvgReadLength(int contigindex);
+	public double getAvgReadLength(String contigindex);
 	
 	
-	public int getTotalNoOfbpContig(int contigindex);
+	public int getTotalNoOfbpContig(String contigindex);
 	
 	public int getGlobalNoOfbp();
 }

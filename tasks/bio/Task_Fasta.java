@@ -26,7 +26,6 @@ public class Task_Fasta extends TaskXT{
 	public void run(){
 		setComplete(started);
 		Logger.getRootLogger().debug("Started running task @ "+Tools_System.getDateNow());
-		
 		/*
 		 * Convert Fasta&qual to Fastq
 		 */

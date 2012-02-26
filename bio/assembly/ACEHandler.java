@@ -19,9 +19,7 @@ public interface ACEHandler {
 	public void setRefConsensusQuality(String buffer);
 	
 	public String getRefConsensusQuality(String refname);
-	
-	public void setRefLength(int i);
-	
+		
 	public int getRefLength(String refname);
 	
 	public void setNoOfBases(int i);
