@@ -19,19 +19,19 @@ import tools.Tools_System;
 
 public class Task_Assembly extends TaskXT{
 	
-	boolean analysis;
+	boolean coverage;
 	int range;
 	int contig;
 	String name;
 	
 	public Task_Assembly(){
 		contig =-1;
-		range =0;
+		range =100;
 	}
 
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		if(cmd.hasOption("aceAnalysis"))cmd.getOptionValue("aceAnalysis");
+		if(cmd.hasOption("coverage"))coverage =true;
 		if(cmd.hasOption("numbcontig"))contig=Tools_String.parseString2Int(cmd.getOptionValue("numbcontig"));
 		if(cmd.hasOption("contig"))name=cmd.getOptionValue("contig");
 		if(cmd.hasOption("range"))range=Tools_String.parseString2Int(cmd.getOptionValue("range"));
@@ -44,42 +44,50 @@ public class Task_Assembly extends TaskXT{
 	
 	public void buildOptions(){
 		super.buildOptions();
-		options.addOption(new Option("t", "test",false, "Run Assembly Task Test "));
-		options.addOption(new Option("aceAnalysis", false, "Analyse Ace File"));
-		options.addOption(new Option("r","range", true, "Range Integer"));
-		options.addOption(new Option("n","numbcontig", true, "Contig Number to analyse"));
-		options.addOption(new Option("c","contig", true, "Contig Name to analyse"));
+		options.addOption(new Option("coverage", false, "Coverage analysis Ace File"));
+		options.addOption(new Option("range", true, "Range Integer"));
+		options.addOption(new Option("numbcontig", true, "Contig Number to analyse"));
+		options.addOption(new Option("contig", true, "Contig Name to analyse"));
 	}
 	
 	public void run(){
 		setComplete(started);
-		Logger.getRootLogger().debug("Started running task @ "+Tools_System.getDateNow());
+		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		if(testmode)runTest();
 		else{
-			if(analysis){
+			if(coverage){
 				ACEObject ace = getAce();
 				if(contig != -1){
 					name = ace.getRefName(contig);
 				}
 				if(name != null){
-					double[] coverage_ranges = ace.getRangeOfCoverages(name, range);
-					System.out.println("Coverage Analysis of " +name);
-					System.out.println("#############################");
-					System.out.println("#-----------DATA------------#");
-					
-					for(int i =0; i < coverage_ranges.length; i++)System.out.print(i*100+"-"+((i+1)*100)+ ",");
-					for(int i =0; i < coverage_ranges.length; i++)System.out.print(coverage_ranges[i]+ ",");
+					try{
+						double[] coverage_ranges = ace.getRangeOfCoverages(name, range);
+						System.out.println("Coverage Analysis of " +name);
+						System.out.println("#############################");
+						System.out.println("#-----------DATA------------#");
 						
-					System.out.println("#############################");
+						for(int i =0; i < coverage_ranges.length; i++)System.out.print(i*100+"-"+((i+1)*100)+ ",");
+						System.out.println("\n");
+						for(int i =0; i < coverage_ranges.length; i++)System.out.print(coverage_ranges[i]+ ",");
+						System.out.println("\n");
+						System.out.println("\n");
+						System.out.println("#############################");
+					}
+					catch(Exception e){
+						Logger.getRootLogger().error("Out of Cheese Error...", e);
+					}
 				}
 				else{
-					//TODO ask if all contigs to be analysed
+					Logger.getRootLogger().info("Not yet finished");
 				}
 			}
-			
+			else{
+				Logger.getRootLogger().info("No Analysis set");
+			}
 		}
 		
-		Logger.getRootLogger().debug("Finished running task @ "+Tools_System.getDateNow());
+		Logger.getRootLogger().debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
 	}
 	
@@ -109,18 +117,9 @@ public class Task_Assembly extends TaskXT{
 		File ace = null;
 		if(input.endsWith(".ace") || input.endsWith(".ACE")){
 			if((ace = getFile(input,2)) != null){
-				ACEObject obj = new ACEObject();
-				Logger.getRootLogger().debug("Parsing ACE file");
-				ACEParser parser = new ACEParser(obj);
-				try {
-					parser.parseAce(ace);
-					Logger.getRootLogger().debug("Parsing Done");
-					System.out.println("Coverage for " +obj.getRefName(2633));
-					System.out.println(Tools_Math.round(obj.getAverageCoverageDepth(obj.getRefName(2633)),3));
-				} 
-				catch (Exception e) {
-					Logger.getRootLogger().error("Error Parsing ACE file",e);
-				}
+				ACEObject obj = getAce();
+				System.out.println("Coverage for " +obj.getRefName(2633));
+				System.out.println(Tools_Math.round(obj.getAverageCoverageDepth(obj.getRefName(2633)),3));
 			}
 		}
 		else if (input.endsWith(".sam") || input.endsWith(".SAM")){

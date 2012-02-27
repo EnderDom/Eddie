@@ -2,6 +2,8 @@ package bio.assembly;
 
 import java.util.LinkedHashMap;
 
+import org.apache.log4j.Logger;
+
 
 public class ACEObject implements ACEHandler, Assembly {
 
@@ -149,7 +151,6 @@ public class ACEObject implements ACEHandler, Assembly {
 	}
 
 	
-	
 	public double getAverageCoverageDepth(String contigindex) {
 		/*
 		 * This method takes the depth of coverage at each bp of the consensus sequence
@@ -247,16 +248,26 @@ public class ACEObject implements ACEHandler, Assembly {
 	}
 
 	public double[] getRangeOfCoverages(String contigindex, int range) {
-		int arraysize = this.contigs.get(contigindex).length()/range;
-		if(this.contigs.get(contigindex).length()%range != 0)arraysize++;
-		double[] data = new double[arraysize];
-		for(int i = 0 ; i < arraysize;i++){
-			for(int j =0; j < range; j++){
-				data[i] += getDepthofContigAtPos(contigindex,i+j);
-				if(j == range-1)data[i]/=j;
+		if(this.contigs.get(contigindex) != null){
+			Logger.getRootLogger().trace("Contig Size " + this.contigs.get(contigindex).length());
+			int arraysize = this.contigs.get(contigindex).length()/range;
+			if(this.contigs.get(contigindex).length()%range != 0)arraysize++;
+			Logger.getRootLogger().trace("Array Size of "+ arraysize + " Calculated");
+			double[] data = new double[arraysize];
+			for(int i = 0 ; i < arraysize;i++){
+				System.out.print("\rCalculating..."+(i+1) +" of " + arraysize);
+				for(int j =0; j < range; j++){
+					data[i] += getDepthofContigAtPos(contigindex,(i*100)+j);
+					if(j == range-1)data[i]/=j;
+				}
 			}
+			System.out.print("\n");
+			return data;
 		}
-		return data;
+		else{
+			Logger.getRootLogger().fatal("That Contig Name " + contigindex + " does not exist");
+			return null;
+		}
 	}
 
 	

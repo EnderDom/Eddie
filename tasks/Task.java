@@ -86,6 +86,7 @@ public class Task implements Runnable, Future<Object> {
 		try {
 			CommandLine cmd = parser.parse(getOptions(), args);
 			if(cmd.hasOption("test")){
+				
 				testmode =true;
 			}
 			if(cmd.hasOption("opts")){

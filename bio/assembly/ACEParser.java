@@ -28,9 +28,6 @@ public class ACEParser {
 		this.handler = handler;
 	}
 	
-	/*
-	 *TODO TEST THIS METHOD!!!
-	 */
 	public int parseAce(File acefile) throws IOException{
 		if(handler == null)throw new IOException("No Handler set for this parser");
 		int count=0;
