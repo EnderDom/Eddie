@@ -91,6 +91,7 @@ public class Task_Assembly extends TaskXT{
 	    setComplete(finished);
 	}
 	
+
 	public ACEObject getAce(){
 		File ace = null;
 		ACEObject obj = new ACEObject();
@@ -110,7 +111,7 @@ public class Task_Assembly extends TaskXT{
 		}
 		return obj;
 	}
-	
+	//TODO test padded string	
 	public void runTest(){
 		Logger.getRootLogger().debug("Testing Assembly Task");
 		

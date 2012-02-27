@@ -21,6 +21,7 @@ public class ACEObject implements ACEHandler, Assembly {
 	LinkedHashMap<String, Integer> rangeright;
 	LinkedHashMap<String, Integer> rangeleftpad;
 	LinkedHashMap<String, Integer> rangerightpad;
+	LinkedHashMap<String, Integer> positions;
 	
 	int currentcontig = -1;
 	/*
@@ -85,7 +86,6 @@ public class ACEObject implements ACEHandler, Assembly {
 	}
 
 	public void setOrientation(char orient) {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -99,7 +99,7 @@ public class ACEObject implements ACEHandler, Assembly {
 	}
 
 	public void addPOS(int start, String qname) {
-
+		this.positions.put(qname, start);
 	}
 
 	public void addOrientation(char orient, String qname) {
@@ -129,6 +129,25 @@ public class ACEObject implements ACEHandler, Assembly {
 			}
 		}
 		return iret;
+	}
+	
+	//TODO test this
+	public String getPaddedString(String qname){
+		String read = getReadAsString(qname);
+		StringBuilder bid = new StringBuilder();
+		int pos = this.positions.get(qname);
+		for(int i =0; i < pos; i++){
+			bid.append("-");
+		}
+		pos = rangeleftpad.get(qname);
+		bid.append(read.substring(0, pos).toLowerCase());
+		bid.append(read.substring(pos, rangerightpad.get(qname)));
+		bid.append(read.substring(rangerightpad.get(qname),read.length()).toLowerCase());
+		return bid.toString();
+	}
+	
+	public String getReadAsString(String qname){
+		return this.reads.get(qname);
 	}
 
 	/*
