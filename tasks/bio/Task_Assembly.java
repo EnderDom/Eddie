@@ -79,7 +79,7 @@ public class Task_Assembly extends TaskXT{
 					}
 				}
 				else{
-					Logger.getRootLogger().info("Not yet finished");
+					Logger.getRootLogger().info("Contig Name is null... not yet finished");
 				}
 			}
 			else{

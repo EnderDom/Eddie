@@ -140,10 +140,18 @@ public class ACEObject implements ACEHandler, Assembly {
 		int depth = 0;
 		for(String readname : read2contig.keySet()){
 			if(read2contig.get(readname).contentEquals(contigname)){
+				System.out.print(readname + ") "+position+" p) "+ rangeleftpad.get(readname)+"- "+ rangerightpad.get(readname)+"  r) "+ rangeleft.get(readname)+"-"+ rangeright.get(readname));
 				if(rangerightpad.get(readname) > position && rangeleftpad.get(readname) < position){
 					if(this.reads.get(readname).charAt((position)-rangeleft.get(readname)) != '*' && this.reads.get(readname).charAt((position)-rangeleft.get(readname)) != '-'){
 						depth++;
+						System.out.println( " :: Yes");
 					}
+					else{
+						System.out.println( " :: No");
+					}
+				}
+				else{
+					System.out.println( " :: No");
 				}
 			}
 		}
@@ -247,21 +255,29 @@ public class ACEObject implements ACEHandler, Assembly {
 		return len;
 	}
 
+	/*
+	 * This is general compicated by the way coverage is usually calculated
+	 * as the no of bp / the length. As some bp will not be present in the consensus.
+	 * Here I went for the idea that the range would be equivalent to the actual
+	 * 
+	 */
 	public double[] getRangeOfCoverages(String contigindex, int range) {
 		if(this.contigs.get(contigindex) != null){
-			Logger.getRootLogger().trace("Contig Size " + this.contigs.get(contigindex).length());
-			int arraysize = this.contigs.get(contigindex).length()/range;
-			if(this.contigs.get(contigindex).length()%range != 0)arraysize++;
-			Logger.getRootLogger().trace("Array Size of "+ arraysize + " Calculated");
-			double[] data = new double[arraysize];
-			for(int i = 0 ; i < arraysize;i++){
-				System.out.print("\rCalculating..."+(i+1) +" of " + arraysize);
-				for(int j =0; j < range; j++){
-					data[i] += getDepthofContigAtPos(contigindex,(i*100)+j);
-					if(j == range-1)data[i]/=j;
+			String original = this.contigs.get(contigindex);
+			String slimmed = this.contigs.get(contigindex).replaceAll("\\*", "").replaceAll("-", "");
+			int len=slimmed.length()/range;
+			if(slimmed.length() % range != 0)len++;
+			double data[] = new double[len];
+			int dataindex=0;
+			int index=0;
+			for(int i = 0; i < original.length(); i++){
+				if(original.charAt(i) != '*' && original.charAt(i) != '-')index++;
+				if(index == range){
+					index=0;
+					dataindex++;
 				}
+				data[dataindex] += this.getDepthofContigAtPos(contigindex, i);
 			}
-			System.out.print("\n");
 			return data;
 		}
 		else{
