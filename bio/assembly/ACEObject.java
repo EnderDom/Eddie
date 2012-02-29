@@ -4,6 +4,8 @@ import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
 
+import bio.fasta.Fasta;
+
 
 public class ACEObject implements ACEHandler, Assembly {
 
@@ -35,6 +37,7 @@ public class ACEObject implements ACEHandler, Assembly {
 		read2contig = new LinkedHashMap<String, String>();
 		reads = new LinkedHashMap<String, String>();
 		contignumb = new LinkedHashMap<Integer, String>();
+		positions = new LinkedHashMap<String, Integer>();
 		rangeleft = new LinkedHashMap<String, Integer>();
 		rangeright = new LinkedHashMap<String, Integer>();
 		rangeleftpad = new LinkedHashMap<String, Integer>();
@@ -90,6 +93,7 @@ public class ACEObject implements ACEHandler, Assembly {
 	}
 
 	public void addQNAME(String name) {
+		if(reads.containsKey(name))Logger.getRootLogger().warn("Multiple reads with same name " +name);
 		reads.put(name, "");
 		read2contig.put(name, this.getRefName(currentcontig));
 	}
@@ -159,18 +163,10 @@ public class ACEObject implements ACEHandler, Assembly {
 		int depth = 0;
 		for(String readname : read2contig.keySet()){
 			if(read2contig.get(readname).contentEquals(contigname)){
-				System.out.print(readname + ") "+position+" p) "+ rangeleftpad.get(readname)+"- "+ rangerightpad.get(readname)+"  r) "+ rangeleft.get(readname)+"-"+ rangeright.get(readname));
-				if(rangerightpad.get(readname) > position && rangeleftpad.get(readname) < position){
-					if(this.reads.get(readname).charAt((position)-rangeleft.get(readname)) != '*' && this.reads.get(readname).charAt((position)-rangeleft.get(readname)) != '-'){
+				if(positions.get(readname)+rangerightpad.get(readname) > position && positions.get(readname)+rangeleftpad.get(readname) < position){
+					if(this.reads.get(readname).charAt(position-positions.get(readname)) != '*' && this.reads.get(readname).charAt(position-positions.get(readname)) != '-'){
 						depth++;
-						System.out.println( " :: Yes");
 					}
-					else{
-						System.out.println( " :: No");
-					}
-				}
-				else{
-					System.out.println( " :: No");
 				}
 			}
 		}
@@ -290,6 +286,7 @@ public class ACEObject implements ACEHandler, Assembly {
 			int dataindex=0;
 			int index=0;
 			for(int i = 0; i < original.length(); i++){
+				System.out.print("\r"+i);
 				if(original.charAt(i) != '*' && original.charAt(i) != '-')index++;
 				if(index == range){
 					index=0;
@@ -297,6 +294,13 @@ public class ACEObject implements ACEHandler, Assembly {
 				}
 				data[dataindex] += this.getDepthofContigAtPos(contigindex, i);
 			}
+			for(int i =0; i < len-1; i++){
+				data[i] /= range;
+			}
+			int reman= slimmed.length() % range;
+			if(slimmed.length() % range == 0)data[len-1] /= range;
+			else data[len-1] /= reman;
+			System.out.print("\n");
 			return data;
 		}
 		else{
@@ -305,6 +309,13 @@ public class ACEObject implements ACEHandler, Assembly {
 		}
 	}
 
-	
+	public Fasta getFastaFromConsensus(){
+		Fasta fasta = new Fasta();
+		for(String name : this.contigs.keySet()){
+			String str = this.contigs.get(name).replaceAll("*", "");
+			fasta.addSequence(name, str);
+		}
+		return fasta;
+	}
 
 }

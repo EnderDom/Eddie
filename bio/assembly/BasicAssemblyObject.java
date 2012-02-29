@@ -197,7 +197,6 @@ public class BasicAssemblyObject implements SAMHandler, ACEHandler{
 
 	public void addQNAME(String string) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	public void addFLAG(int parseString2Int, String qname) {

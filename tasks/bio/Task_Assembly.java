@@ -11,6 +11,7 @@ import bio.assembly.ACEObject;
 import bio.assembly.ACEParser;
 import bio.assembly.BasicAssemblyObject;
 import bio.assembly.SAMParser;
+import bio.fasta.Fasta;
 
 import tasks.TaskXT;
 import tools.Tools_Math;
@@ -20,6 +21,7 @@ import tools.Tools_System;
 public class Task_Assembly extends TaskXT{
 	
 	boolean coverage;
+	boolean getfasta;
 	int range;
 	int contig;
 	String name;
@@ -35,6 +37,7 @@ public class Task_Assembly extends TaskXT{
 		if(cmd.hasOption("numbcontig"))contig=Tools_String.parseString2Int(cmd.getOptionValue("numbcontig"));
 		if(cmd.hasOption("contig"))name=cmd.getOptionValue("contig");
 		if(cmd.hasOption("range"))range=Tools_String.parseString2Int(cmd.getOptionValue("range"));
+		if(cmd.hasOption("getfasta"))getfasta=true;
 		if(range <1)range=100;
 	}
 	
@@ -45,6 +48,7 @@ public class Task_Assembly extends TaskXT{
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("coverage", false, "Coverage analysis Ace File"));
+		options.addOption(new Option("getfasta", false, "Save Consensus Sequences as fasta"));
 		options.addOption(new Option("range", true, "Range Integer"));
 		options.addOption(new Option("numbcontig", true, "Contig Number to analyse"));
 		options.addOption(new Option("contig", true, "Contig Name to analyse"));
@@ -67,7 +71,7 @@ public class Task_Assembly extends TaskXT{
 						System.out.println("#############################");
 						System.out.println("#-----------DATA------------#");
 						
-						for(int i =0; i < coverage_ranges.length; i++)System.out.print(i*100+"-"+((i+1)*100)+ ",");
+						for(int i =0; i < coverage_ranges.length; i++)System.out.print(i*range+"-"+((i+1)*range)+ ",");
 						System.out.println("\n");
 						for(int i =0; i < coverage_ranges.length; i++)System.out.print(coverage_ranges[i]+ ",");
 						System.out.println("\n");
@@ -82,9 +86,24 @@ public class Task_Assembly extends TaskXT{
 					Logger.getRootLogger().info("Contig Name is null... not yet finished");
 				}
 			}
-			else{
-				Logger.getRootLogger().info("No Analysis set");
+			else if(getfasta){
+				if(this.output != null){
+					ACEObject ace = getAce();
+					Fasta fasta = ace.getFastaFromConsensus();
+					try{
+					fasta.save2Fasta(this.getFile(output, IS_FILE));
+					}
+					catch(Exception e){
+						Logger.getRootLogger().error("Error Saving Fasta", e);
+					}
+				}
+				else{
+					Logger.getRootLogger().error("Set Output!");
+				}
 			}
+			else{
+				Logger.getRootLogger().info("Not Task set");
+			}			
 		}
 		
 		Logger.getRootLogger().debug("Finished running Assembly Task @ "+Tools_System.getDateNow());

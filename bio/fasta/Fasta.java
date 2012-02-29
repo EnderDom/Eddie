@@ -99,6 +99,20 @@ public class Fasta implements FastaHandler{
 		out.close();fstream.close();
 	}
 	
+	public void save2Fasta(File output)throws IOException{
+		FileWriter fstream = new FileWriter(output);
+		BufferedWriter out = new BufferedWriter(fstream);
+		for(String str : sequences.keySet()){
+			if(Tools_Fasta.checkFastq(str, sequences.get(str), qualities.get(str))){
+				Tools_Fasta.saveFasta(str, sequences.get(str), out);
+			}
+			else{
+				throw new IOException("Fasta failed QC check");
+			}
+		}
+		out.close();fstream.close();
+	}
+	
 	public void save2FastaAndQual(File output, File quality)throws IOException{
 		FileWriter fstream = new FileWriter(output);
 		BufferedWriter out = new BufferedWriter(fstream);
