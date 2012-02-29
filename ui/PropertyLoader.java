@@ -1,6 +1,7 @@
 package ui;
 
 import gui.EddieGUI;
+import gui.FileViewerModel;
 import gui.utilities.SpringUtilities;
 
 import java.awt.Container;
@@ -56,7 +57,9 @@ public class PropertyLoader implements Module{
     /* This is actually the 4th iteration of Eddie, 
      * though this one has been written from scratch
      */
-    public static double version = 4.11; 
+    public static int engineversion = 4;
+    
+    public static double guiversion = 0.13;
     Level level;
     public static Logger logger;
     public String[] actions;
@@ -65,11 +68,13 @@ public class PropertyLoader implements Module{
 	public static String defaultlnf =  "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
 	public String[] args;
 	public String modulename;
+	private String slash; 
 	
 	public PropertyLoader() {
 		level = Level.WARN;
         props = new Properties();
         modulename = this.getClass().getName();
+        slash = System.getProperty("file.separator");
 	}
 	
 	public int loadBasicArguments(String[] args){
@@ -128,7 +133,7 @@ public class PropertyLoader implements Module{
 			buildOptions();
 		}
 		HelpFormatter help = new HelpFormatter();
-		help.printHelp("ls", "-- Eddie v"+version+" Help Menu --", options, "-- Share And Enjoy! --");
+		help.printHelp("ls", "-- Eddie v"+guiversion+" Help Menu --", options, "-- Share And Enjoy! --");
 		System.out.println();
 		System.out.println("Use -c -task for list of command line tasks");
 		System.out.println("Use -c -task taskname -opts for that task's helpmenu");
@@ -159,9 +164,9 @@ public class PropertyLoader implements Module{
          * If not, then see if file exists in the default user home directory
          * If it does, set rootfolder as user home
          */
-        else if(new File(System.getProperty("user.home")+System.getProperty("file.separator")+propertyfilename).exists()){
-            rootfolder = System.getProperty("user.home")+System.getProperty("file.separator");
-            propsbeenloaded = loadPropertyFile(new File(System.getProperty("user.home")+System.getProperty("file.separator")+propertyfilename));
+        else if(new File(System.getProperty("user.home")+slash+propertyfilename).exists()){
+            rootfolder = System.getProperty("user.home")+slash;
+            propsbeenloaded = loadPropertyFile(new File(System.getProperty("user.home")+slash+propertyfilename));
         }
         return propsbeenloaded;
 	}
@@ -212,7 +217,7 @@ public class PropertyLoader implements Module{
         if(propsbeenloaded){
         	//Get Workspace if not set
 	        if(!props.containsKey("WORKSPACE")){
-	           	String defaulthome = System.getProperty("user.home")+System.getProperty("file.separator")+"eddie";
+	           	String defaulthome = System.getProperty("user.home")+slash+"eddie";
 	            Object input = JOptionPane.showInputDialog(pane, "Create EddieGUI Workspace folder at default location: ?", "Default EddieGUI Workspace Folder", 1, null, new Object[] {
 	                defaulthome, "Choose Another Location"}, "OK");
 	            if(input != null){
@@ -264,13 +269,13 @@ public class PropertyLoader implements Module{
     }
     
 	private void startLog() {
-		File logfolder = new File(getWorkspace()+ System.getProperty("file.separator") + "logs");
+		File logfolder = new File(getWorkspace()+ slash + "logs");
 		preLog("Initialising Log...");
 		if (logfolder.isFile()) {
 			System.out.println("Failed To log is standard location!!");
 			int i = 0;
 			while (logfolder.isFile()) {
-				logfolder = new File(getWorkspace()	+ System.getProperty("file.separator") + "logs" + i);
+				logfolder = new File(getWorkspace()	+ slash + "logs" + i);
 			}
 		}
 		if (!logfolder.exists()) {
@@ -278,15 +283,15 @@ public class PropertyLoader implements Module{
 			if(!done)System.out.println("Could not make a log folder @ " + logfolder.getPath());
 		}
 		if(logfolder.isDirectory()){
-            File log_properties = new File(logfolder.getPath()+System.getProperty("file.separator")+"log4j.properties");
+            File log_properties = new File(logfolder.getPath()+slash+"log4j.properties");
             if(log_properties.isFile()){
-                logger = Logger.getLogger(logfolder.getPath()+System.getProperty("file.separator")+"log4j.properties");
+                logger = Logger.getLogger(logfolder.getPath()+slash+"log4j.properties");
                 PropertyConfigurator.configure(log_properties.getPath());
             }
             else{
-                Properties defaults = getDefaultLogProperties(logfolder.getPath()+System.getProperty("file.separator"));
+                Properties defaults = getDefaultLogProperties(logfolder.getPath()+slash);
                 save(log_properties.getPath(), defaults);
-                logger = Logger.getLogger(logfolder.getPath()+System.getProperty("file.separator")+"log4j.properties");
+                logger = Logger.getLogger(logfolder.getPath()+slash+"log4j.properties");
                 PropertyConfigurator.configure(defaults);
                 
             }
@@ -318,7 +323,7 @@ public class PropertyLoader implements Module{
 	}
 
 	public String getModuleFolder(){
-		return getPropOrSet("MODULES", rootfolder+"Modules"+System.getProperty("file.separator"));
+		return getPropOrSet("MODULES", rootfolder+"Modules"+slash);
 	}
 
 	public static boolean save(String filepath, Properties props1) {
@@ -366,7 +371,7 @@ public class PropertyLoader implements Module{
 					if ((start = in.indexOf("VERS:")) != -1) {
 						double oldvers = Tools_String.parseString2Double(in
 								.substring(start, in.length()));
-						if(oldvers != version){
+						if(oldvers != guiversion){
 							//TODO Compatibilaty
 						}
 					}
@@ -386,7 +391,7 @@ public class PropertyLoader implements Module{
 	}
 
 	private boolean saveInfoFile(File file) {
-		return Tools_File.quickWrite("VERS:" + version, file, false);
+		return Tools_File.quickWrite("VERS:" + guiversion, file, false);
 	}
 
 	public static String getEnvirons() {
@@ -419,7 +424,7 @@ public class PropertyLoader implements Module{
 	public String[][] getChangableStats(){
 		//These need to all be the same length
 		String[] stats = new String[]{"DBHOST", "DBNAME", "DBUSER","AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR", "FILES_XML"};
-		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1", "/usr/bin/", getWorkspace()+File.pathSeparator+"blas_db"+File.pathSeparator, getWorkspace()+File.pathSeparator+"filedb.xml"};
+		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1", "/usr/bin/", getWorkspace()+System.getProperty("file.separator")+"blas_db"+File.pathSeparator, getWorkspace()+System.getProperty("file.separator")+FileViewerModel.filename};
 		String[] tool_tips = new String[]{"Host Database IP/Name", "Database Name", "Database Username","Max number of auxiliary threads","Max number of primary threads", "Directory that contains blast executables", 
 				"XML file which list current files in project", "File XML list location"};
 		String[][] ret = new String[3][stats.length];
@@ -430,8 +435,8 @@ public class PropertyLoader implements Module{
 	}
 	
 	public String[][] getUnchangableStats(){
-		String[] stats = new String[]{"PRELNF","MODULES"};
-		String[] stats_val = new String[]{defaultlnf, rootfolder+"Modules"+System.getProperty("file.separator")};
+		String[] stats = new String[]{"PRELNF","MODULES", "VERSION"};
+		String[] stats_val = new String[]{defaultlnf, rootfolder+"Modules"+System.getProperty("file.separator"), guiversion+""};
 		String[][] ret = new String[2][stats.length];
 		ret[0] = stats;
 		ret[1] = stats_val;
@@ -566,7 +571,7 @@ public class PropertyLoader implements Module{
 	    menuItem.setActionCommand(this.modulename);
 	    actions[0] = this.modulename;
 	    menuItem.addActionListener(eddiegui);
-	    Tools_Modules.add2JMenuBar(eddiegui.getMenu(), menuItem, "Properties");
+	    Tools_Modules.add2JMenuBar(eddiegui.getMenu(), menuItem, "Properties", true);
 	}
 
 	public String getModuleName() {

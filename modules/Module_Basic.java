@@ -61,7 +61,7 @@ public abstract class Module_Basic implements Module{
 	    actions1[i] = getModuleName()+i;
 	    setActions(actions1);
 	    menuItem.addActionListener(gui);
-	    Tools_Modules.add2JMenuBar(menubar, menuItem, new String(getMenuString()));
+	    Tools_Modules.add2JMenuBar(menubar, menuItem, new String(getMenuString()), true);
 	}
 
 	public void actOnTask(String s) {

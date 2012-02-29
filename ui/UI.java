@@ -15,5 +15,7 @@ public interface UI {
 	public void update(Task task);
 	
 	public boolean isGUI();
+	
+	public void sendAlert(String alert);
 		
 }

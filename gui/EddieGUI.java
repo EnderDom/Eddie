@@ -1,5 +1,6 @@
 package gui;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -40,15 +41,22 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
     public static boolean testmode = true;
     public double version;
     DesktopPane desktop;
+    FileViewer view;
 	
 	public EddieGUI(PropertyLoader loader){
-		super("Eddie v"+PropertyLoader.version);
-		this.version= PropertyLoader.version;
+		super("Eddie v"+PropertyLoader.guiversion);
+		this.version= PropertyLoader.guiversion;
 		System.out.println("Eddie v" + version + " by (S.C.Corp.)");
+		
 		//View Size
-		this.setBounds(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
+		Dimension d =Toolkit.getDefaultToolkit().getScreenSize();
+		//-20 as screen size includes menu bars etc..
+		d.setSize(d.getWidth(), d.getHeight()-20);
+		this.setBounds(new Rectangle(d));
 		this.setPreferredSize(this.getBounds().getSize());
 		
+		//Centres frame
+		this.setLocationRelativeTo(null);
 		//Load Properties
 		load = loader;
 		load.loadPropertiesGUI(this);
@@ -74,22 +82,25 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		modmanager.addPrebuiltModule("PROPERTYLOADER", load, this);
 		modmanager.addPrebuiltModule("MYSELF", modmanager, this);
 		
+		view = new FileViewer();
+		modmanager.addPrebuiltModule("FILEVIEWER", view, this);
 
 		Logger.getRootLogger().debug("Set EddieGUI to Visible");
 		//Finish
 		pack();
 		setVisible(true);
-		
 	}
 
 	public void exit(){
 		int i = JOptionPane.showConfirmDialog(this, "Exit EddieGUI v"+version+"?", "Exit?", JOptionPane.YES_NO_OPTION);
 		if(i !=1){
-			 PropertyLoader.save((new StringBuilder(String.valueOf(load.rootfolder))).append(PropertyLoader.propertyfilename).toString(), load.getProps());
-	         Logger.getRootLogger().info((new StringBuilder("Closing Eddie @ ")).append(Tools_System.getDateNow()).toString());
-	         LogManager.shutdown();
-	         setVisible(false);
-	         dispose();
+			
+			PropertyLoader.save((new StringBuilder(String.valueOf(load.rootfolder))).append(PropertyLoader.propertyfilename).toString(), load.getProps());
+			view.saveFile(load.getWorkspace());
+	        Logger.getRootLogger().info((new StringBuilder("Closing Eddie @ ")).append(Tools_System.getDateNow()).toString());
+	        LogManager.shutdown();
+	        setVisible(false);
+	        dispose();
 		}
 	}
 	
@@ -199,6 +210,10 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 
 	public boolean isGUI() {
 		return true;
+	}
+	
+	public void sendAlert(String str){
+		JOptionPane.showMessageDialog(this, str);
 	}
 	
 }

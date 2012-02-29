@@ -11,7 +11,7 @@ public class Tools_Modules {
 
 	public static String menudivider = ">";
 	
-	public static JMenuBar add2JMenuBar(JMenuBar bar, JMenuItem item, String location){
+	public static JMenuBar add2JMenuBar(JMenuBar bar, JMenuItem item, String location, boolean first){
 		String[] split = location.split(menudivider);
 		JMenu menu = null;
 		boolean topmenu = false;
@@ -36,11 +36,13 @@ public class Tools_Modules {
 			}
 			if(!found){
 				JMenu menu2 = new JMenu(split[i]);
-				menu.add(menu2);
+				if(first)menu.add(menu2, 0);
+				else menu.add(menu2, menu.getItemCount());
 				menu = menu2;
 			}
 		}
-		menu.add(item);
+		if(first)menu.add(item, 0);
+		else menu.add(item, menu.getItemCount());
 		Logger.getRootLogger().trace("Built and Added MenuItem "+ item.getText());
 		return bar;
 	}

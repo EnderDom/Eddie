@@ -28,7 +28,7 @@ public class EddieCLI implements UI {
 	private Options options;
 	
 	public  EddieCLI(PropertyLoader loader, boolean persist){
-		System.out.println("Eddie v" + PropertyLoader.version + " by (S.C.Corp.)");
+		System.out.println("Eddie v" + PropertyLoader.engineversion+PropertyLoader.guiversion + " by (S.C.Corp.)");
 		load = loader;
 		load.loadPropertiesCLI();
 		/*
@@ -166,6 +166,10 @@ public class EddieCLI implements UI {
 	public boolean isGUI() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+	
+	public void sendAlert(String str){
+		Logger.getRootLogger().info(str);
 	}
 	
 }

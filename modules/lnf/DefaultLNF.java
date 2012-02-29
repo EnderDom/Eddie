@@ -27,6 +27,7 @@ public class DefaultLNF implements Module{
 	public String[] actions;
 	public static String namereplace = "LookAndFeel";
 	protected String modulename;
+	public int startinglnf; 
 
 	public boolean ownsThisAction(String s) {
 		return Tools_Modules.ownsThisAction(actions, s);
@@ -55,14 +56,14 @@ public class DefaultLNF implements Module{
 				name = uis[i].substring(numb, uis[i].length());
 				name = name.replaceAll(namereplace, "");
 			}
+			
 			boolean selected = uis[i].equalsIgnoreCase(Tools_UI.getLookAndFeel());
-			if(selected)Tools_UI.changeLnF(uis[i], gui);
 			JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem(name,selected);
 	        menuItem.setActionCommand(getModuleName()+i);
 	        actions[i] = getModuleName()+i;
 	        menuItem.addActionListener(gui);
 	        appears[i] = menuItem;
-	        Tools_Modules.add2JMenuBar(menubar, menuItem, new String(menuname+Tools_Modules.menudivider+menuname1));
+	        Tools_Modules.add2JMenuBar(menubar, menuItem, new String(menuname+Tools_Modules.menudivider+menuname1), false);
 		}
 	}
 	

@@ -38,9 +38,18 @@ public abstract class Tools_UI {
 		}
 
 		if(changed){//If Changed repack Frame to make change visible
-			SwingUtilities.updateComponentTreeUI(frame);
-			frame.pack();
-			frame.repaint();
+			if(frame.isVisible()){
+				SwingUtilities.updateComponentTreeUI(frame);
+				/*
+				 * Changing from visible to invisible 
+				 * stops weird graphics corruption that happens
+				 * on the lab iMac / jre 1.5 when LNF changed
+				 */
+				frame.setVisible(false);
+				frame.pack();
+				frame.repaint();
+				frame.setVisible(true);
+			}
 		}
 		return changed;
 	}
@@ -67,4 +76,5 @@ public abstract class Tools_UI {
 		if(auxil < 5)auxil = 5;
 		return new TaskManager(core, auxil);
 	}
+
 }
