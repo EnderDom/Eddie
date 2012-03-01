@@ -32,7 +32,9 @@ public class FileViewerModel extends AbstractTableModel{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	static String[] tableheadings = new String[]{"Name", "File___Location", "Information", "File___Type","Date___Added"};
+	String[] tableheadings;
+	String[] actualheadings;
+	private boolean[] shown;
 	private static String whitespace = "___";
 	Document data;
 	private String workspace;
@@ -42,11 +44,14 @@ public class FileViewerModel extends AbstractTableModel{
 	int rowcount=0;
 	String[][] cols;
 	
-	public FileViewerModel(EddieGUI gui){
+	public FileViewerModel(EddieGUI gui, FileViewer view){
+		tableheadings = new String[]{"Name", "File"+whitespace+"Location", "Information", "File"+whitespace+"Type","Date"+whitespace+"Added"};
+		actualheadings = tableheadings;
 		this.gui = gui;
 		this.workspace = this.gui.load.getWorkspace();
 		if(this.workspace == null)Logger.getRootLogger().error("Error, null workspace");
 		load();
+		view.repaint();
 	}
 	
 	private void load(){
@@ -56,6 +61,7 @@ public class FileViewerModel extends AbstractTableModel{
 		}
 		else{
 			createDefaultFile(file);
+			loadFile(file);
 		}
 	}
 	
@@ -111,7 +117,12 @@ public class FileViewerModel extends AbstractTableModel{
 				  e.setTextContent(tableheadings[i]);
 				  header.appendChild(e);
 			}
-			root.appendChild(header);		
+			root.appendChild(header);
+			Element files = data.createElementNS(null,"FILES");
+			root.appendChild(files);
+			//DUMMY DATA FOR TESTING REMOVE
+			Logger.getRootLogger().info("This is here for testing. TO BE REMOVED");
+			addFileData(this.tableheadings);
 			Logger.getRootLogger().debug("Built XML");
 			saveFile(file);
 		} 
@@ -123,8 +134,11 @@ public class FileViewerModel extends AbstractTableModel{
 	private void loadFile(File file){
 		boolean load = false;
 		try {
+			Logger.getRootLogger().debug("Loading XML file into object...");
 			this.data = Tools_XML.inputStreamToDocument(new FileInputStream(file));
-			Logger.getRootLogger().debug("Loaded XML file list");
+			parseHeaderData();
+			parseFileData();
+			Logger.getRootLogger().debug("Completed loading XML file list");
 			load = true;
 		} catch (FileNotFoundException e) {
 			Logger.getRootLogger().error("File.. why you no exist??",e);
@@ -150,6 +164,69 @@ public class FileViewerModel extends AbstractTableModel{
 		else return list.item(0);
 	}
 	
+	private void parseHeaderData(){
+		NodeList list2 = this.data.getElementsByTagName("HEADING");
+		if(list2.getLength() != 0){
+			this.actualheadings = new String[list2.getLength()];
+			this.shown = new boolean[list2.getLength()];
+			int tablecount =0;
+			for(int i =0; i < list2.getLength(); i++){
+				if(list2.item(i).hasAttributes()){
+					if(list2.item(i).getAttributes().item(0).getTextContent().equals("TRUE")){
+						shown[i] = true;
+						this.actualheadings[tablecount] = list2.item(i).getTextContent();
+						tablecount++;
+					}
+					else{
+						Logger.getRootLogger().debug("Table Heading " + list2.item(i).getTextContent() + " found but hidden");
+					}
+				}
+				else{
+					Logger.getRootLogger().warn("Incorrect XML File List, should include SHOWN='' value in tag space");
+				}
+			}
+			String[] temp = new String[tablecount];
+			for(int i =0; i < tablecount ;i ++ )temp[i] = actualheadings[i].replaceAll("___", " ");
+			actualheadings = temp;
+		}
+		else{
+			Logger.getRootLogger().error("Missing XML Header Names");
+		}
+	}
+	
+	private void parseFileData(){
+		NodeList list2 = this.data.getElementsByTagName("FILE");
+		cols = new String[actualheadings.length][list2.getLength()];
+		for(int i =0; i < list2.getLength(); i++){
+			String[] array = pullArray(list2.item(i));
+			for(int j=0; j < array.length; j++)cols[j][i]=array[j];
+		}
+	}
+	
+	private String[] pullArray(Node node){
+		String[] array = new String[actualheadings.length];
+		int arraycount=0;
+		NodeList list = node.getChildNodes();
+		for(int i = 0; i < list.getLength(); i++){
+			for(int j =0; j < this.tableheadings.length; j++){
+				if(this.shown[j]){
+					if(list.item(i).getNodeName().equals(this.tableheadings[j]) ){
+						if(arraycount != array.length){
+							array[arraycount] = list.item(i).getTextContent().replaceAll(whitespace, " ");
+							arraycount++;
+						}
+						else{
+							Logger.getRootLogger().error("This error means array enumeration has failed, this is due to a coding error, check src.");
+						}
+						break;
+					}
+				}
+			}
+			
+		}
+		return array;
+	}
+	
 	public void saveFile(File file){
 		Logger.getRootLogger().debug("Saving Default File XML");
 		Tools_XML.Xml2File(this.data, file);
@@ -160,24 +237,40 @@ public class FileViewerModel extends AbstractTableModel{
 	}
 	
 	public int getColumnCount() {
-		return colcount;
+		if(cols == null){
+			return 0;
+		}
+		else{
+			return cols.length;
+		}
 	}
 
 	public int getRowCount() {
-		return rowcount;
+		if(cols == null){
+			return 0;
+		}
+		else{
+			return cols[0].length;
+		}
 	}
 
-	public Object getValueAt(int arg0, int arg1) {
-		// TODO Auto-generated method stub
-		return new String("Test Arg");
+	public Object getValueAt(int row, int col) {
+		if(cols == null){
+			return "PLACE HOLDER";
+		}
+		else{
+			return cols[col][row];
+		}
 	}
+	
 
 	public String getColumnName(int column){
-		return tableheadings[column];
+		return actualheadings[column];
 	}
-	 public boolean isCellEditable(int row, int col){ 
+	
+	public boolean isCellEditable(int row, int col){ 
 		 return true; 
-	 }
+	}
 	 
 	 
 }

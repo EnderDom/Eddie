@@ -75,7 +75,7 @@ public class FileViewer extends JInternalFrame implements TableModelListener, Mo
 		this.setSize(300, 600);
 		actions = new String[1];
 		table = new JTable();
-		model = new FileViewerModel(gui);
+		model = new FileViewerModel(gui, this);
 		table.setModel(this.model);
 		spane = new JScrollPane(table);
 		this.add(spane);

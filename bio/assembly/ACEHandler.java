@@ -4,8 +4,8 @@ public interface ACEHandler {
 
 	
 	/*
-	 * Reference sequence information
 	 * 
+	 * Reference sequence information
 	 * 
 	 */
 	public void setRefName(String name);

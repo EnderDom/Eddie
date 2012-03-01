@@ -317,5 +317,5 @@ public class ACEObject implements ACEHandler, Assembly {
 		}
 		return fasta;
 	}
-
+	
 }
