@@ -59,7 +59,7 @@ public class PropertyLoader implements Module{
      */
     public static int engineversion = 4;
     
-    public static double guiversion = 0.13;
+    public static double guiversion = 0.14;
     Level level;
     public static Logger logger;
     public String[] actions;
@@ -424,7 +424,7 @@ public class PropertyLoader implements Module{
 	public String[][] getChangableStats(){
 		//These need to all be the same length
 		String[] stats = new String[]{"DBHOST", "DBNAME", "DBUSER","AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR", "FILES_XML"};
-		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1", "/usr/bin/", getWorkspace()+System.getProperty("file.separator")+"blas_db"+File.pathSeparator, getWorkspace()+System.getProperty("file.separator")+FileViewerModel.filename};
+		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1", "/usr/bin/", getWorkspace()+slash+"blas_db"+slash, getWorkspace()+slash+FileViewerModel.filename};
 		String[] tool_tips = new String[]{"Host Database IP/Name", "Database Name", "Database Username","Max number of auxiliary threads","Max number of primary threads", "Directory that contains blast executables", 
 				"XML file which list current files in project", "File XML list location"};
 		String[][] ret = new String[3][stats.length];
@@ -436,7 +436,7 @@ public class PropertyLoader implements Module{
 	
 	public String[][] getUnchangableStats(){
 		String[] stats = new String[]{"PRELNF","MODULES", "VERSION"};
-		String[] stats_val = new String[]{defaultlnf, rootfolder+"Modules"+System.getProperty("file.separator"), guiversion+""};
+		String[] stats_val = new String[]{defaultlnf, rootfolder+"Modules"+slash, guiversion+""};
 		String[][] ret = new String[2][stats.length];
 		ret[0] = stats;
 		ret[1] = stats_val;

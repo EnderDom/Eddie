@@ -13,6 +13,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import tools.Tools_XML;
@@ -30,11 +32,15 @@ public class FileViewerModel extends AbstractTableModel{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	static String[] tableheadings = new String[]{"Name", "File Location", "Comments", "File Type","Date Added"};
+	static String[] tableheadings = new String[]{"Name", "File___Location", "Information", "File___Type","Date___Added"};
+	private static String whitespace = "___";
 	Document data;
 	private String workspace;
 	public static String filename = "file_list.xml";
 	EddieGUI gui;
+	int colcount=0;
+	int rowcount=0;
+	String[][] cols;
 	
 	public FileViewerModel(EddieGUI gui){
 		this.gui = gui;
@@ -53,23 +59,59 @@ public class FileViewerModel extends AbstractTableModel{
 		}
 	}
 	
+	public void addFileData(String[] filedata){
+		if(filedata.length == tableheadings.length){
+			Node root = getRoot();
+			NodeList list = data.getElementsByTagName("FILES");
+			if(list.getLength() == 0){
+				Element files = data.createElementNS(null,"FILES");
+				root.appendChild(files);
+				Element e = data.createElementNS(null, "FILE");
+				e = buildElement(filedata,e);
+				files.appendChild(e);
+			}
+			else{
+				Node files = list.item(0);
+				Element e = data.createElementNS(null, "FILE");
+				e = buildElement(filedata,e);
+				files.appendChild(e);
+			}
+		}
+		else{
+			Logger.getRootLogger().error("File Data is not the same size as the number of headers!");
+		}
+	}
+	
+	private Element buildElement(String[] filedata, Element e){
+		Element e2;
+		for(int i =0; i < filedata.length; i++){
+			e2 = data.createElementNS(null, tableheadings[i]);
+			e2.setTextContent(filedata[i]);
+			e.appendChild(e2);
+		}
+		e2 = data.createElementNS(null, "metadata");
+		e2.setTextContent("");
+		e.appendChild(e2);
+		return e;
+	}
+	
 	private void createDefaultFile(File file){
 		try {
 			Logger.getRootLogger().debug("Building Default File XML");
 			DocumentBuilder build = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			data = build.newDocument();
-			Element header = data.createElement("HEADERS");
+			Element root = data.createElement("xml");
+			data.appendChild(root);
+			Element header = data.createElementNS(null,"HEADERS");
 			Element e;
 			for(int i =0 ; i < tableheadings.length ; i++){
 			// Child i.
 				  e = data.createElementNS(null, "HEADING");
-				  e.setAttributeNS(null, "NAME",tableheadings[i]);
 				  e.setAttributeNS(null, "SHOWN", "TRUE");
+				  e.setTextContent(tableheadings[i]);
 				  header.appendChild(e);
 			}
-			data.appendChild(header);
-			//Element files = data.createElement("FILES");
-			//data.appendChild(files);
+			root.appendChild(header);		
 			Logger.getRootLogger().debug("Built XML");
 			saveFile(file);
 		} 
@@ -99,6 +141,15 @@ public class FileViewerModel extends AbstractTableModel{
 		}
 	}
 	
+	public Node getRoot(){
+		NodeList list = this.data.getChildNodes();
+		if(list.getLength() == 0){ 
+			Logger.getRootLogger().error("XML incorrectly formatted, missing root node"); 
+			return null;
+		}
+		else return list.item(0);
+	}
+	
 	public void saveFile(File file){
 		Logger.getRootLogger().debug("Saving Default File XML");
 		Tools_XML.Xml2File(this.data, file);
@@ -109,13 +160,11 @@ public class FileViewerModel extends AbstractTableModel{
 	}
 	
 	public int getColumnCount() {
-		// TODO Auto-generated method stub
-		return 3;
+		return colcount;
 	}
 
 	public int getRowCount() {
-		// TODO Auto-generated method stub
-		return 3;
+		return rowcount;
 	}
 
 	public Object getValueAt(int arg0, int arg1) {
@@ -126,5 +175,9 @@ public class FileViewerModel extends AbstractTableModel{
 	public String getColumnName(int column){
 		return tableheadings[column];
 	}
-	
+	 public boolean isCellEditable(int row, int col){ 
+		 return true; 
+	 }
+	 
+	 
 }
