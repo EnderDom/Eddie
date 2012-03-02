@@ -17,6 +17,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import tools.Tools_System;
 import tools.Tools_XML;
 
 
@@ -55,7 +56,7 @@ public class FileViewerModel extends AbstractTableModel{
 	}
 	
 	private void load(){
-		File file = new File(this.workspace + System.getProperty("file.separator") + filename);
+		File file = getFile();
 		if(file.exists()){
 			loadFile(file);
 		}
@@ -63,6 +64,10 @@ public class FileViewerModel extends AbstractTableModel{
 			createDefaultFile(file);
 			loadFile(file);
 		}
+	}
+	
+	private File getFile(){
+		return new File(this.workspace + System.getProperty("file.separator") + filename);
 	}
 	
 	public void addFileData(String[] filedata){
@@ -81,6 +86,8 @@ public class FileViewerModel extends AbstractTableModel{
 				Element e = data.createElementNS(null, "FILE");
 				e = buildElement(filedata,e);
 				files.appendChild(e);
+				saveFile(getFile());
+				addRow(filedata);
 			}
 		}
 		else{
@@ -253,6 +260,19 @@ public class FileViewerModel extends AbstractTableModel{
 			return cols[0].length;
 		}
 	}
+	
+	public void addRow(String[] data){
+		String[][] data2 = new String[cols.length][cols[0].length+1];
+		for(int i =0; i < cols.length; i++){
+			for(int j = 0 ; j < cols[0].length; j++){
+				data2[i][j] = cols[i][j];
+			}
+		}
+		for(int i =0; i < cols.length; i++){
+			data2[i][cols[0].length] = data[i];
+		}
+		this.cols = data2;
+	}
 
 	public Object getValueAt(int row, int col) {
 		if(cols == null){
@@ -269,8 +289,47 @@ public class FileViewerModel extends AbstractTableModel{
 	}
 	
 	public boolean isCellEditable(int row, int col){ 
-		 return true; 
+		 return false; 
 	}
-	 
+
+	public void buildAndAddFile(String string) {
+		File file = new File(string);
+		Logger.getRootLogger().debug("Building file  "+ string);
+		if(file.exists()){
+			String[] filedata = new String[this.tableheadings.length];
+			if(file.isFile()){
+				String f1 = file.getName();
+				int f2 = f1.lastIndexOf(".");
+				/*
+				 * ISSUE may arise if File already has "___" in file name or path
+				 * Temporary workaround until I figure out how to get whitespace into XML
+				 */
+				if(f2 != -1 && f2 != f1.length()-1){
+					filedata[0] = f1.substring(0,f2).replaceAll(" ", "___");
+					filedata[3] = f1.substring(f2+1, f1.length()).replaceAll(" ", "___");
+				}
+				else{
+					filedata[0] = f1.replaceAll(" ", "___");
+					filedata[3] = "Unknown";
+				}
+				filedata[1] = file.getPath().replaceAll(" ", "___");
+				filedata[2] = "N_A_";
+				filedata[4] = Tools_System.getDateNow();
+				addFileData(filedata);
+			}
+			else if(file.isDirectory()){
+				Logger.getRootLogger().warn("Directories not yet supported");
+			}
+			else{
+				Logger.getRootLogger().error("Filesystem supports more than just file or folder???");
+			}
+			
+		}
+		else{
+			Logger.getRootLogger().error("File added is not a file!");
+		}
+		
+		
+	}
 	 
 }

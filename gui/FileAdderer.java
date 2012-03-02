@@ -45,11 +45,24 @@ public class FileAdderer extends JInternalFrame implements ActionListener{
 	JLabel spacer2;
 	JLabel spacer3;
 	private int filesanddirectories = JFileChooser.FILES_AND_DIRECTORIES;
+	public String button1_n = "Load";
+	public String button2_n = "Cancel";
+	private static String button1_act = "LOAD";
+	private static String button2_act = "CLOSE";
+	private static String button3_act = "ADD";
+	FileReciever fileOwner;
 
 	public FileAdderer(EddieGUI parent){
 		//Generic stuff
 		super("Add Files", true, true, true, true);
 		this.parent = parent;
+		/*
+		 * Default FileReciever is EddieGUI
+		 * However as yet no method set, so
+		 * make sure to reset this reciever
+		 */
+		this.fileOwner = parent;
+		
 		setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
 		setSize(300, 500);
 		p = new JPanel(new SpringLayout());
@@ -67,7 +80,7 @@ public class FileAdderer extends JInternalFrame implements ActionListener{
 		
 		//Mid
 		addFile = new JButton("Add Another File...");
-		addFile.setActionCommand("ADD");
+		addFile.setActionCommand(button3_act);
 		addFile.addActionListener(this);
 		spacer2 = new JLabel("");
 		spacer3 = new JLabel("");
@@ -77,10 +90,10 @@ public class FileAdderer extends JInternalFrame implements ActionListener{
 			p.add(spacer3);
 		
 		//Bottom
-		button1 = new JButton("Save");
-		button1.setActionCommand("LOAD");
-		button2 = new JButton("Cancel");
-		button2.setActionCommand("CANCEL");
+		button1 = new JButton(this.button1_n);
+		button1.setActionCommand(button1_act);
+		button2 = new JButton(button2_n);
+		button2.setActionCommand(button2_act);
 		button1.addActionListener(this);
 		button2.addActionListener(this);
 		spacer = new JLabel("");
@@ -104,17 +117,27 @@ public class FileAdderer extends JInternalFrame implements ActionListener{
 		
 		this.add(p);
 		this.pack();
-		this.setVisible(true);
 	}
 
-	public void actionPerformed(ActionEvent arg0) {
-		if(arg0.getActionCommand().contentEquals("SAVE")){
-			
+	private String[] getFiles(){
+		String[] files = new String[this.inputs.size()];
+		for(int i =0; i < this.inputs.size(); i++){
+			files[i] = this.inputs.get(i).getText();
 		}
-		else if(arg0.getActionCommand().contentEquals("CANCEL")){
+		return files;
+	}
+	
+	public void actionPerformed(ActionEvent arg0) {
+		if(arg0.getActionCommand().contentEquals(button1_act)){
+			
+			fileOwner.sendFiles(getFiles());
+
 			this.dispose();
 		}
-		else if(arg0.getActionCommand().contentEquals("ADD")){
+		else if(arg0.getActionCommand().contentEquals(button2_act)){
+			this.dispose();
+		}
+		else if(arg0.getActionCommand().contentEquals(button3_act)){
 			addRow(normalLabel);
 		}
 		else if(arg0.getActionCommand().indexOf("FILE_") != -1){
@@ -229,6 +252,8 @@ public class FileAdderer extends JInternalFrame implements ActionListener{
 		this.filesanddirectories = filesanddirectories;
 	}
 	
-	
+	public void setFileReciever(FileReciever mode){
+		this.fileOwner = mode;
+	}
 	
 }

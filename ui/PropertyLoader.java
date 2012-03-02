@@ -59,7 +59,7 @@ public class PropertyLoader implements Module{
      */
     public static int engineversion = 4;
     
-    public static double guiversion = 0.14;
+    public static double guiversion = 0.15;
     Level level;
     public static Logger logger;
     public String[] actions;

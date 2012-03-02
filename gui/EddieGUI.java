@@ -30,7 +30,7 @@ import ui.PropertyLoader;
 import ui.TaskManager;
 import ui.UI;
 
-public class EddieGUI extends JFrame implements ActionListener, WindowListener, UI{
+public class EddieGUI extends JFrame implements ActionListener, WindowListener, UI, FileReciever{
 
     private static final long serialVersionUID = 1L;
     public PropertyLoader load;
@@ -40,7 +40,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
     ModuleManager modmanager;
     public static boolean testmode = true;
     public double version;
-    DesktopPane desktop;
+    private DesktopPane desktop;
     FileViewer view;
 	
 	public EddieGUI(PropertyLoader loader){
@@ -201,6 +201,12 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	
 	public void add2Desktop(JInternalFrame frame){
 		this.desktop.add(frame);
+		try {
+	        frame.setSelected(true);
+	    }
+		catch (java.beans.PropertyVetoException e) {
+			Logger.getRootLogger().warn("Frame Selection Warning",e);
+		}
 		frame.setVisible(true);
 	}
 	
@@ -214,6 +220,10 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	
 	public void sendAlert(String str){
 		JOptionPane.showMessageDialog(this, str);
+	}
+	
+	public void sendFiles(String[] files){
+		Logger.getRootLogger().warn("This is method is called when fileadderer is not parented by a module");
 	}
 	
 }

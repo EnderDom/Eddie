@@ -3,7 +3,6 @@ package gui;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
@@ -17,12 +16,12 @@ import cli.EddieCLI;
 
 //contains a list of all files available
 
-public class FileViewer extends JInternalFrame implements TableModelListener, Module{
+public class FileViewer extends JInternalFrame implements TableModelListener, Module, FileReciever{
 
 	/**
 	 */
 	private static final long serialVersionUID = 1L;
-	private JTable table;
+	private FileViewerTable table;
 	private JScrollPane spane;
 	private FileViewerModel model;
 	public String[] actions;
@@ -35,7 +34,6 @@ public class FileViewer extends JInternalFrame implements TableModelListener, Mo
 	
 	public void init(){
 		this.pack();
-		this.setVisible(true);
 	}
 
 	public void tableChanged(TableModelEvent e) {
@@ -55,9 +53,12 @@ public class FileViewer extends JInternalFrame implements TableModelListener, Mo
 	 * 
 	 *******************************************************************/
 
-	public void actOnAction(String s, EddieGUI biodesktopgui) {
-		// TODO Auto-generated method stub
-		//TODO set action
+	public void actOnAction(String s, EddieGUI gui) {
+		if(s.contentEquals(actions[0])){
+			FileAdderer fileinput = new FileAdderer(gui);
+			fileinput.setFileReciever(this);
+			gui.add2Desktop(fileinput);
+		}
 	}
 
 	public void actOnTask(String s, UI ui) {
@@ -74,7 +75,7 @@ public class FileViewer extends JInternalFrame implements TableModelListener, Mo
 		//Build GUI
 		this.setSize(300, 600);
 		actions = new String[1];
-		table = new JTable();
+		table = new FileViewerTable(this);
 		model = new FileViewerModel(gui, this);
 		table.setModel(this.model);
 		spane = new JScrollPane(table);
@@ -88,8 +89,8 @@ public class FileViewer extends JInternalFrame implements TableModelListener, Mo
 		Tools_Modules.add2JMenuBar(gui.getJMenuBar(), menuItem,"File", true);
 		actions[0] = modulename+"_ADD_FILE";
 		//This module is automatically started, so add to desktop and init
-		gui.desktop.add(this);
 		init();
+		gui.add2Desktop(this);
 	}
 
 	public void addToCli(EddieCLI cli) {
@@ -112,4 +113,13 @@ public class FileViewer extends JInternalFrame implements TableModelListener, Mo
 	public void resetModuleName(String name) {
 		this.modulename = name;
 	}	
+	
+	public void sendFiles(String[] files){
+		Logger.getRootLogger().debug("Files have been sent to me: " + this.getClass().getName());
+		for(int i =0 ; i < files.length ; i++){
+			this.model.buildAndAddFile(files[i]);
+		}
+		this.model.fireTableDataChanged();
+	}
 }
+
