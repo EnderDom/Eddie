@@ -212,7 +212,7 @@ public class PropertyLoader implements Module{
              */
             rootfolder = getEnvirons();
             loadDefaultProperties();
-            propsbeenloaded = save(rootfolder+propertyfilename, props);
+            propsbeenloaded = true;
         }
         if(propsbeenloaded){
         	//Get Workspace if not set
@@ -246,6 +246,11 @@ public class PropertyLoader implements Module{
 	        //Start Log if Workspace now exists
 	        if(props.containsKey("WORKSPACE")){
 	           	startLog();
+	           	//Resave to add new workspace
+	           	boolean saved = save(rootfolder+propertyfilename, props);
+	           	if(!saved){
+	           		JOptionPane.showMessageDialog(pane, "Cannot save properties file, do you have permissions for workspace location " +this.getWorkspace() + "?");
+	           	}
 	        }
 	        else{
 	        	JOptionPane.showMessageDialog(pane, "An Error has occured, Log could not be started as workspace no set.");
@@ -357,12 +362,12 @@ public class PropertyLoader implements Module{
 
 	private boolean setWorkspacePath(String path) {
 		preLog("Setting workspace location to " + path);
-		props.put("WORKSPACE", path);
+		setWorkspace(path);
 		File workspace = new File(path);
 		boolean ret = false;
 		if (workspace.exists()) {
 			ret = true;
-			File eddie = new File(path	+ System.getProperty("file.separator") + infoFile);
+			File eddie = new File(path	+ slash + infoFile);
 			String in = new String("");
 			if (eddie.isFile()) {
 				in = Tools_File.quickRead(eddie);
@@ -443,11 +448,15 @@ public class PropertyLoader implements Module{
 		return ret;
 	}
 
+	public void setPropertyValue(String prop, String value){
+		props.setProperty(prop, value);
+	}
+	
 	public String getPropOrSet(String prop, String defaultvalue) {
 		if (props.containsKey(prop)) {
 			return props.getProperty(prop);
 		} else {
-			props.put(prop, defaultvalue);
+			props.setProperty(prop, defaultvalue);
 			return defaultvalue;
 		}
 	}

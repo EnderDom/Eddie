@@ -23,9 +23,14 @@ public class Task_Test extends Task{
 		System.out.println("AFTER:" + sequence.getAsString());
 		System.out.println("BEFOR:" + dna);
 		System.out.println("REVCP:" + sequence.getAsStringRevComp());
-		System.out.println("0 : "+sequence.get(0));
-		System.out.println("0 : "+sequence.get(2));
-		System.out.println("0 : "+sequence.get(36));
+		dna = sequence.getAsStringRevComp();
+		sequence.toReverseComp();
+		for(int i =0 ; i < dna.length(); i++){
+			char c =sequence.get(i);
+			if(c != dna.charAt(i)){
+				System.out.println(i +") "+ c+ " || " + dna.charAt(i));
+			}
+		}	
 		System.out.println("Test has completed");
 	}
 	

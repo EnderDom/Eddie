@@ -10,8 +10,15 @@ import tools.Tools_Bit;
  * 
  * Uses and inspired by BitSet Java class 
  * 
+ * Holds sequence data in 4 bit sections inside 
+ * a long array. The sequence can be reversed simply
+ * by switching the direction of reading the longs 
+ * and returning opposite characters for the values
+ * mainly represented in hex for ease, but I am aware
+ * that this is acutally int values, which means you can't
+ * set long values greater than 32bit with hex. 
+ * 
  */
-
 
 public class FourBitSequence {
 
@@ -41,6 +48,9 @@ public class FourBitSequence {
 	
 	int currentdebug=0;
 	
+	long lmask;
+	long rmask;
+	
 	public FourBitSequence(){
 		init(16);
 	}
@@ -57,6 +67,10 @@ public class FourBitSequence {
 	
 	public void init(int nlength){
 		if(nlength < 0) throw new NegativeArraySizeException();
+		rmask = 0xf;
+		lmask = 0xf;
+		lmask <<=60;
+		
 		this.length = nlength;
 		/*
 		 * Note: would shift only by 6
@@ -74,27 +88,47 @@ public class FourBitSequence {
 		Logger.getRootLogger().debug("Length of Sequence "+ nlength + " fits into array of "+length_long+ " longs");
 		dna = new long[length_long];
 	}
-	//TODO finish this, still buggy
+	
+	
 	public char get(int pos){
-		//TODO add if revo
-		if(pos >= this.length) throw new ArrayIndexOutOfBoundsException();
-		if(!LorR){
-			int offset = pos >> bitoff;
-			System.out.println("OFFSET : " + offset);
-			int sub_numb = (pos % 16)*4;
-			System.out.println("SUBNUM : " + sub_numb);
-			System.out.println(Tools_Bit.LongAsBitString(this.dna[offset]));
-			System.out.println(Tools_Bit.LongAsBitString(this.dna[offset]>>sub_numb));
-			System.out.println(Tools_Bit.LongAsBitString(0xf));
-			System.out.println(Tools_Bit.LongAsBitString((0xf&(this.dna[offset]>>sub_numb))));
-			System.out.println("");
-			return getAsChar(0xf&(this.dna[offset]>>sub_numb), this.LorR);
-		}
+		/* 
+		 * This method will return '-' for any values outside the actual sequence
+		 * This could potential lead to issues when bugs are left uncaught, as
+		 * such if calling bp positions outside sequence is not needed use getInside()
+		 */
+		if(pos >= this.length || pos < this.length*-1) return getAsChar(0, this.LorR);
 		else{
+			boolean lor = this.LorR;
+			if(pos < 0){
+				/* Assuming that negative value refers to LorR reversecomp char
+				 * Also assumes that -pos is == the position from length
+				 * ie -1 == the last index for sequence 
+				 * thus for ATCG
+				 * -1 == the end bp G, which will be complimented to C
+				 */ 
+				pos = this.length +pos;
+				lor = !lor; /*
+					This could potentially lead to confusion
+					if downstream one forgets that the sequence is 
+					already forward or reverse, as there is no way of keeping track of
+					the sequence's original sense as yet
+				*/
+			}
+			if(lor){
+				pos = this.length -pos-1;
+			}
 			int offset = pos >> bitoff;
-			int sub_numb = (64-(pos % 16))*4;
-			return getAsChar(0xf&(this.dna[this.dna.length-offset-1])<<sub_numb, this.LorR);
+			int sub_numb = 60-(pos % 16)*4;
+			return getAsChar(rmask&(this.dna[offset]>>sub_numb), lor);
 		}
+	}
+	
+	/*
+	 * as with get, but throws exception if pos call is out of range
+	 */
+	public char getInside(int pos){
+		if(pos >= this.length || pos < this.length*-1) throw new IndexOutOfBoundsException();
+		return get(pos);
 	}
 	
 	/*
@@ -106,7 +140,7 @@ public class FourBitSequence {
 		char[] arr = sequence.toCharArray();
 		for(int  i =0; i < sequence.length(); i++){
 			int offset = i >> bitoff;
-			if(offset == dna.length)this.extend(16); //Should only be necessary if this is instatiated without string
+			if(offset == dna.length)this.extend(16); //Should only be necessary if this is instantiated without string
 			switch (arr[i]) {
 				case 'A' : dna[offset] <<= 4; dna[offset] |= 0x1; break;
 				case 'C' : dna[offset] <<= 4; dna[offset] |= 0x2; break;
@@ -154,18 +188,28 @@ public class FourBitSequence {
 		return new String(getAsCharArray(this.LorR));
 	}
 	
-	public char[] getAsCharArray(boolean leftorright){
+	/*
+	 * TODO
+	 * I have realised it may be better to shift the data
+	 * values rather than the mask, as I have done in the 
+	 * get() method. This also simplifies reverse compliment
+	 * sequence as the only change will be setting 
+	 * length-arraycount-1 values so this is to improve
+	 * 
+	 */
+	
+	public char[] getAsCharArray(boolean forward){
 		char[] array = new char[this.length];
 		int arraycount=0;
-		if(!leftorright){
+		if(!forward){
 			for(int i =0; i < dna.length; i++){
-				long mask = 0xf;			
-				mask<<=60;				
+				long mask = 0xf;
+				mask <<=60;
 				long charvalue = 0x0;
 				for(int j = 0; j <64; j+=4){
 					charvalue = (mask & dna[i])>>(60-j);
 					//System.out.println(Tools_Bit.LongAsBitString(charvalue));
-					array[arraycount] = getAsChar(charvalue, leftorright);
+					array[arraycount] = getAsChar(charvalue, forward);
 					arraycount++;
 					if(arraycount == this.length)break;
 					mask>>>=4;
@@ -174,7 +218,7 @@ public class FourBitSequence {
 		}
 		else{
 			for(int i =dna.length-1; i > -1; i--){
-				long mask = 0xf;			
+				long mask = 0xf;		
 				long charvalue = 0x0;
 				int shift = 64;
 				int jshift = 0;
@@ -186,7 +230,7 @@ public class FourBitSequence {
 				for(int j = 0; j <shift; j+=4){
 					charvalue = (mask & dna[i])>>j+jshift;
 					//System.out.println(Tools_Bit.LongAsBitString(charvalue));
-					array[arraycount] = getAsChar(charvalue, leftorright);
+					array[arraycount] = getAsChar(charvalue, forward);
 					arraycount++;
 					if(arraycount == this.length)break;
 					mask<<=4;
@@ -196,8 +240,8 @@ public class FourBitSequence {
 		return array;
 	}
 	
-	private static char getAsChar(long charvalue, boolean invert){
-		if(!invert){
+	private static char getAsChar(long charvalue, boolean forward){
+		if(!forward){
 			if(charvalue==0x1) return 'A';
 			else if(charvalue==0x2) return 'C';
 			else if(charvalue==0x4) return 'G';
@@ -219,24 +263,24 @@ public class FourBitSequence {
 			else return '-';
 		}
 		else{
-				 if(charvalue==0x1) return'T';
-			else if(charvalue==0x2) return'G';
-			else if(charvalue==0x4) return'C';
-			else if(charvalue==0x8) return'A';
+				 if(charvalue==0x1) return 'T';
+			else if(charvalue==0x2) return 'G';
+			else if(charvalue==0x4) return 'C';
+			else if(charvalue==0x8) return 'A';
 			
-			else if(charvalue==0x5) return'Y';
-			else if(charvalue==0xa) return'R';
-			else if(charvalue==0x6) return'S';
-			else if(charvalue==0x9) return'W';
-			else if(charvalue==0xc) return'M';
-			else if(charvalue==0x3) return'K';
+			else if(charvalue==0x5) return 'Y';
+			else if(charvalue==0xa) return 'R';
+			else if(charvalue==0x6) return 'S';
+			else if(charvalue==0x9) return 'W';
+			else if(charvalue==0xc) return 'M';
+			else if(charvalue==0x3) return 'K';
 			
-			else if(charvalue==0xe) return'V';
-			else if(charvalue==0xd) return'H';
-			else if(charvalue==0xb) return'D';
-			else if(charvalue==0x7) return'B';
+			else if(charvalue==0xe) return 'V';
+			else if(charvalue==0xd) return 'H';
+			else if(charvalue==0xb) return 'D';
+			else if(charvalue==0x7) return 'B';
 			
-			else if(charvalue==0xf) return'N';
+			else if(charvalue==0xf) return 'N';
 			else return '-';
 		}
 	}
@@ -252,6 +296,10 @@ public class FourBitSequence {
 			newdna[i] = dna[i];
 		}
 		this.dna=newdna;
+	}
+	
+	public void toReverseComp(){
+		this.LorR = !this.LorR;
 	}
 	
 	
