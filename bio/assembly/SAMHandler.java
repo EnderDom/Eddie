@@ -107,7 +107,7 @@ public interface SAMHandler {
 	
 	//Read Data
 
-	public void addQNAME(String string);
+	public String addQNAME(String string);
 
 	public void addFLAG(int parseString2Int, String qname);
 

@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
 
@@ -40,15 +41,18 @@ public class ACEParser {
 		StringBuilder buff = new StringBuilder();
 		StringBuilder qualbuff = new StringBuilder();
 		int swit =0;
-		String readlate = new String("");
 		int linecount = 0;
+		//HORRIBLE workaround for multireaderror:
+		LinkedHashMap<String, String> hack = new LinkedHashMap<String, String>();
+		String current = "";
+		
 		while((line = reader.readLine()) != null){
-			
 			if(line.startsWith("CO")){
 				swit = 0;
 				if(consensus.length() > 0){
 					handler.setRefConsensus(consensus.toString());
 					consensus = new StringBuilder();
+					hack = new LinkedHashMap<String, String>();
 				}
 				String[] bits = line.split(" ");
 				if(bits.length > 1){
@@ -75,22 +79,23 @@ public class ACEParser {
 			else if(line.startsWith("AF")){
 				String[] bits = line.split(" ");
 				if(bits.length > 1){
-					handler.addQNAME(bits[1]);
-					handler.addOrientation(bits[2].toCharArray()[0], bits[1]);
-					handler.addPOS(Tools_String.parseString2Int(bits[3]), bits[1]);
+					String tmp = handler.addQNAME(bits[1]);
+					hack.put(bits[1], tmp);
+					handler.addOrientation(bits[2].toCharArray()[0], tmp);
+					handler.addPOS(Tools_String.parseString2Int(bits[3]), tmp);
 				}
 			}
 			else if(line.startsWith("BS")){
 				//I believe this can be ignored.
 			}
 			else if(line.startsWith("RD")){
-				if(buff.length() > 0){
-					handler.addSEQ(buff.toString(), readlate);
-					buff = new StringBuilder("");
-				}
 				String[] bits = line.split(" ");
 				if(bits.length > 1){
-					readlate = bits[1];
+					if(buff.length() > 0){
+						handler.addSEQ(buff.toString(), current);
+						current = hack.get(bits[1]);
+						buff = new StringBuilder("");
+					}
 					/*
 					 * Gone ahead and ignore the rest of the RD data
 					 *  as it can be calculated or got elsewhere
@@ -104,11 +109,20 @@ public class ACEParser {
 			else if(line.startsWith("QA")){
 				String[] bits = line.split(" ");
 				if(bits.length > 4){
-					handler.addRange(Tools_String.parseString2Int(bits[1]), Tools_String.parseString2Int(bits[2]), readlate);
-					handler.addRangePadded(Tools_String.parseString2Int(bits[3]), Tools_String.parseString2Int(bits[4]), readlate);
+					handler.addRange(Tools_String.parseString2Int(bits[1]), Tools_String.parseString2Int(bits[2]), current);
+					handler.addRangePadded(Tools_String.parseString2Int(bits[3]), Tools_String.parseString2Int(bits[4]), current);
 				}
 				else{
 					Logger.getRootLogger().warn("Length of QA to small");
+				}
+			}
+			else if(line.startsWith("AS")){
+				String[] bits = line.split(" ");
+				if(bits.length > 1){
+					handler.setNoOfReads(Tools_String.parseString2Int(bits[2]));
+				}
+				else{
+					Logger.getRootLogger().warn("AS too small");
 				}
 			}
 			else{
@@ -126,6 +140,10 @@ public class ACEParser {
 			multi++;
 			linecount++;
 		}
+		handler.setRefConsensus(consensus.toString());
+		handler.setRefConsensusQuality(qualbuff.toString());
+		handler.addSEQ(buff.toString(), current);
+		
 		System.out.println();
 		Logger.getRootLogger().info("Parsed "+ linecount+ " lines into "+ count+ " sequences");
 		return count;

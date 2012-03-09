@@ -60,9 +60,11 @@ public class Task_Assembly extends TaskXT{
 		if(testmode)runTest();
 		else{
 			if(coverage){
+				Logger.getRootLogger().debug("Coverage Option Set");
 				ACEObject ace = getAce();
 				if(contig != -1){
 					name = ace.getRefName(contig);
+					Logger.getRootLogger().debug("Contig : " + name + " retrieved");
 				}
 				if(name != null){
 					try{
@@ -87,14 +89,25 @@ public class Task_Assembly extends TaskXT{
 				}
 			}
 			else if(getfasta){
+				Logger.getRootLogger().debug("Get Fasta option set");
 				if(this.output != null){
 					ACEObject ace = getAce();
 					Fasta fasta = ace.getFastaFromConsensus();
-					try{
-					fasta.save2Fasta(this.getFile(output, IS_FILE));
+					File filez = this.getFile(output, NOT_FILE_OR_DIRECTORY);//TODO add overwritable option
+					if(filez != null){
+						boolean complete = false;
+						try{
+							complete = fasta.save2Fasta(filez);
+						}
+						catch(Exception e){
+							Logger.getRootLogger().error("Error Saving Fasta", e);
+						}
+						if(!complete){
+							Logger.getRootLogger().error("File was not successfully saved");						
+						}
 					}
-					catch(Exception e){
-						Logger.getRootLogger().error("Error Saving Fasta", e);
+					else{
+						Logger.getRootLogger().error("Output already exists");
 					}
 				}
 				else{
@@ -121,8 +134,7 @@ public class Task_Assembly extends TaskXT{
 				try {
 					parser.parseAce(ace);
 					Logger.getRootLogger().debug("Parsing Done");
-					
-				} 
+				}
 				catch (Exception e) {
 					Logger.getRootLogger().error("Error Parsing ACE file",e);
 				}

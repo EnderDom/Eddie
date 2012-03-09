@@ -34,7 +34,13 @@ public interface ACEHandler {
 	 * Individual read data
 	 */
 	
-	public void addQNAME(String name);
+	/*
+	 * NOTE returns string, which is the name used by the handler,
+	 * this may be necessary if the handler requires unique read names.
+	 * This String should be used in place of qname for all future method
+	 * calls, else an error will occur.
+	 */
+	public String addQNAME(String name);
 	
 	public void addSEQ(String sequence, String qname);
 	

@@ -11,6 +11,13 @@ public class ACEObject implements ACEHandler, Assembly {
 
 	
 	//ALL values are converted to 0 index/base
+	/*
+	 * Have a problem with multiple reads with same name
+	 * this has a workaround, but I need to change the way
+	 * the data is stored so reads are linked to contig better
+	 * ie, having reads indexed as contig_read-no rather than their
+	 * read name, as this can be duplicate in ace files
+	 */
 	
 	LinkedHashMap<Integer, String> contignumb;
 	LinkedHashMap<String, String> contigs;
@@ -30,6 +37,16 @@ public class ACEObject implements ACEHandler, Assembly {
 	 * Sets the methods for calculating average coverage 
 	 */
 	public int averagecoveragecalc = 1;
+	
+	
+	
+	//This says whether the multiple reads with same name error has been thrown already
+	private String readname = "read_";
+	
+	private boolean multireaderror;
+	
+	private int readcount;
+	
 	
 	public ACEObject(){
 		contigs = new LinkedHashMap<String, String>();
@@ -80,7 +97,6 @@ public class ACEObject implements ACEHandler, Assembly {
 
 	public void setNoOfReads(int i) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	public void setBaseSegments(int i) {
@@ -92,10 +108,47 @@ public class ACEObject implements ACEHandler, Assembly {
 		
 	}
 
-	public void addQNAME(String name) {
-		if(reads.containsKey(name))Logger.getRootLogger().warn("Multiple reads with same name " +name);
+	public String addQNAME(String name) {
+		if(multireaderror || reads.containsKey(name)){
+			//Implements multiple reads with same name workaround
+			if(!multireaderror){
+				Logger.getRootLogger().warn("Multiple reads with same name " +name);
+
+				String[] set = reads.keySet().toArray(new String[0]);
+				for(int i =0 ; i < set.length; i++){
+					name =  readname+i;
+					//Add read with new name and remove old names
+					resetAll(set[i], name);
+				}
+				if(readcount != set.length-1){
+					Logger.getRootLogger().warn("Read size"+readcount+" does not equal count "+set.length);
+					readcount = set.length-1;
+				}
+				multireaderror = true;
+			}
+			name = readname+readcount;
+		}
 		reads.put(name, "");
 		read2contig.put(name, this.getRefName(currentcontig));
+		readcount++;
+		return name;
+	}
+	
+	public void resetAll(String old, String news){
+		this.reads.put(news, reads.get(old));
+		this.reads.remove(old);
+		this.read2contig.put(news, read2contig.get(old));
+		this.read2contig.remove(old);
+		this.positions.put(news, positions.get(old));
+		this.positions.remove(old);
+		this.rangeleft.put(news, positions.get(old));
+		this.rangeleft.remove(old);
+		this.rangeright.put(news, positions.get(old));
+		this.rangeright.remove(old);
+		this.rangeleftpad.put(news, positions.get(old));
+		this.rangeleftpad.remove(old);
+		this.rangerightpad.put(news, positions.get(old));
+		this.rangerightpad.remove(old);
 	}
 
 	public void addSEQ(String sequence, String qname) {
@@ -111,13 +164,13 @@ public class ACEObject implements ACEHandler, Assembly {
 	}
 
 	public void addRange(int start, int end, String qname) {
-		this.rangeleft.put(qname, start-1);
-		this.rangeright.put(qname, end-1);
+			this.rangeleft.put(qname, start-1);
+			this.rangeright.put(qname, end-1);
 	}
 
 	public void addRangePadded(int start, int end, String qname) {
-		this.rangeleftpad.put(qname, start-1);
-		this.rangerightpad.put(qname, end-1);
+			this.rangeleftpad.put(qname, start-1);
+			this.rangerightpad.put(qname, end-1);
 	}
 
 	public int getContigsSize() {
@@ -162,6 +215,15 @@ public class ACEObject implements ACEHandler, Assembly {
 	public int getDepthofContigAtPos(String contigname, int position) {
 		int depth = 0;
 		for(String readname : read2contig.keySet()){
+			if(read2contig == null){
+				System.out.println("Read2contig is null");
+			}
+			if(readname == null){
+				System.out.println("Readname is null");
+			}
+			if(contigname == null){
+				System.out.println("contigname is null");
+			}
 			if(read2contig.get(readname).contentEquals(contigname)){
 				if(positions.get(readname)+rangerightpad.get(readname) > position && positions.get(readname)+rangeleftpad.get(readname) < position){
 					if(this.reads.get(readname).charAt(position-positions.get(readname)) != '*' && this.reads.get(readname).charAt(position-positions.get(readname)) != '-'){
@@ -277,6 +339,7 @@ public class ACEObject implements ACEHandler, Assembly {
 	 * 
 	 */
 	public double[] getRangeOfCoverages(String contigindex, int range) {
+
 		if(this.contigs.get(contigindex) != null){
 			String original = this.contigs.get(contigindex);
 			String slimmed = this.contigs.get(contigindex).replaceAll("\\*", "").replaceAll("-", "");
@@ -312,7 +375,7 @@ public class ACEObject implements ACEHandler, Assembly {
 	public Fasta getFastaFromConsensus(){
 		Fasta fasta = new Fasta();
 		for(String name : this.contigs.keySet()){
-			String str = this.contigs.get(name).replaceAll("*", "");
+			String str = this.contigs.get(name).replaceAll("\\*", "");
 			fasta.addSequence(name, str);
 		}
 		return fasta;
