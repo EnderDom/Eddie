@@ -36,4 +36,22 @@ public abstract class Tools_String {
 		return newstring.toString();
 	}
 	
+	public static boolean isIntegerParseInt(String str) {
+		try {
+			Integer.parseInt(str);
+			return true;
+		}
+		catch (NumberFormatException nfe) {}
+			return false;
+	}
+
+	public static boolean isIntegerParseDouble(String str) {
+		try {
+			Double.parseDouble(str);
+			return true;
+		}
+		catch (NumberFormatException nfe) {}
+			return false;
+	}
+	
 }
