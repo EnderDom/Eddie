@@ -44,7 +44,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
     FileViewer view;
 	
 	public EddieGUI(PropertyLoader loader){
-		super("Eddie v"+PropertyLoader.guiversion);
+		super("Eddie v"+PropertyLoader.guiversion + " " + PropertyLoader.edition + " Edition");
 		this.version= PropertyLoader.guiversion;
 		System.out.println("Eddie v" + version + " by (S.C.Corp.)");
 		
