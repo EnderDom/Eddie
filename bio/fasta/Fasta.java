@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+import org.apache.log4j.Logger;
+
 import tools.bio.Tools_Fasta;
 
 public class Fasta implements FastaHandler{
@@ -85,9 +87,10 @@ public class Fasta implements FastaHandler{
 		return ret;
 	}
 	
-	public void save2Fastq(File output) throws IOException{
+	public boolean save2Fastq(File output) throws IOException{
 		FileWriter fstream = new FileWriter(output);
 		BufferedWriter out = new BufferedWriter(fstream);
+		int count =0;
 		for(String str : sequences.keySet()){
 			if(Tools_Fasta.checkFastq(str, sequences.get(str), qualities.get(str))){
 				Tools_Fasta.saveFastq(str, sequences.get(str), qualities.get(str), out);
@@ -95,24 +98,45 @@ public class Fasta implements FastaHandler{
 			else{
 				throw new IOException("Fastq failed QC check");
 			}
+			count++;
 		}
 		out.close();fstream.close();
+		if(count == sequences.keySet().size())return true;
+		else return false;
 	}
 	
-	public void save2FastaAndQual(File output, File quality)throws IOException{
+	public boolean save2Fasta(File output) throws IOException{
+		FileWriter fstream = new FileWriter(output);
+		BufferedWriter out = new BufferedWriter(fstream);
+		int count = 0;
+		for(String str : sequences.keySet()){
+			Tools_Fasta.saveFasta(str, sequences.get(str), out);
+			count++;
+		}
+		out.close();fstream.close();
+		Logger.getRootLogger().info("Fasta Saved Successfully");
+		if(count == sequences.keySet().size())return true;
+		else return false;
+	}
+	
+	public boolean save2FastaAndQual(File output, File quality)throws IOException{
 		FileWriter fstream = new FileWriter(output);
 		BufferedWriter out = new BufferedWriter(fstream);
 		FileWriter fstream2 = new FileWriter(quality);
 		BufferedWriter out2 = new BufferedWriter(fstream2);
+		int count = 0;
 		for(String str : sequences.keySet()){
 			if(Tools_Fasta.checkFastq(str, sequences.get(str), qualities.get(str))){
 				Tools_Fasta.saveFasta(str, sequences.get(str), out);
 				Tools_Fasta.saveFasta(str, Tools_Fasta.Fastq2Qual(qualities.get(str)), out2);
+				count++;
 			}
 			else{
 				throw new IOException("Fasta failed QC check");
 			}
 		}
 		out.close();out2.close();fstream.close();fstream2.close();
+		if(count == sequences.keySet().size())return true;
+		else return false;
 	}
 }

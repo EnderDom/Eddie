@@ -154,7 +154,7 @@ public class SAMParser {
 			multi++;
 			linecount++;
 		}
-		System.out.println("");
+		System.out.println("Warning: May not be complete buffers need to be purged");
 		Logger.getRootLogger().info("Parsed "+ linecount+ " lines into "+ count+ " sequences");
 		return count;
 	}

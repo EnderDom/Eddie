@@ -15,6 +15,7 @@ import java.net.URLEncoder;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -29,6 +30,8 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 public class Tools_XML {
+	
+	public static int indent = 2;
 	
 	final public static Document inputStreamToDocument(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException{
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -75,7 +78,10 @@ public class Tools_XML {
         	FileOutputStream outStream = new FileOutputStream(file);
         	Result result = new StreamResult(outStream);
         	Transformer xformer;
-			xformer = TransformerFactory.newInstance().newTransformer();
+			TransformerFactory factory = TransformerFactory.newInstance();
+			factory.setAttribute("indent-number", indent);
+			xformer = factory.newTransformer();
+	        xformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			xformer.transform(src, result);
 			outStream.close();
 		} catch (TransformerConfigurationException e) {

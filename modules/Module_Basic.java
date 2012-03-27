@@ -29,9 +29,10 @@ public abstract class Module_Basic implements Module{
 	protected String[] classes;
 	public String taskname;
 	protected boolean persistance;
+	protected String modulename;
 	
 	public void actOnTask(String s, UI cli) {
-		Logger.getRootLogger().debug("Action "+ s + " sent");
+		Logger.getRootLogger().debug("Task "+ s + " sent");
 		for(int i =0; i < getTasks().length; i++){
 			if(s.contentEquals(getTasks()[i])){
 				try {
@@ -60,7 +61,7 @@ public abstract class Module_Basic implements Module{
 	    actions1[i] = getModuleName()+i;
 	    setActions(actions1);
 	    menuItem.addActionListener(gui);
-	    Tools_Modules.add2JMenuBar(menubar, menuItem, new String(getMenuString()));
+	    Tools_Modules.add2JMenuBar(menubar, menuItem, new String(getMenuString()), true);
 	}
 
 	public void actOnTask(String s) {
@@ -130,5 +131,9 @@ public abstract class Module_Basic implements Module{
 	
 	public boolean isPersistant(){
 		return persistance;
+	}
+	
+	public void resetModuleName(String name){
+		this.modulename = name;
 	}
 }

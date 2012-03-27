@@ -21,7 +21,6 @@ public class Eddie {
 			int retvalue = 4;
 			PropertyLoader loader = new PropertyLoader();
 			retvalue = loader.loadBasicArguments(args);
-		
 			if(retvalue == 2){
 				@SuppressWarnings("unused")
 				EddieCLI cli = new EddieCLI(loader, false);

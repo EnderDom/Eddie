@@ -36,5 +36,5 @@ public abstract class Tools_Array {
 			}
 		}
 		return new_arr;
-	}	
+	}
 }

@@ -28,7 +28,7 @@ public class EddieCLI implements UI {
 	private Options options;
 	
 	public  EddieCLI(PropertyLoader loader, boolean persist){
-		System.out.println("Eddie v" + PropertyLoader.version + " by (S.C.Corp.)");
+		System.out.println("Eddie v" + (PropertyLoader.engineversion+PropertyLoader.guiversion) + " by (S.C.Corp.)");
 		load = loader;
 		load.loadPropertiesCLI();
 		/*
@@ -40,10 +40,12 @@ public class EddieCLI implements UI {
 		
 		//Module Build
 		modmanager = new ModuleManager(load.getModuleFolder());
-		modmanager.addPrebuiltModule("PROPERTYLOADER", load);
-		modmanager.addPrebuiltModule("MYSELF", modmanager);
 		modmanager.init();
 		modmanager.setupCLI(this);
+		modmanager.addPrebuiltModule("PROPERTYLOADER", load, this);
+		modmanager.addPrebuiltModule("MYSELF", modmanager, this);
+		
+
         
         /*
          * Adds relevant stuff to the Object
@@ -90,9 +92,9 @@ public class EddieCLI implements UI {
 			if(cmd.hasOption("task")){
 				String task = cmd.getOptionValue("task");
 				if(task != null && task.length() > 0){
-					String taskclass =modmanager.getTaskClass(task);
-					if(taskclass != null){
-						modmanager.actOnTask(taskclass, this);
+					Logger.getRootLogger().trace("Retrieved Task Class "+ task);
+					if(modmanager.isTask(task)){
+						modmanager.runTask(this,task);
 					}
 					else {
 						Logger.getRootLogger().error("No Tasks with the name "+task+" available");
@@ -105,6 +107,7 @@ public class EddieCLI implements UI {
 				}
 			}
 			else{
+				Logger.getRootLogger().trace("No Task Set");
 				printTaskList();
 			}
 		} catch (ParseException e) {
@@ -127,6 +130,7 @@ public class EddieCLI implements UI {
 	}
 	
 	public void addTask(Task task) {
+		Logger.getRootLogger().debug("CLI recieve task, sending to task manager...");
 		if(this.manager == null){
 			buildTaskManager();
 		}
@@ -157,6 +161,15 @@ public class EddieCLI implements UI {
 	public void update(Task task) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public boolean isGUI() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	public void sendAlert(String str){
+		Logger.getRootLogger().info(str);
 	}
 	
 }
