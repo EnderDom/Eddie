@@ -381,4 +381,8 @@ public class ACEObject implements ACEHandler, Assembly {
 		return fasta;
 	}
 	
+	public LinkedHashMap<String, String> getRead2Contig(){
+		return this.read2contig;
+	}
+	
 }

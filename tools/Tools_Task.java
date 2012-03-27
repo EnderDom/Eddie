@@ -12,6 +12,20 @@ public abstract class Tools_Task {
 		return runProcess(new String[]{coms}, cache);
 	}
 	
+	/**
+	 * Runs external process, Uses StreamGobbler to receive all input Streams
+	 * this seems to be the general feel that if the data doesn't go somewhere, bad 
+	 * things happens.
+	 * 
+	 * Cache tells the Method to tell StreamGobbler whether or not to actually store the data.
+	 * 
+	 * Set to false returned value Array will be empty. In reality I'm not sure why you wouldn't
+	 * cache everything so I may get rid of this in the future. 
+	 * 
+	 * @param coms
+	 * @param cache
+	 * @return
+	 */
 	public static StringBuffer[] runProcess(String[] coms, boolean cache){
 		StringBuffer[] output = null;
 		String osName = System.getProperty("os.name" );
