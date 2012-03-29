@@ -21,4 +21,18 @@ public abstract class Tools_System{
     		return false;
     	}
     }
+    
+    /**
+     * Because I can never remeber what the System key is
+     * @return the filepath separator character
+     */
+    public static String getFilepathSeparator(){
+    	return System.getProperty("file.separator");
+    }
+    
+    public static String getNewline(){
+    	return System.getProperty("line.separator");
+    }
+    
+
 }

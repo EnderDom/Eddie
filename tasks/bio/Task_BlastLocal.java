@@ -8,6 +8,7 @@ import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
 
 import tasks.TaskXT;
+import tools.Tools_System;
 import tools.bio.Tools_Blast;
 
 public class Task_BlastLocal extends TaskXT{
@@ -16,6 +17,8 @@ public class Task_BlastLocal extends TaskXT{
 	private String blast_bin;
 	private String blast_prg;
 	private String blastparams;
+	private String filetype;
+	private String workspace;
 	
 	public Task_BlastLocal(){
 		/*
@@ -31,6 +34,7 @@ public class Task_BlastLocal extends TaskXT{
 		if(cmd.hasOption("bdb"))blast_db=cmd.getOptionValue("bdb");
 		if(cmd.hasOption("bbb"))blast_bin=cmd.getOptionValue("bbb");
 		if(cmd.hasOption("bpr"))blast_prg=cmd.getOptionValue("bpr");
+		if(cmd.hasOption("filetype"))filetype=cmd.getOptionValue("filetype");
 	}
 	
 	public void parseOpts(Properties props){
@@ -46,6 +50,8 @@ public class Task_BlastLocal extends TaskXT{
 		if(blast_bin == null){
 			blast_bin = props.getProperty("BLAST_BIN_DIR");
 		}
+		workspace = props.getProperty("WORKSPACE");
+		
 	}
 	
 	public void buildOptions(){
@@ -56,6 +62,7 @@ public class Task_BlastLocal extends TaskXT{
 		options.addOption(new Option("bbb", "blast_bin", true, "Specify blast bin directory"));
 		options.addOption(new Option("bpr", "blast_prog", true, "Specify blast program"));
 		options.addOption(new Option("p", "params", true, "Additional Parameters"));
+		options.addOption(new Option("filetype", "params", true, "Specify filetype (rather then guessing from ext)"));
 	}
 	
 	public void runTest(){
@@ -65,7 +72,7 @@ public class Task_BlastLocal extends TaskXT{
 		 * 
 		 * But just incase I forget, will only run for me in debug
 		 */
-		if((System.getProperty("user.name").contains("dominic")) && Logger.getRootLogger().isDebugEnabled()){
+		if((System.getProperty("user.name").contains("dominic")) && logger.isDebugEnabled()){
 			Logger.getRootLogger().debug("\nRUNNING TEST!\n");
 			this.input = "/home/dominic/apps/eclipse/testfiles/fasta/test_single.fasta";
 			this.output = "/home/dominic/apps/eclipse/testfiles/fasta/test_single_blast";
@@ -79,11 +86,51 @@ public class Task_BlastLocal extends TaskXT{
 			Tools_Blast.runLocalBlast(input, blast_prg, blast_bin, blast_db, blastparams, output);
 		}
 		else if(input == null){
-			Logger.getRootLogger().error("Input "+this.input+" does not exist! " );
+			logger.error("Input "+this.input+" does not exist! " );
 		}
 		else{
-			Logger.getRootLogger().error("Output "+this.output+" exists! Change or set overwrite");
+			logger.error("Output "+this.output+" exists! Change or set overwrite");
 		}
 	}
 
+	public void run(){
+		setComplete(started);
+		Logger.getRootLogger().debug("Started running task @ "+Tools_System.getDateNow());
+		if(input != null){
+			File in = new File(input);
+			if(in.isFile()){
+				int i =0;
+				if(filetype == null && (i=input.indexOf(".")) != -1){
+					filetype = input.substring(i,input.length());
+				}
+				else if(filetype == null){
+					//TODO file determination
+					logger.debug("No implementation for working out unknown file type. Set file type");
+				}
+				//Checklist checklist = new Checklist(workspace, this.getClass().getName());
+				
+				if(filetype.indexOf("fastq") != -1){
+					//TODO
+				}
+				else if(filetype.indexOf("ace") != -1){
+					//TODO
+				}
+				else if(filetype.indexOf("fasta") != -1 || filetype.indexOf("fna") != -1){
+					//TODO
+				}
+				else{
+					logger.error("Filetype " + filetype + " not supported");
+				}
+			}
+			else{
+				logger.error("Input is not a file");
+			}
+		}
+		else{
+			
+		}
+		Logger.getRootLogger().debug("Finished running task @ "+Tools_System.getDateNow());
+	    setComplete(finished);
+	}
+	
 }

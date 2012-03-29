@@ -75,7 +75,7 @@ public class PropertyLoader implements Module{
 		level = Level.WARN;
         props = new Properties();
         modulename = this.getClass().getName();
-        slash = System.getProperty("file.separator");
+        slash = Tools_System.getFilepathSeparator();
 	}
 	
 	public int loadBasicArguments(String[] args){

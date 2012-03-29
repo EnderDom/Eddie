@@ -37,12 +37,12 @@ public class Task_Fasta extends TaskXT{
 		File qualfile = null;
 		File outfile = null;
 		if((infile=getFile(input, IS_FILE)) != null){//This is getting a bit messy...
-			Logger.getRootLogger().debug("Input File is good");
+			logger.debug("Input File is good");
 			/*
 			 * Convert Fasta And Qual 2 Fastq
 			 */
 			if(getQual() != null){
-				Logger.getRootLogger().debug("Set to Converting fasta 2 fastq");
+				logger.debug("Set to Converting fasta 2 fastq");
 				if((qualfile = getFile(getQual(), IS_FILE)) !=null){
 					outfile = getFile(output+".fastq", NOT_FILE_OR_DIRECTORY);
 					if(isOverwrite() || outfile != null){
@@ -72,7 +72,7 @@ public class Task_Fasta extends TaskXT{
 			 * Convert Fastq to Fasta And Qual
 			 */
 			else{
-				Logger.getRootLogger().debug("Set to Converting fastq 2 fasta and qual");
+				logger.debug("Set to Converting fastq 2 fasta and qual");
 				File outfile2 = getFile(output+".qual", NOT_FILE_OR_DIRECTORY);
 				outfile = getFile(output+".fasta", NOT_FILE_OR_DIRECTORY);
 				if(isOverwrite() || (outfile != null && outfile2 != null)){
@@ -87,15 +87,15 @@ public class Task_Fasta extends TaskXT{
 						fasta.save2FastaAndQual(outfile, outfile2);
 					}
 					catch (Exception e) {
-						Logger.getRootLogger().error("Error parsing Fastq file", e);
+						logger.error("Error parsing Fastq file", e);
 					}
 				}
 			}
 		}
 		else{
-			Logger.getRootLogger().error("Input file is set, but filepath: "+input+" is not a valid file");	
+			logger.error("Input file is set, but filepath: "+input+" is not a valid file");	
 		}
-		Logger.getRootLogger().debug("Finished running task @ "+Tools_System.getDateNow());
+		logger.debug("Finished running task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
 	}
 	
@@ -129,5 +129,4 @@ public class Task_Fasta extends TaskXT{
 	public void setQual(String qual) {
 		this.qual = qual;
 	}
-	
 }

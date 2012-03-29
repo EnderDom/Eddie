@@ -20,16 +20,18 @@ public class TaskXT extends Task{
 	public static int IS_FILE = 2;
 	public static int IS_DIRECTORY = 3;
 	public static int IS_OR_NOT = 4;
+	protected Logger logger = Logger.getLogger("TaskLogger");
+	boolean tocontinue = false;
 	
 	public void parseArgsSub(CommandLine cmd){
 		if(!cmd.hasOption("input")){
-			Logger.getRootLogger().warn("Input file has not been set.");
+			logger.warn("Input file has not been set.");
 		}
 		else{
 			setInput(cmd.getOptionValue("input"));
 		}
 		if(!cmd.hasOption("output")){
-			Logger.getRootLogger().debug("Output file has not been set.");
+			logger.debug("Output file has not been set.");
 		}
 		else{
 			setOutput(cmd.getOptionValue("output"));
