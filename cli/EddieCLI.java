@@ -44,9 +44,7 @@ public class EddieCLI implements UI {
 		modmanager.setupCLI(this);
 		modmanager.addPrebuiltModule("PROPERTYLOADER", load, this);
 		modmanager.addPrebuiltModule("MYSELF", modmanager, this);
-		
 
-        
         /*
          * Adds relevant stuff to the Object
          */
@@ -68,7 +66,6 @@ public class EddieCLI implements UI {
 		System.out.println("Control-C will usually close command line programs if you run into trouble");
 		String response = "";
 		Scanner sc = new Scanner(System.in);
-		//Tron protects the user...
 		String user = System.getProperty("user.name");
 		System.out.print(user+">");
 		while(sc.hasNext()){
@@ -92,7 +89,7 @@ public class EddieCLI implements UI {
 			if(cmd.hasOption("task")){
 				String task = cmd.getOptionValue("task");
 				if(task != null && task.length() > 0){
-					Logger.getRootLogger().trace("Retrieved Task Class "+ task);
+					logger.trace("Retrieved Task Class "+ task);
 					if(modmanager.isTask(task)){
 						modmanager.runTask(this,task);
 					}
@@ -111,7 +108,7 @@ public class EddieCLI implements UI {
 				printTaskList();
 			}
 		} catch (ParseException e) {
-			Logger.getRootLogger().error("Failed To Parse Input Options", e);
+			logger.error("Failed To Parse Input Options", e);
 		}
 	}
 	
@@ -140,7 +137,11 @@ public class EddieCLI implements UI {
 	}
 
 	public void buildTaskManager() {
-		this.manager = Tools_UI.buildTaskManager(Tools_String.parseString2Int(load.getCore()),  Tools_String.parseString2Int(load.getAuxil()));
+		Integer core = Tools_String.parseString2Int(load.getCore());
+		Integer auxil = Tools_String.parseString2Int(load.getAuxil());
+		if(core == null) core = 1;logger.error("Something has gone horribly wrong");
+		if(auxil == null) auxil =5;logger.error("Something has gone horribly wrong");
+		this.manager = Tools_UI.buildTaskManager(core, auxil);
 	}
 	
 	public void buildOptions(){

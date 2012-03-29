@@ -34,11 +34,14 @@ public class Task_Assembly extends TaskXT{
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
 		if(cmd.hasOption("coverage"))coverage =true;
-		if(cmd.hasOption("numbcontig"))contig=Tools_String.parseString2Int(cmd.getOptionValue("numbcontig"));
 		if(cmd.hasOption("contig"))name=cmd.getOptionValue("contig");
 		if(cmd.hasOption("range"))range=Tools_String.parseString2Int(cmd.getOptionValue("range"));
 		if(cmd.hasOption("getfasta"))getfasta=true;
 		if(range <1)range=100;
+		if(cmd.hasOption("numbcontig")){
+			Integer a = Tools_String.parseString2Int(cmd.getOptionValue("numbcontig"));
+			if(a!=null)contig=a;
+		}
 	}
 	
 	public void parseOpts(Properties props){

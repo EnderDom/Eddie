@@ -54,7 +54,9 @@ public class Tools_Fasta {
 		String[] qul = quality.split(" ");
 		int[] arr = new int[qul.length];
 		for(int i =0; i < qul.length; i++){
-			arr[i] = Tools_String.parseString2Int(qul[i]);
+			Integer j = Tools_String.parseString2Int(qul[i]);
+			if(j != null)arr[i] = j;
+			
 		}
 		return Tools_Array.IntArrayTrimAll(arr,-1);
 	}

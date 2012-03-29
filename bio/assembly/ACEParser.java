@@ -59,9 +59,13 @@ public class ACEParser {
 					handler.setRefName(bits[1]);
 				}
 				if(bits.length > 5){
-					handler.setNoOfBases(Tools_String.parseString2Int(bits[2]));
-					handler.setNoOfReads(Tools_String.parseString2Int(bits[3]));
-					handler.setBaseSegments(Tools_String.parseString2Int(bits[4]));
+					
+					Integer x = Tools_String.parseString2Int(bits[2]);
+					Integer y = Tools_String.parseString2Int(bits[3]);
+					Integer z = Tools_String.parseString2Int(bits[4]);
+					if(x != null)handler.setNoOfBases(x);
+					if(y != null)handler.setNoOfReads(y);
+					if(z != null)handler.setBaseSegments(z);
 					handler.setOrientation(bits[5].toCharArray()[0]);
 				}
 				else{

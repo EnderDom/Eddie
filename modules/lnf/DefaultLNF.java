@@ -34,9 +34,10 @@ public class DefaultLNF implements Module{
 	}
 
 	public void actOnAction(String s, EddieGUI biodesktopgui) {
-		int appear = Tools_String.parseString2Int(s.substring(s.indexOf(getModuleName()) + new String(getModuleName()).length(), s.length()));
+		Integer appear = Tools_String.parseString2Int(s.substring(s.indexOf(getModuleName()) + new String(getModuleName()).length(), s.length()));
 		Logger.getRootLogger().trace("Appear value setting to " + appear);
-		changeAppear(appear, biodesktopgui);
+		if(appear != null)changeAppear(appear, biodesktopgui);
+		else Logger.getRootLogger().debug("Value returned NaN");
 	}
 
 	

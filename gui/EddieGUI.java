@@ -42,7 +42,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
     public double version;
     private DesktopPane desktop;
     FileViewer view;
-	
+    
 	public EddieGUI(PropertyLoader loader){
 		super("Eddie v"+PropertyLoader.guiversion + " " + PropertyLoader.edition + " Edition");
 		this.version= PropertyLoader.guiversion;
@@ -188,7 +188,11 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	}
 
 	public void buildTaskManager() {
-		this.manager = Tools_UI.buildTaskManager(Tools_String.parseString2Int(load.getCore()),  Tools_String.parseString2Int(load.getAuxil()));
+		Integer core = Tools_String.parseString2Int(load.getCore());
+		Integer auxil = Tools_String.parseString2Int(load.getAuxil());
+		if(core == null) core = 1;logger.error("Something has gone horribly wrong");
+		if(auxil == null) auxil =5;logger.error("Something has gone horribly wrong");
+		this.manager = Tools_UI.buildTaskManager(core, auxil);
 	}
 
 	public JMenuBar getMenu() {

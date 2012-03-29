@@ -82,9 +82,11 @@ public class SAMParser {
 							format = true;
 						}
 						if(bits[i].startsWith("LN:")){
-							int l =Tools_String.parseString2Int(bits[i].substring(3));
-							handler.setRefLength(l);
-							if(l > -1)	format2 = true; //If parseString2Int fails this will fail
+							Integer l =Tools_String.parseString2Int(bits[i].substring(3));
+							if(l != null){
+								handler.setRefLength(l);
+								format2 = true; //If parseString2Int fails this will fail
+							}
 						}
 						if(bits[i].startsWith("AS:")){
 							handler.setGenomeAssemblyID(bits[i].substring(3));
@@ -166,14 +168,19 @@ public class SAMParser {
 		 * Default Fields to be parsed
 		 */
 		handler.addQNAME(bits[0]);
-		handler.addFLAG(Tools_String.parseString2Int(bits[1]), bits[0]);
+		Integer flag = Tools_String.parseString2Int(bits[1]);
+		if(flag != null)handler.addFLAG(flag, bits[0]);
 		handler.addRNAME(bits[2], bits[0]);
-		handler.addPOS(Tools_String.parseString2Int(bits[3]), bits[0]);
-		handler.addMAPQ(Tools_String.parseString2Int(bits[4]), bits[0]);
+		flag = Tools_String.parseString2Int(bits[3]);
+		if(flag != null)handler.addPOS(flag, bits[0]);
+		flag = Tools_String.parseString2Int(bits[4]);
+		if(flag != null)handler.addMAPQ(flag, bits[0]);
 		handler.addCIGAR(bits[5], bits[0]);
 		handler.addRNEXT(bits[6], bits[0]);
-		handler.addPNEXT(Tools_String.parseString2Int(bits[7]), bits[0]);
-		handler.addTLEN(Tools_String.parseString2Int(bits[8]), bits[0]);
+		flag = Tools_String.parseString2Int(bits[7]);
+		if(flag != null)handler.addPNEXT(flag, bits[0]);
+		flag = Tools_String.parseString2Int(bits[8]);
+		if(flag != null)handler.addTLEN(flag, bits[0]);
 		handler.addSEQ(bits[9], bits[0]);
 		handler.addQUAL(bits[10], bits[0]);
 		/*

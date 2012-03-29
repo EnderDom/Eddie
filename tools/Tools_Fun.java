@@ -12,7 +12,8 @@ public abstract class Tools_Fun {
 				"I'm Sorry Dave, but I just can't do that.",
 				"ciao",
 				"bye bye",
-				"bye"
+				"bye",
+				"Eddie protects the USER"
 		};
 		
 		return getRandom(messages);

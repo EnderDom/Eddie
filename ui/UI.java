@@ -2,9 +2,13 @@
 
 package ui;
 
+import org.apache.log4j.Logger;
+
 import tasks.Task;
 
 public interface UI {
+	
+	Logger logger = Logger.getLogger("UILogger");
 
 	public void exit();
 	

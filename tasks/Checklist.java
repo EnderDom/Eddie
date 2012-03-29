@@ -72,12 +72,12 @@ public class Checklist {
 		else{
 			folder.mkdir();
 		}
-		int l =0;
+		Integer l =0;
 		int k =0;
 		for(File file : folder.listFiles()){
 			if(file.getName().contains(taskname+"__")){
 				l = Tools_String.parseString2Int(taskname.substring(taskname.indexOf("__"),taskname.length()));
-				if(l > k){
+				if(l != null && l > k){
 					k = l;
 				}
 			}
