@@ -19,6 +19,7 @@ import cli.LazyPosixParser;
 import tools.Tools_System;
 import tools.Tools_Task;
 import ui.TaskManager;
+import ui.UI;
 
 public class Task implements Runnable, Future<Object> {
 
@@ -34,7 +35,8 @@ public class Task implements Runnable, Future<Object> {
 	public Options options;
 	public boolean helpmode;
 	protected boolean testmode;
-	
+	protected String args;
+
 	/*
 	 * complete note:
 	 * -1 == unstarted, but init
@@ -98,6 +100,11 @@ public class Task implements Runnable, Future<Object> {
 			}
 		}
 		catch(ParseException e){
+		}
+		if(isKeepArgs()){
+			String st = new String();
+			for(String arg : args)st+=arg+" ";
+			this.args = st;
 		}
 	}
 	
@@ -208,6 +215,18 @@ public class Task implements Runnable, Future<Object> {
 		System.out.println("");
 		System.out.println("--TEST MODE--");
 		System.out.println("");
+	}
+	
+	public boolean isKeepArgs(){
+		return false;
+	}
+	
+	public boolean wantsUI(){
+		return false;
+	}
+	
+	public void addUI(UI ui){
+		
 	}
 	
 }

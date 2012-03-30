@@ -68,7 +68,9 @@ public class TaskManager extends Thread{
 		for(int i =0; i < currentTask.length; i++){
 			if(currentTask[i] == null){
 				currentTask[i] = pops.pop();
+
 				exe.submit(currentTask[i]);
+
 				submitted++;
 			}
 			else{
@@ -79,6 +81,7 @@ public class TaskManager extends Thread{
 					currentTask[i] = pops.pop();
 					//Submit
 					exe.submit(currentTask[i]);
+
 					submitted++;
 				}
 			}

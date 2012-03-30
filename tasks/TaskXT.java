@@ -21,7 +21,7 @@ public class TaskXT extends Task{
 	public static int IS_DIRECTORY = 3;
 	public static int IS_OR_NOT = 4;
 	protected Logger logger = Logger.getLogger("TaskLogger");
-	boolean tocontinue = false;
+	protected String filetype;
 	
 	public void parseArgsSub(CommandLine cmd){
 		if(!cmd.hasOption("input")){
@@ -35,6 +35,11 @@ public class TaskXT extends Task{
 		}
 		else{
 			setOutput(cmd.getOptionValue("output"));
+		}
+		if(cmd.hasOption("filetype")){
+			setFileType(cmd.getOptionValue("filetype").toUpperCase());
+			//TODO check this has supports filetype 
+			logger.debug("Forced Filetype to be ->" + getFileType());
 		}
 		setOverwrite(cmd.hasOption("w"));
 	}
@@ -108,12 +113,20 @@ public class TaskXT extends Task{
 		this.overwrite = overwrite;
 	}
 	
+	public void setFileType(String filetype){
+		this.filetype = filetype;
+	}
+	
+	public String getFileType(){
+		return this.filetype;
+	}
+	
 	public void buildOptions(){
 		super.buildOptions();
-		
 		options.addOption(new Option("i", "input", true, "Input"));
 		options.addOption(new Option("o", "output", true, "Output"));
 		options.addOption(new Option("w", "overwrite", false, "Overwrite output if it exists"));
+		options.addOption(new Option("filetype", true, "Force specific filetype for Input"));
 	}
 	
 	

@@ -69,7 +69,7 @@ public class PropertyLoader implements Module{
 	public static String defaultlnf =  "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
 	public String[] args;
 	public String modulename;
-	private String slash; 
+	private String slash;
 	
 	public PropertyLoader() {
 		level = Level.WARN;
@@ -430,7 +430,7 @@ public class PropertyLoader implements Module{
 	public String[][] getChangableStats(){
 		//These need to all be the same length
 		String[] stats = new String[]{"DBHOST", "DBNAME", "DBUSER","AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR", "FILES_XML"};
-		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1", "/usr/bin/", getWorkspace()+slash+"blas_db"+slash, getWorkspace()+slash+FileViewerModel.filename};
+		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1", "/usr/bin/", System.getProperty("user.home")+slash+"blas_db"+slash, System.getProperty("user.home")+slash+FileViewerModel.filename};
 		String[] tool_tips = new String[]{"Host Database IP/Name", "Database Name", "Database Username","Max number of auxiliary threads","Max number of primary threads", "Directory that contains blast executables", 
 				"XML file which list current files in project", "File XML list location"};
 		String[][] ret = new String[3][stats.length];

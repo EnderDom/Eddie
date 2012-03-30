@@ -24,6 +24,10 @@ public interface UI {
 	
 	public boolean isGUI();
 	
+	public String requiresUserInput(String message, String title);
+	
+	public int requiresUserYNI(String message, String title);
+	
 	public void sendAlert(String alert);
 	
 	public void addUIEventListener(UIEventListener listener);

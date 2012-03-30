@@ -64,4 +64,19 @@ public abstract class Tools_String {
 		}
 	}
 	
+	public static String cutLineBetween(String start, String end, String src) throws Exception{
+		int i =0;
+		int j =0;
+		
+		
+		if((i=src.indexOf(start)) == -1 || (j=src.indexOf(end))== -1){
+			throw new Exception("IndexOutOfBounds Cannot cut string of len="+src.length() + " between "+i+ " : " +j);
+		}
+		i = i+start.length();
+		if(i > j){
+			throw new Exception("IndexOutOfBounds Cannot cut string of len="+src.length() + " between "+i+ " : " +j);
+		}
+		return src.substring(i,j);
+	}
+	
 }

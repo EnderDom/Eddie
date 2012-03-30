@@ -76,5 +76,6 @@ public abstract class Tools_UI {
 		if(auxil < 5)auxil = 5;
 		return new TaskManager(core, auxil);
 	}
-
+	
+	
 }

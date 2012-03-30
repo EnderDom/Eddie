@@ -17,12 +17,14 @@ public abstract class Tools_Blast {
 				Hmm... this seems a bit crap and may not be necessary
 				but i'm unfamiliar with cmd line in windows systems 
 				*/
+				if(blastbin.indexOf("/")!=-1){
+					Logger.getRootLogger().warn("This is a Windows system but the default directorys looked unix like");
+				}
 			}
 		}
 		String exec = blastbin + blastprg+ " " + blastparams + " -db " + blastdb + " -query " + blastquery.getPath() + " -out " +output.getPath();
-		Logger.getRootLogger().debug("blast_executable");
 		StringBuffer[] buffer = Tools_Task.runProcess(exec, true);
-		System.out.println("Complete");
 		return buffer;
 	}
+	
 }

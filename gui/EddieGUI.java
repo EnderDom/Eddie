@@ -151,7 +151,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 			buildTaskManager();
 		}
 		//TODO
-		
+		if(task.wantsUI())task.addUI(this);
 		task.parseOpts(this.load.getProps());
 		this.manager.addTask(task);
 		if(!this.manager.isStarted()){
@@ -192,9 +192,14 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	public void buildTaskManager() {
 		Integer core = Tools_String.parseString2Int(load.getCore());
 		Integer auxil = Tools_String.parseString2Int(load.getAuxil());
-		if(core == null) core = 1;logger.error("Something has gone horribly wrong");
-		if(auxil == null) auxil =5;logger.error("Something has gone horribly wrong");
-		this.manager = Tools_UI.buildTaskManager(core, auxil);
+		if(core == null){
+			core = 1;
+			logger.error("Something has gone horribly wrong");
+		}
+		if(auxil == null){
+			auxil =5;
+			logger.error("Something has gone horribly wrong");
+		}
 	}
 
 	public JMenuBar getMenu() {
@@ -250,4 +255,13 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
             }
         }
 	}
+
+	public String requiresUserInput(String message, String title) {
+		return JOptionPane.showInternalInputDialog(this, message, title, JOptionPane.QUESTION_MESSAGE);
+	}
+	
+	public int requiresUserYNI(String message, String title) {
+		return JOptionPane.showInternalConfirmDialog(this, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
+	}
+
 }

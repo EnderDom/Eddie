@@ -11,6 +11,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
 import tasks.Task;
+import tools.Tools_CLI;
 import tools.Tools_UI;
 import tools.Tools_Fun;
 import tools.Tools_String;
@@ -133,6 +134,7 @@ public class EddieCLI implements UI {
 		if(this.manager == null){
 			buildTaskManager();
 		}
+		if(task.wantsUI())task.addUI(this);
 		if(getArgs() != null)task.parseArgs(getArgs());
 		task.parseOpts(this.load.getProps());
 		this.manager.addTask(task);
@@ -141,8 +143,14 @@ public class EddieCLI implements UI {
 	public void buildTaskManager() {
 		Integer core = Tools_String.parseString2Int(load.getCore());
 		Integer auxil = Tools_String.parseString2Int(load.getAuxil());
-		if(core == null) core = 1;logger.error("Something has gone horribly wrong");
-		if(auxil == null) auxil =5;logger.error("Something has gone horribly wrong");
+		if(core == null){
+			core = 1;
+			logger.error("Something has gone horribly wrong");
+		}
+		if(auxil == null){
+			auxil =5;
+			logger.error("Something has gone horribly wrong");
+		}
 		this.manager = Tools_UI.buildTaskManager(core, auxil);
 	}
 	
@@ -192,6 +200,14 @@ public class EddieCLI implements UI {
                 ((UIEventListener)listeners[i+1]).UIEventOccurred(evt);
             }
         }
+	}
+
+	public String requiresUserInput(String message, String title) {
+		return Tools_CLI.showInternalInputDialog(title, message);
+	}
+
+	public int requiresUserYNI(String message, String title) {
+		return Tools_CLI.showInternalConfirmDialog(title, message);
 	}
 	
 }

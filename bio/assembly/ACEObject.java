@@ -1,5 +1,6 @@
 package bio.assembly;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
@@ -19,18 +20,18 @@ public class ACEObject implements ACEHandler, Assembly {
 	 * read name, as this can be duplicate in ace files
 	 */
 	
-	LinkedHashMap<Integer, String> contignumb;
-	LinkedHashMap<String, String> contigs;
-	LinkedHashMap<String, String> qualities;
+	HashMap<Integer, String> contignumb;
+	HashMap<String, String> contigs;
+	HashMap<String, String> qualities;
 	
-	LinkedHashMap<String, String> reads;
-	LinkedHashMap<String, String> read2contig;
+	HashMap<String, String> reads;
+	HashMap<String, String> read2contig;
 	
-	LinkedHashMap<String, Integer> rangeleft;
-	LinkedHashMap<String, Integer> rangeright;
-	LinkedHashMap<String, Integer> rangeleftpad;
-	LinkedHashMap<String, Integer> rangerightpad;
-	LinkedHashMap<String, Integer> positions;
+	HashMap<String, Integer> rangeleft;
+	HashMap<String, Integer> rangeright;
+	HashMap<String, Integer> rangeleftpad;
+	HashMap<String, Integer> rangerightpad;
+	HashMap<String, Integer> positions;
 	
 	int currentcontig = -1;
 	/*
@@ -381,8 +382,11 @@ public class ACEObject implements ACEHandler, Assembly {
 		return fasta;
 	}
 	
-	public LinkedHashMap<String, String> getRead2Contig(){
+	public HashMap<String, String> getRead2Contig(){
 		return this.read2contig;
 	}
 	
+	public HashMap<String, String> getSequences(){
+		return this.contigs;
+	}
 }

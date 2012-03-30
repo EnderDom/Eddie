@@ -1,7 +1,11 @@
 package tasks;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
 
@@ -58,46 +62,84 @@ public class Checklist {
 	private File folder;
 	private File task;
 	protected Logger logger = Logger.getLogger("CheckListLogger");
-	private boolean notasks;
+	private boolean opentasks;
+	private File lasttask;
+	private String comment;
+	private boolean recover;
 	
-	public Checklist(String workspace, String taskname){
-		this.taskname = taskname;
-		this.workspace = workspace;
+	public Checklist(String workspacea, String tasknamea){
+		this.taskname = tasknamea;
+		this.workspace = workspacea;
 		folder = new File(workspace + Tools_System.getFilepathSeparator() + "checklists");
 		if(folder.exists()){
 			if(!folder.isDirectory()){
-				Logger.getRootLogger().error("Checklist folder exists but is not a folder");
+				logger.error("Checklist folder exists but is not a folder");
+			}
+			else{
+				logger.debug("Checklist folder exists");
 			}
 		}
 		else{
+			logger.debug("Making Folder for Checklists");
 			folder.mkdir();
 		}
 		Integer l =0;
-		int k =0;
-		for(File file : folder.listFiles()){
-			if(file.getName().contains(taskname+"__")){
-				l = Tools_String.parseString2Int(taskname.substring(taskname.indexOf("__"),taskname.length()));
-				if(l != null && l > k){
-					k = l;
+		int k =-1;
+		if(folder.listFiles() != null){
+			for(File file : folder.listFiles()){
+				String name = file.getName();
+				if(name.contains(taskname+"__")){
+					logger.trace("Checklist found " + file.getName());
+					if(lasttask == null)lasttask =file;
+					l = Tools_String.parseString2Int(name.substring(name.indexOf("__")+2,name.length()));
+					if(l != null){
+						if(l > k){
+							k = l;
+							lasttask = file;
+						}
+					}
 				}
 			}
+			if(k != -1){
+				logger.warn("Task checklists not closed!");
+				opentasks = true;
+			}
 		}
-		if(k != 0){
-			logger.warn("Task checklists not closed!");
-			notasks = false;
-		}
-		File task = new File(workspace + Tools_System.getFilepathSeparator() + "checklists" +taskname+"__"+(k++));
+		k++;
+		this.task = new File(workspace + Tools_System.getFilepathSeparator() + "checklists" + Tools_System.getFilepathSeparator() +taskname+"__"+(k));
 		/*Double Check*/
 		if(task.exists()){
 			logger.error("Checklist already created with this name");
 		}
+		else{
+			logger.trace("Checklist filepath set");
+		}
+	}
+	
+	public String getLast(){
+		String[] lastinfo = null;
+		logger.debug("Loading data from previous task");
+		lastinfo = loadHeadFromFile(lasttask);
+		if(lastinfo == null){
+			logger.error("File now missing??");
+		}
+		StringBuilder bui = new StringBuilder();
+		String n= Tools_System.getNewline();
+		bui.append("Task: "+ lastinfo[1] + Tools_System.getNewline()+n);
+		bui.append("Date/Time started: "+ lastinfo[0]+n);
+		bui.append("Input: "+ lastinfo[2]+n);
+		bui.append("Info: "+ lastinfo[3]+n);
+		return bui.toString();
 	}
 	
 	public boolean check(){
-		return notasks;
+		return opentasks;
 	}
 	
-	
+	public void recoverLast(){
+		this.task = lasttask;
+		this.recover = true;
+	}
 	
 	/**
 	 * Sets the checklist to start,
@@ -106,21 +148,29 @@ public class Checklist {
 	 * define if the task is the same being rerun.
 	 */
 	public boolean start(String comment, String input){
+		logger.debug("Checklist started");
 		boolean success = true;
-		try {
-			task.createNewFile();
-		} catch (IOException e) {
-			logger.error("Failed to create File checklist", e);
-			success = false;
+		if(!recover){
+			try {
+				logger.trace("Creating new file...");
+				task.createNewFile();
+			} catch (IOException e) {
+				logger.error("Failed to create File checklist", e);
+				success = false;
+			}
+			if(success){
+				String write = "<START>"+Tools_System.getDateNow()+"</START>"+Tools_System.getNewline();
+				String taskword = "<TASK>"+taskname+"</TASK>"+Tools_System.getNewline();
+				input = "<INPUT>"+input+"</INPUT>"+Tools_System.getNewline();
+				comment = "<COMMENT>"+comment+"</COMMENT>"+Tools_System.getNewline();
+				String data = "<DATA>"+Tools_System.getNewline();
+				success = Tools_File.quickWrite(write+input+taskword+comment+data, task, true);
+			}
 		}
-		if(success){
-			String write = "<START>"+Tools_System.getDateNow()+"</START>"+Tools_System.getNewline();
-			String taskword = "<TASK>"+taskname+"</TASK>"+Tools_System.getNewline();
-			input = "<INPUT>"+input+"</INPUT>"+Tools_System.getNewline();
-			comment = "<COMMENT>"+comment+"</COMMENT>"+Tools_System.getNewline();
-			String data = "<DATA>"+Tools_System.getNewline();
-			success = Tools_File.quickWrite(write+input+taskword+comment+data, task, true);
+		else{
+			logger.debug("No start needed as recovery");
 		}
+		logger.debug("Checklist startup complete");
 		return success;
 	}
 	/**
@@ -129,6 +179,7 @@ public class Checklist {
 	 * @return whether saved or not
 	 */
 	public boolean update(String line){
+		logger.debug("Checklist updated");
 		return Tools_File.quickWrite(line+Tools_System.getNewline(), task, true);
 	}
 	
@@ -137,9 +188,94 @@ public class Checklist {
 		 * Probably not necessary, but in the event delete permissions
 		 * and write permissions are not equivalent.
 		 */
+		logger.debug("Checklist completed");
 		String write = "</DATA>"+Tools_System.getNewline()+"<END>"+Tools_System.getDateNow()+"</END>"+Tools_System.getNewline();
 		Tools_File.quickWrite(write, task, true);
 		return task.delete();
 	}
 	
+	//TODO --> fix
+	public String[] loadHeadFromFile(File file){
+		String[] data = new String[4];
+		logger.debug("Reading Data from checklist file");
+		try{
+			System.out.println(file.getPath());
+			FileInputStream fis = new FileInputStream(file);
+			InputStreamReader in = new InputStreamReader(fis, "UTF-8");
+			BufferedReader reader = new BufferedReader(in);
+			String line = "";
+			while((line = reader.readLine()) != null){
+				if(line.contains("<DATA>"))break;				
+				System.out.println(line);
+				if(line.startsWith("<START>")){
+					data[0] = Tools_String.cutLineBetween("<START>", "</START>", line);
+				}
+				if(line.startsWith("<TASK>")){
+					data[1] = Tools_String.cutLineBetween("<TASK>", "</TASK>", line);
+				}
+				if(line.startsWith("<INPUT>")){
+					data[2] = Tools_String.cutLineBetween("<INPUT>", "</INPUT>", line);
+				}
+				if(line.startsWith("<COMMENT>")){
+					data[3] = Tools_String.cutLineBetween("<COMMENT>", "</COMMENT>", line);
+					this.comment = data[3];
+					break;
+				}
+			}
+			reader.close();
+			in.close();
+			fis.close();
+		}
+		catch(IOException io){
+			logger.error("Failed loading text", io);
+		}
+		catch(Exception e){
+			logger.error("Failed dividing tags",e);
+		}
+		return data;
+	}
+	
+	public String[] getData(){
+		LinkedList<String> strs = new LinkedList<String>();
+		try{
+			System.out.println(task.getPath());
+			FileInputStream fis = new FileInputStream(task);
+			InputStreamReader in = new InputStreamReader(fis, "UTF-8");
+			BufferedReader reader = new BufferedReader(in);
+			String line = "";
+			boolean start = false;
+			while((line = reader.readLine()) != null){
+				if(start){
+					strs.add(line);
+				}
+				if(line.contains("</DATA>"))break;				
+				if(line.contains("<DATA>"))start=true;
+			}
+			reader.close();
+			in.close();
+			fis.close();
+		}
+		catch(IOException io){
+			logger.error("Failed loading text", io);
+		}
+		catch(Exception e){
+			logger.error("Failed dividing tags",e);
+		}
+		return strs.toArray(new String[0]);
+	}
+	
+	public boolean closeLastTask(){
+		return lasttask.delete();
+	}
+	
+	public String getComment(){
+		if(comment == null){
+			loadHeadFromFile(lasttask);
+		}
+		return comment;
+	}
+	
+	public boolean inRecovery(){
+		return this.recover;
+	}
 }

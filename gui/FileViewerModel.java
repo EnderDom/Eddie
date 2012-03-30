@@ -127,9 +127,6 @@ public class FileViewerModel extends AbstractTableModel{
 			root.appendChild(header);
 			Element files = data.createElementNS(null,"FILES");
 			root.appendChild(files);
-			//DUMMY DATA FOR TESTING REMOVE
-			Logger.getRootLogger().info("This is here for testing. TO BE REMOVED");
-			addFileData(this.tableheadings);
 			Logger.getRootLogger().debug("Built XML");
 			saveFile(file);
 		} 
