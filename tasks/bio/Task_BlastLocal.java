@@ -99,23 +99,18 @@ public class Task_BlastLocal extends TaskXT{
 		if(input != null){
 			File in = new File(input);
 			if(in.isFile()){
-				int i =0;
-				if(filetype == null && (i=input.indexOf(".")) != -1){
-					filetype = input.substring(i,input.length());
-				}
-				else if(filetype == null){
-					//TODO file determination
-					logger.debug("No implementation for working out unknown file type. Set file type");
-				}
+				//int i =0;
+				String filetype = this.detectFileType(in.getName());
+				
 				//Checklist checklist = new Checklist(workspace, this.getClass().getName());
 				
-				if(filetype.indexOf("fastq") != -1){
+				if(filetype.equals("FASTQ")){
 					//TODO
 				}
-				else if(filetype.indexOf("ace") != -1){
+				else if(filetype.equals("ACE")){
 					//TODO
 				}
-				else if(filetype.indexOf("fasta") != -1 || filetype.indexOf("fna") != -1){
+				else if(filetype.equals("FASTA")){
 					//TODO
 				}
 				else{

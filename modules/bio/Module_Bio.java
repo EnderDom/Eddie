@@ -34,7 +34,6 @@ public class Module_Bio extends Module_Basic{
 	//Action mechanism needs to be changed for non-persistant modules....
 	public void actOnAction(String s, EddieGUI gui) {
 		if(s.contentEquals(this.getModuleName()+0)){
-			//TODO
 			Logger.getRootLogger().debug("Unimplemented Actionables");
 		}
 	}

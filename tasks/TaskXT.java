@@ -117,4 +117,20 @@ public class TaskXT extends Task{
 	}
 	
 	
+	/*
+	 * Very basic File Type detection
+	 * 
+	 */
+	public String detectFileType(String filename){
+		String[] filesuffix = new String[]{".ace",".sam",".fna",".fasta","fastq"};
+		String[] filetype = new String[]{"ACE","SAM","FASTA","FASTA","FASTQ"};
+		String filetype_val = "UNKNOWN";
+		for(int i=0; i < filesuffix.length; i++){
+			if(filename.endsWith(filesuffix[i])){
+				filetype_val = filetype[i];
+				break;
+			}
+		}
+		return filetype_val;
+	}
 }

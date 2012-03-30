@@ -18,6 +18,8 @@ import ui.ModuleManager;
 import ui.PropertyLoader;
 import ui.TaskManager;
 import ui.UI;
+import ui.UIEvent;
+import ui.UIEventListener;
 
 public class EddieCLI implements UI {
 
@@ -171,6 +173,25 @@ public class EddieCLI implements UI {
 	
 	public void sendAlert(String str){
 		Logger.getRootLogger().info(str);
+	}
+
+	public void addUIEventListener(UIEventListener listener) {
+		listenerList.add(UIEventListener.class, listener);
+	}
+
+	public void removeUIEventListener(UIEventListener listener) {
+		listenerList.remove(UIEventListener.class, listener);
+	}
+
+	public void fireUIEvent(UIEvent evt) {
+		Object[] listeners = listenerList.getListenerList();
+        // Each listener occupies two elements - the first is the listener class
+        // and the second is the listener instance
+        for (int i=0; i<listeners.length; i+=2) {
+            if (listeners[i]==UIEventListener.class) {
+                ((UIEventListener)listeners[i+1]).UIEventOccurred(evt);
+            }
+        }
 	}
 	
 }
