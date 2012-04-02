@@ -123,7 +123,8 @@ public class ACEParser {
 			else if(line.startsWith("AS")){
 				String[] bits = line.split(" ");
 				if(bits.length > 1){
-					handler.setNoOfReads(Tools_String.parseString2Int(bits[2]));
+					Integer i = Tools_String.parseString2Int(bits[2]);
+					if(i != null)handler.setNoOfReads(i);
 				}
 				else{
 					Logger.getRootLogger().warn("AS too small");

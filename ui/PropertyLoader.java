@@ -393,6 +393,7 @@ public class PropertyLoader implements Module{
 						+ infoFile));
 			}
 		}
+		save(rootfolder+propertyfilename, props);
 		return ret;
 	}
 

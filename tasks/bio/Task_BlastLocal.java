@@ -37,6 +37,7 @@ public class Task_BlastLocal extends TaskXT{
 	private HashMap<String, String> sequences;
 	int start;
 	int blastcomplete;
+	private boolean clipname;
 	
 	public Task_BlastLocal(){
 		/*
@@ -53,11 +54,11 @@ public class Task_BlastLocal extends TaskXT{
 		if(cmd.hasOption("bbb"))blast_bin=cmd.getOptionValue("bbb");
 		if(cmd.hasOption("bpr"))blast_prg=cmd.getOptionValue("bpr");
 		if(cmd.hasOption("p"))blastparams=cmd.getOptionValue("p").replaceAll("/_", " ");
-		
+		if(cmd.hasOption("clip"))clipname=true;
 		if(cmd.hasOption("pf")){
 			File fie = new File(cmd.getOptionValue("pf"));
 			if(fie.isFile()){
-				blastparams = Tools_File.quickRead(fie);
+				blastparams = Tools_File.quickRead(fie, false);
 			}
 			else{
 				logger.error("Blast parameter file does not exist");
@@ -76,7 +77,7 @@ public class Task_BlastLocal extends TaskXT{
 			blast_db = props.getProperty("BLAST_DB_DIR");
 		}
 		else{
-			if(blast_db.indexOf(File.pathSeparator) == -1){
+			if(blast_db.indexOf(Tools_System.getFilepathSeparator()) == -1){
 				blast_db = props.getProperty("BLAST_DB_DIR") + blast_db;
 			}
 		}
@@ -97,7 +98,8 @@ public class Task_BlastLocal extends TaskXT{
 		options.addOption(new Option("x", "outputformat", true, "Set Output Format, else defaults to xml"));
 		options.addOption(new Option("p", "params", true, "Additional Parameters separate with '/_' not space"));
 		options.addOption(new Option("pf", "paramater file", true, "Additional blast Parameters in external file"));
-		options.addOption(new Option("filetype", "params", true, "Specify filetype (rather then guessing from ext)"));
+		options.addOption(new Option("filetype", true, "Specify filetype (rather then guessing from ext)"));
+		options.addOption(new Option("clip", false, "Clip output file name to whitespace in input"));
 	}
 	
 	public void runTest(){
@@ -292,8 +294,12 @@ public class Task_BlastLocal extends TaskXT{
 				logger.error("Error saving Fasta to temporary directory");
 			}
 			logger.debug("Saved "+ seqname + " to tempfile");
-			File ou = new File(output.getPath()+Tools_System.getFilepathSeparator()+seqname+".xml");
+			String outname = seqname;
+			if(outname.indexOf(" ") != -1 && clipname)outname = outname.substring(0, outname.indexOf(" "));
+			else if (outname.indexOf(" ") != -1 && !clipname) outname = outname.replaceAll(" ", "_");
+			File ou = new File(output.getPath()+Tools_System.getFilepathSeparator()+outname+".xml");
 			Tools_Blast.runLocalBlast(temp, this.blast_prg, this.blast_bin, this.blast_db, this.blastparams,ou);
+			ou.delete();
 			this.blastcomplete++;
 			list.update(seqname);
 		}

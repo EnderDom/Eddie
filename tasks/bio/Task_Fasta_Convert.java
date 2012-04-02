@@ -14,21 +14,22 @@ import bio.fasta.FastaParser;
 import tasks.TaskXT;
 import tools.Tools_System;
 
-public class Task_Fasta extends TaskXT{
+public class Task_Fasta_Convert extends TaskXT{
 	
 	protected String qual;
 	Fasta fasta;
 	
-	public Task_Fasta(){
+	public Task_Fasta_Convert(){
 		
 	}
 	
 	public void run(){
 		setComplete(started);
-		Logger.getRootLogger().debug("Started running task @ "+Tools_System.getDateNow());
+		logger.debug("Started running task @ "+Tools_System.getDateNow());
 		/*
 		 * Convert Fasta&qual to Fastq
 		 */
+		
 		output = output.replaceAll(".fasta", "");
 		output = output.replaceAll(".fastq", "");
 		output = output.replaceAll(".fna", "");
@@ -115,7 +116,7 @@ public class Task_Fasta extends TaskXT{
 		super.buildOptions();
 		options.getOption("i").setDescription("Input fasta file");
 		options.addOption(new Option("q", "qual", true, "Optional quality file for convert fasta & qual -> fastq"));
-		options.getOption("o").setDescription("Output file or files");		
+		options.getOption("o").setDescription("Output file or files");
 	}
 	
 	public Options getOptions(){

@@ -28,18 +28,24 @@ public abstract class Tools_File {
 			return false;
 		}
     }
+	
+	public static String quickRead(File file){
+		return quickRead(file, true);
+	}
 	/*
 	 * Quick and simple File Read method, with no real error checking though
 	 */
-	public static String quickRead(File file){
+	public static String quickRead(File file, boolean lines){
 		StringBuffer buff = new StringBuffer();
 		try{
 			FileInputStream fis = new FileInputStream(file);
 			InputStreamReader in = new InputStreamReader(fis, "UTF-8");
 			BufferedReader reader = new BufferedReader(in);
 			String line = "";
+			String newline = Tools_System.getFilepathSeparator();
 			while((line = reader.readLine()) != null){
-				buff.append(line + "\n");
+				buff.append(line);
+				if(lines)buff.append(newline);
 			}
 			reader.close();
 			in.close();
@@ -49,8 +55,9 @@ public abstract class Tools_File {
 		catch(IOException io){
 			return buff.toString();
 		}
-		
 	}
+	
+	
 	
 	//From stack overflow, will fail if file larger than Long.MAX_VALUE, I suspect JVM may well too though ;)
 	public static int countLines(File file){

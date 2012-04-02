@@ -9,9 +9,12 @@ import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
 
-import tools.bio.Tools_Fasta;
+import bio.sequence.Sequences;
 
-public class Fasta implements FastaHandler{
+import tools.bio.Tools_Fasta;
+import tools.bio.Tools_Sequences;
+
+public class Fasta implements FastaHandler, Sequences{
 
 	private LinkedHashMap<String, String> sequences;
 	private LinkedHashMap<String, String> qualities;
@@ -139,4 +142,40 @@ public class Fasta implements FastaHandler{
 		if(count == sequences.keySet().size())return true;
 		else return false;
 	}
+	
+
+	
+	public int getNoOfBps(){
+		int l = 0;
+		int[] i = getListOfLens();
+		for(int j : i)l=+j;
+		return l;
+	}
+	
+	public int[] getListOfLens(){
+		int[] arr_of_lens = new int[sequences.size()];
+		int c=0;
+		for(String s : sequences.keySet()){
+			String seq = sequences.get(s);
+			arr_of_lens[c] = seq.length();
+			c++;
+		}
+		return arr_of_lens;
+	}
+	
+	public int getN50(){
+		return Tools_Sequences.n50(getListOfLens());
+	}
+	
+	/*
+	 * See Tool_Sequences static method for array values
+	 */
+	public long[] getAllStats(){
+		return Tools_Sequences.SequenceStats(getListOfLens());
+	}
+	
+	public int getNoOfSequences(){
+		return this.sequences.size();
+	}
+	
 }

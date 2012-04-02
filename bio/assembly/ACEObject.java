@@ -5,10 +5,14 @@ import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
 
+import tools.Tools_Math;
+import tools.bio.Tools_Sequences;
+
 import bio.fasta.Fasta;
+import bio.sequence.Sequences;
 
 
-public class ACEObject implements ACEHandler, Assembly {
+public class ACEObject implements ACEHandler, Assembly, Sequences {
 
 	
 	//ALL values are converted to 0 index/base
@@ -39,7 +43,7 @@ public class ACEObject implements ACEHandler, Assembly {
 	 */
 	public int averagecoveragecalc = 1;
 	
-	
+	private int[] lens;
 	
 	//This says whether the multiple reads with same name error has been thrown already
 	private String readname = "read_";
@@ -322,17 +326,6 @@ public class ACEObject implements ACEHandler, Assembly {
 		return len;
 	}
 
-	public int getGlobalNoOfbp() {
-		int len =0;
-		for(String readname : reads.keySet()){
-			String read = reads.get(readname);
-			read = read.replaceAll("\\*", "");
-			read = read.replaceAll("-", "");
-			len +=read.length();
-		}
-		return len;
-	}
-
 	/*
 	 * This is general compicated by the way coverage is usually calculated
 	 * as the no of bp / the length. As some bp will not be present in the consensus.
@@ -388,5 +381,50 @@ public class ACEObject implements ACEHandler, Assembly {
 	
 	public HashMap<String, String> getSequences(){
 		return this.contigs;
+	}
+
+	public int getN50() {
+		return Tools_Sequences.n50(getListOfLens());
+	}
+
+	public int[] getListOfLens() {
+		System.out.println();
+		if(lens == null){
+			lens = new int[contigs.size()];
+			int c =0;
+			for(String contigname : contigs.keySet()){
+				String contig = contigs.get(contigname).replaceAll("\\*", "");
+				contig = contig.replaceAll("-", "");
+				for(int i =0; i < contig.length(); i++){
+					if(contig.charAt(i) != '-' && contig.charAt(i) != '*'){
+						lens[c]++;						
+					}
+				}
+				c++;
+				System.out.print("\r"+c);
+			}
+		}
+		System.out.println();
+		return lens;
+	}
+
+	public int getNoOfBps() {
+		return Tools_Math.sum(getListOfLens());
+	}
+	
+	public long getNoOfReadBps(){
+		long big = 0;
+		for(String contigname : contigs.keySet()){
+			big+=this.getTotalNoOfbpContig(contigname);
+		}
+		return big;
+	}
+
+	public long[] getAllStats() {
+		return Tools_Sequences.SequenceStats(getListOfLens());
+	}
+	
+	public int getNoOfSequences(){
+		return this.contigs.size();
 	}
 }

@@ -48,5 +48,4 @@ public interface Assembly {
 	
 	public int getTotalNoOfbpContig(String contigindex);
 	
-	public int getGlobalNoOfbp();
 }
