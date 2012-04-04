@@ -2,8 +2,6 @@ package bio.sequence;
 
 import org.apache.log4j.Logger;
 
-import tools.Tools_Bit;
-
 /*
  * 
  * Experimental 4 bit sequence object
@@ -15,7 +13,7 @@ import tools.Tools_Bit;
  * by switching the direction of reading the longs 
  * and returning opposite characters for the values
  * mainly represented in hex for ease, but I am aware
- * that this is acutally int values, which means you can't
+ * that this is actually int values, which means you can't
  * set long values greater than 32bit with hex. 
  * 
  */
@@ -37,7 +35,10 @@ public class FourBitSequence {
 	
 	int bitoff = 4; //2 less powers from BitSet's 6 as DNA is 4 bits large
 	
+	//Length in bp of sequence inc. '*'
 	int length;
+	//Length without '*'/'-'
+	int actlength;
 	
 	/*
 	 * Read bits from left or right
@@ -45,9 +46,7 @@ public class FourBitSequence {
 	 * sequence reversed and complimented
 	 */
 	boolean LorR;
-	
-	int currentdebug=0;
-	
+		
 	long lmask;
 	long rmask;
 	
@@ -61,7 +60,7 @@ public class FourBitSequence {
 	}
 	
 	public FourBitSequence(String sequence){
-		init( sequence.length());
+		init(sequence.length());
 		parseString(sequence);
 	}
 	
@@ -136,6 +135,7 @@ public class FourBitSequence {
 	 */
 	public void parseString(String sequence){
 		if (this.length == 0)init(sequence.length());
+		this.actlength=this.length;
 		sequence = sequence.toUpperCase();
 		char[] arr = sequence.toCharArray();
 		for(int  i =0; i < sequence.length(); i++){
@@ -161,23 +161,19 @@ public class FourBitSequence {
 				
 				case 'N' : dna[offset] <<= 4; dna[offset] |= 0xf; break;
 				case 'X' : dna[offset] <<= 4; dna[offset] |= 0xf; break;
-				case '-' : dna[offset] <<= 4; dna[offset] |= 0x0; break;
-				case '*' : dna[offset] <<= 4; dna[offset] |= 0x0; break;
-				case '.' : dna[offset] <<= 4; dna[offset] |= 0x0; break;
+				case '-' : dna[offset] <<= 4; dna[offset] |= 0x0; this.actlength--; break;
+				case '*' : dna[offset] <<= 4; dna[offset] |= 0x0; this.actlength--; break;
+				case '.' : dna[offset] <<= 4; dna[offset] |= 0x0; this.actlength--; break;
 				default  : Logger.getRootLogger().warn("Input Non-DNA character: " + arr[i]); break;
 			}
-			//debugSeq(offset);
-			//System.out.print(arr[i] + " ");
 		}
 		
 		dna[dna.length-1]<<= (16-(sequence.length() % 16))*4; /*
 		 													   * This shifts the incomplete 
 		 													   * long fully to the right,
-		 													   * there most be a simpler way
+		 													   * there might be a simpler way
 		 													   * but I can't think of one atm.
 		 													   */ 
-		//debugSeq(dna.length-1);
-		//System.out.print("\n");
 	}
 	
 	public String getAsStringRevComp(){
@@ -242,7 +238,7 @@ public class FourBitSequence {
 	
 	private static char getAsChar(long charvalue, boolean forward){
 		if(!forward){
-			if(charvalue==0x1) return 'A';
+				 if(charvalue==0x1) return 'A';
 			else if(charvalue==0x2) return 'C';
 			else if(charvalue==0x4) return 'G';
 			else if(charvalue==0x8) return 'T';
@@ -302,15 +298,12 @@ public class FourBitSequence {
 		this.LorR = !this.LorR;
 	}
 	
+	public int getLength(){
+		return this.length;
+	}
 	
-	@SuppressWarnings("unused")
-	private void debugSeq(int i){
-		if(i != currentdebug){
-			System.out.print("\n");
-		}
-		String r = Tools_Bit.LongAsBitString(dna[i]);
-		System.out.print("\n" + r);
-		currentdebug = i;
+	public int getActualLength(){
+		return this.actlength;
 	}
 	
 }

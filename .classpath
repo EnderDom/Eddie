@@ -8,5 +8,7 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/apache-log4j-1.2.16/log4j-1.2.16.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/lib/apache-log4j-1.2.16/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/bio/picard-1.65.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/bio/sam-1.65.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

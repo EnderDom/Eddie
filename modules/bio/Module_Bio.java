@@ -3,6 +3,7 @@
 import org.apache.log4j.Logger;
 
 import tasks.bio.Task_Assembly;
+import tasks.bio.Task_Assembly_Convert;
 import tasks.bio.Task_BlastLocal;
 import tasks.bio.Task_Fasta_Convert;
 import tasks.bio.Task_Sequence_Analysis;
@@ -15,16 +16,17 @@ public class Module_Bio extends Module_Basic{
 	
 	public String menustring = "Tools";
 	public String menuItemName = "Biology Tools";
-	protected String[] tasks = new String[]{"convertFasta","blast", "webblast", "blast2sql","sam2ace", "ace2sam", "seqanalysis"}; 
+	//Change to Options ...?
+	protected String[] tasks = new String[]{"convertFasta","blast", "webblast", "blast2sql","assemblyconvert","seqanalysis", "AssemblyTools"}; 
 	protected String[] taskinfo = new String[]{"converts fasta & qual to fastq","run a blast program", "run web blast", 
-			"Upload blast results to mysql db","converts SAM file to ACE file", "converts ACE file to SAM file", "Analysis of Sequence files"};
+			"Upload blast results to mysql db", "converts Assembly Files", "Analysis of Sequence files", "Assembly Tools"};
 	
 	/*
 	 * This needs to match the class ->
 	 * Will not be changed if class name is changed!!!
 	 */
 	protected String[] classes = new String[]{Task_Fasta_Convert.class.getName(),Task_BlastLocal.class.getName(),Task_BlastLocal.class.getName(),
-			Task_BlastLocal.class.getName(),Task_Assembly.class.getName(),Task_Assembly.class.getName(),Task_Sequence_Analysis.class.getName()};
+			Task_BlastLocal.class.getName(),Task_Assembly_Convert.class.getName(),Task_Sequence_Analysis.class.getName(), Task_Assembly.class.getName()};
 	
 	protected String[] actions;
 	
