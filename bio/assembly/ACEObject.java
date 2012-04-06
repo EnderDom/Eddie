@@ -68,7 +68,7 @@ public class ACEObject implements ACEHandler, Assembly, Sequences {
 	
 	public void setRefName(String name) {
 		currentcontig++;
-		contigs.put(name, "");
+		contigs.put(name, null);
 		contignumb.put(currentcontig, name);
 	}
 

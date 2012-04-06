@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
  * 
  * Experimental 4 bit sequence object
  * 
- * Uses and inspired by BitSet Java class 
+ * Inspired by BitSet Java class 
  * 
  * Holds sequence data in 4 bit sections inside 
  * a long array. The sequence can be reversed simply
@@ -18,7 +18,13 @@ import org.apache.log4j.Logger;
  * 
  */
 
-public class FourBitSequence {
+/*
+ * NB: Maximum length of sequence 2^32
+ * For larger sequences probably need 
+ * a array/list containing object
+ */
+
+public class FourBitSequence implements CharSequence{
 
 	/*
 	 * The actual DNA store
@@ -73,8 +79,8 @@ public class FourBitSequence {
 		this.length = nlength;
 		/*
 		 * Note: would shift only by 6
-		 * but 4 bits per nucleotide so to
-		 *  additional powers to be added
+		 * but 4 bits per nucleotide so 2
+		 * additional powers to be added
 		 */
 		int length_long = nlength >> bitoff;
 		
@@ -84,7 +90,6 @@ public class FourBitSequence {
 		 * to accommodate the size
 		 */
 		if ((nlength & bitmask) != 0)length_long++;
-		Logger.getRootLogger().debug("Length of Sequence "+ nlength + " fits into array of "+length_long+ " longs");
 		dna = new long[length_long];
 	}
 	
@@ -138,7 +143,7 @@ public class FourBitSequence {
 		this.actlength=this.length;
 		sequence = sequence.toUpperCase();
 		char[] arr = sequence.toCharArray();
-		for(int  i =0; i < sequence.length(); i++){
+		for(int  i =0; i < arr.length; i++){
 			int offset = i >> bitoff;
 			if(offset == dna.length)this.extend(16); //Should only be necessary if this is instantiated without string
 			switch (arr[i]) {
@@ -164,7 +169,7 @@ public class FourBitSequence {
 				case '-' : dna[offset] <<= 4; dna[offset] |= 0x0; this.actlength--; break;
 				case '*' : dna[offset] <<= 4; dna[offset] |= 0x0; this.actlength--; break;
 				case '.' : dna[offset] <<= 4; dna[offset] |= 0x0; this.actlength--; break;
-				default  : Logger.getRootLogger().warn("Input Non-DNA character: " + arr[i]); break;
+				default  : Logger.getRootLogger().warn("Input Non-DNA character: " + arr[i]);this.length--; break; 
 			}
 		}
 		
@@ -203,8 +208,7 @@ public class FourBitSequence {
 				mask <<=60;
 				long charvalue = 0x0;
 				for(int j = 0; j <64; j+=4){
-					charvalue = (mask & dna[i])>>(60-j);
-					//System.out.println(Tools_Bit.LongAsBitString(charvalue));
+					charvalue = (mask & dna[i])>>>(60-j);
 					array[arraycount] = getAsChar(charvalue, forward);
 					arraycount++;
 					if(arraycount == this.length)break;
@@ -281,11 +285,71 @@ public class FourBitSequence {
 		}
 	}
 	
-	//TODO implement
 	public void append(String input){
-		Logger.getRootLogger().warn("Method Not Yet Implemented!!!");
+		FourBitSequence seq = new FourBitSequence(input);
+		append(seq);
 	}
 	
+	/*
+	 * This method gets the bitshift value for the end of this 
+	 * sequence then adds a the data from seq shifted to fit into the array
+	 * 
+	 * ie (simplified to 2byte for demo):
+	 * this data(d1)  Len=2:
+	 * 0010 0010 0000 0000
+	 * to have this data appended (d2) Len=4
+	 * 0001 0001 0010 0010
+	 * 
+	 * so the method does this:
+	 * d2_rshift = 0001 0001 0010 0010 (>>>)--> 0000 0000 0001 0001
+	 * d2_lshift = 0001 0001 0010 0010 (<<)--> 0010 0010 0000 0000  
+	 * 
+	 * new data[0] = d1[0] | d2_rshift ie 
+	 * 0010 0010 0000 0000
+	 * 0000 0000 0001 0001
+	 *        ||
+	 *        \/
+	 * 0010 0010 0001 0001
+	 * 
+	 * new data[1] = 0010 0010 0000 0000  (dl2_lshift)
+	 * 
+	 * 
+	 * As the final long is already shifted, the long doesn't need shifting
+	 * again as in the parseString method
+	 */
+	
+	public void append(FourBitSequence seq){
+		/*
+		 * Get the bitshift value from this seq
+		 */
+		int shiftval = (this.length % 16)*4;
+		
+		//Set new lengths
+		this.length +=seq.getLength();
+		this.actlength += seq.getActualLength();
+		
+		//Recreate dna data as in init()
+		int length_long = this.length >> bitoff;			
+		if ((this.length & bitmask) != 0)length_long++;
+		long[] data = new long[length_long];
+		
+		//Add this object dna[i] to data[i]
+		int i =0;
+		for(; i < this.dna.length; i++){
+			data[i] = this.dna[i];
+		}
+		//Add seq object data, this needs to be shifted accordingly
+		int offset = i;
+		for(; i < length_long; i++){
+			data[i-1] |= seq.dna[i-offset]>>>shiftval;
+			data[i] = seq.dna[i-offset]<<64-shiftval;
+		}
+		//Set this dna data as data
+		this.dna = data;
+	}
+	/*
+	 * Extends the length of the dna[]
+	 */
 	private void extend(int len){
 		long[] newdna = new long[dna.length+len];
 		for(int i =0; i < dna.length ; i++){
@@ -294,6 +358,9 @@ public class FourBitSequence {
 		this.dna=newdna;
 	}
 	
+	/*
+	 * flips reversecomp flag
+	 */
 	public void toReverseComp(){
 		this.LorR = !this.LorR;
 	}
@@ -302,8 +369,32 @@ public class FourBitSequence {
 		return this.length;
 	}
 	
+	/*
+	 * Returns length minus any '*'/'-' chars
+	 */
 	public int getActualLength(){
 		return this.actlength;
 	}
 	
+	/*
+	 * String overlap methods
+	 * 
+	 */
+	public int length(){
+		return this.length;
+	}
+
+	public char charAt(int arg0) {
+		return this.get(arg0);
+	}
+
+	//TODO replace with proper method
+	public CharSequence subSequence(int arg0, int arg1) {
+		return new FourBitSequence(this.getAsString().substring(arg0, arg1));
+	}
+	
+	public String toString(){
+		return this.getAsString();
+	}
+		
 }

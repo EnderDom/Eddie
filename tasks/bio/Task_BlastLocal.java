@@ -12,7 +12,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
 
-import bio.assembly.ACEObject;
+import bio.assembly.ACEObjectSlim;
 import bio.assembly.ACEParser;
 import bio.fasta.Fasta;
 import bio.fasta.FastaParser;
@@ -191,7 +191,7 @@ public class Task_BlastLocal extends TaskXT{
 				}
 				else if(filetype.equals("ACE")){
 					checklist.start(this.args, this.input);
-					ACEObject ace = new ACEObject();
+					ACEObjectSlim ace = new ACEObjectSlim();
 					ACEParser parser = new ACEParser(ace);
 					boolean cont = false;
 					try {
@@ -203,7 +203,12 @@ public class Task_BlastLocal extends TaskXT{
 						logger.error("Error parsing Fasta/q file", e);
 					}
 					if(cont){
-						this.sequences = ace.getSequences();
+						try{
+							this.sequences = ace.getFastaFromConsensus().getSequences();
+						}
+						catch(Exception e){
+							e.printStackTrace();
+						}
 						if(checklist.inRecovery()){
 							trimRecovered(checklist.getData());
 						}

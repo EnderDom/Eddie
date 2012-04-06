@@ -1,12 +1,15 @@
 package objects;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 import tools.Tools_File;
+import tools.Tools_System;
 
 public class csvWrapper {
 
@@ -17,7 +20,47 @@ public class csvWrapper {
 	int columns;
 	
 	public csvWrapper(){
-
+		
+	}
+	
+	public csvWrapper(String[][] cells){
+		this.cells = cells;
+		this.columns = cells[0].length;
+		this.rows = cells.length;
+	}
+	
+	public boolean save(){
+		try{
+			FileWriter fstream = new FileWriter(this.file);
+			BufferedWriter out = new BufferedWriter(fstream);
+			String newline = Tools_System.getNewline();
+			for(int x =0; x < this.columns; x++){
+				for(int y =0; y < this.rows; y++){
+					out.write(this.getCell(x, y));
+					out.flush();
+					if(y != this.rows-1){
+						out.write(this.delimiter);
+						out.flush();
+					}
+				}
+				if(x != this.columns-1){
+					out.write(newline);
+					out.flush();
+				}
+			}
+			out.close();
+			fstream.close();
+			return true;
+		}
+		catch(IOException e){
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public boolean save(File file){
+		this.file = file;
+		return save();
 	}
 
 	public int load(File file, String delimiter){
@@ -29,7 +72,6 @@ public class csvWrapper {
 	public void setDelimiter(String delimiter){
 		this.delimiter = delimiter;
 	}
-	
 	
 	public int loadFile(){
 		int err = 0;

@@ -47,8 +47,8 @@ public class ACEParser {
 		String current = "";
 		
 		while((line = reader.readLine()) != null){
+
 			if(line.startsWith("CO")){
-				swit = 0;
 				if(consensus.length() > 0){
 					handler.setRefConsensus(consensus.toString());
 					consensus = new StringBuilder();
@@ -72,8 +72,18 @@ public class ACEParser {
 					Logger.getRootLogger().error("Missing details in Contig/Reference Header (CO)");
 				}
 				count++;
+				swit = 0;
+			}
+			else if(line.startsWith("CT{")){
+				//COMMENT
+				swit =3;
 			}
 			else if(line.startsWith("BQ")){
+				if(consensus.length() > 0){
+					handler.setRefConsensus(consensus.toString());
+					consensus = new StringBuilder();
+					hack = new LinkedHashMap<String, String>();
+				}
 				if(qualbuff.length() > 0){
 					handler.setRefConsensusQuality(qualbuff.toString());
 					qualbuff = new StringBuilder();
@@ -88,8 +98,10 @@ public class ACEParser {
 					handler.addOrientation(bits[2].toCharArray()[0], tmp);
 					handler.addPOS(Tools_String.parseString2Int(bits[3]), tmp);
 				}
+				swit =3;
 			}
 			else if(line.startsWith("BS")){
+				swit =3;
 				//I believe this can be ignored.
 			}
 			else if(line.startsWith("RD")){
@@ -119,6 +131,7 @@ public class ACEParser {
 				else{
 					Logger.getRootLogger().warn("Length of QA to small");
 				}
+				swit =3;
 			}
 			else if(line.startsWith("AS")){
 				String[] bits = line.split(" ");
@@ -129,12 +142,14 @@ public class ACEParser {
 				else{
 					Logger.getRootLogger().warn("AS too small");
 				}
+				swit =3;
 			}
 			else{
 				switch(swit){
 					case 0 : consensus.append(line);break; //Reading Contig lines
 					case 1 : qualbuff.append(line); break; //Reading Quality Lines
 					case 2 : buff.append(line);break; //Reading Read Data Lines
+					case 3 : break; //Reading Read Data Lines
 					default: break; //Do Nothing
 				}
 			}
