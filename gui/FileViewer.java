@@ -1,10 +1,15 @@
 package gui;
 
+import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
 import javax.swing.JInternalFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+
 
 import modules.Module;
 
@@ -16,7 +21,7 @@ import cli.EddieCLI;
 
 //contains a list of all files available
 
-public class FileViewer extends JInternalFrame implements TableModelListener, Module, FileReciever{
+public class FileViewer extends JInternalFrame implements TableModelListener, Module, FileReciever, MouseListener{
 
 	/**
 	 */
@@ -26,10 +31,14 @@ public class FileViewer extends JInternalFrame implements TableModelListener, Mo
 	private FileViewerModel model;
 	public String[] actions;
 	protected String modulename;
+	Logger logger = Logger.getLogger(this.getClass().getName());
+	FileOptions ops;
+	boolean poped;
 	
 	public FileViewer(){
 		super("File List",true,false,true,true);
 		modulename = this.getClass().getName();
+		
 	}
 	
 	public void init(){
@@ -80,6 +89,7 @@ public class FileViewer extends JInternalFrame implements TableModelListener, Mo
 		table.setModel(this.model);
 		spane = new JScrollPane(table);
 		this.add(spane);
+		spane.addMouseListener(this);
 		
 		//Set up menu items
 		JMenuItem menuItem = new JMenuItem("Add File...");
@@ -121,5 +131,47 @@ public class FileViewer extends JInternalFrame implements TableModelListener, Mo
 		}
 		this.model.fireTableDataChanged();
 	}
+	
+	
+	public void mouseClicked(MouseEvent arg0) {
+		
+	}
+
+	public void mouseEntered(MouseEvent arg0) {
+		
+	}
+
+	public void mouseExited(MouseEvent arg0) {
+		if(poped){
+			poped = false;
+			ops.setVisible(false);
+			this.getParent().remove(ops);
+		}
+	}
+
+	public void mousePressed(MouseEvent arg0) {
+		if(!poped){
+			if(arg0.isPopupTrigger() || arg0.getButton() == MouseEvent.BUTTON2){
+				Point p = arg0.getPoint();
+				int rowz = table.rowAtPoint(p);
+				logger.trace("FileViewer registered a popup activating click @ row"+rowz);
+				ops = this.model.rowPopupClicked(rowz);
+				ops.setLocation(arg0.getXOnScreen(), arg0.getYOnScreen());
+				this.getParent().add(ops);
+				ops.setVisible(true);
+				poped = true;
+			}
+		}
+		else{
+			poped = false;
+			ops.setVisible(false);
+			this.remove(ops);
+		}
+	}
+
+	public void mouseReleased(MouseEvent arg0) {
+		
+	}
+	
 }
 

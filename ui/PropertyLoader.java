@@ -59,8 +59,8 @@ public class PropertyLoader implements Module{
      */
     public static int engineversion = 4;
     
-    public static double guiversion = 0.15;
-    public static String edition = "Experimental";
+    public static double guiversion = 0.17;
+    public static String edition = "Development";
     Level level;
     public static Logger logger;
     public String[] actions;
@@ -71,7 +71,11 @@ public class PropertyLoader implements Module{
 	public String modulename;
 	private String slash;
 	
+	public static String[] defaultKeys = new String[]{"DBHOST", "DBNAME", "DBUSER","AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR", "ESTSCAN_BIN", "FILES_XML"};
+	public static String[] defaultKeysUN = new String[]{"PRELNF","MODULES", "VERSION"};
+	
 	public PropertyLoader() {
+		rootfolder = getEnvirons();
 		level = Level.WARN;
         props = new Properties();
         modulename = this.getClass().getName();
@@ -430,10 +434,10 @@ public class PropertyLoader implements Module{
 	
 	public String[][] getChangableStats(){
 		//These need to all be the same length
-		String[] stats = new String[]{"DBHOST", "DBNAME", "DBUSER","AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR", "FILES_XML"};
-		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1", "/usr/bin/", System.getProperty("user.home")+slash+"blas_db"+slash, System.getProperty("user.home")+slash+FileViewerModel.filename};
+		String[] stats = defaultKeys;
+		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1", "/usr/bin/", this.rootfolder+"blas_db"+slash,"/usr/bin/ESTscan", rootfolder+FileViewerModel.filename};
 		String[] tool_tips = new String[]{"Host Database IP/Name", "Database Name", "Database Username","Max number of auxiliary threads","Max number of primary threads", "Directory that contains blast executables", 
-				"XML file which list current files in project", "File XML list location"};
+				"XML file which list current files in project", "Location of the ESTScan executable", "File XML list location"};
 		String[][] ret = new String[3][stats.length];
 		ret[0] = stats;
 		ret[1] = stats_val;
@@ -442,7 +446,7 @@ public class PropertyLoader implements Module{
 	}
 	
 	public String[][] getUnchangableStats(){
-		String[] stats = new String[]{"PRELNF","MODULES", "VERSION"};
+		String[] stats = defaultKeysUN;
 		String[] stats_val = new String[]{defaultlnf, rootfolder+"Modules"+slash, guiversion+""};
 		String[][] ret = new String[2][stats.length];
 		ret[0] = stats;
@@ -493,6 +497,10 @@ public class PropertyLoader implements Module{
 	
 	public static void preLog(String str){
 		System.out.println("[PRE-LOG] "+str);
+	}
+	
+	public static double getFullVersion(){
+		return guiversion+engineversion;
 	}
 	
 	/****************************************************************************/
@@ -616,4 +624,6 @@ public class PropertyLoader implements Module{
 	public void resetModuleName(String name){
 		this.modulename = name;
 	}
+	
+	
 }

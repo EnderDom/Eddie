@@ -147,7 +147,7 @@ public class ACEParser {
 			else{
 				switch(swit){
 					case 0 : consensus.append(line);break; //Reading Contig lines
-					case 1 : qualbuff.append(line); break; //Reading Quality Lines
+					case 1 : qualbuff.append(line+" "); break; //Reading Quality Lines
 					case 2 : buff.append(line);break; //Reading Read Data Lines
 					case 3 : break; //Reading Read Data Lines
 					default: break; //Do Nothing

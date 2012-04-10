@@ -38,6 +38,7 @@ public class Task_BlastLocal extends TaskXT{
 	int start;
 	int blastcomplete;
 	private boolean clipname;
+	boolean err;
 	
 	public Task_BlastLocal(){
 		/*
@@ -62,6 +63,8 @@ public class Task_BlastLocal extends TaskXT{
 			}
 			else{
 				logger.error("Blast parameter file does not exist");
+				blastparams = "";
+				err =true;
 			}
 		}
 		if(blastparams == null){
@@ -149,7 +152,7 @@ public class Task_BlastLocal extends TaskXT{
 			}
 		}
 		
-		if(input != null && output != null ){
+		if(input != null && output != null && !err){
 			File in = new File(input);
 			File out = new File(output);
 			if(in.isFile() && out.isDirectory() && this.blast_bin !=null && this.blast_db != null && this.blast_prg != null){
@@ -248,8 +251,9 @@ public class Task_BlastLocal extends TaskXT{
 		}
 		else{
 			logger.error("Null input/output");
+			this.printHelpMessage();
 		}
-		Logger.getRootLogger().debug("Finished running task @ "+Tools_System.getDateNow());
+		logger.debug("Finished running task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
 	}
 	
@@ -304,7 +308,6 @@ public class Task_BlastLocal extends TaskXT{
 			else if (outname.indexOf(" ") != -1 && !clipname) outname = outname.replaceAll(" ", "_");
 			File ou = new File(output.getPath()+Tools_System.getFilepathSeparator()+outname+".xml");
 			Tools_Blast.runLocalBlast(temp, this.blast_prg, this.blast_bin, this.blast_db, this.blastparams,ou);
-			ou.delete();
 			this.blastcomplete++;
 			list.update(seqname);
 		}

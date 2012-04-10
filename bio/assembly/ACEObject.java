@@ -16,12 +16,24 @@ public class ACEObject implements ACEHandler, Assembly, Sequences {
 
 	
 	//ALL values are converted to 0 index/base
-	/*
+	/**
 	 * Have a problem with multiple reads with same name
 	 * this has a workaround, but I need to change the way
 	 * the data is stored so reads are linked to contig better
 	 * ie, having reads indexed as contig_read-no rather than their
 	 * read name, as this can be duplicate in ace files
+	 * 
+	 * NOTE: Works with small ACE files only
+	 * 
+	 * tested on <100MB files and seems to work okay with 1GB ram
+	 * >100MB the parser (on 1GB) seems to recursively slow 
+	 * 512MB file seems to crash parser
+	 * Will need to re-work this, as Tablet can load ACE files >100MB on same machine
+	 * where this class can't. Seemingly using HashMaps for data
+	 * storage is a bad idea. I am looking into just auto-loading the
+	 * data straight into SAMRecord class from SAMtools/Picard 3rd party,
+	 * but I still need to look into this. 
+	 * 
 	 */
 	
 	HashMap<Integer, String> contignumb;

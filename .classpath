@@ -10,5 +10,17 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/bio/picard-1.65.jar"/>
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/bio/sam-1.65.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/bio/biojava3-core-3.0.3.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/lib/bio/biojava3-core-3.0.3-sources.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan_libs/jaxrpc.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan_libs/axis.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan_libs/activation.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan_libs/commons-discovery-0.2.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan_libs/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan_libs/mail.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan_libs/saaj.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan_libs/servlet.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan_libs/wsdl4j-1.5.1.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan_libs/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/bio/IPRScan_AxisM.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

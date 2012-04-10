@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.swing.table.AbstractTableModel;
 import javax.xml.parsers.DocumentBuilder;
@@ -46,7 +47,7 @@ public class FileViewerModel extends AbstractTableModel{
 	String[][] cols;
 	
 	public FileViewerModel(EddieGUI gui, FileViewer view){
-		tableheadings = new String[]{"Name", "File"+whitespace+"Location", "Information", "File"+whitespace+"Type","Date"+whitespace+"Added"};
+		tableheadings = new String[]{"Name", "File"+whitespace+"Location", "Information", "File"+whitespace+"Type","Date"+whitespace+"Added", "ID"};
 		actualheadings = tableheadings;
 		this.gui = gui;
 		this.workspace = this.gui.load.getWorkspace();
@@ -120,10 +121,16 @@ public class FileViewerModel extends AbstractTableModel{
 			for(int i =0 ; i < tableheadings.length ; i++){
 			// Child i.
 				  e = data.createElementNS(null, "HEADING");
-				  e.setAttributeNS(null, "SHOWN", "TRUE");
+				  if(!tableheadings[i].equals("ID")){
+					  e.setAttributeNS(null, "SHOWN", "TRUE");
+				  }
+				  else{
+					  e.setAttributeNS(null, "SHOWN", "FALSE");
+				  }
 				  e.setTextContent(tableheadings[i]);
 				  header.appendChild(e);
 			}
+			
 			root.appendChild(header);
 			Element files = data.createElementNS(null,"FILES");
 			root.appendChild(files);
@@ -312,6 +319,7 @@ public class FileViewerModel extends AbstractTableModel{
 				filedata[1] = file.getPath().replaceAll(" ", "___");
 				filedata[2] = "N_A_";
 				filedata[4] = Tools_System.getDateNow();
+				filedata[5] = Arrays.hashCode(file.getPath().toCharArray())+"";
 				addFileData(filedata);
 			}
 			else if(file.isDirectory()){
@@ -328,5 +336,19 @@ public class FileViewerModel extends AbstractTableModel{
 		
 		
 	}
+	
+	public String getFileTypeAt(int row){
+		Logger.getRootLogger().warn("incomplete method here!!!");
+		return "FASTA";
+	}
 	 
+	public FileOptions rowPopupClicked(int row){
+		//Builds a popup menu based on the filetype
+		FileOptions pop = new FileOptions(getFileTypeAt(row));
+		/* Defaults
+		 * 
+		 */
+		return pop;
+	}
+	
 }

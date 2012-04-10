@@ -18,6 +18,8 @@ import bio.sequence.Sequences;
  * 
  * @author EnderDom
  *
+ * Work in Progress!!
+ *
  */
 
 public class ACEObjectSlim implements Sequences, Assembly, ACEHandler{

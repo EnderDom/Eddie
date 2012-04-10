@@ -38,6 +38,7 @@ public abstract class Module_Basic implements Module{
 				try {
 					Task t = (Task) Class.forName(getClasses()[i]).getConstructor().newInstance();
 					if(t != null){
+						if(t.wantsUI())t.addUI(cli);
 						cli.addTask(t);
 					}
 				} 					

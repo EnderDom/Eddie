@@ -18,6 +18,8 @@ public class DepthMap implements ACEHandler{
 	private long totalbp;
 	private HashMap<String, Integer> tempos;
 	
+	
+	//TODO still brokened
 	public DepthMap(){
 		sequences = new HashMap<String, String>();
 		depths = new HashMap<String, int[]>();
@@ -134,6 +136,10 @@ public class DepthMap implements ACEHandler{
 			Logger.getRootLogger().error("DATA Dump IO exception", io);
 			return false;
 		}
+	}
+	
+	public long getTotalBp(){
+		return this.totalbp;
 	}
 	
 }

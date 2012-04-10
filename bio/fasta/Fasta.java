@@ -19,6 +19,7 @@ public class Fasta implements FastaHandler, Sequences{
 	private LinkedHashMap<String, String> sequences;
 	private LinkedHashMap<String, String> qualities;
 	private boolean fastq;
+	private int[] list_of_lens; 
 	
 	public Fasta(){
 		sequences = new LinkedHashMap<String, String>();
@@ -153,14 +154,16 @@ public class Fasta implements FastaHandler, Sequences{
 	}
 	
 	public int[] getListOfLens(){
-		int[] arr_of_lens = new int[sequences.size()];
-		int c=0;
-		for(String s : sequences.keySet()){
-			String seq = sequences.get(s);
-			arr_of_lens[c] = seq.length();
-			c++;
+		if(this.list_of_lens == null){
+			this.list_of_lens = new int[sequences.size()];
+			int c=0;
+			for(String s : sequences.keySet()){
+				String seq = sequences.get(s);
+				list_of_lens[c] = seq.length();
+				c++;
+			}
 		}
-		return arr_of_lens;
+		return this.list_of_lens;
 	}
 	
 	public int getN50(){
@@ -177,5 +180,23 @@ public class Fasta implements FastaHandler, Sequences{
 	public int getNoOfSequences(){
 		return this.sequences.size();
 	}
+	
+	public int trimSequences(int tr){
+		int trimcount = 0;
+		System.out.print("\r");
+		String[] s = sequences.keySet().toArray(new String[0]);
+		for(int i=0; i < s.length;i++){
+			String seq = sequences.get(s[i]);
+			if(seq.length() < tr){
+				sequences.remove(s[i]);
+				if(qualities.containsValue(s[i])) qualities.remove(s[i]);
+				trimcount++;
+			}
+			System.out.print("\rSubsequence: "+i);
+		}
+		System.out.println();
+		return trimcount;
+	}
+
 	
 }

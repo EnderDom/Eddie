@@ -36,4 +36,6 @@ public interface UI {
 
 	void fireUIEvent(UIEvent evt);
 	
+	public PropertyLoader getPropertyLoader();
+	
 }

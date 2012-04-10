@@ -209,5 +209,9 @@ public class EddieCLI implements UI {
 	public int requiresUserYNI(String message, String title) {
 		return Tools_CLI.showInternalConfirmDialog(title, message);
 	}
+
+	public PropertyLoader getPropertyLoader() {
+		return this.load;
+	}
 	
 }

@@ -12,7 +12,7 @@ import tasks.Task_Test;
 public class Module_Test extends Module_Basic{
 	
 	protected String[] tasks = new String[]{"testrun"}; 
-	protected String[] taskinfo = new String[]{"run a test program"};
+	protected String[] taskinfo = new String[]{"	run a test program"};
 	protected String[] classes = new String[]{Task_Test.class.getName()};
 	
 	public Module_Test(){
