@@ -9,15 +9,13 @@ import org.apache.log4j.Logger;
 
 import bio.assembly.ACEObject;
 import bio.assembly.ACEParser;
-import bio.assembly.BasicAssemblyObject;
-import bio.assembly.SAMParser;
 import bio.fasta.Fasta;
 
 import tasks.TaskXT;
-import tools.Tools_Math;
 import tools.Tools_String;
 import tools.Tools_System;
 
+@SuppressWarnings("deprecation")
 public class Task_Assembly extends TaskXT{
 	
 	boolean coverage;
@@ -149,27 +147,7 @@ public class Task_Assembly extends TaskXT{
 	public void runTest(){
 		Logger.getRootLogger().debug("Testing Assembly Task");
 		
-		File ace = null;
-		if(input.endsWith(".ace") || input.endsWith(".ACE")){
-			if((ace = getFile(input,2)) != null){
-				ACEObject obj = getAce();
-				System.out.println("Coverage for " +obj.getRefName(2633));
-				System.out.println(Tools_Math.round(obj.getAverageCoverageDepth(obj.getRefName(2633)),3));
-			}
-		}
-		else if (input.endsWith(".sam") || input.endsWith(".SAM")){
-			if((ace = getFile(input,2)) != null){
-				BasicAssemblyObject obj = new BasicAssemblyObject();
-				Logger.getRootLogger().debug("Parsing SAM file");
-				SAMParser parser = new SAMParser(obj);
-				try {
-					parser.parseSAM(ace);
-				} 
-				catch (Exception e) {
-					Logger.getRootLogger().error("Error Parsing SAM file",e);
-				}
-			}
-		}
+		
 	}
 	
 }

@@ -1,5 +1,6 @@
 package bio.assembly;
 
+@Deprecated //Use ACEFileParser/ACERecord
 public interface ACEHandler {
 
 	

@@ -1,5 +1,6 @@
 package bio.assembly;
 
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,6 +14,7 @@ import tools.Tools_String;
  * SAM specs got from http://samtools.sourceforge.net/SAM1.pdf
  * 
  */
+@Deprecated //Use SAMTOOls/Picard
 public class SAMParser {
 
 	public SAMHandler handler;

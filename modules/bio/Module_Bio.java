@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import tasks.bio.Task_Assembly;
 import tasks.bio.Task_Assembly_Convert;
 import tasks.bio.Task_BlastLocal;
+import tasks.bio.Task_ChimeraAnalysis;
 import tasks.bio.Task_Fasta_Convert;
 import tasks.bio.Task_Fasta_Tools;
 import tasks.bio.Task_Sequence_Analysis;
@@ -19,9 +20,11 @@ public class Module_Bio extends Module_Basic{
 	public String menustring = "Tools";
 	public String menuItemName = "Biology Tools";
 	//Change to Options ...?
-	protected String[] tasks = new String[]{"convertFasta","blast", "webblast", "blast2sql","assemblyconvert","seqanalysis", "assemblytools", "fastatools", "iprscanweb"}; 
+	protected String[] tasks = new String[]{"convertFasta","blast", "webblast", "blast2sql","assemblyconvert","seqanalysis", "assemblytools", "fastatools", 
+			"iprscanweb", "chimera"}; 
 	protected String[] taskinfo = new String[]{"converts fasta & qual to fastq","	run a blast program", "run web blast", 
-			"Upload blast results to mysql db", "converts Assembly Files", "Analysis of Sequence files", "Assembly Tools", "Fasta Tools","Send sequences to IPRScan Web Service"};
+			"Upload blast results to mysql db", "converts Assembly Files", "Analysis of Sequence files", "Assembly Tools", "Fasta Tools",
+			"Send sequences to IPRScan Web Service", "	Run chimera analysis using ACE and blast files"};
 	
 	/*
 	 * This needs to match the class ->
@@ -29,7 +32,7 @@ public class Module_Bio extends Module_Basic{
 	 */
 	protected String[] classes = new String[]{Task_Fasta_Convert.class.getName(),Task_BlastLocal.class.getName(),Task_BlastLocal.class.getName(),
 			Task_BlastLocal.class.getName(),Task_Assembly_Convert.class.getName(),Task_Sequence_Analysis.class.getName(), Task_Assembly.class.getName(),
-			Task_Fasta_Tools.class.getName(), Task_WebInterPro.class.getName()};
+			Task_Fasta_Tools.class.getName(), Task_WebInterPro.class.getName(), Task_ChimeraAnalysis.class.getName()};
 	
 	protected String[] actions;
 	

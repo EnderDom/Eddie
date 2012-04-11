@@ -7,6 +7,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 
+
 import bio.assembly.ACEObject;
 import bio.assembly.ACEParser;
 import bio.fasta.Fasta;
@@ -17,6 +18,7 @@ import bio.sequence.Sequences;
 import tasks.TaskXT;
 import tools.Tools_System;
 
+@SuppressWarnings("deprecation")
 public class Task_Sequence_Analysis extends TaskXT{
 	
 	protected String qual;
@@ -25,7 +27,6 @@ public class Task_Sequence_Analysis extends TaskXT{
 	public Task_Sequence_Analysis(){
 		
 	}
-	
 	public void run(){
 		setComplete(started);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
@@ -50,7 +51,7 @@ public class Task_Sequence_Analysis extends TaskXT{
 					}
 				}
 				else if(filetype.equals("ACE")){
-					ACEObject obj = new ACEObject();
+					ACEObject obj = new ACEObject();			
 					ACEParser parser = new ACEParser(obj);
 					try{
 						parser.parseAce(in);

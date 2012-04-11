@@ -11,7 +11,7 @@ import tools.bio.Tools_Sequences;
 import bio.fasta.Fasta;
 import bio.sequence.Sequences;
 
-
+@Deprecated //Use ACEFileParser/ACERecord
 public class ACEObject implements ACEHandler, Assembly, Sequences {
 
 	

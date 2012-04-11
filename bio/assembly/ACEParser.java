@@ -17,6 +17,7 @@ import tools.Tools_String;
  * 
  * Used this as a reference for format specifications http://www.cbcb.umd.edu/research/contig_representation.shtml
  */
+@Deprecated //Use ACEFileParser/ACERecord
 public class ACEParser {
 
 	public ACEHandler handler;
@@ -102,7 +103,7 @@ public class ACEParser {
 			}
 			else if(line.startsWith("BS")){
 				swit =3;
-				//I believe this can be ignored.
+				//This can't be ignored!!! But I haven't got round to sorting it out yet :(
 			}
 			else if(line.startsWith("RD")){
 				String[] bits = line.split(" ");

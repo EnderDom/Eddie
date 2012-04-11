@@ -20,9 +20,9 @@ public class Tools_Math {
 		return l;
 	}
 	
-	public static boolean isOdd(int i){
-		return (i % 2 == 0) ? true : false;
-	}
+//	public static boolean isOdd(int i){
+//		return ((i & 1) == 0) ? true : false;
+//	}
 	
 	/*
 	 * Calculates the overlap between two 1D lines

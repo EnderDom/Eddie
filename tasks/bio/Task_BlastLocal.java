@@ -3,6 +3,7 @@ package tasks.bio;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
@@ -12,8 +13,8 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
 
-import bio.assembly.ACEObjectSlim;
-import bio.assembly.ACEParser;
+import bio.assembly.ACEFileParser;
+import bio.assembly.ACERecord;
 import bio.fasta.Fasta;
 import bio.fasta.FastaParser;
 
@@ -192,13 +193,15 @@ public class Task_BlastLocal extends TaskXT{
 					}
 					checklist.complete();
 				}
-				else if(filetype.equals("ACE")){
+				else if(filetype.equals("ACE")){//TODO test new ACE File More thoroughly
 					checklist.start(this.args, this.input);
-					ACEObjectSlim ace = new ACEObjectSlim();
-					ACEParser parser = new ACEParser(ace);
 					boolean cont = false;
 					try {
-						parser.parseAce(in);
+						ACEFileParser parser = new ACEFileParser(new FileInputStream(this.input));
+						while(parser.hasNext()){
+							ACERecord record = parser.next();
+							this.sequences.put(record.getContigName(), record.getConsensusAsString());
+						}
 						Logger.getRootLogger().debug("File Parsed");
 						cont = true;
 					}
@@ -206,12 +209,7 @@ public class Task_BlastLocal extends TaskXT{
 						logger.error("Error parsing Fasta/q file", e);
 					}
 					if(cont){
-						try{
-							this.sequences = ace.getFastaFromConsensus().getSequences();
-						}
-						catch(Exception e){
-							e.printStackTrace();
-						}
+						
 						if(checklist.inRecovery()){
 							trimRecovered(checklist.getData());
 						}

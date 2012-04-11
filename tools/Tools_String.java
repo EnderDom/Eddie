@@ -1,5 +1,11 @@
 package tools;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
 
 public abstract class Tools_String {
 	
@@ -78,5 +84,44 @@ public abstract class Tools_String {
 		}
 		return src.substring(i,j);
 	}
+
+	/**
+	 * Doesn't work for floats and negative numbers
+	 * @param String containing some numbers
+	 * @return longest integer within the text string, assumming
+	 * that non-numeric characters separate the integers
+	 */
+	public static int getLongestInt(String name) {
+		name = name.replaceAll( "[^\\d]", " ");
+		String[] i = name.split(" ");
+		int[] ii = new int[i.length];
+		for(int j =0; j < i.length; j++){
+			if(i[j].trim().length() > 0){
+				Integer a = parseString2Int(i[j]);
+				if(a == null){
+					a=-1;
+					Logger.getRootLogger().warn("This error message suggests an intrinsic code based bug {"+i[j] + "}");
+				}
+				ii[j]=a;
+			}
+		}
+		if(ii.length > 0){
+			Arrays.sort(ii);
+			return ii[ii.length-1];
+		}
+		else{
+			return -1;
+		}
+	}
 	
+	/**
+	 * 
+	 * @param list
+	 * @return list sorted by string length and then by alphabetical order
+	 * 
+	 */
+	public static List<String> sortStringsByLength(List<String> list){
+		Collections.sort(list, new Tools_String_Comparator());
+		return list;
+	}
 }

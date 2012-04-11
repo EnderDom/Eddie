@@ -1,5 +1,6 @@
 package bio.assembly;
 
+@Deprecated //Use SAMTOOLS
 public interface SAMHandler {
 
 	public static String[] sorttypes = {"unknown", "unsorted", "queryname", "coordinate"};
