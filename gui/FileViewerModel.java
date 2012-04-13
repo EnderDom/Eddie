@@ -73,7 +73,7 @@ public class FileViewerModel extends AbstractTableModel{
 	
 	public void addFileData(String[] filedata){
 		if(filedata.length == tableheadings.length){
-			Node root = getRoot();
+			Node root = getRootNode();
 			NodeList list = data.getElementsByTagName("FILES");
 			if(list.getLength() == 0){
 				Element files = data.createElementNS(null,"FILES");
@@ -164,15 +164,6 @@ public class FileViewerModel extends AbstractTableModel{
 			gui.sendAlert("Corrupt file list XML. Building default...");
 			createDefaultFile(file);
 		}
-	}
-	
-	public Node getRoot(){
-		NodeList list = this.data.getChildNodes();
-		if(list.getLength() == 0){ 
-			Logger.getRootLogger().error("XML incorrectly formatted, missing root node"); 
-			return null;
-		}
-		else return list.item(0);
 	}
 	
 	private void parseHeaderData(){
@@ -351,4 +342,12 @@ public class FileViewerModel extends AbstractTableModel{
 		return pop;
 	}
 	
+	private Node getRootNode(){
+		NodeList list = this.data.getChildNodes();
+		if(list.getLength() == 0){ 
+			Logger.getRootLogger().error("XML incorrectly formatted, missing root node"); 
+			return null;
+		}
+		else return list.item(0);
+	}
 }

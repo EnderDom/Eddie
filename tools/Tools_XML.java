@@ -74,28 +74,33 @@ public class Tools_XML {
  
  	public static void Xml2File(Document document, File file){
         Source src = new DOMSource(document);
-        try {
+        try{
         	FileOutputStream outStream = new FileOutputStream(file);
         	Result result = new StreamResult(outStream);
         	Transformer xformer;
-			TransformerFactory factory = TransformerFactory.newInstance();
-			factory.setAttribute("indent-number", indent);
-			xformer = factory.newTransformer();
-	        xformer.setOutputProperty(OutputKeys.INDENT, "yes");
-			xformer.transform(src, result);
-			outStream.close();
-		} catch (TransformerConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}catch (TransformerFactoryConfigurationError e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TransformerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        	TransformerFactory factory = TransformerFactory.newInstance();
+        	factory.setAttribute("indent-number", indent);
+        	xformer = factory.newTransformer();
+        	xformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        	xformer.transform(src, result);
+        	outStream.close();
+        }
+        catch (TransformerConfigurationException e) {
+        	//TODO Auto-generated catch block
+        	e.printStackTrace();
+        }
+        catch (IOException e) {
+        	//TODO Auto-generated catch block
+        	e.printStackTrace();
+        }
+        catch (TransformerFactoryConfigurationError e) {
+        	//	TODO Auto-generated catch block
+        	e.printStackTrace();
+        }
+        catch (TransformerException e) {
+        	//TODO Auto-generated catch block
+        	e.printStackTrace();
+        }
  	}
+ 	 	
 }

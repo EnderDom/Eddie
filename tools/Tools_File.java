@@ -78,6 +78,9 @@ public abstract class Tools_File {
 	public static HashMap<String, String> mapFiles(HashMap<String, String> names, File folder){
 		int count = names.size();
 		File[] subfiles = folder.listFiles();
+		if(subfiles.length != names.size()){
+			Logger.getRootLogger().warn("There are "+subfiles + " to map to " + names.size() + ", it is advised, to another files, lest they affect mapping");
+		}
 		int matchcount=0;
 		int namecount=0;
 		boolean[] matched = new boolean[subfiles.length];
@@ -96,7 +99,7 @@ public abstract class Tools_File {
 			System.out.print("\rPASS 1: "+namecount);
 			if(namecount == 20 && matchcount != 20){
 				System.out.println("");
-				System.out.println("This method is not working skipping");
+				Logger.getRootLogger().debug("This method is not working skipping");
 				break;
 			}
 		}
@@ -128,7 +131,7 @@ public abstract class Tools_File {
 				namecount++;
 				if(namecount == 20 && matchcount != 20){
 					System.out.println("");
-					System.out.println("This method is not working skipping");
+					Logger.getRootLogger().debug("This method is not working skipping");
 					break;
 				}
 				System.out.print("\rPASS 2: "+namecount);
@@ -161,7 +164,7 @@ public abstract class Tools_File {
 					namecount++;
 					if(namecount == 20 && matchcount != 20){
 						System.out.println("");
-						System.out.println("This method is not working skipping");
+						Logger.getRootLogger().debug("This method is not working skipping");
 						break;
 					}
 					System.out.print("\rPASS 3: "+namecount);

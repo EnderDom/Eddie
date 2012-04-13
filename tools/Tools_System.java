@@ -1,7 +1,9 @@
 package tools;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public abstract class Tools_System{
 
@@ -12,6 +14,21 @@ public abstract class Tools_System{
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
         return sdf.format(cal.getTime());
     }
+    
+    public static int getDeltaInDaysToNow(String source){
+    	SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
+    	Calendar now = Calendar.getInstance();
+    	try {
+			Date then = sdf.parse(source);
+			return (int)((now.getTime().getTime()-then.getTime())/(3600*24*1000));
+		} 
+    	catch (ParseException e) {
+			e.printStackTrace();
+			return 0;
+		}
+    	
+    }
+    
     public static boolean isWindows(){
     	String osName = System.getProperty("os.name" );
     	if(osName.indexOf("Windows") != -1){

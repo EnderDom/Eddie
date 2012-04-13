@@ -29,6 +29,7 @@ public class TaskManager extends Thread{
 	private boolean started;
 	int taskcounter;
 	UI top;
+	Logger log = Logger.getLogger("TaskManager");
 	
 	public TaskManager(int i, int j){
 		this.corepoollimit = i;
@@ -39,9 +40,9 @@ public class TaskManager extends Thread{
 	}
 	
 	public void addTask(Task task) {
-		Logger.getRootLogger().debug("Task add to the task list");
+		log.debug("Task add to the task list");
 		if(task.isHelpmode()){
-			Logger.getRootLogger().debug("Task went to helpmode, not adding to Task Manager");
+			log.debug("Task went to helpmode, not adding to Task Manager");
 		}
 		else{
 			if(task.isCore()){
@@ -68,9 +69,7 @@ public class TaskManager extends Thread{
 		for(int i =0; i < currentTask.length; i++){
 			if(currentTask[i] == null){
 				currentTask[i] = pops.pop();
-
 				exe.submit(currentTask[i]);
-
 				submitted++;
 			}
 			else{
@@ -115,9 +114,9 @@ public class TaskManager extends Thread{
 		top.update(task);
 	}
 	
-	public void run() {
+	public void run(){
 		started = true;
-		Logger.getRootLogger().debug("Task Manager has been started");
+		log.debug("Task Manager has been started");
 		coretasklist = new Task[corepoollimit];
 		auxiltasklist = new Task[auxilpoollimit];
 		Core = new ScheduledThreadPoolExecutor(corepoollimit);
@@ -128,21 +127,20 @@ public class TaskManager extends Thread{
 			if(CoreTasks.size() > 0){
 				newsubmit = pushTasks2Executor(Core, CoreTasks, coretasklist, corepoollimit);
 			}
-			if(AuxilTasks.size() > 0){				
+			if(AuxilTasks.size() > 0){
 				newsubmit = newsubmit + pushTasks2Executor(Auxil, AuxilTasks, auxiltasklist, auxilpoollimit);
 			}
 			if(newsubmit==0){
 				try {
 					sleep(10000);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.error("Interrupt",e);
 				}
 			}
 		}
 		Core.shutdown();
 		Auxil.shutdown();
-		Logger.getRootLogger().debug("Task Manager has no more tasks, shutting down");
+		log.debug("Task Manager has no more tasks, shutting down");
 		started = false;
 	}
 	

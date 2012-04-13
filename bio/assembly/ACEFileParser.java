@@ -1,16 +1,16 @@
 package bio.assembly;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
 import tools.Tools_String;
-
-import net.sf.samtools.util.BufferedLineReader;
 
 /**
  * 
@@ -18,8 +18,6 @@ import net.sf.samtools.util.BufferedLineReader;
  * 
  * Similar to SAMTextParser
  * 
- * Also stores the linenumber of each contig, so
- * if a specific contig is stored
  * 
  * Used this as a reference for format specifications http://www.cbcb.umd.edu/research/contig_representation.shtml
  * though somewhat lacking in general :(
@@ -31,7 +29,7 @@ public class ACEFileParser implements Iterator<ACERecord>{
 	
 	private int contigs;
 	private int reads;
-	private BufferedLineReader mReader;
+	private BufferedReader mReader;
 	private String currentline;
 	private ACERecord currentrecord;
 	private static int AS = 0;
@@ -51,16 +49,17 @@ public class ACEFileParser implements Iterator<ACERecord>{
 	Logger logger = Logger.getLogger("ACEFileParser");
 	int warn;
 	
-	public ACEFileParser(File file) throws FileNotFoundException{
+	public ACEFileParser(File file) throws IOException{
 		this(new FileInputStream(file));
 	}
 	
-	public ACEFileParser(InputStream stream){
+	public ACEFileParser(InputStream stream) throws IOException{
         init(stream);
 	}
 	
-	private void init(InputStream stream){
-		mReader = new BufferedLineReader(stream);
+	private void init(InputStream stream) throws IOException{
+		InputStreamReader in = new InputStreamReader(stream, "UTF-8");
+		mReader = new BufferedReader(in);
 		currentline=new String();
 		while((currentline=mReader.readLine()) != null && !currentline.startsWith("CO ")){
         	if(currentline.startsWith("AS ")){
@@ -82,59 +81,64 @@ public class ACEFileParser implements Iterator<ACERecord>{
 	public ACERecord next() {
 		currentrecord = new ACERecord();
 		parseLine(currentsw, currentline);
-		while((currentline=mReader.readLine()) != null && !currentline.startsWith("CO ")){
-			//space or { added else it could look like a sequence (particularly CT) #facepalm
-			if(currentline.startsWith("BQ ")){
-				/*
-				 * All the files I've seen have no quality data on the same line
-				 * as the BQ, but I don't trust biologists thus I have this check:
-				 */
-				currentline = currentline.substring(2, currentline.length());
-				if(currentline.trim().length() == 0){
-					//IF all good, go ahead and ignore the line for parsing
+		try{
+			while((currentline=mReader.readLine()) != null && !currentline.startsWith("CO ")){
+				//space or { added else it could look like a sequence (particularly CT) #facepalm
+				if(currentline.startsWith("BQ ")){
+					/*
+					 * All the files I've seen have no quality data on the same line
+					 * as the BQ, but I don't trust biologists thus I have this check:
+					 */
+					currentline = currentline.substring(2, currentline.length());
+					if(currentline.trim().length() == 0){
+						//IF all good, go ahead and ignore the line for parsing
+						currentsw = BREAK;
+					}
+					else{
+						//IF there is data, hope to god it's quality data and parse it
+						currentsw = BQ;
+					}
+					parseLine(currentsw, currentline);
+					currentsw = BQ;
+				}
+				else if(currentline.startsWith("AF ")){
+					currentsw = AF;
+					parseLine(currentsw, currentline);
+				}
+				else if(currentline.startsWith("BS ")){
+					currentsw = BS;
+					parseLine(currentsw, currentline);
+				}
+				else if(currentline.startsWith("QA ")){
+					currentsw = QA;
+					parseLine(currentsw, currentline);
+				}
+				else if(currentline.startsWith("RD ")){ 
+					currentsw = RD;
+					parseLine(currentsw, currentline);
+					currentsw = RD_;
+				}
+				else if(currentline.startsWith("CT{")){ 
+					currentsw = CT;
+					parseLine(currentsw, currentline);
+				}
+				else if(currentline.startsWith("}")){
+					currentsw = BREAK;
+				}
+				else if(currentline.startsWith("DS ")){ 
+					currentsw = DS;
+					parseLine(currentsw, currentline);
+				}
+				else if(currentline.length() == 0){
 					currentsw = BREAK;
 				}
 				else{
-					//IF there is data, hope to god it's quality data and parse it
-					currentsw = BQ;
+					parseLine(currentsw, currentline);
 				}
-				parseLine(currentsw, currentline);
-				currentsw = BQ;
 			}
-			else if(currentline.startsWith("AF ")){
-				currentsw = AF;
-				parseLine(currentsw, currentline);
-			}
-			else if(currentline.startsWith("BS ")){
-				currentsw = BS;
-				parseLine(currentsw, currentline);
-			}
-			else if(currentline.startsWith("QA ")){
-				currentsw = QA;
-				parseLine(currentsw, currentline);
-			}
-			else if(currentline.startsWith("RD ")){ 
-				currentsw = RD;
-				parseLine(currentsw, currentline);
-				currentsw = RD_;
-			}
-			else if(currentline.startsWith("CT{")){ 
-				currentsw = CT;
-				parseLine(currentsw, currentline);
-			}
-			else if(currentline.startsWith("}")){
-				currentsw = BREAK;
-			}
-			else if(currentline.startsWith("DS ")){ 
-				currentsw = DS;
-				parseLine(currentsw, currentline);
-			}
-			else if(currentline.length() == 0){
-				currentsw = BREAK;
-			}
-			else{
-				parseLine(currentsw, currentline);
-			}
+		}
+		catch(IOException io){
+			logger.error("Failed to parse file", io);
 		}
 		if(currentline == null){
 			currentsw = EOF;

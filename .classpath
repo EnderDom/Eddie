@@ -20,7 +20,6 @@
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan_libs/saaj.jar"/>
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan_libs/servlet.jar"/>
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan_libs/wsdl4j-1.5.1.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan_libs/xercesImpl.jar"/>
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/bio/IPRScan_AxisM.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
