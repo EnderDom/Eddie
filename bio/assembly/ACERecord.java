@@ -12,6 +12,10 @@ import bio.sequence.FourBitSequence;
  * hopefully should become a bit of a black box.
  * 
  * TODO add all the data retrieval stuff
+ * 
+ * NOTE::: ALL NUCLEOTIDE INDEXES HELD AS 0-BASED
+ * ALL NUCLEOTIDE INDEXES RETURNED AS 0-BASED!!!!!!!!!!!!!
+ * 
  */
 
 public class ACERecord implements Cloneable {
@@ -74,6 +78,12 @@ public class ACERecord implements Cloneable {
 	
 	public void setReadName(String readname){
 		seqs[readcount] = new FourBitSequence(current.toString());
+		if(readcount-1 > -1){
+			if(this.getReadOffset(readcount-1) < 0){
+				seqs[readcount].toReverseComp();
+				offset[0][readcount-1]=this.getConsensus().getLength()+this.getReadOffset(readcount-1);
+			}
+		}
 		if(seqs[readcount].length() != expectedlength && seqs[readcount].getActualLength() != expectedlength){
 			logger.warn("Expected length "+expectedlength+" of the read is not equal to its total("+seqs[readcount].getActualLength()+") or actual("+seqs[readcount].length()+") ([!*]) length ");
 		}
@@ -107,7 +117,7 @@ public class ACERecord implements Cloneable {
 	public void addOffSet(String name, int off, char c){
 		logger.trace("Set readname " + name + " @" + readcount);
 		readnames[readcount]=name;
-		offset[0][readcount] = off;
+		offset[0][readcount] = off-1;
 		compliments[readcount] = c;
 		readcount++;
 		if(readcount == readnames.length){
@@ -119,10 +129,10 @@ public class ACERecord implements Cloneable {
 	}
 	//Assumes QA for read comes after read sequence thus readcount-1
 	public void addQA(int i1, int i2, int i3, int i4){
-		this.offset[1][readcount-1] = i1;
-		this.offset[2][readcount-1] = i2;
-		this.offset[3][readcount-1] = i3;
-		this.offset[4][readcount-1] = i4;
+		this.offset[1][readcount-1] = i1-1;
+		this.offset[2][readcount-1] = i2-1;
+		this.offset[3][readcount-1] = i3-1;
+		this.offset[4][readcount-1] = i4-1;
 	}
 	
 	public void addRegion(int i1, int i2, String readname){
@@ -134,8 +144,8 @@ public class ACERecord implements Cloneable {
 			}
 		}
 		if(l == -1)logger.error("There is a region for a readname which doesn't pre-exist in the contig");
-		regions[0][regioncount] = i1;
-		regions[1][regioncount] = i2;
+		regions[0][regioncount] = i1-1;
+		regions[1][regioncount] = i2-1;
 		regions[2][regioncount] = l;
 		regioncount++;
 	}
@@ -157,7 +167,7 @@ public class ACERecord implements Cloneable {
 	}
 	
 	public FourBitSequence getRead(int i){
-		return this.seqs[i-1];
+		return this.seqs[i+1];
 	}
 	
 	public FourBitSequence getRead(String name){
@@ -204,6 +214,38 @@ public class ACERecord implements Cloneable {
 	
 	public int[] getReadRangePadded(int i){
 		return new int[]{offset[3][i], offset[4][i]};
+	}
+	
+	/*
+	 * Not sure what to do about the fact that coverage is often
+	 * considered as length/no. of bps, as such bps which are not
+	 * actually in the consensus are included in the coverage count
+	 * but when we consider the contig, on a per-bp basis, this causes
+	 * a minor issue, to we include the nucleotides, not actual aligned
+	 * to the consensus contig, in this case I haven't 
+	 */
+	public int[] getDepthMap(){
+		int[] arr = new int[this.getConsensus().getActualLength()];
+		String seq = this.getConsensusAsString();
+		int actuallength = 0;
+		int depth=0;
+		for(int i =0; i < seq.length(); i++){
+			if(seq.charAt(i) != '-'){
+				depth=0;
+				for(int j =0; j < this.getNoOfReads(); j++){
+					int l = this.getReadOffset(j);
+					if(i >= l && i < this.getReadRange(j)[1]+l){
+						//TODO consider BS inclusion ranges <-- at the moment this is inaccurate without them						
+						if(this.getRead(j).charAt(i+l) != '-'){
+							depth++;
+						}
+					}
+				}
+				arr[actuallength] = depth;
+				actuallength++;
+			}
+		}
+		return arr;
 	}
 	
 }

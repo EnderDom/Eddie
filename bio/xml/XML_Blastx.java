@@ -18,25 +18,28 @@ import tools.Tools_XML;
  * blastn , but I haven't got round
  * to testing it yet 
  * 
+ * 
+ * Eddie3 method, but works
  */
 
-public class BlastX_XML{
+public class XML_Blastx{
 
 	Document blastDoc;
 	String filepath;
 	Hashtable<String, String> blastcache;
 	int[] hits;
 	
-	public  BlastX_XML(String filepath) throws Exception{
-		this.filepath = filepath;
-		blastDoc = XMLHelper.loadXML(filepath);
+	public  XML_Blastx(String filepath) throws Exception{
+		this(new File(filepath));
 	}
 	
-	public  BlastX_XML(File file) throws Exception{
+	public  XML_Blastx(File file) throws Exception{
 		this.filepath = file.getPath();
 		blastDoc = XMLHelper.loadXML(filepath);
+		parse2Cache(true);
 	}
-	public void parse2Cache(boolean dropDOM){
+	
+	private void parse2Cache(boolean dropDOM){
 		if(blastcache == null){
 			blastcache = new Hashtable<String, String>();
 		}
@@ -61,7 +64,7 @@ public class BlastX_XML{
 		}
 	}
 	
-	public void parseLayerIterations(Element element){
+	private void parseLayerIterations(Element element){
 		String breakontag = "Iteration_hits";
 		NodeList list = element.getChildNodes();
 		for(int i=0; i < list.getLength(); i++){
@@ -82,7 +85,7 @@ public class BlastX_XML{
 		}
 	}
 	
-	public void parseLayerTop(NodeList list){
+	private void parseLayerTop(NodeList list){
 		String breakontag = "Hit";
 		LinkedList<Integer> hsp_sizes = new LinkedList<Integer>();
 		hsp_sizes.add(-1); //Added to workaround bioindex issue
@@ -102,7 +105,7 @@ public class BlastX_XML{
 	 * result is keys will be generic and overwritten. 
 	 */
 	
-	public LinkedList<Integer> parseLayerHit(NodeList list, LinkedList<Integer> hsp_sizes){
+	private LinkedList<Integer> parseLayerHit(NodeList list, LinkedList<Integer> hsp_sizes){
 		String[] tags = new String[]{"Hit_num", "Hit_id", "Hit_def", "Hit_accession", "Hit_len"};
 		String[] keys = tags.clone();
 		String breakontag = "Hit_hsps";
@@ -132,7 +135,7 @@ public class BlastX_XML{
 		return hsp_sizes;
 	}
 
-	public int parseLayerIntraHitHsp(NodeList list, String hit_num){
+	private int parseLayerIntraHitHsp(NodeList list, String hit_num){
 		String breakontag = "Hsp";
 		int hsp_count = 0;
 		for(int i=0; i < list.getLength(); i++){
@@ -144,7 +147,7 @@ public class BlastX_XML{
 		return hsp_count;
 	}
 	
-	public void parseLayerHsp(NodeList list, String hit_num) {
+	private void parseLayerHsp(NodeList list, String hit_num) {
 		String[] tags = new String[]{"Hsp_bit-score" , "Hsp_score" ,
         		"Hsp_evalue" , "Hsp_query-from" , "Hsp_query-to" , "Hsp_hit-from" , "Hsp_hit-to" , "Hsp_query-frame" , 
         		"Hsp_hit-frame" , "Hsp_identity" , "Hsp_positive" , "Hsp_gaps" , "Hsp_align-len" , "Hsp_qseq" , "Hsp_hseq" , "Hsp_midline"};
@@ -190,17 +193,25 @@ public class BlastX_XML{
 	 * Note, because of 'bioindexing' aka funtimes,
 	 * Start looping at 1 not zero for hit_num,
 	 * but length remains the same 
+	 * 
+	 * 
 	 */
 	
-	public String getHitTagContents(String tag, String hit_num){
+	public String getHitTagContents(String tag, int hit_num) throws Exception{
+		if(hit_num <=0 || hit_num > this.hits.length){
+			throw new Exception("You cannot retrieve a hit which doesn't exist!");
+		}
 		return this.blastcache.get("HIT"+hit_num+"_"+tag);
 	}
 	
-	public String getHspTagContents(String tag, String hit_num, String hsp_num){
+	public String getHspTagContents(String tag, String hit_num, int hsp_num) throws Exception{
+		if(hsp_num <= 0){
+			throw new Exception("You cannot retrieve a hsp which doesn't exist!");
+		}
 		return this.blastcache.get("HSP"+hit_num+"_"+hsp_num+"_"+tag);
 	}
 		
-	//Method For Debugging
+	//Method mainly For Debugging
 	public void keyDump(){
 		System.out.println("Key Dump...");
 		for(String key : this.blastcache.keySet()){

@@ -11,6 +11,7 @@ import org.apache.commons.cli.Option;
 
 import bio.assembly.ACEFileParser;
 import bio.assembly.ACERecord;
+import bio.xml.XML_Blastx;
 
 import tasks.MapManager;
 import tasks.TaskXT;
@@ -100,6 +101,35 @@ public class Task_ChimeraAnalysis extends TaskXT{
 					logger.info("Next Stage of Chimera Analysis...");
 					logger.info("Code Pending...");
 					logger.info("As in, I haven't written it yet");
+					parse = new ACEFileParser(new FileInputStream(in));
+					
+					while(parse.hasNext()){
+						ACERecord record = parse.next();
+						System.out.println("Getting depth Map");
+						int[] depths = record.getDepthMap();
+						System.out.println("Done");
+						File file = new File(contig2file.get(record.getContigName()));
+						String rec = record.getConsensusAsString();
+						for(int i =0; i < depths.length; i++){
+							System.out.print(rec.charAt(i)+",");
+						}
+						System.out.println();
+						for(int i =0; i < depths.length; i++){
+							System.out.print(depths[i]+",");
+						}
+						System.out.println();
+						try{
+							XML_Blastx xml = new XML_Blastx(file);
+							for(int i =0; i < xml.getNoOfHits(); i++){
+								
+							}
+						}
+						catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						System.exit(0);
+					}
 				}
 			}
 			catch(IOException e){

@@ -51,5 +51,4 @@ public abstract class Tools_System{
     	return System.getProperty("line.separator");
     }
     
-
 }

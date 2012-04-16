@@ -93,7 +93,6 @@ public class FourBitSequence implements CharSequence{
 		dna = new long[length_long];
 	}
 	
-	
 	public char get(int pos){
 		/* 
 		 * This method will return '-' for any values outside the actual sequence
