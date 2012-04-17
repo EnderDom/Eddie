@@ -29,12 +29,15 @@ public class DatabaseManager {
 	public Connection openConnection(String dbtype, String driver, String dbhost, String dbname, String dbuser, String dbpass, boolean dbnom){
 		try{
 			Class.forName(driver).newInstance();
-			String mys = "jdbc:"+dbtype+"://"+dbhost+"/";
+			String mys = "jdbc:"+dbtype+"://"+dbhost;
 			if(dbnom){
-				mys = "jdbc:"+dbtype+"://"+dbhost+"/"+dbname;
+				mys = "jdbc:"+dbtype+"://"+dbhost+"/"+dbname+"";
 			}
 			logger.debug("About to run: " + mys);
 			this.con = DriverManager.getConnection(mys, dbuser, dbpass);
+			if(this.con == null){
+				logger.error("Argh, failed to connect to database");
+			}
 		}
 		catch(SQLException e){
 			logger.error("Failed to open mysql Connection ", e);
@@ -57,7 +60,7 @@ public class DatabaseManager {
 	
 	public Connection openDefaultConnection(boolean db){
 		String[] mydb = loader.getDBSettings();
-		if(password == null)password = ui.requiresUserInput("Password for access to "+mydb[2] + " database for user " + mydb[4], "Please enter the database password");
+		if(password == null)password = ui.requiresUserPassword("Password for access to "+mydb[2] + " database for user " + mydb[4], "Please enter the database password");
 		return this.openConnection(mydb[0], mydb[1], mydb[2], mydb[3], mydb[4], password, db);
 	}
 	
@@ -87,7 +90,18 @@ public class DatabaseManager {
 			return true;
 		}
 		catch (SQLException e) {
-			logger.error("Failed to create new database "+dbname);
+			logger.error("Failed to create new database "+dbname, e);
+			return false;
+		}
+	}
+	
+	public boolean close(){
+		try{
+			this.con.close();
+			return true;
+		}
+		catch(SQLException sqle){
+			logger.error("Failed to close Connection"+sqle);
 			return false;
 		}
 	}

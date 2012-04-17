@@ -10,6 +10,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
+import databases.manager.DatabaseManager;
+
 import tasks.Task;
 import tools.Tools_CLI;
 import tools.Tools_UI;
@@ -27,6 +29,7 @@ public class EddieCLI implements UI {
 	private PropertyLoader load;
 	private ModuleManager modmanager;
 	private TaskManager manager;
+	private DatabaseManager dbmanager;
 	private String[] args;
 	private Options options;
 	
@@ -205,6 +208,10 @@ public class EddieCLI implements UI {
 	public String requiresUserInput(String message, String title) {
 		return Tools_CLI.showInternalInputDialog(title, message);
 	}
+	
+	public String requiresUserPassword(String message, String title) {
+		return Tools_CLI.showInternalPasswordDialog(message, title);
+	}
 
 	public int requiresUserYNI(String message, String title) {
 		return Tools_CLI.showInternalConfirmDialog(title, message);
@@ -212,6 +219,21 @@ public class EddieCLI implements UI {
 
 	public PropertyLoader getPropertyLoader() {
 		return this.load;
+	}
+	
+	//Returns the default DatabaseManager
+	public DatabaseManager getDatabaseManager(){
+		if(this.dbmanager == null){
+			this.dbmanager = new DatabaseManager(this);
+		}
+		return this.dbmanager;
+	}
+	
+	public void setDatabaseManager(DatabaseManager dbmanager){
+		if(this.dbmanager != null){
+			logger.warn("This UI already has a manager, you know jsut warning you");
+		}
+		this.dbmanager = dbmanager;
 	}
 	
 }

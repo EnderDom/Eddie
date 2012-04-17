@@ -28,7 +28,6 @@ public class BioSQLBuilder {
 		this.con = manager.getCon();
 	}
 	
-	
 	/**
 	 * Builds the Default bioSQL 1.0.1 schema
 	 */

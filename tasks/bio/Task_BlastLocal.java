@@ -108,13 +108,12 @@ public class Task_BlastLocal extends TaskXT{
 	
 	public void runTest(){
 		if(blastparams == null)blastparams = "";
-	
-		File input = null;
-		File output = null;
-		if((input = getStdInput()) != null && (output = getStdOutput()) != null){
-			Tools_Blast.runLocalBlast(input, blast_prg, blast_bin, blast_db, blastparams, output);
+		File in =new File(input);
+		File out =  new File(output);
+		if(in.exists() && (out.exists() || overwrite)){
+			Tools_Blast.runLocalBlast(in, blast_prg, blast_bin, blast_db, blastparams, out);
 		}
-		else if(input == null){
+		else if(!in.exists()){
 			logger.error("Input "+this.input+" does not exist! " );
 		}
 		else{

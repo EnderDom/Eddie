@@ -1,5 +1,6 @@
 package tools;
 
+import java.io.Console;
 import java.util.Scanner;
 
 import org.apache.log4j.Logger;
@@ -45,6 +46,13 @@ public class Tools_CLI {
 			Logger.getRootLogger().trace("Cancelled");
 			return 2;
 		}
+	}
+	
+	public static String showInternalPasswordDialog(String message, String title){
+		System.out.println("--"+title+"--");
+		System.out.println();
+		Console c = System.console();
+		return new String(c.readPassword(message+": "));
 	}
 	
 }

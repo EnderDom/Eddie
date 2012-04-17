@@ -6,6 +6,8 @@ import javax.swing.event.EventListenerList;
 
 import org.apache.log4j.Logger;
 
+import databases.manager.DatabaseManager;
+
 import tasks.Task;
 
 public interface UI {
@@ -26,6 +28,8 @@ public interface UI {
 	
 	public String requiresUserInput(String message, String title);
 	
+	public String requiresUserPassword(String message, String title);
+	
 	public int requiresUserYNI(String message, String title);
 	
 	public void sendAlert(String alert);
@@ -37,5 +41,9 @@ public interface UI {
 	void fireUIEvent(UIEvent evt);
 	
 	public PropertyLoader getPropertyLoader();
+	
+	public DatabaseManager getDatabaseManager();
+	
+	public void setDatabaseManager(DatabaseManager manager);
 	
 }

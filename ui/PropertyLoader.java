@@ -51,6 +51,7 @@ import tools.Tools_System;
 
 public class PropertyLoader implements Module{
 
+	//TODO hand over database properties to another class
     private Properties props;
     public static String propertyfilename = new String("eddie.properties");
     public static String infoFile = new String("eddie.info");
@@ -441,7 +442,7 @@ public class PropertyLoader implements Module{
 	public String[][] getChangableStats(){
 		//These need to all be the same length
 		String[] stats = defaultKeys;
-		String[] stats_val = new String[]{"Localhost", DatabaseManager.default_database, System.getProperty("user.name"),  "5", "1", "/usr/bin/", this.rootfolder+"blas_db"+slash,"/usr/bin/ESTscan", rootfolder+FileViewerModel.filename};
+		String[] stats_val = new String[]{"Localhost", DatabaseManager.default_database, System.getProperty("user.name"),  "5", "1", "/usr/bin/", this.rootfolder+"blas_db"+Tools_System.getFilepathSeparator(),"/usr/bin/ESTscan", rootfolder+FileViewerModel.filename};
 		String[] tool_tips = new String[]{"Host Database IP/Name", "Database Name", "Database Username","Max number of auxiliary threads","Max number of primary threads", "Directory that contains blast executables", 
 				"XML file which list current files in project", "Location of the ESTScan executable", "File XML list location"};
 		String[][] ret = new String[3][stats.length];
@@ -453,7 +454,7 @@ public class PropertyLoader implements Module{
 	
 	public String[][] getUnchangableStats(){
 		String[] stats = defaultKeysUN;
-		String[] stats_val = new String[]{defaultlnf, rootfolder+"Modules"+slash, guiversion+"","mysql","com.mysql.jdbc.Driver"};
+		String[] stats_val = new String[]{defaultlnf, rootfolder+"Modules"+Tools_System.getFilepathSeparator(), guiversion+"","mysql","com.mysql.jdbc.Driver"};
 		String[][] ret = new String[2][stats.length];
 		ret[0] = stats;
 		ret[1] = stats_val;

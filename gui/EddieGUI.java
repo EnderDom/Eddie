@@ -21,6 +21,8 @@ import javax.swing.KeyStroke;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import databases.manager.DatabaseManager;
+
 import tasks.*;
 import tools.Tools_UI;
 import tools.Tools_String;
@@ -44,6 +46,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
     public double version;
     private DesktopPane desktop;
     FileViewer view;
+    public DatabaseManager dbmanager;
     
 	public EddieGUI(PropertyLoader loader){
 		super("Eddie v"+PropertyLoader.guiversion + " " + PropertyLoader.edition + " Edition");
@@ -260,8 +263,28 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		return JOptionPane.showInternalInputDialog(this, message, title, JOptionPane.QUESTION_MESSAGE);
 	}
 	
+	//TODO make password box
+	public String requiresUserPassword(String message, String title) {
+		return JOptionPane.showInternalInputDialog(this, message, title, JOptionPane.QUESTION_MESSAGE);
+	}
+	
 	public int requiresUserYNI(String message, String title) {
 		return JOptionPane.showInternalConfirmDialog(this, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	//Returns the default DatabaseManager
+	public DatabaseManager getDatabaseManager(){
+		if(this.dbmanager == null){
+			this.dbmanager = new DatabaseManager(this);
+		}
+		return this.dbmanager;
+	}
+	
+	public void setDatabaseManager(DatabaseManager dbmanager){
+		if(this.dbmanager != null){
+			logger.warn("This UI already has a manager, you know jsut warning you");
+		}
+		this.dbmanager = dbmanager;
 	}
 
 }

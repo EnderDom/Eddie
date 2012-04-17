@@ -15,6 +15,12 @@ public abstract class Tools_System{
         return sdf.format(cal.getTime());
     }
     
+    public static final String getDateNow(String format){
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+        return sdf.format(cal.getTime());
+    }
+    
     public static int getDeltaInDaysToNow(String source){
     	SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
     	Calendar now = Calendar.getInstance();

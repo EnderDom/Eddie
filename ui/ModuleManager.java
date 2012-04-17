@@ -15,6 +15,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import modules.Module;
 import modules.Module_Test;
 import modules.bio.Module_Bio;
+import modules.bio.Module_DB;
 import modules.lnf.DefaultLNF;
 
 import org.apache.log4j.Logger;
@@ -103,6 +104,7 @@ public class ModuleManager implements Module{
 	public void addDefaultModules(){
 		addModule("LNF", DefaultLNF.class.getName());
 		addModule("BIO", Module_Bio.class.getName());
+		addModule("DB", Module_DB.class.getName());
 		addModule("TEST", Module_Test.class.getName());
 	}
 	

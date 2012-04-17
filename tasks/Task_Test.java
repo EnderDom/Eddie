@@ -52,10 +52,11 @@ public class Task_Test extends Task{
 		try{
 			System.out.println("Running test");
 			
-			DatabaseManager manager = new DatabaseManager(this.ui);
-			manager.createAndOpen(DatabaseManager.default_database);
+			DatabaseManager manager = this.ui.getDatabaseManager();
+			manager.createAndOpen(load.getProp("DBNAME"));
 			BioSQLBuilder build = new BioSQLBuilder(manager);
 			build.buildBioSQL4MySQL();
+			manager.close();
 		}
 		catch(Exception e){
 			e.printStackTrace();

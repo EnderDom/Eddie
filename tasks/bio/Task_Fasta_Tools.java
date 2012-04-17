@@ -8,11 +8,12 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 
+import bio.fasta.Fasta;
+import bio.fasta.FastaParser;
+
 import tasks.TaskXT;
 import tools.Tools_String;
 import tools.Tools_System;
-import bio.fasta.Fasta;
-import bio.fasta.FastaParser;
 
 public class Task_Fasta_Tools extends TaskXT{
 	
@@ -23,6 +24,7 @@ public class Task_Fasta_Tools extends TaskXT{
 	private int trimlen;
 	private boolean NoOut;
 	private boolean NoContinual;
+	
 	
 	public Task_Fasta_Tools(){
 		
@@ -35,66 +37,60 @@ public class Task_Fasta_Tools extends TaskXT{
 		 * Convert Fasta&qual to Fastq
 		 */
 		if(!NoContinual){
-			if(output != null){
-				output = output.replaceAll(".fasta", "");
-				output = output.replaceAll(".fastq", "");
-				output = output.replaceAll(".fna", "");
-				output = output.replaceAll(".qual", "");
-			}
-			File infile = null;
-			File qualfile = null;
-			File outfile = null;
-			if((infile=getFile(input, IS_FILE)) != null){//This is getting a bit messy...
+			output = output.replaceAll(".fasta", "");
+			output = output.replaceAll(".fastq", "");
+			output = output.replaceAll(".fna", "");
+			output = output.replaceAll(".qual", "");
+			File infile = new File(this.input);
+			File qualfile = new File(this.qual);
+			File outfile =  new File(output+".fastq");
+			if(infile.exists()){
 				logger.debug("Input File is good");
 				/*
 				 * Convert Fasta And Qual 2 Fastq
 				 */
-				if(getQual() != null){
-					logger.debug("Fasta/Qual");
-					if((qualfile = getFile(getQual(), IS_FILE)) !=null){
-						File outfile2 = getFile(output+".qual", NOT_FILE_OR_DIRECTORY);
-						outfile = getFile(output+".fasta", NOT_FILE_OR_DIRECTORY);
-						if(isOverwrite() || (outfile != null && outfile2 != null) || NoOut){					
-							if(outfile == null)outfile = new File(output+".fasta");//Quick fix //TODO sort this out
-							if(outfile2 == null)outfile2 = new File(output+".qual");//Quick fix //TODO sort this out
-							fasta = new Fasta();
-							fasta.setFastq(false);
-							FastaParser parser = new FastaParser(fasta);
-							try {
-								parser.parseFasta(infile);
-								parser.parseQual(qualfile);
-								subRun();
-								if(!NoOut)fasta.save2FastaAndQual(outfile, outfile2);
+				if(qualfile.exists()){
+					fasta = new Fasta();
+					fasta.setFastq(false);
+					FastaParser parser = new FastaParser(fasta);
+					try {
+						parser.parseFasta(infile);
+						parser.parseQual(qualfile);	
+						Logger.getRootLogger().debug("Fasta Parsed, saving...");
+						subRun();
+						if(!NoOut){
+							if(trim){ 
+								outfile =  new File(output+".fasta");
+								File outfile2 =  new File(output+".qual");
+								fasta.save2FastaAndQual(outfile, outfile2);
 							}
-							catch (Exception e) {
-								Logger.getRootLogger().error("Error parsing Fastq file", e);
-							}
-						}
-						else{
-							Logger.getRootLogger().error("File " + output + " already exists, change filepath or set overwrite to true");
+							else fasta.save2Fastq(outfile);
 						}
 					}
-					else{
-						Logger.getRootLogger().error("Quality file is set, but filepath: "+qual+" is not a valid file");
+					catch (Exception e) {
+						Logger.getRootLogger().error("Error parsing Fastq file", e);
 					}
 				}
+				/*
+				 * Convert Fastq to Fasta And Qual
+				 */
 				else{
-					String st = this.detectFileType(input);
-					boolean fastq = st.equals("FASTQ");
-					if(fastq)outfile = getFile(output+".fastq", NOT_FILE_OR_DIRECTORY);
-					else outfile = getFile(output+".fasta", NOT_FILE_OR_DIRECTORY);
-					if(isOverwrite() || outfile != null || NoOut){
-						if(outfile == null)outfile = new File(output+".fasta");//Quick fix //TODO sort this out
+					File outfile2 =  new File(output+".qual");
+					outfile =new File(output+".fasta");
+					if((!outfile.exists() && !outfile2.exists()) || overwrite){
 						fasta = new Fasta();
-						if(fastq)fasta.setFastq(true);
+						fasta.setFastq(true);
 						FastaParser parser = new FastaParser(fasta);
 						try {
-							if(fastq)parser.parseFastq(infile);
-							else parser.parseFasta(infile);
+							parser.parseFastq(infile);
+							Logger.getRootLogger().debug("Fastq Parsed, saving...");
 							subRun();
 							if(!NoOut){
-								if(fastq) fasta.save2Fastq(outfile);
-								else fasta.save2Fasta(outfile);
+								if(!trim) fasta.save2FastaAndQual(outfile, outfile2);
+								else{ 
+									outfile = new File(output+".fastq");
+									fasta.save2Fastq(outfile);
+								}
 							}
 						}
 						catch (Exception e) {
@@ -108,12 +104,44 @@ public class Task_Fasta_Tools extends TaskXT{
 			}
 		}
 		else{
-			logger.warn("No actual active option set");
-			this.printHelpMessage();
+			logger.warn("No action actually set");
 		}
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
 	}
+	
+	public void parseArgsSub(CommandLine cmd){
+		super.parseArgsSub(cmd);
+		this.NoContinual = false;
+		if(cmd.hasOption("qual")){
+			qual = cmd.getOptionValue("qual");
+		}
+		//Options 
+		if(cmd.hasOption("trim")){
+			trim=true;
+			Integer i = Tools_String.parseString2Int(cmd.getOptionValue("trim"));
+			if(i != null){
+				this.trimlen = i;
+			}
+			else{
+				logger.warn("Trim set, but is not a number");
+			}
+		}
+		else if(cmd.hasOption("stats")){
+			stats=true;
+			this.NoOut = true;
+		}
+		else if(cmd.hasOption("convert")){
+			
+			this.NoOut = false;
+		}
+		else{
+			logger.warn("No Actual options set");
+			this.NoOut = true;
+			this.NoContinual = true;
+		}
+	}
+	
 	
 	public void subRun(){
 		if(trim){
@@ -137,37 +165,6 @@ public class Task_Fasta_Tools extends TaskXT{
 	public int trimSequences(){
 		return this.fasta.trimSequences(this.trimlen);
 	}
-
-	
-	
-	public void parseArgsSub(CommandLine cmd){
-		super.parseArgsSub(cmd);
-		this.NoContinual = false;
-		if(cmd.hasOption("qual")){
-			qual = cmd.getOptionValue("qual");
-		}
-		//Options 
-		if(cmd.hasOption("trim")){
-			trim=true;
-			Integer i = Tools_String.parseString2Int(cmd.getOptionValue("trim"));
-			if(i != null){
-				this.trimlen = i;
-			}
-			else{
-				logger.warn("Trim set, but is not a number");
-			}
-		}
-		else if(cmd.hasOption("stats")){
-			stats=true;
-			this.NoOut = true;
-		}
-		else{
-			logger.warn("No Actual options set");
-			this.NoOut = true;
-			this.NoContinual = true;
-		}
-	}
-	
 	
 	public void parseOpts(Properties props){
 		
@@ -180,6 +177,7 @@ public class Task_Fasta_Tools extends TaskXT{
 		options.getOption("o").setDescription("Output file or files");
 		options.addOption(new Option("trim", true, "Trim Sequences Using below this value ie -trim 100"));
 		options.addOption(new Option("stats", false, "Print Statistics for Fasta/q files"));
+		options.addOption(new Option("convert", false, "Convert files to another file type"));
 	}
 	
 	public Options getOptions(){

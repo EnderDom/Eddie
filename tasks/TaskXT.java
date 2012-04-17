@@ -1,7 +1,5 @@
 package tasks;
 
-import java.io.File;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
@@ -15,11 +13,6 @@ public class TaskXT extends Task{
 	protected String input;
 	protected String output;
 	protected boolean overwrite;
-	public static int NOT_FILE_OR_DIRECTORY = 0;
-	public static int IS_FILE_OR_DIRECTORY = 1;
-	public static int IS_FILE = 2;
-	public static int IS_DIRECTORY = 3;
-	public static int IS_OR_NOT = 4;
 	protected Logger logger = Logger.getLogger("TaskLogger");
 	protected String filetype;
 	
@@ -54,40 +47,7 @@ public class TaskXT extends Task{
 	 * 3) File does exist specifically as directory
 	 * 4) Doesn't matter if it exists
 	 */
-	public File getFile(String input, int shouldexist){
-		File tmp = new File(input);
-		
-		switch(shouldexist){
-		case 0:
-			if(tmp.exists()) return null;
-			else return tmp;
-		case 1: 
-			if(tmp.exists()) return tmp;
-			else return null;
-		case 2: 
-			if(tmp.isFile())return tmp;
-			else return null;
-		case 3: 
-			if(tmp.isDirectory())return tmp;
-			else return null;
-		default:
-			return tmp;
-		}
-	}
 	
-	
-	public File getStdInput(){
-		// Method assumes input should exist as a file (not folder)
-		return getFile(this.input, 2);
-	}
-	
-	public File getStdOutput(){
-		//Method assumes output shouldn't be a file unless overwrite
-		if(!overwrite){
-			return getFile(this.output, 0); 
-		}
-		else return getFile(this.output, 4);
-	}
 
 	public String getInput() {
 		return input;

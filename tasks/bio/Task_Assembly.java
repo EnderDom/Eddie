@@ -126,8 +126,8 @@ public class Task_Assembly extends TaskXT{
 				if(this.output != null){
 					ACEObject ace = getAce();
 					Fasta fasta = ace.getFastaFromConsensus();
-					File filez = this.getFile(output, NOT_FILE_OR_DIRECTORY);//TODO add overwritable option
-					if(filez != null){
+					File filez = new File(output);//TODO add overwritable option
+					if(!filez.exists() || this.overwrite){
 						boolean complete = false;
 						try{
 							complete = fasta.save2Fasta(filez);
@@ -158,20 +158,24 @@ public class Task_Assembly extends TaskXT{
 	
 
 	public ACEObject getAce(){
-		File ace = null;
+		File ace = new File(input);
 		ACEObject obj = new ACEObject();
-		if(input.endsWith(".ace") || input.endsWith(".ACE")){
-			if((ace = getFile(input,2)) != null){
-				Logger.getRootLogger().debug("Parsing ACE file");
-				ACEParser parser = new ACEParser(obj);
-				try {
-					parser.parseAce(ace);
-					Logger.getRootLogger().debug("Parsing Done");
-				}
-				catch (Exception e) {
-					Logger.getRootLogger().error("Error Parsing ACE file",e);
-				}
+		if(ace.exists()){
+			if(!input.endsWith(".ace") && !input.endsWith(".ACE")){
+				logger.warn("Warning the specified input does not have the standard file tag");
 			}
+			Logger.getRootLogger().debug("Parsing ACE file");
+			ACEParser parser = new ACEParser(obj);
+			try {
+				parser.parseAce(ace);
+				logger.debug("Parsing Done");
+			}
+			catch (Exception e) {
+				logger.error("Error Parsing ACE file",e);
+			}
+		}
+		else{
+			logger.error("Ace file does not exist")	;
 		}
 		return obj;
 	}
