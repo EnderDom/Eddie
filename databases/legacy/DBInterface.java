@@ -1,4 +1,4 @@
-package interfaces;
+package databases.legacy;
 
 import bio.objects.GOTermData;
 import bio.xml.XML_Blastx;

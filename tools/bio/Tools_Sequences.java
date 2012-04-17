@@ -20,10 +20,12 @@ public class Tools_Sequences {
 	 * [2] max length
 	 * [3] n50
 	 * [4] n90
+	 * [5] seqs > 500bp
+	 * [6] seqs > 1Kb
 	 */
 	public static long[] SequenceStats(int[] arr_of_lengths){
 		Arrays.sort(arr_of_lengths);
-		long[] ret = new long[5];
+		long[] ret = new long[7];
 		for(int k : arr_of_lengths)ret[0]+=k;
 		int i=0;
 		ret[1] = arr_of_lengths[0];
@@ -37,6 +39,15 @@ public class Tools_Sequences {
 			cur += arr_of_lengths[--i];
 		}
 		ret[4] = arr_of_lengths[i];
+		
+		for(i =0; i < arr_of_lengths.length; i++){
+			if(arr_of_lengths[i] > 500){
+				ret[5]++;
+			}
+			if(arr_of_lengths[i] > 1000){
+				ret[6]++;
+			}
+		}
 		return ret;
 	}
 	

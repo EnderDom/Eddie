@@ -15,6 +15,9 @@ import net.sf.samtools.SAMRecord;
 import org.apache.commons.cli.CommandLine;
 import org.apache.log4j.Logger;
 
+import databases.bioSQL.BioSQLBuilder;
+import databases.manager.DatabaseManager;
+
 import bio.assembly.ACEFileParser;
 import bio.assembly.ACERecord;
 
@@ -48,8 +51,11 @@ public class Task_Test extends Task{
 		 */
 		try{
 			System.out.println("Running test");
-			this.testStringSort();
-			this.testLongestNumberGetterer();
+			
+			DatabaseManager manager = new DatabaseManager(this.ui);
+			manager.createAndOpen(DatabaseManager.default_database);
+			BioSQLBuilder build = new BioSQLBuilder(manager);
+			build.buildBioSQL4MySQL();
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -69,6 +75,7 @@ public class Task_Test extends Task{
 	}
 	
 	public void addUI(UI ui){
+		logger.trace("UI added to " + this.getClass().getName());
 		this.ui = ui;
 		this.load = ui.getPropertyLoader();
 	}

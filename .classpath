@@ -24,5 +24,6 @@
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/biojava3/biojava3-ws-3.0.3.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/lib/biojava3/biojava3-ws-3.0.3-sources.jar"/>
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/biojava1.8/blast-1.8.1.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/lib/biojava1.8/blast-1.8.1-sources.jar"/>
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/biojava1.8/core-1.8.1.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/lib/biojava1.8/core-1.8.1-sources.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/SQL/mysql-connector-java-5.1.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

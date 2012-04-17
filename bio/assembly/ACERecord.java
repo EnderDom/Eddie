@@ -248,4 +248,14 @@ public class ACERecord implements Cloneable {
 		return arr;
 	}
 	
+	
+	//Total Sum of lengths of all reads minus non-bp (ie '*'/'-')
+	public int getTotalBpofReads(){
+		int r =0;
+		for(int i =0; i < this.getNoOfReads(); i++){
+			r+=this.getRead(i).getActualLength();
+		}
+		return r;
+	}
+	
 }

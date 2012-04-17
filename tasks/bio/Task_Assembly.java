@@ -1,14 +1,19 @@
 package tasks.bio;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
 
+import bio.assembly.ACEFileParser;
 import bio.assembly.ACEObject;
 import bio.assembly.ACEParser;
+import bio.assembly.ACERecord;
 import bio.fasta.Fasta;
 
 import tasks.TaskXT;
@@ -20,6 +25,7 @@ public class Task_Assembly extends TaskXT{
 	
 	boolean coverage;
 	boolean getfasta;
+	boolean stats;
 	int range;
 	int contig;
 	String name;
@@ -35,6 +41,7 @@ public class Task_Assembly extends TaskXT{
 		if(cmd.hasOption("contig"))name=cmd.getOptionValue("contig");
 		if(cmd.hasOption("range"))range=Tools_String.parseString2Int(cmd.getOptionValue("range"));
 		if(cmd.hasOption("getfasta"))getfasta=true;
+		if(cmd.hasOption("stats"))stats=true;
 		if(range <1)range=100;
 		if(cmd.hasOption("numbcontig")){
 			Integer a = Tools_String.parseString2Int(cmd.getOptionValue("numbcontig"));
@@ -50,6 +57,7 @@ public class Task_Assembly extends TaskXT{
 		super.buildOptions();
 		options.addOption(new Option("coverage", false, "Coverage analysis Ace File"));
 		options.addOption(new Option("getfasta", false, "Save Consensus Sequences as fasta"));
+		options.addOption(new Option("stats", false, "Get Statistics regarding file"));
 		options.addOption(new Option("range", true, "Range Integer"));
 		options.addOption(new Option("numbcontig", true, "Contig Number to analyse"));
 		options.addOption(new Option("contig", true, "Contig Name to analyse"));
@@ -60,7 +68,31 @@ public class Task_Assembly extends TaskXT{
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		if(testmode)runTest();
 		else{
-			if(coverage){
+			if(stats){
+				try {
+					ACEFileParser parse = new ACEFileParser(new FileInputStream(this.input));
+					int count=0;
+					int totalread=0;
+					long totalbp = 0;
+					while(parse.hasNext()){
+						ACERecord record = parse.next();
+						System.out.print("\r(No."+count+") : " + record.getContigName() + "        ");
+						count++;
+						totalread+=record.getNoOfReads();
+						totalbp+=record.getTotalBpofReads();
+					}
+					System.out.println();
+					System.out.println("No. of Contigs: " + count);
+					System.out.println("Total No. of Reads: " + totalread);
+					System.out.println("Total No. of Bp: " + totalbp);
+				}
+				catch (FileNotFoundException e) {
+					logger.error("No file called " + this.input,e);
+				} catch (IOException e) {
+					logger.error("Could not parse " + this.input,e);
+				}
+			}
+			else if(coverage){
 				Logger.getRootLogger().debug("Coverage Option Set");
 				ACEObject ace = getAce();
 				if(contig != -1){

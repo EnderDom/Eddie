@@ -1,7 +1,6 @@
 package tasks.bio;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
@@ -9,30 +8,36 @@ import java.util.Properties;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
-import bio.assembly.ACEFileParser;
-import bio.assembly.ACERecord;
+import bio.fasta.Fasta;
+import bio.fasta.FastaParser;
 import bio.xml.XML_Blastx;
 
 import tasks.MapManager;
 import tasks.TaskXT;
 import tools.Tools_File;
+import tools.Tools_String;
 import tools.Tools_System;
 import ui.UI;
 
-public class Task_ChimeraAnalysis extends TaskXT{
+public class Task_BlastAnalysis extends TaskXT{
 	
 	private String blastfolders; //Path containing the blast files
 	HashMap<String, String>contig2file;
 	MapManager mapman;
 	UI ui;
+	double e;
 	
-	public Task_ChimeraAnalysis(){
-		
+	public Task_BlastAnalysis(){
+		e = 1e-6;
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
 		if(cmd.hasOption("b"))blastfolders=cmd.getOptionValue("b");
+		if(cmd.hasOption("e")){
+			Double d = Tools_String.parseString2Double(cmd.getOptionValue("e"));
+			if(d !=null)e=d;
+		}
 	}
 	
 	public void parseOpts(Properties props){
@@ -43,6 +48,7 @@ public class Task_ChimeraAnalysis extends TaskXT{
 		super.buildOptions();
 		options.addOption(new Option("b", "blastfolder", true, "folder containing individual blast XMLs (MultiBlast not supported yet)"));
 		options.getOption("i").setDescription("Input assembly file (only ACE currently)");
+		options.addOption(new Option("e", "evalue", true, "Ignore any blasts with min evalue above this threshold"));
 	}
 	
 	/*
@@ -63,19 +69,26 @@ public class Task_ChimeraAnalysis extends TaskXT{
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
 		File in = new File(input);
 		File blastfolder = new File(blastfolders);
+		logger.trace("Checking files...");
 		if(in.isFile() && blastfolder.isDirectory()){
 		if(filetype == null)filetype = this.detectFileType(in.getName());
-			if(!filetype.equals("ACE")){
-				logger.warn("File does not have expected suffix '.ace'");
+			if(!filetype.equals("FASTA")){
+				logger.error("File does not have expected suffix '.fasta' or '.fna'");
 			}
+			logger.trace("Parsing Setting Fastas...");
+			Fasta fasta = new Fasta();
+			FastaParser parse = new FastaParser(fasta);
+			int count=0;
 			try{
-				ACEFileParser parse = new ACEFileParser(new FileInputStream(in));
-				int count=0;
-				while(parse.hasNext()){
-					ACERecord record = parse.next();
-					this.contig2file.put(record.getContigName(), record.getContigName()+".xml");
-					System.out.print("\r(No."+count+") : " + record.getContigName() + "        ");
+				logger.debug("Parsing Fasta");
+				//parse.setShorttitles(true);
+				parse.parseFasta(in);
+				logger.debug("Fasta Parsed");
+				this.contig2file = fasta.getSequences();
+				for(String name : contig2file.keySet()){
+					contig2file.put(name, name+".xml");
 					count++;
+					System.out.print("\r(No."+count+") : " + name + "        ");
 				}
 				System.out.println();
 				if(mapman.hasMap(input, blastfolders)){
@@ -98,41 +111,41 @@ public class Task_ChimeraAnalysis extends TaskXT{
 					logger.error("Map could not be built for whatever reason. Please rename the blast files sensibly (ie the same as contig names ?)");
 				}
 				else{					
-					logger.info("Next Stage of Chimera Analysis...");
-					logger.info("Code Pending...");
-					logger.info("As in, I haven't written it yet");
-					parse = new ACEFileParser(new FileInputStream(in));
-					
-					while(parse.hasNext()){
-						ACERecord record = parse.next();
-						System.out.println("Getting depth Map");
-						int[] depths = record.getDepthMap();
-						System.out.println("Done");
-						File file = new File(contig2file.get(record.getContigName()));
-						String rec = record.getConsensusAsString();
-						for(int i =0; i < depths.length; i++){
-							System.out.print(rec.charAt(i)+",");
-						}
-						System.out.println();
-						for(int i =0; i < depths.length; i++){
-							System.out.print(depths[i]+",");
-						}
-						System.out.println();
+					logger.info("Next Stage of Blast Analysis...");
+					int contigswithblasts = 0;
+					int blast10 = 0;
+					int avcov=0;
+					count=0;
+					XML_Blastx xml = null;
+					for(String contig : contig2file.keySet()){
 						try{
-							XML_Blastx xml = new XML_Blastx(file);
-							for(int i =0; i < xml.getNoOfHits(); i++){
-								
+							xml = new XML_Blastx(contig2file.get(contig));
+							if(xml.getNoOfHits() > 0){
+								if(xml.getLowestEValue() < this.e){
+									contigswithblasts++;
+									avcov+=xml.getLargestRange();
+									if(xml.getNoOfHits() > 9){
+										blast10++;
+									}
+								}
 							}
 						}
 						catch (Exception e) {
-							e.printStackTrace();
+							logger.error("Failed to parse blast xml for " + contig , e);
 						}
-						System.exit(0);
+						System.out.print("\r(No."+count+") : " + contig + "        ");
+						count++;
 					}
+					System.out.println();
+					System.out.println("--STATS--");
+					System.out.println("Sequences with blast results: " + contigswithblasts);
+					System.out.println("Sequences >9 blast results: " + blast10);
+					System.out.println("No. of bp matched: "+avcov+"bp");
+					System.out.println("---------");
 				}
 			}
-			catch(IOException e){
-				logger.error("Failed to parse ACE file properly",e);
+			catch(IOException io){
+				logger.error("Cannot parse fasta file", io);
 			}
 		}
 		else{

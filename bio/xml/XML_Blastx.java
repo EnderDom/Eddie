@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
 import org.biojava3.core.util.XMLHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import tools.Tools_String;
 import tools.Tools_XML;
 
 /**
@@ -56,7 +58,7 @@ public class XML_Blastx{
 				parseLayerIterations(element);
 			}
 			else{
-				System.out.println("Not yet supporting multi Blast result files");
+				Logger.getRootLogger().warn("Not yet supporting multi Blast result files");
 			}
 		}
 		if(dropDOM){
@@ -173,7 +175,12 @@ public class XML_Blastx{
 	}
 	
 	public int getNoOfHits(){
-		return this.hits.length;
+		if(this.hits != null){
+			return this.hits.length-1;
+		}
+		else{
+			return 0;
+		}
 	}
 	
 	/*
@@ -204,7 +211,7 @@ public class XML_Blastx{
 		return this.blastcache.get("HIT"+hit_num+"_"+tag);
 	}
 	
-	public String getHspTagContents(String tag, String hit_num, int hsp_num) throws Exception{
+	public String getHspTagContents(String tag, int hit_num, int hsp_num) throws Exception{
 		if(hsp_num <= 0){
 			throw new Exception("You cannot retrieve a hsp which doesn't exist!");
 		}
@@ -236,6 +243,46 @@ public class XML_Blastx{
 	}
 	public void save(File filepath){
 		Tools_XML.Xml2File(this.blastDoc, filepath);
+	}
+	
+	public int getLargestRange(){
+		int r = 0;
+		for(int i =1; i < this.getNoOfHits();i++){
+			for(int j =1; j < this.getNoOfHsps(i);j++){
+				try {
+					Integer to = Tools_String.parseString2Int(this.getHspTagContents("Hsp_query-to", i, j));
+					Integer from = Tools_String.parseString2Int(this.getHspTagContents("Hsp_query-from", i, j));
+					if(to != null && from != null){
+						int delta =Math.abs(to-from);
+						if(delta > r){
+							r = delta;
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}				
+			}
+		}
+		return r;
+	}
+	
+	public double getLowestEValue(){
+		double e =99;
+		for(int i =1; i < this.getNoOfHits();i++){
+			for(int j =1; j < this.getNoOfHsps(i);j++){
+				try {
+					Double to = Tools_String.parseString2Double(this.getHspTagContents("Hsp_evalue", i, j));
+					if(to != null){
+						if(to < e){
+							e=to;
+						}
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}				
+			}
+		}
+		return e;
 	}
 	
 }

@@ -144,6 +144,7 @@ public class TaskXT extends Task{
 				break;
 			}
 		}
+		logger.trace("Filetype detected as " + filetype_val);
 		return filetype_val;
 	}
 }

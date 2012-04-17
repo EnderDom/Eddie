@@ -1,4 +1,4 @@
-package interfaces;
+package databases.legacy;
 
 public interface DBBuilder {
 	

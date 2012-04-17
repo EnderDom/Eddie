@@ -5,10 +5,11 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.apache.log4j.Logger;
 
+import databases.legacy.DBInterface;
+
 
 import tasks.Task;
 
-import interfaces.DBInterface;
 
 public class TaskManager extends Thread{
 

@@ -36,6 +36,7 @@ public class Task implements Runnable, Future<Object> {
 	public boolean helpmode;
 	protected boolean testmode;
 	protected String args;
+	protected String helpheader = "--This is the Help Message of the Default Task--";
 
 	/*
 	 * complete note:
@@ -119,11 +120,19 @@ public class Task implements Runnable, Future<Object> {
 	public void printHelpMessage(){
 		System.out.println("");
 		System.out.println("");
-		System.out.println("--This is the Help Message of the Default Task--");
+		System.out.println(getHelpHeader());
 		HelpFormatter help = new HelpFormatter();
 		help.printHelp("ls", "-- Task Help Menu --", options, "-- Share And Enjoy! --");
 		System.out.println("");
 		System.out.println("");
+	}
+	
+	public String getHelpHeader(){
+		return this.helpheader;
+	}
+	
+	public void setHelpHeader(String str){
+		this.helpheader = str;
 	}
 	
 	public synchronized void update(){

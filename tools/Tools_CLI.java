@@ -9,7 +9,7 @@ public class Tools_CLI {
 	public static String showInternalInputDialog(String title, String message){
 		System.out.println("--"+title+"--");
 		System.out.println();
-		System.out.println(message);
+		System.out.println(message+":");
 		Scanner sc = new Scanner(System.in);
 		String answer;
 		answer = sc.next();

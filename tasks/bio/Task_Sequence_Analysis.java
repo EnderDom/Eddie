@@ -25,8 +25,9 @@ public class Task_Sequence_Analysis extends TaskXT{
 	Sequences seqs;
 	
 	public Task_Sequence_Analysis(){
-		
+		setHelpHeader("--This is the Help Message for the Sequence Analysis Task--");
 	}
+	
 	public void run(){
 		setComplete(started);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
@@ -73,6 +74,8 @@ public class Task_Sequence_Analysis extends TaskXT{
 					System.out.println("Max Sequence Length: " + stats[2] + "bp");
 					System.out.println("n50: " + stats[3]);
 					System.out.println("n90: " + stats[4]);
+					System.out.println("Sequences >500bp " + stats[5]);
+					System.out.println("Sequences >1Kb " + stats[6]);
 				}
 			}
 			else{

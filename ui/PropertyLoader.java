@@ -39,6 +39,8 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import databases.manager.DatabaseManager;
+
 import tools.Tools_Modules;
 import tools.Tools_UI;
 import tools.Tools_Array;
@@ -59,7 +61,7 @@ public class PropertyLoader implements Module{
      */
     public static int engineversion = 4;
     
-    public static double guiversion = 0.17;
+    public static double guiversion = 0.18;
     public static String edition = "Development";
     Level level;
     public static Logger logger;
@@ -71,8 +73,8 @@ public class PropertyLoader implements Module{
 	public String modulename;
 	private String slash;
 	
-	public static String[] defaultKeys = new String[]{"DBHOST", "DBNAME", "DBUSER","AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR", "ESTSCAN_BIN", "FILES_XML"};
-	public static String[] defaultKeysUN = new String[]{"PRELNF","MODULES", "VERSION"};
+	public static String[] defaultKeys = new String[]{"DBHOST", "DBNAME", "DBUSER", "AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR", "ESTSCAN_BIN", "FILES_XML"};
+	public static String[] defaultKeysUN = new String[]{"PRELNF","MODULES", "VERSION","DBTYPE","DBDRIVER"};
 	
 	public PropertyLoader() {
 		rootfolder = getEnvirons();
@@ -379,9 +381,9 @@ public class PropertyLoader implements Module{
 				if (in.length() > 0) {
 					int start = 0;
 					if ((start = in.indexOf("VERS:")) != -1) {
-						double oldvers = Tools_String.parseString2Double(in
-								.substring(start, in.length()));
-						if(oldvers != guiversion){
+						Double oldvers = Tools_String.parseString2Double(in
+								.substring(start+5, in.length()));
+						if(oldvers != null && oldvers != guiversion){
 							//TODO Compatibilaty
 						}
 					}
@@ -430,12 +432,16 @@ public class PropertyLoader implements Module{
 		for(int i =0; i< ret[0].length; i++){
 			props.put(ret[0][i], ret[1][i]);
 		}
+		ret = getUnchangableStats();
+		for(int i =0; i< ret[0].length; i++){
+			props.put(ret[0][i], ret[1][i]);
+		}
 	}
 	
 	public String[][] getChangableStats(){
 		//These need to all be the same length
 		String[] stats = defaultKeys;
-		String[] stats_val = new String[]{"Localhost", "database5", "user", "5", "1", "/usr/bin/", this.rootfolder+"blas_db"+slash,"/usr/bin/ESTscan", rootfolder+FileViewerModel.filename};
+		String[] stats_val = new String[]{"Localhost", DatabaseManager.default_database, System.getProperty("user.name"),  "5", "1", "/usr/bin/", this.rootfolder+"blas_db"+slash,"/usr/bin/ESTscan", rootfolder+FileViewerModel.filename};
 		String[] tool_tips = new String[]{"Host Database IP/Name", "Database Name", "Database Username","Max number of auxiliary threads","Max number of primary threads", "Directory that contains blast executables", 
 				"XML file which list current files in project", "Location of the ESTScan executable", "File XML list location"};
 		String[][] ret = new String[3][stats.length];
@@ -447,7 +453,7 @@ public class PropertyLoader implements Module{
 	
 	public String[][] getUnchangableStats(){
 		String[] stats = defaultKeysUN;
-		String[] stats_val = new String[]{defaultlnf, rootfolder+"Modules"+slash, guiversion+""};
+		String[] stats_val = new String[]{defaultlnf, rootfolder+"Modules"+slash, guiversion+"","mysql","com.mysql.jdbc.Driver"};
 		String[][] ret = new String[2][stats.length];
 		ret[0] = stats;
 		ret[1] = stats_val;
@@ -501,6 +507,16 @@ public class PropertyLoader implements Module{
 	
 	public static double getFullVersion(){
 		return guiversion+engineversion;
+	}
+	
+	public String[] getDBSettings(){
+		String[] s = new String[5];
+		s[0]=this.getProp("DBTYPE");
+		s[1] =this.getProp("DBDRIVER");
+		s[2] =this.getProp("DBHOST");
+		s[3] =this.getProp("DBNAME");
+		s[4] =this.getProp("DBUSER");
+		return s;
 	}
 	
 	/****************************************************************************/

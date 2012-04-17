@@ -24,6 +24,7 @@ public class FastaParser {
 		shorttitles =false;
 	}
 	public FastaParser(FastaHandler handler){
+		shorttitles = false;
 		this.handler = handler;
 	}
 	
@@ -48,7 +49,7 @@ public class FastaParser {
 					sequence = new StringBuilder();
 					quality = new StringBuilder();
 				}
-				if(this.shorttitles && title.indexOf(" ") != 0){
+				if(this.shorttitles && line.indexOf(" ") != 0){
 					title = line.substring(1, line.indexOf(" "));
 				}
 				else{
@@ -126,7 +127,7 @@ public class FastaParser {
 						sequence = new StringBuilder();
 						count++;
 					}
-					if(this.shorttitles && title.indexOf(" ") != 0){
+					if(this.shorttitles && line.indexOf(" ") != 0){
 						title = line.substring(1, line.indexOf(" "));
 					}
 					else{
@@ -144,7 +145,7 @@ public class FastaParser {
 						sequence = new StringBuilder();
 						count2++;
 					}
-					if(this.shorttitles && title.indexOf(" ") != 0){
+					if(this.shorttitles && line.indexOf(" ") != 0){
 						title = line.substring(1, line.indexOf(" "));
 					}
 					else{
@@ -197,7 +198,7 @@ public class FastaParser {
 					sequence = new StringBuilder();
 					count++;
 				}
-				if(this.shorttitles && title.indexOf(" ") != 0){
+				if(this.shorttitles && line.indexOf(" ") != 0){
 					title = line.substring(1, line.indexOf(" "));
 				}
 				else{
