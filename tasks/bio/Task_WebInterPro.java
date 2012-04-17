@@ -16,9 +16,6 @@ public class Task_WebInterPro extends TaskXT{
 	public void buildOptions(){
 		options = new Options();
 		options.addOption(new Option("opts", false, "Help Menu for this specific task"));
-		options.addOption("async", "async", false, "perform an asynchronous job");
-		options.addOption("polljob", "polljob", false, "poll for the status of an asynchronous job and get the results");
-		options.addOption("status", "status", false, "poll for the status of an asynchronous job");
 		options.addOption("email", "email", true, "Your email address");
 		options.addOption("stdout", "stdout", false, "print to standard output");
 		options.addOption("outfile", "output", true, "file name to save the results");
@@ -98,7 +95,9 @@ public class Task_WebInterPro extends TaskXT{
 					}
 	            } 
 	            else{
-	            	logger.error("Error running/parsing the file for Interpro");
+	            	logger.error("Not enough input variables for Interpro");
+	            	logger.warn("Note! This Task uses '-sequences' as the input tag, not -'i'");
+	            	logger.warn("Note! Tag multifasta must be used if multifasta");
 	            }
 	        }
         }
