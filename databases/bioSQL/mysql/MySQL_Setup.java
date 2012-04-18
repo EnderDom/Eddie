@@ -1,6 +1,7 @@
 package databases.bioSQL.mysql;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -14,10 +15,36 @@ public class MySQL_Setup implements Setup{
 
 
 	public boolean addEddie2Database(Connection con) {
-		// TODO Auto-generated method stub
-		return false;
+		String insert = new String("INSERT INTO `biodatabase` (`name`, `authority`, `description`) VALUES ('"+Setup.programname+"', '"+Setup.authority+"', '"+Setup.description+"')");
+		try{
+			Statement st = con.createStatement();
+			st.executeUpdate(insert);
+			st.close();
+			return true;
+		}
+		catch(SQLException se){
+			Logger.getRootLogger().error("Failed to create biodatabase table", se);
+			return false;
+		}
 	}
 	
+	public int getEddieFromDatabase(Connection con){
+		String insert = new String("SELECT biodatabase_id FROM biodatabase WHERE name='"+Setup.programname+"';");
+		int db =-1;
+		try{
+			Statement st = con.createStatement();
+			ResultSet set = st.executeQuery(insert);
+			while(set.next()){
+				db = set.getInt("biodatabase_id");
+			}
+			st.close();
+		}
+		catch(SQLException se){
+			Logger.getRootLogger().error("Failed to create biodatabase table", se);
+			
+		}
+		return db;
+	}
 	
 	public boolean addLegacyVersionTable(Connection con, String version, String dbversion) {
 		String info_table = "CREATE TABLE IF NOT EXISTS `info` ("+

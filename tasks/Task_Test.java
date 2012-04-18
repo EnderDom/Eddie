@@ -14,9 +14,8 @@ import net.sf.samtools.SAMRecord;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.log4j.Logger;
-
-import databases.bioSQL.BioSQLBuilder;
-import databases.manager.DatabaseManager;
+import org.biojava.bio.seq.DNATools;
+import org.biojava.bio.symbol.Alphabet;
 
 import bio.assembly.ACEFileParser;
 import bio.assembly.ACERecord;
@@ -52,11 +51,13 @@ public class Task_Test extends Task{
 		try{
 			System.out.println("Running test");
 			
-			DatabaseManager manager = this.ui.getDatabaseManager();
-			manager.createAndOpen(load.getProp("DBNAME"));
-			BioSQLBuilder build = new BioSQLBuilder(manager);
-			build.buildBioSQL4MySQL();
-			manager.close();
+			//DatabaseManager manager = this.ui.getDatabaseManager();
+			
+			//manager.open();
+			
+			Alphabet s = DNATools.createDNA("ATAG").getAlphabet();
+			System.out.println(s.getName());
+			//manager.close();
 		}
 		catch(Exception e){
 			e.printStackTrace();

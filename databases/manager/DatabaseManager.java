@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.log4j.Logger;
-
 import ui.PropertyLoader;
 import ui.UI;
 
@@ -19,15 +18,21 @@ public class DatabaseManager {
 	String database;
 	public static String default_database = "biosql_eddie";
 	private String password;
-	
+	@SuppressWarnings("unused")
+	private String dbtype;
 	
 	public DatabaseManager(UI ui){
 		this.ui = ui;
 		this.loader= ui.getPropertyLoader();
 	}
 
+	public void open(){
+		this.openDefaultConnection(true);
+	}
+	
 	public Connection openConnection(String dbtype, String driver, String dbhost, String dbname, String dbuser, String dbpass, boolean dbnom){
 		try{
+			this.dbtype=dbtype;
 			Class.forName(driver).newInstance();
 			String mys = "jdbc:"+dbtype+"://"+dbhost;
 			if(dbnom){
@@ -105,5 +110,5 @@ public class DatabaseManager {
 			return false;
 		}
 	}
-	
+
 }
