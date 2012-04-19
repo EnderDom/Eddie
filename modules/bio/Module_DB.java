@@ -4,21 +4,22 @@ import gui.EddieGUI;
 
 import org.apache.log4j.Logger;
 
-import tasks.database.adminBioSQLDB;
+import tasks.database.Task_Assembly2DB;
+import tasks.database.Task_BioSQLDB;
 import cli.EddieCLI;
 import modules.Module_Basic;
 
 public class Module_DB extends Module_Basic{
 	
 	//Change to Options ...?
-	protected String[] tasks = new String[]{"bioSQLadmin"}; 
-	protected String[] taskinfo = new String[]{"Builds/Modifies the Default bioSQL Database for Eddie"};
+	protected String[] tasks = new String[]{"sqladmin", "sqluploader"}; 
+	protected String[] taskinfo = new String[]{"Builds/Modifies the Default bioSQL Database for Eddie", "Upload Stuff to the Database"};
 	
 	/*
 	 * This needs to match the class ->
 	 * Will not be changed if class name is changed!!!
 	 */
-	protected String[] classes = new String[]{adminBioSQLDB.class.getName()};
+	protected String[] classes = new String[]{Task_BioSQLDB.class.getName(), Task_Assembly2DB.class.getName()};
 	
 	protected String[] actions;
 	

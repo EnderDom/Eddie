@@ -107,4 +107,5 @@ public class TaskXT extends Task{
 		logger.trace("Filetype detected as " + filetype_val);
 		return filetype_val;
 	}
+
 }

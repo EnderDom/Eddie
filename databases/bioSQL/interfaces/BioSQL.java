@@ -36,15 +36,19 @@ public interface BioSQL {
 	 * Alphabet s = DNATools.createDNA("ATAG").getAlphabet();
 			System.out.println(s.getName());
 	 */
-	public boolean addBiosequence(Connection con, int version, int length, String alphabet, String seq,  int bioentry_id);
+	public boolean addBiosequence(Connection con, Integer version, Integer length, String alphabet, String seq,  int bioentry_id);
 	
-	public boolean addBioEntry(Connection con, int biodatabase, int taxon_id, String name, String accession, String identifier, String division, String description, int version);
+	public boolean addBioEntry(Connection con, int biodatabase, Integer taxon_id, String name, String accession, String identifier, String division, String description, int version);
 	
 	/*
 	 * Adds both the bioentry and biosequence in one method, should be preferable
 	 * as the BioSequence require bioentry id anyway. 
 	 */
-	public boolean addSequence(Connection con, int biodatabase, int taxon_id, String name, String accession, String identifier, String division, String description, int version, String seq, String alphabet);
+	public boolean addSequence(Connection con, int biodatabase, Integer taxon_id, String name, String accession, String identifier, String division, String description, int version, String seq, String alphabet);
+	
+	public boolean addOntology(Connection con, String name, String definition);
+	
+	public boolean addTerm(Connection con, String name, String definition, String identifier, Character is_obsolete, int ontology_id);
 	
 	/**
 	 * 
@@ -59,12 +63,15 @@ public interface BioSQL {
 	 * it is also non-null.
 	 * 
 	 * @return -1 where entry does not exists, 
-	 * -2 if identifier doesn't exist and accession does, but
-	 * accession is not unique
-	 * else returns table id value >0
+	 * -2 if identifier doesn't exist and accession does
+	 * 
 	 * 
 	 */
 	public int getBioEntry(Connection con, String identifier, String accession, int biodatabase);
 	
 	public int getOntology(Connection con, String name);
+	
+	public int getTerm(Connection con, String name, String identifier);
+	
+	
 }

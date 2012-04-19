@@ -63,7 +63,7 @@ public class Task_Test extends Task{
 			if(i == -1)bsxt.addEddie2Database(con);
 			i = bsxt.getEddieFromDatabase(con);
 			if(i != -1){
-				bs.addSequence(con, i, -1, "TEST1",
+				bs.addSequence(con, i, null, "TEST1",
 						"TEST1", null, null, null, 0, "ATGCGACTAG", BioSQL.alphabet_DNA);
 			}
 			else{

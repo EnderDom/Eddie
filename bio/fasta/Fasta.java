@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
@@ -54,7 +53,7 @@ public class Fasta implements FastaHandler, Sequences{
 		return fastq;
 	}
 
-	public HashMap<String, String> getSequences() {
+	public LinkedHashMap<String, String> getSequences() {
 		return sequences;
 	}
 
@@ -62,7 +61,7 @@ public class Fasta implements FastaHandler, Sequences{
 		this.sequences = sequences;
 	}
 
-	public HashMap<String, String> getQualities() {
+	public LinkedHashMap<String, String> getQualities() {
 		return qualities;
 	}
 
