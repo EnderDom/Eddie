@@ -8,14 +8,17 @@ import java.sql.Statement;
 import org.apache.log4j.Logger;
 
 import tools.Tools_System;
+import databases.bioSQL.interfaces.BioSQLExtended;
 
-import databases.bioSQL.interfaces.Setup;
+public class MySQL_Extended implements BioSQLExtended{
 
-public class MySQL_Setup implements Setup{
-
-
+	
+	private static String assembly = "SEQUENCEASSEMBLY";
+	private static String description = "Eddie Linker Reference, used to to link Assembly terms";
+	private int assemblyid =-1;
+	
 	public boolean addEddie2Database(Connection con) {
-		String insert = new String("INSERT INTO `biodatabase` (`name`, `authority`, `description`) VALUES ('"+Setup.programname+"', '"+Setup.authority+"', '"+Setup.description+"')");
+		String insert = new String("INSERT INTO `biodatabase` (`name`, `authority`, `description`) VALUES ('"+programname+"', '"+authority+"', '"+description+"')");
 		try{
 			Statement st = con.createStatement();
 			st.executeUpdate(insert);
@@ -29,7 +32,7 @@ public class MySQL_Setup implements Setup{
 	}
 	
 	public int getEddieFromDatabase(Connection con){
-		String insert = new String("SELECT biodatabase_id FROM biodatabase WHERE name='"+Setup.programname+"';");
+		String insert = new String("SELECT biodatabase_id FROM biodatabase WHERE name='"+programname+"';");
 		int db =-1;
 		try{
 			Statement st = con.createStatement();
@@ -67,6 +70,42 @@ public class MySQL_Setup implements Setup{
 			return false;
 		}
 		
+	}
+
+	public boolean addBioEntrySynonymTable(Connection con) {
+		String table = "CREATE TABLE bioentry_synonym (" +
+				"bioentry_synonym_id INT(10) UNSIGNED NOT NULL auto_increment," +
+				"bioentry_id	    INT(10) UNSIGNED NOT NULL," +
+			  	"identifier   	VARCHAR(40) BINARY, " +
+				"PRIMARY KEY (bioentry_synonym_id)," +
+			 	"UNIQUE (identifier)" +
+			") TYPE=INNODB;";
+		try{
+			Statement st = con.createStatement();
+			st.executeUpdate(table);
+			st.close();
+			return true;
+		}
+		catch(SQLException se){
+			Logger.getRootLogger().error("Failed to create bioentry_synonym table", se);
+			return false;
+		}
+	}
+	
+	public boolean setupAssembly(MySQL_BioSQL boss, Connection con){
+		this.assemblyid=boss.getOntology(con, assembly);
+		if(this.assemblyid<0){
+			return boss.addOntology(con, assembly, description) ?
+					((this.assemblyid=boss.getOntology(con, assembly))> -1) : false;
+		}
+		else{
+			return true;
+		}
+	}
+	
+	public boolean addAssemblyTerm(){
+		
+		return true;
 	}
 
 }

@@ -6,6 +6,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.log4j.Logger;
+
+import databases.bioSQL.interfaces.BioSQL;
+import databases.bioSQL.interfaces.BioSQLExtended;
+import databases.bioSQL.mysql.MySQL_BioSQL;
+import databases.bioSQL.mysql.MySQL_Extended;
+//import databases.bioSQL.pgsql.PgSQL_BioSQL;
+//import databases.bioSQL.pgsql.PgSQL_Extended;
 import ui.PropertyLoader;
 import ui.UI;
 
@@ -18,8 +25,9 @@ public class DatabaseManager {
 	String database;
 	public static String default_database = "biosql_eddie";
 	private String password;
-	@SuppressWarnings("unused")
 	private String dbtype;
+	private BioSQL biosql;
+	private BioSQLExtended biosqlext;
 	
 	public DatabaseManager(UI ui){
 		this.ui = ui;
@@ -109,6 +117,36 @@ public class DatabaseManager {
 			logger.error("Failed to close Connection"+sqle);
 			return false;
 		}
+	}
+	
+	public BioSQL getBioSQL(){
+		if(this.biosql == null){
+			if(this.dbtype.equals("mysql")){
+				this.biosql = new MySQL_BioSQL();
+			}
+			else if(this.biosql.equals("postgresql")){
+				//this.biosql = new PgSQL_BioSQL();
+			}
+			else{
+				logger.warn("Database type not set or not recognised");
+			}
+		}
+		return this.biosql;
+	}
+	
+	public BioSQLExtended getBioSQLXT(){
+		if(this.biosqlext == null){
+			if(this.dbtype.equals("mysql")){
+				this.biosqlext = new MySQL_Extended();
+			}
+			else if(this.biosql.equals("postgresql")){
+				//this.biosqlext = new PgSQL_Extended();
+			}
+			else{
+				logger.warn("Database type not set or not recognised");
+			}
+		}
+		return this.biosqlext;
 	}
 
 }

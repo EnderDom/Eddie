@@ -3,6 +3,7 @@ package tasks;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -14,8 +15,10 @@ import net.sf.samtools.SAMRecord;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.log4j.Logger;
-import org.biojava.bio.seq.DNATools;
-import org.biojava.bio.symbol.Alphabet;
+
+import databases.bioSQL.interfaces.BioSQL;
+import databases.bioSQL.interfaces.BioSQLExtended;
+import databases.manager.DatabaseManager;
 
 import bio.assembly.ACEFileParser;
 import bio.assembly.ACERecord;
@@ -51,13 +54,22 @@ public class Task_Test extends Task{
 		try{
 			System.out.println("Running test");
 			
-			//DatabaseManager manager = this.ui.getDatabaseManager();
-			
-			//manager.open();
-			
-			Alphabet s = DNATools.createDNA("ATAG").getAlphabet();
-			System.out.println(s.getName());
-			//manager.close();
+			DatabaseManager manager = this.ui.getDatabaseManager();
+			manager.open();
+			BioSQL bs = manager.getBioSQL();
+			BioSQLExtended bsxt = manager.getBioSQLXT();
+			Connection con = manager.getCon();
+			int i = bsxt.getEddieFromDatabase(con);
+			if(i == -1)bsxt.addEddie2Database(con);
+			i = bsxt.getEddieFromDatabase(con);
+			if(i != -1){
+				bs.addSequence(con, i, -1, "TEST1",
+						"TEST1", null, null, null, 0, "ATGCGACTAG", BioSQL.alphabet_DNA);
+			}
+			else{
+				logger.error("Failed to add Eddie to biodatabase in the database");
+			}
+			manager.close();
 		}
 		catch(Exception e){
 			e.printStackTrace();
