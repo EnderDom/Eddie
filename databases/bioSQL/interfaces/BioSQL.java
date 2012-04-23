@@ -50,6 +50,12 @@ public interface BioSQL {
 	
 	public boolean addTerm(Connection con, String name, String definition, String identifier, Character is_obsolete, int ontology_id);
 	
+	public boolean addBioEntryRelationship(Connection con, int object_bioentry_id, int subject_bioentry_id, int term_id, Integer rank);
+	
+	public boolean addSeqFeature(Connection con, int bioentry_id, int type_term_id, int source_term_id, String display_name, int rank);
+	
+	public boolean addLocation(Connection con, int seqfeature_id, Integer dbxref_id, Integer term_id, Integer start_pos, Integer stop_pos, int strand, int rank);
+	
 	/**
 	 * 
 	 * Input is the identifier and/or accession,  
@@ -73,5 +79,6 @@ public interface BioSQL {
 	
 	public int getTerm(Connection con, String name, String identifier);
 	
+	public int getSeqFeature(Connection con, int bioentry_id, int type_term_id, int source_term_id, int rank);
 	
 }

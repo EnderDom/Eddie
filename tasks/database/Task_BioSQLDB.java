@@ -42,10 +42,12 @@ public class Task_BioSQLDB extends Task{
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		
 		DatabaseManager manager = this.ui.getDatabaseManager();
+		manager.createAndOpen();
 		int biodatabase_id = manager.getEddieDBID();
 		if(biodatabase_id > -1){
 			if(setup){
 				setup(manager);
+				logger.info("Done setting Up");
 			}
 			else{
 				logger.warn("No option set");
@@ -101,6 +103,7 @@ public class Task_BioSQLDB extends Task{
 	
 	public boolean setup(DatabaseManager manager){
 		if(canProceedwithSetup(manager)){
+			logger.debug("Setting up database");
 			BioSQLExtended bsxt = manager.getBioSQLXT();
 			bsxt.addLegacyVersionTable(manager.getCon(),new String(PropertyLoader.getFullVersion()+""), new String(DatabaseManager.getDatabaseversion()+""));
 			return bsxt.setupAssembly(manager.getBioSQL(), manager.getCon());

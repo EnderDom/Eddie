@@ -200,6 +200,10 @@ public class ACERecord implements Cloneable {
 		return l;		
 	}
 	
+	public String getReadName(int index){
+		return this.readnames[index];
+	}
+	
 	public int getNoOfReads(){
 		return this.readnames.length;
 	}
@@ -258,4 +262,7 @@ public class ACERecord implements Cloneable {
 		return r;
 	}
 	
+	public char getReadCompliment(int read){
+		return this.compliments[read];
+	}
 }

@@ -9,10 +9,13 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 
+import bio.assembly.ACEFileParser;
+import bio.assembly.ACERecord;
 import bio.fasta.Fasta;
 import bio.fasta.FastaParser;
 
 import databases.bioSQL.interfaces.BioSQL;
+import databases.bioSQL.interfaces.BioSQLExtended;
 import databases.manager.DatabaseManager;
 
 import tasks.TaskXT;
@@ -35,7 +38,12 @@ public class Task_Assembly2DB extends TaskXT{
 
 	UI ui;
 	private boolean uploadreads;
+	private boolean uploadcontigs;
+	private boolean mapcontigs;
+	private boolean unpad;
 	private String identifier;
+	private String division;
+	private String programid;
 	
 	public Task_Assembly2DB(){
 		setHelpHeader("--This is the Help Message for the Assemby2DB Task--");
@@ -44,15 +52,29 @@ public class Task_Assembly2DB extends TaskXT{
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
 		if(cmd.hasOption("uploadreads"))uploadreads=true;
+		if(cmd.hasOption("uploadcontigs"))uploadcontigs=true;
+		if(cmd.hasOption("mapcontigs"))mapcontigs=true;
 		if(cmd.hasOption("identifier"))this.identifier=cmd.getOptionValue("identifier");
+		if(cmd.hasOption("division"))this.division=cmd.getOptionValue("division");
+		if(cmd.hasOption("programid"))this.programid=cmd.getOptionValue("programid");
+		if(cmd.hasOption("unpad"))this.unpad = true;
+		if(this.division == null)this.division = "EDDSEQ";
+		if(this.division.length() > 6){
+			this.division = this.division.substring(0,6);
+		}
+		
 	}
 	
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("u","uploadreads", false, "Uploads a read Fasta or Fastq file"));
+		options.addOption(new Option("c","uploadcontigs", false, "Uploads a contigs from ACE (run separate from uploadreads)"));
+		options.addOption(new Option("m","mapcontigs", false, "Map Contigs to reads, reads should have been uploaded, can be done in parallel with -c"));
 		options.addOption(new Option("id","identifier", true, "Uses this as the base identifier"));
 		//options.addOption(new Option("species", false, "Drags out the default Species")); //TODO
 		//options.addOption(new Option("taxon_id", false, "Set the taxon_id"));
+		options.addOption(new Option("division", true, "Set 6 letter division ie DIGEST or NEURAL or CLCBIO"));
+		options.addOption(new Option("pid","programid", true, "Set Assembly program name, used as unique identifier"));
 	}
 	
 	public Options getOptions(){
@@ -88,14 +110,16 @@ public class Task_Assembly2DB extends TaskXT{
 						int biodatabase_id = manager.getEddieDBID();
 						logger.debug("Bio Database id: "+biodatabase_id);
 						if(biodatabase_id < 0){
-							logger.error("No Biodatase entry for Eddie");
+							logger.error("Nobiodatase entry for Eddie");
 							return;
 						}
 						int count =0;
 						int size = sequences.size();
 						logger.debug("Uploading....");
 						for(String s : sequences.keySet()){
-							if(!bs.addSequence(manager.getCon(), biodatabase_id, null, s, s, this.identifier+count, "READ", null, 1, sequences.get(s), BioSQL.alphabet_DNA))break;
+							String seq = sequences.get(s);
+							if(unpad)seq.replaceAll("\\*", "");
+							if(!bs.addSequence(manager.getCon(), biodatabase_id, null, s, s, this.identifier+count, division, null, 1, seq, BioSQL.alphabet_DNA))break;
 							count++;
 							System.out.print("\r"+(count) + " of " +size + "       ");
 						}
@@ -112,6 +136,50 @@ public class Task_Assembly2DB extends TaskXT{
 					logger.error("File "+ input + " does not exist");
 				}
 			}
+			else if(uploadcontigs){
+				File file = new File(this.input);
+				if(file.exists()){
+					if(filetype == null)this.filetype =detectFileType(input);
+					if(this.filetype.equals("ACE")){
+						BioSQL bs = manager.getBioSQL();
+						int biodatabase_id = manager.getEddieDBID();
+						logger.debug("Biodatabase id: "+biodatabase_id);
+						if(biodatabase_id < 0){
+							logger.error("No Biodatase entry for Eddie");
+							return;
+						}
+						int pid = bs.getTerm(manager.getCon(), this.programid, this.programid);
+						if(pid < 0)manager.getBioSQLXT().addAssemblerTerm(bs, manager.getCon(), programid);
+						try{
+							ACEFileParser parser = new ACEFileParser(file);
+							ACERecord record = null;
+							int count =0;
+							while(parser.hasNext()){
+								record = parser.next();
+								String name = record.getContigName();
+								String seq = record.getConsensusAsString();
+								if(unpad)seq.replaceAll("-", "");
+								if(!bs.addSequence(manager.getCon(), biodatabase_id, null, name, name, this.identifier+count, division, record.getContigName(), 0, seq, BioSQL.alphabet_DNA))break;
+								if(mapcontigs){
+									mapReads(record, manager, this.identifier+count, biodatabase_id, pid);
+								}
+								count++;
+								System.out.print("\r"+(count) + " " + name + "      ");
+							}
+							System.out.println();
+						}
+						catch(IOException io){
+							logger.error("Failed to parse file "+this.input+" as ACE", io);
+						}
+					}
+					else{
+						logger.warn("Sorry the filetype " + this.filetype + " is not supported yet.");
+					}
+				}
+				else{
+					logger.error("File " + this.input + " does not exist");
+				}
+			}
 			else{
 				logger.error("No option selected");
 			}
@@ -123,6 +191,33 @@ public class Task_Assembly2DB extends TaskXT{
 		
 		Logger.getRootLogger().debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
+	}
+	
+	public void mapReads(ACERecord record, DatabaseManager manager, String identifier, int biodatabase_id, int programid){
+		BioSQL bs = manager.getBioSQL();
+		BioSQLExtended bsxt = manager.getBioSQLXT();
+		int bioentry_id = bs.getBioEntry(manager.getCon(), identifier, null, biodatabase_id);
+		for(int i =0; i < record.getNoOfReads() ; i++){
+			String read = record.getReadName(i);
+			int read_id = bs.getBioEntry(manager.getCon(), read, read, biodatabase_id);
+			if(read_id < 0){
+				logger.error("Oh dear read "+ read + " does not seem to be in the database we cannot map reads not int the db");
+				return;
+			}
+			else{
+				int offset = record.getReadOffset(i);
+				int start = record.getReadRangePadded(i)[0]+offset;
+				int end = record.getReadRangePadded(i)[1]+offset;
+				char c = record.getReadCompliment(i);
+				int comp = 0;
+				if(c == 'C'){
+					comp = 1;
+					//TODO add better strand info
+				}
+				bsxt.mapRead2Contig(manager.getCon(), bs, bioentry_id, read_id, programid, start, end, comp);
+			}
+		}
+		
 	}
 	
 	public boolean wantsUI(){
