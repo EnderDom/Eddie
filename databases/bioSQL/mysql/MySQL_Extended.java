@@ -118,15 +118,15 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 	
 	public boolean setupAssembly(BioSQL boss, Connection con){
-		if(addAssemblyOntology(boss, con)){
-			return addAssemblyTerm(boss, con);
+		if(addDefaultAssemblyOntology(boss, con)){
+			return addDefaultAssemblyTerm(boss, con);
 		}
 		else{
 			return false;
 		}
 	}
 	
-	public boolean addAssemblyOntology(BioSQL boss, Connection con){
+	public boolean addDefaultAssemblyOntology(BioSQL boss, Connection con){
 		this.assemblyontid=boss.getOntology(con, ontology_name);
 		if(this.assemblyontid<0){
 			return boss.addOntology(con, ontology_name, description) ?
@@ -137,12 +137,12 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 	}
 
-	public boolean addAssemblyTerm(BioSQL boss, Connection con){
+	public boolean addDefaultAssemblyTerm(BioSQL boss, Connection con){
 		int ontology = this.getDefaultAssemblyOntology(boss, con);
-		this.assemblytermid = boss.getTerm(con, term_name, term_name);
+		this.assemblytermid = boss.getTerm(con, term_name_id, term_name_id);
 		if(this.assemblytermid < 0){
-			return boss.addTerm(con, term_name, ontology_name, term_name, null,ontology) ?
-					((this.assemblytermid=boss.getTerm(con, term_name, term_name)) > -1) : false;
+			return boss.addTerm(con, term_name_id, term_description, term_name_id, null,ontology) ?
+					((this.assemblytermid=boss.getTerm(con, term_name_id, term_name_id)) > -1) : false;
 		}
 		else{
 			return true;
@@ -154,7 +154,7 @@ public class MySQL_Extended implements BioSQLExtended{
 		int termid = boss.getTerm(con, name, name);
 		if(termid < 0){
 			return boss.addTerm(con, name, assemblerdescription, name, null,ontology) ?
-					((this.assemblytermid=boss.getTerm(con, name, name)) > -1) : false;
+					((termid=boss.getTerm(con, name, name)) > -1) : false;
 		}
 		else{
 			return true;
@@ -163,14 +163,18 @@ public class MySQL_Extended implements BioSQLExtended{
 	
 	public int getDefaultAssemblyOntology(BioSQL boss, Connection con){
 		if(this.assemblyontid == -1){
-			this.assemblyontid = boss.getOntology(con, ontology_name);
+			if(!addDefaultAssemblyOntology(boss, con)){
+				Logger.getRootLogger().error("Adding the Default Ontology term has failed");
+			}
 		}
 		return this.assemblyontid;
 	}
 
 	public int getDefaultAssemblyTerm(BioSQL boss, Connection con){
 		if(this.assemblytermid == -1){
-			this.assemblytermid = boss.getTerm(con, term_name, term_name);
+			if(!addDefaultAssemblyTerm(boss, con)){
+				Logger.getRootLogger().error("Adding the Default Assembly Term has failed");
+			}
 		}
 		return this.assemblytermid;
 	}
@@ -191,10 +195,18 @@ public class MySQL_Extended implements BioSQLExtended{
 	 */
 	public boolean mapRead2Contig(Connection con, BioSQL boss, int contig_id, int read_id, int programid, int start, int stop, int strand){
 		int term_id = this.getDefaultAssemblyTerm(boss, con);
-		boss.addBioEntryRelationship(con, contig_id, read_id, term_id, 0);
-		boss.addSeqFeature(con, read_id, term_id, programid, assmbledread, 0);
+		
+		if(!boss.addBioEntryRelationship(con, contig_id, read_id, term_id, 0)){
+			return false;
+		}
+		if(!boss.addSeqFeature(con, read_id, term_id, programid, assmbledread, 0)){
+			return false;
+		}
 		int seqfeature_id = boss.getSeqFeature(con, read_id, term_id, programid, 0);
-		if(seqfeature_id < 0)return false;
+		if(seqfeature_id < 0){
+			Logger.getRootLogger().error("SeqFeature Id was not retrieved");
+			return false;
+		}
 		else return boss.addLocation(con, seqfeature_id, null, term_id, start, stop, strand, 0);
 	}
 

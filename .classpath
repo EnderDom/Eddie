@@ -25,5 +25,8 @@
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/biojava1.8/blast-1.8.1.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/lib/biojava1.8/blast-1.8.1-sources.jar"/>
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/biojava1.8/core-1.8.1.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/lib/biojava1.8/core-1.8.1-sources.jar"/>
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/SQL/mysql-connector-java-5.1.6.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/pdfbox/pdfbox-1.6.0.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/lib/pdfbox/pdfbox-1.6.0-src.zip"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/pdfbox/fontbox-1.6.0.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/jfreechart/jfreechart-1.0.14.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

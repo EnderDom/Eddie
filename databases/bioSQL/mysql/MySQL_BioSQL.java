@@ -169,7 +169,7 @@ public class MySQL_BioSQL implements BioSQL{
 			return true;
 		}
 		catch(SQLException sq){
-			logger.error("Failed to add Entry_Relationship with ", sq);
+			logger.error("Failed to add Entry_Relationship " + BioEntryRelationshipSET.toString(), sq);
 			return false;
 		}
 	}
@@ -187,7 +187,7 @@ public class MySQL_BioSQL implements BioSQL{
 			return true;
 		}
 		catch(SQLException sq){
-			logger.error("Failed to add seqfeature ", sq);
+			logger.error("Failed to add seqfeature "+SeqFeatureSET.toString(), sq);
 			return false;
 		}
 	}
@@ -197,7 +197,7 @@ public class MySQL_BioSQL implements BioSQL{
 	*/
 	public boolean addLocation(Connection con, int seqfeature_id, Integer dbxref_id, Integer term_id, Integer start_pos, Integer stop_pos, int strand, int rank){
 		try{
-			LocationSET = init(con, LocationSET, "INSERT INTO location seqfeature_id,dbxref_id,term_id,start_pos,end_pos,strand,rank VALUES (?,?,?,?,?,?,?)");
+			LocationSET = init(con, LocationSET, "INSERT INTO location (seqfeature_id,dbxref_id,term_id,start_pos,end_pos,strand,rank) VALUES (?,?,?,?,?,?,?)");
 			LocationSET.setInt(1, seqfeature_id);
 			if(dbxref_id == null)LocationSET.setNull(2, Types.INTEGER);
 			else LocationSET.setInt(2, dbxref_id);
@@ -277,7 +277,7 @@ public class MySQL_BioSQL implements BioSQL{
 			return id;
 		}
 		catch(SQLException se){
-			logger.error("Failed to retrieve ontology id for " + name);
+			logger.error("Failed to retrieve ontology id for " + name, se);
 			return -2;
 		}
 	}
@@ -292,9 +292,10 @@ public class MySQL_BioSQL implements BioSQL{
 	 */
 	
 	public int getTerm(Connection con, String name, String identifier){
+		PreparedStatement stmt = null;
 		try{
 			int id=-1;
-			PreparedStatement stmt = con.prepareStatement("SELECT term_id FROM term WHERE name=?");
+			stmt = con.prepareStatement("SELECT term_id FROM term WHERE name=?");
 			if(name == null){
 				name = identifier;
 				stmt = con.prepareStatement("SELECT term_id FROM term WHERE identifier=?");
@@ -317,7 +318,7 @@ public class MySQL_BioSQL implements BioSQL{
 			return id;
 		}
 		catch(SQLException se){
-			logger.error("Failed to retrieve ontology id for " + name);
+			logger.error("Failed to retrieve ontology id for "+ name, se);
 			return -2;
 		}
 	}
@@ -325,19 +326,19 @@ public class MySQL_BioSQL implements BioSQL{
 	public int getSeqFeature(Connection con, int bioentry_id, int type_term_id, int source_term_id, int rank){
 		try{
 			int id=-1;
-			SeqfeatureGET = init(con, SeqfeatureGET, "SELECT seqfeature_id WHERE bioentry_id=? AND type_term_id=? AND source_term_id=? AND rank=?");
+			SeqfeatureGET = init(con, SeqfeatureGET, "SELECT seqfeature_id FROM seqfeature WHERE bioentry_id=? AND type_term_id=? AND source_term_id=? AND rank=?");
 			SeqfeatureGET.setInt(1, bioentry_id);
 			SeqfeatureGET.setInt(2, type_term_id);
 			SeqfeatureGET.setInt(3, source_term_id);
 			SeqfeatureGET.setInt(4, rank);
 			set = SeqfeatureGET.executeQuery();
 			while(set.next()){
-				set.getInt("seqfeature_id");
+				id = set.getInt("seqfeature_id");
 			}
 			return id;
 		}
 		catch(SQLException se){
-			logger.error("Failed to retrieve seqfeature id");
+			logger.error("Failed to retrieve seqfeature id "+SeqfeatureGET.toString(), se);
 			return -2;
 		}
 	}

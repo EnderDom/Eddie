@@ -1,0 +1,163 @@
+package output.pdf;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import org.apache.pdfbox.exceptions.COSVisitorException;
+import org.apache.pdfbox.io.RandomAccessFile;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.xobject.PDCcitt;
+import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
+import org.apache.pdfbox.pdmodel.graphics.xobject.PDXObjectImage;
+import org.jfree.chart.encoders.EncoderUtil;
+
+import tools.Tools_System;
+import ui.PropertyLoader;
+
+/**
+ * Currently Sketchy at best but does the job
+ * 
+ * @author Dominic Wood
+ *
+ */
+
+public class PDFBuilder {
+
+	PDDocument document;
+	PDPage currentpage;
+	PDPageContentStream contentStream;
+	int pagecount;
+	int linecount;
+	public static PDFont font = PDType1Font.HELVETICA_BOLD;
+	public static float margin = 10;
+	public static float lineheight = 15;
+	public float currentheight = 400;
+	private boolean includecredits =true;
+	
+	public PDFBuilder() throws IOException{
+		document = new PDDocument();
+	}
+	
+	//As with basicPDFTest but using methods
+	public void testPDFBuilder() throws IOException, COSVisitorException{
+		nextPage();
+		writeSingleLine( "Hello World" );
+		save("Hello World.pdf");
+	}
+	
+	//AS in http://pdfbox.apache.org/userguide/cookbook/creation.html#HelloWorld
+	public void basicPDFTest() throws IOException, COSVisitorException{
+		PDPage page = new PDPage(PDPage.PAGE_SIZE_A4);
+		document.addPage( page );
+		PDFont font1 = PDType1Font.HELVETICA_BOLD;
+		PDPageContentStream contentStream = new PDPageContentStream(document, page);
+
+		contentStream.beginText();
+		contentStream.setFont( font1, 12 );
+		contentStream.moveTextPositionByAmount( 100, 700 );
+		contentStream.drawString( "Hello World" );
+		contentStream.endText();
+		
+		contentStream.close();
+		document.save( "Hello World.pdf");
+	}
+	
+	public void drawImage(String filepath) throws IOException{
+		if(filepath.toLowerCase().endsWith(".jpg") || filepath.toLowerCase().endsWith(".jpeg")){
+			PDJpeg ob = new PDJpeg(document, new FileInputStream(new File(filepath)));
+			drawImage(ob);
+		}
+		else if(filepath.toLowerCase().endsWith(".tif") || filepath.toLowerCase().endsWith(".tiff")){
+			PDCcitt tif = new PDCcitt(document, new RandomAccessFile(new File(filepath),"r"));
+			drawImage(tif);
+		}
+		
+	}
+	
+	/*
+	 * Inputting BufferedImage into PDJpeg doesn't seem to work
+	 * So force into jpeg the reload
+	 */
+	
+	public void drawBufferedImage(BufferedImage img) throws IOException{
+		File f = File.createTempFile("JPEGIO", ".jpg");
+		EncoderUtil.writeBufferedImage(img, "jpeg", new FileOutputStream(f));
+        //create a new inputstream
+		PDXObjectImage ob = new PDJpeg(document, new FileInputStream(f));
+		
+		drawImage(ob);
+	}
+	
+	public void drawImage(PDXObjectImage ximage) throws IOException{
+		contentStream = new PDPageContentStream(document, currentpage, true, true);
+		contentStream.drawImage(ximage, margin, currentheight);
+		contentStream.close();
+		currentheight+=ximage.getHeight()+margin;	
+	}
+	
+	public void writeLines(String[] text) throws IOException{
+		contentStream = new PDPageContentStream(document, currentpage, true, true);
+		contentStream.beginText();
+		contentStream.setFont(font, 12 );
+		contentStream.moveTextPositionByAmount(margin, currentheight );
+		for(int i =0; i < text.length; i++){
+			contentStream.drawString(text[i]);
+			contentStream.moveTextPositionByAmount(0, lineheight);
+			linecount++;
+			currentheight+=lineheight;
+		}
+		contentStream.endText();
+		contentStream.close();
+	}
+	
+	public void writeSingleLine(String text) throws IOException{
+		contentStream = new PDPageContentStream(document, currentpage, true, true);
+		contentStream.beginText();
+		contentStream.setFont(font, 12 );
+		contentStream.moveTextPositionByAmount(margin, currentheight);
+		contentStream.drawString(text);
+		currentheight+=lineheight;
+		contentStream.endText();
+		contentStream.close();
+		linecount++;
+	}
+	
+	public void nextPage() throws IOException{
+		currentpage = new PDPage(PDPage.PAGE_SIZE_A4);
+		document.addPage(currentpage);
+		pagecount++;
+	}
+	
+	public void save(String filepath) throws COSVisitorException, IOException{
+		if(contentStream != null)contentStream.close();
+		if(isIncludecredits())addCredits();
+		document.save(filepath);
+		document.close();
+		document = null;
+	}
+
+	public boolean isIncludecredits() {
+		return includecredits;
+	}
+
+	public void setIncludecredits(boolean includecredits) {
+		this.includecredits = includecredits;
+	}
+	
+	private void addCredits() throws IOException{
+		nextPage();
+		currentheight = 10;
+		String[] strs = new String[]{"Author: Dominic Matthew Wood 2012", "Date: "+Tools_System.getDateNow(),"PDF Autogenerated by Eddie v"+PropertyLoader.getFullVersion()+
+				" using the PDFBox Apache Library"};
+		
+		writeLines(strs);
+	}
+	
+}

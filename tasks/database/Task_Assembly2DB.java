@@ -119,7 +119,7 @@ public class Task_Assembly2DB extends TaskXT{
 						for(String s : sequences.keySet()){
 							String seq = sequences.get(s);
 							if(unpad)seq.replaceAll("\\*", "");
-							if(!bs.addSequence(manager.getCon(), biodatabase_id, null, s, s, this.identifier+count, division, null, 1, seq, BioSQL.alphabet_DNA))break;
+							if(!bs.addSequence(manager.getCon(), biodatabase_id, null, s, s, this.identifier+count, division, null, 0, seq, BioSQL.alphabet_DNA))break;
 							count++;
 							System.out.print("\r"+(count) + " of " +size + "       ");
 						}
@@ -143,28 +143,38 @@ public class Task_Assembly2DB extends TaskXT{
 					if(this.filetype.equals("ACE")){
 						BioSQL bs = manager.getBioSQL();
 						int biodatabase_id = manager.getEddieDBID();
-						logger.debug("Biodatabase id: "+biodatabase_id);
 						if(biodatabase_id < 0){
 							logger.error("No Biodatase entry for Eddie");
 							return;
 						}
+						else logger.debug("Biodatabase id: "+biodatabase_id);
 						int pid = bs.getTerm(manager.getCon(), this.programid, this.programid);
 						if(pid < 0)manager.getBioSQLXT().addAssemblerTerm(bs, manager.getCon(), programid);
+						if(pid < 0){
+							logger.error("Failed to setup program id");
+							return;
+						}
+						else logger.debug("PID term for " + this.programid+ " returned as " + pid);
 						try{
 							ACEFileParser parser = new ACEFileParser(file);
 							ACERecord record = null;
 							int count =0;
+							boolean mapping = true;
 							while(parser.hasNext()){
 								record = parser.next();
 								String name = record.getContigName();
 								String seq = record.getConsensusAsString();
 								if(unpad)seq.replaceAll("-", "");
-								if(!bs.addSequence(manager.getCon(), biodatabase_id, null, name, name, this.identifier+count, division, record.getContigName(), 0, seq, BioSQL.alphabet_DNA))break;
-								if(mapcontigs){
-									mapReads(record, manager, this.identifier+count, biodatabase_id, pid);
+								if(!bs.addSequence(manager.getCon(), biodatabase_id, null, name, this.identifier+count, this.identifier+count, division, record.getContigName(), 0, seq, BioSQL.alphabet_DNA))break;
+								if(mapcontigs && mapping){
+									mapping = mapReads(record, manager, this.identifier+count, biodatabase_id, pid);
+									if(!mapping){
+										int j =ui.requiresUserYNI("Mapping failed for some reason, Continue uploading contigs without mapping to reads?", "Mapping Failure Message");
+										if(j != 0)return;
+									}
 								}
 								count++;
-								System.out.print("\r"+(count) + " " + name + "      ");
+								System.out.print("\r"+(count) + " : " + name + "      ");
 							}
 							System.out.println();
 						}
@@ -193,7 +203,7 @@ public class Task_Assembly2DB extends TaskXT{
 	    setComplete(finished);
 	}
 	
-	public void mapReads(ACERecord record, DatabaseManager manager, String identifier, int biodatabase_id, int programid){
+	public boolean mapReads(ACERecord record, DatabaseManager manager, String identifier, int biodatabase_id, int pid){
 		BioSQL bs = manager.getBioSQL();
 		BioSQLExtended bsxt = manager.getBioSQLXT();
 		int bioentry_id = bs.getBioEntry(manager.getCon(), identifier, null, biodatabase_id);
@@ -202,7 +212,7 @@ public class Task_Assembly2DB extends TaskXT{
 			int read_id = bs.getBioEntry(manager.getCon(), read, read, biodatabase_id);
 			if(read_id < 0){
 				logger.error("Oh dear read "+ read + " does not seem to be in the database we cannot map reads not int the db");
-				return;
+				return false;
 			}
 			else{
 				int offset = record.getReadOffset(i);
@@ -214,10 +224,14 @@ public class Task_Assembly2DB extends TaskXT{
 					comp = 1;
 					//TODO add better strand info
 				}
-				bsxt.mapRead2Contig(manager.getCon(), bs, bioentry_id, read_id, programid, start, end, comp);
+				System.out.print("\r"+"Mapping "+identifier+"... Read No."+i+"          ");
+				if(!bsxt.mapRead2Contig(manager.getCon(), bs, bioentry_id, read_id, pid, start, end, comp)){
+					logger.error("Read mapping has failed");
+					return false;
+				}
 			}
 		}
-		
+		return true;
 	}
 	
 	public boolean wantsUI(){

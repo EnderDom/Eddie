@@ -45,5 +45,20 @@ public class Tools_Math {
 		return y3;
 	}
 	
-
+	/**
+	 * 
+	 * @param values[0] = array of start values on the x axis
+	 * @param values[1] = array of lengths along the x axis corresponding to the start values
+	 * @return Maximum extent the above data reaches on the x axis
+	 */
+	public static int getMaxXValue(int[][] values){
+		int max = 0;
+		for(int i =0; i < values[0].length; i++){
+			if(values[0][i] + values[1][i] > max){
+				max =values[0][i] + values[1][i]; 
+			}
+		}
+		return max;
+	}
+	
 }

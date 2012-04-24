@@ -1,7 +1,6 @@
 package ui;
 
 import java.util.Stack;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.apache.log4j.Logger;
 
@@ -24,8 +23,8 @@ public class TaskManager extends Thread{
 	 * Note make sure priority of Tasks is set to the correct pool, 
 	 * else will start too many intensive task
 	 */
-	ScheduledThreadPoolExecutor Core; // Pool for Core tasks liking running blasts, so not too many threads run at the same time
-	ScheduledThreadPoolExecutor Auxil; //Pool for Auxiliary tasks, things like database accession and waiting on web requests
+	ExtendedExecutor Core; // Pool for Core tasks liking running blasts, so not too many threads run at the same time
+	ExtendedExecutor Auxil; //Pool for Auxiliary tasks, things like database accession and waiting on web requests
 	Stack<Task> futures;
 	private boolean started;
 	int taskcounter;
@@ -64,7 +63,7 @@ public class TaskManager extends Thread{
 		}
 	}
 	
-	private int pushTasks2Executor(ScheduledThreadPoolExecutor exe, Stack<Task> pops, Task[] currentTask, int limit){
+	private int pushTasks2Executor(ExtendedExecutor exe, Stack<Task> pops, Task[] currentTask, int limit){
 		//While Poollimit below number of working tasks
 		int submitted = 0;
 		for(int i =0; i < currentTask.length; i++){
@@ -81,7 +80,7 @@ public class TaskManager extends Thread{
 					currentTask[i] = pops.pop();
 					//Submit
 					exe.submit(currentTask[i]);
-
+					
 					submitted++;
 				}
 			}
@@ -120,8 +119,8 @@ public class TaskManager extends Thread{
 		log.debug("Task Manager has been started");
 		coretasklist = new Task[corepoollimit];
 		auxiltasklist = new Task[auxilpoollimit];
-		Core = new ScheduledThreadPoolExecutor(corepoollimit);
-		Auxil = new ScheduledThreadPoolExecutor(auxilpoollimit);
+		Core = new ExtendedExecutor(corepoollimit);
+		Auxil = new ExtendedExecutor(auxilpoollimit);
 		
 		while(AuxilTasks.size() > 0 || CoreTasks.size() > 0){
 			int newsubmit = 0;

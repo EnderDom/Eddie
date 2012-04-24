@@ -12,7 +12,7 @@ public interface BioSQLExtended {
 	
 	public static String ontology_name = "EDDIE_ASSEMBLY_LINKER";
 	public static String term_name_id = "Read Alignment";
-	public static String term_name = "Generic Term identifies the alignment of read (subject) to contig (object)";
+	public static String term_description = "Generic Term identifies the alignment of read (subject) to contig (object)";
 	
 	public static String assmbledread = "Assembled Read";
 	
@@ -30,9 +30,9 @@ public interface BioSQLExtended {
 	
 	public boolean setupAssembly(BioSQL boss, Connection con);
 	
-	public boolean addAssemblyOntology(BioSQL boss, Connection con);
+	public boolean addDefaultAssemblyOntology(BioSQL boss, Connection con);
 	
-	public boolean addAssemblyTerm(BioSQL boss, Connection con);
+	public boolean addDefaultAssemblyTerm(BioSQL boss, Connection con);
 	
 	public boolean addAssemblerTerm(BioSQL boss, Connection con, String name);
 	
