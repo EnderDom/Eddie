@@ -12,7 +12,9 @@ import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 import org.apache.pdfbox.exceptions.COSVisitorException;
 
-import databases.bioSQL.interfaces.BioSQL;
+import bio.objects.Contig;
+import bio.xml.XML_Blastx;
+
 import databases.bioSQL.interfaces.BioSQLExtended;
 import databases.manager.DatabaseManager;
 
@@ -21,6 +23,7 @@ import output.pdf.PDFBuilder;
 
 import tasks.MapManager;
 import tasks.Task;
+import tools.Tools_Array;
 import tools.Tools_File;
 import tools.Tools_System;
 import tools.bio.graphics.Tools_RoughImages;
@@ -42,6 +45,7 @@ public class Task_ContigComparison extends Task{
 	public DatabaseManager manager;
 	private UI ui;
 	private int database_id;
+	private String[] contignames;
 	
 	public Task_ContigComparison(){
 		setHelpHeader("--This is the Help Message for the ContigComparison Task--");
@@ -57,7 +61,17 @@ public class Task_ContigComparison extends Task{
 		if(cmd.hasOption("d2"))division2 = cmd.getOptionValue("d2");
 		if(cmd.hasOption("b1"))blastfolder1 = cmd.getOptionValue("b1");
 		if(cmd.hasOption("b2"))blastfolder2 = cmd.getOptionValue("b2");
-		
+		if(cmd.hasOption("i")){
+			contignames = Tools_File.quickRead(new File(cmd.getOptionValue("i"))).split(Tools_System.getNewline());
+		}
+		if(cmd.hasOption("c")){
+			if(contignames == null){
+				contignames = new String[]{cmd.getOptionValue("c")};
+			}
+			else{
+				Tools_Array.mergeStrings(contignames, new String[]{cmd.getOptionValue("c")});
+			}
+		}
 	}
 	
 	public void parseOpts(Properties props){
@@ -69,6 +83,9 @@ public class Task_ContigComparison extends Task{
 		//options.addOption(new Option("f","outformat", true, "Options currently are HTML"));
 		options.addOption(new Option("o","output", true, "Output file"));
 		options.addOption(new Option("d1","division1", true, "First 6-letter division ie CLCBIO"));
+		options.addOption(new Option("i","input", true, "List of contigs to report (Assumed division 1)," +
+				" as is in ACE file, separated by newline"));
+		options.addOption(new Option("c","contig", true, "First 6-letter division ie CLCBIO"));
 		options.addOption(new Option("d2","division2", true, "Second 6-letter division ie NEWBLE"));
 		options.addOption(new Option("b1","blast1", true, "Blast folder for the first input"));
 		options.addOption(new Option("b2","blast2", true, "Blast folder for the second input"));
@@ -83,6 +100,10 @@ public class Task_ContigComparison extends Task{
 		logger.debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		if(testmode){
 			runTest();
+			return;
+		}
+		if(contignames == null || contignames.length == 0){
+			logger.error("No contig(s) specified");
 			return;
 		}
 		File b1 = new File(blastfolder1);
@@ -110,22 +131,52 @@ public class Task_ContigComparison extends Task{
 		logger.info("Starting Mapping Sequences to blasts");
 		logger.debug("Checking for previous map");
 		
-	
-		contig2file1 = mapFiles(bsxt.getContigNameNIdentifier(manager.getCon(), division1), b1, blastfolder1, division1);
+		HashMap<String, String> name2id1 = bsxt.getContigNameNIdentifier(manager.getCon(), division1);
+		HashMap<String, String> name2id2 = bsxt.getContigNameNIdentifier(manager.getCon(), division2);
+		contig2file1 = mapFiles(name2id1, b1, blastfolder1, division1);
 		if(contig2file1 == null){
 			logger.error("Failed to map files for " + division1);
 			return;
 		}
-		contig2file2 = mapFiles(bsxt.getContigNameNIdentifier(manager.getCon(), division2), b2, blastfolder2, division2);
+		contig2file2 = mapFiles(name2id2, b2, blastfolder2, division2);
 		if(contig2file2 == null){
 			logger.error("Failed to map files for " + division2);
 			return;
 		}
 		File out = new File(output);
-		System.out.println("Road Out!");
+		File t = null; 
+		for(String s : name2id1.keySet()){
+			for(int i =0 ;i < contignames.length; i++){
+				if(contig2file1.get(s).equals(contignames[i])){
+					Contig contig = generateContig(s);
+					
+					t = new File(contig2file1.get(s));
+					if(t.exists()){
+						try {
+							XML_Blastx blastx = new XML_Blastx(t);
+						} 
+						catch (Exception e) {
+							logger.error("Failed to parse blast file " + t.getPath() + ", you sure this is a blast XML?");
+						}
+					}
+					else{
+						logger.error("File " + contig2file1.get(s) + " does not appear to exist!");
+					}
+				}
+			}
+		}
 		
+		System.out.println("Method still incomplete!");
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
+	}
+	
+	public Contig generateContig(String contig_identifier){
+		return null;//TODO
+	}
+		
+	public void getTopContig(String contig_identifier){
+		//TODO mysql shizzle
 	}
 	
 	public HashMap<String, String> mapFiles(HashMap<String, String> contig2file, File b, String bf, String division){
@@ -160,7 +211,6 @@ public class Task_ContigComparison extends Task{
 					}
 				}
 				mapman.addMap(division, bf, finalmap);
-				contig2file =null;
 				map = null;
 				return finalmap;
 			}
