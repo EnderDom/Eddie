@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -12,10 +13,12 @@ import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 import org.apache.pdfbox.exceptions.COSVisitorException;
 
-import bio.objects.Contig;
+import bio.objects.ContigXT;
 import bio.xml.XML_Blastx;
 
+import databases.bioSQL.interfaces.BioSQL;
 import databases.bioSQL.interfaces.BioSQLExtended;
+import databases.bioSQL.objects.ContigFactory;
 import databases.manager.DatabaseManager;
 
 
@@ -25,6 +28,7 @@ import tasks.MapManager;
 import tasks.Task;
 import tools.Tools_Array;
 import tools.Tools_File;
+import tools.Tools_String;
 import tools.Tools_System;
 import tools.bio.graphics.Tools_RoughImages;
 import tools.graphics.Tools_Image;
@@ -46,6 +50,8 @@ public class Task_ContigComparison extends Task{
 	private UI ui;
 	private int database_id;
 	private String[] contignames;
+	private BioSQLExtended bsxt; 
+	private BioSQL bs;
 	
 	public Task_ContigComparison(){
 		setHelpHeader("--This is the Help Message for the ContigComparison Task--");
@@ -95,6 +101,9 @@ public class Task_ContigComparison extends Task{
 		return this.options;
 	}
 	
+	/*
+	 * Status: Currently a bit shit
+	 */
 	public void run(){
 		setComplete(started);
 		logger.debug("Started running Assembly Task @ "+Tools_System.getDateNow());
@@ -125,8 +134,9 @@ public class Task_ContigComparison extends Task{
 		
 		logger.info("Checks complete, Continuing...");
 		database_id = manager.getEddieDBID();
-		BioSQLExtended bsxt = manager.getBioSQLXT();
-	
+		bsxt = manager.getBioSQLXT();
+		bs = manager.getBioSQL();
+		
 		logger.debug("Database ID: " + this.database_id);
 		logger.info("Starting Mapping Sequences to blasts");
 		logger.debug("Checking for previous map");
@@ -143,40 +153,91 @@ public class Task_ContigComparison extends Task{
 			logger.error("Failed to map files for " + division2);
 			return;
 		}
-		File out = new File(output);
-		File t = null; 
-		for(String s : name2id1.keySet()){
-			for(int i =0 ;i < contignames.length; i++){
-				if(contig2file1.get(s).equals(contignames[i])){
-					Contig contig = generateContig(s);
-					
-					t = new File(contig2file1.get(s));
-					if(t.exists()){
+		String assembler1 = bsxt.getNamesFromTerm(manager.getCon(), division1)[0];
+		String assembler2 = bsxt.getNamesFromTerm(manager.getCon(), division2)[0];
+		File t = null;
+		PDFBuilder builder = null;
+		try {
+			 builder = new PDFBuilder();
+		
+			for(String s : name2id1.keySet()){
+				for(int i =0 ;i < contignames.length; i++){
+					if(contig2file1.get(s).equals(contignames[i])){
+						logger.debug("Developing Conitg " + contignames[i]);
+						int contig_id = bs.getBioEntry(manager.getCon(), s, null, manager.getEddieDBID());
+						ContigFactory factory = new ContigFactory();
+						ContigXT contigxt = factory.getContigXT(manager,contig_id, division1);
+						contigxt = getTopContigAndColors(contigxt, division2);
+						int topcontigid = contigxt.getTopContig();
+						String[] topcontigname = bs.getBioEntryNames(manager.getCon(), topcontigid);
+						logger.debug("Top Contig is: " + topcontigname[0]);
+						ContigXT othercontig = factory.getContigXT(manager, topcontigid, division2);
+						othercontig = getTopContigAndColors(othercontig, division1);
+						othercontig.initColors();
+						contigxt.overlayContig(othercontig, topcontigid);
+						
+						logger.debug("Retrieving Blast Data");
+						t = new File(contig2file1.get(s));
 						try {
 							XML_Blastx blastx = new XML_Blastx(t);
+							contigxt.getBlastData(blastx);
 						} 
 						catch (Exception e) {
 							logger.error("Failed to parse blast file " + t.getPath() + ", you sure this is a blast XML?");
 						}
-					}
-					else{
-						logger.error("File " + contig2file1.get(s) + " does not appear to exist!");
+						logger.debug("About to retrieve top contig " + topcontigname[0]);
+						t = new File(contig2file2.get(topcontigname[0]));
+						
+						BufferedImage c1 = Tools_RoughImages.drawContigRough(contignames[i]+" - " + assembler1, false, contigxt.getReadPositions(), contigxt.getBlasts(), contigxt.getColors(), 10, 1);
+						BufferedImage c2 = Tools_RoughImages.drawContigRough(topcontigname[0] + " - " + assembler2, false, othercontig.getReadPositions(), othercontig.getBlasts(),  othercontig.getColors(), 10, 1);
+						BufferedImage c3 = Tools_Image.simpleMerge(c1, contigxt.getOffset(), c2, othercontig.getOffset(),10, Tools_RoughImages.background, Tools_RoughImages.defaultBGR);
+						builder.nextPage();
+						builder.drawBufferedImage(c3);
 					}
 				}
 			}
+		} 
+		catch (IOException e1) {
+			logger.error("Failed to start pdfbuilder", e1);
+			return;
 		}
-		
+		try{
+			builder.save(output+".pdf");
+		}
+		catch(IOException io){
+			logger.error("Failed to save pdf", io);
+			try{
+				logger.error("Attempting to save locally to OUT_DUMP.pdf");
+				builder.save("OUT_DUMP.pdf");
+			}
+			catch(IOException io2){
+				logger.error("Failed to save pdf, again", io);
+			}
+			catch (COSVisitorException e2) {
+				logger.error("Failed to save pdf, again", e2);
+			}
+		} 
+		catch (COSVisitorException e) {
+			logger.error("Failed to save pdf", e);
+		}
 		System.out.println("Method still incomplete!");
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
 	}
-	
-	public Contig generateContig(String contig_identifier){
-		return null;//TODO
-	}
 		
-	public void getTopContig(String contig_identifier){
-		//TODO mysql shizzle
+	public ContigXT getTopContigAndColors(ContigXT xt, String division){
+		
+		for(int i : xt.getReadIDs()){
+			int j = bsxt.getContigFromRead(manager.getCon(), i, division);
+			if(j > -2){
+				xt.setContig(i, j);
+			}
+			else logger.error("Error!!!");//TODO better error message
+		}
+		
+		xt.initColors();
+		
+		return xt;
 	}
 	
 	public HashMap<String, String> mapFiles(HashMap<String, String> contig2file, File b, String bf, String division){

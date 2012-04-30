@@ -2,15 +2,16 @@ package bio.objects;
 
 import bio.sequence.FourBitSequence;
 
-public class Contig {
+public class BasicContig {
 
-	private String name;
-	private String[] reads;
-	private FourBitSequence[] reads_seqs;
-	private int[][] reads_pos;
-	private short[] colors;
-	private int readcount;
-	private int readcounter;
+	protected String name;
+	protected String sequence;
+	protected String[] reads;
+	protected FourBitSequence[] reads_seqs;
+	protected int[][] reads_pos;
+	
+	protected int readcount;
+	protected int readcounter;
 	
 	/*
 	 * Bit of a rough and ready object created
@@ -19,10 +20,10 @@ public class Contig {
 	 * like Jalview or something, probably pipe dreams though
 	 */
 	
-	public Contig(){
+	public BasicContig(){
 	}
 	
-	public Contig(String name){
+	public BasicContig(String name){
 		this.name = name;
 	}
 	
@@ -59,10 +60,6 @@ public class Contig {
 		return this.reads_pos;
 	}
 	
-	public short[] getColors(){
-		return this.colors;
-	}
-	
 	public boolean addRead(String name, FourBitSequence sequence, int start, int length, short color){
 		if(readcounter < readcount){
 			if(name != null){
@@ -73,7 +70,6 @@ public class Contig {
 			}
 			reads_pos[0][readcount] = start;
 			reads_pos[1][readcount] = length;
-			colors[readcounter] = color;
 			readcounter++;
 			return true;
 		}

@@ -1,5 +1,8 @@
 package tools;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class Tools_Array {
 
 	public static String[] mergeStrings(String[] a, String[] b){
@@ -9,6 +12,20 @@ public abstract class Tools_Array {
 		return c;
 	}
 	
+	public static int[] getUniqueValues(int[] values){
+		ArrayList<Integer> ins = new ArrayList<Integer>();
+		boolean found =false;
+		ins.add(values[values.length-1]);
+		for(int i =0;i < values.length-1; i++){
+			found = false;
+			for(int j = i+1;j < values.length; j++){
+				found = (values[i]==values[j]);
+				if(found)break;
+			}
+			if(!found)ins.add(values[i]);
+		}
+		return ListInt2int(ins);
+	}
 	
 	/*
 	 * Eddie 3: some basic testing, 
@@ -36,5 +53,45 @@ public abstract class Tools_Array {
 			}
 		}
 		return new_arr;
+	}
+	
+	public static int[] ListInt2int(List<Integer> list){
+		Integer[] ints = list.toArray(new Integer[0]);
+		int[] ints2 = new int[ints.length];
+		for(int i =0; i < ints.length; i++){
+			ints2[i] = ints[i].intValue();
+		}
+		return ints2;
+	}
+	
+	/* Hax warning!
+	 * 
+	 * Sort lifted from the openJDK
+	 * 
+	 * All logic remains with a, but all
+	 * values set to a are mirrored with b
+	 * I theory, this could be pushed to a 
+	 * matrix column sort.
+	 */
+	public static void sortBothByFirst(int[]a, int[]b){
+		int left =0;
+		int right = a.length-1;
+		sortBothByFirst(a,b,left,right);
+	}
+	
+	public static void sortBothByFirst(int[] a, int[] b, int left, int right){
+		for (int i = left, j = i; i < right; j = ++i) {
+			int ai = a[i + 1];
+			int bi = b[i + 1];
+			while (ai < a[j]) {
+				a[j + 1] = a[j];
+				b[j + 1] = b[j];
+				if (j-- == left) {
+					break;
+				}
+			}
+			a[j + 1] = ai;
+			b[j + 1] = bi;
+		}
 	}
 }

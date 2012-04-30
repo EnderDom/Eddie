@@ -23,6 +23,7 @@ import databases.manager.DatabaseManager;
 import bio.assembly.ACEFileParser;
 import bio.assembly.ACERecord;
 
+import tools.Tools_Array;
 import tools.Tools_String;
 import ui.PropertyLoader;
 import ui.UI;
@@ -54,22 +55,7 @@ public class Task_Test extends Task{
 		try{
 			System.out.println("Running test");
 			
-			DatabaseManager manager = this.ui.getDatabaseManager();
-			manager.open();
-			BioSQL bs = manager.getBioSQL();
-			BioSQLExtended bsxt = manager.getBioSQLXT();
-			Connection con = manager.getCon();
-			int i = bsxt.getEddieFromDatabase(con);
-			if(i == -1)bsxt.addEddie2Database(con);
-			i = bsxt.getEddieFromDatabase(con);
-			if(i != -1){
-				bs.addSequence(con, i, null, "TEST1",
-						"TEST1", null, null, null, 0, "ATGCGACTAG", BioSQL.alphabet_DNA);
-			}
-			else{
-				logger.error("Failed to add Eddie to biodatabase in the database");
-			}
-			manager.close();
+			testSortMethod();
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -100,6 +86,64 @@ public class Task_Test extends Task{
 	/*															*/
 	/*															*/
 	/************************************************************/
+	
+	public void testSortMethod(){
+		int a[] = new int[]{5,5,5,1,2,2,2,2,2,100};
+		int b[] = new int[]{1,2,3,4,5,6,7,8,9,10};
+		System.out.println("Inputted:");
+		for(int i : a)System.out.print(i +",");
+		System.out.println();
+		for(int i : b)System.out.print(i +",");
+		System.out.println();
+		System.out.println("Expected:");
+		int c[] = new int[]{1,2,2,2,2,2,5,5,5,100};
+		int d[] = new int[]{4,5,6,7,8,9,1,2,3,10};
+		for(int i : c)System.out.print(i +",");
+		System.out.println();
+		for(int i : d)System.out.print(i +",");
+		System.out.println();
+		System.out.println("Observed:");
+		Tools_Array.sortBothByFirst(a, b);
+		for(int i : a)System.out.print(i +",");
+		System.out.println();
+		for(int i : b)System.out.print(i +",");
+		System.out.println();
+	}
+	
+	
+	public void databaseTest(){
+		DatabaseManager manager = this.ui.getDatabaseManager();
+		manager.open();
+		BioSQL bs = manager.getBioSQL();
+		BioSQLExtended bsxt = manager.getBioSQLXT();
+		Connection con = manager.getCon();
+		int i = bsxt.getEddieFromDatabase(con);
+		if(i == -1)bsxt.addEddie2Database(con);
+		i = bsxt.getEddieFromDatabase(con);
+		if(i != -1){
+			bs.addSequence(con, i, null, "TEST1",
+					"TEST1", null, null, null, 0, "ATGCGACTAG", BioSQL.alphabet_DNA);
+		}
+		else{
+			logger.error("Failed to add Eddie to biodatabase in the database");
+		}
+		manager.close();
+	}
+	
+	public void testgetUniqueValues(){
+		System.out.println("Input:");
+		int[] i = new int[]{0,0,1,1,1,1,2,2,4,5,6,7,10,10,11,122,121,11,111,0};
+		for(int j : i)System.out.print(j+",");
+		System.out.println();
+		System.out.println("Expected:");
+		int[] k = new int[]{0,1,2,4,5,6,7,10,11,122,121,111};
+		for(int j : k)System.out.print(j+",");
+		System.out.println();
+		System.out.println("Observed:");
+		i = Tools_Array.getUniqueValues(i);
+		for(int j : i)System.out.print(j+",");
+	}
+	
 	
 	@SuppressWarnings("unused")
 	public void testSAM(){

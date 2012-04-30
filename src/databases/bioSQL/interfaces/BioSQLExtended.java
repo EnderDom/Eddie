@@ -35,7 +35,7 @@ public interface BioSQLExtended {
 	
 	public boolean addDefaultAssemblyTerm(BioSQL boss, Connection con);
 	
-	public boolean addAssemblerTerm(BioSQL boss, Connection con, String name);
+	public boolean addAssemblerTerm(BioSQL boss, Connection con, String name, String division);
 	
 	public int getDefaultAssemblyTerm(BioSQL boss, Connection con);
 	
@@ -44,4 +44,10 @@ public interface BioSQLExtended {
 	public HashMap<String, String>getContigNameNIdentifier(Connection con, String division);
 	
 	public boolean mapRead2Contig(Connection con, BioSQL boss, int contig_id, int read_id, int programid, int start, int stop, int strand);
+	
+	public int[] getReads(Connection con, int bioentry_id);
+	
+	public int getContigFromRead(Connection con, int bioentry_id, String division);
+	
+	public String[] getNamesFromTerm(Connection con, String identifier);
 }

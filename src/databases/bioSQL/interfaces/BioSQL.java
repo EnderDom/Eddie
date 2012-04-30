@@ -73,6 +73,9 @@ public interface BioSQL {
 	 * 
 	 * 
 	 */
+	
+	public String[] getBioEntryNames(Connection con, int bioentry_id);
+	
 	public int getBioEntry(Connection con, String identifier, String accession, int biodatabase);
 	
 	public int getOntology(Connection con, String name);

@@ -73,8 +73,8 @@ public class Task_Assembly2DB extends TaskXT{
 		options.addOption(new Option("id","identifier", true, "Uses this as the base identifier"));
 		//options.addOption(new Option("species", false, "Drags out the default Species")); //TODO
 		//options.addOption(new Option("taxon_id", false, "Set the taxon_id"));
-		options.addOption(new Option("division", true, "Set 6 letter division ie DIGEST or NEURAL or CLCBIO"));
-		options.addOption(new Option("pid","programid", true, "Set Assembly program name, used as unique identifier"));
+		options.addOption(new Option("division", true, "Set 6 letter division ie DIGEST or NEURAL or CLCBIO, used as unique identifier for Assemblers"));
+		options.addOption(new Option("pid","programid", true, "Set Assembly program namer"));
 	}
 	
 	public Options getOptions(){
@@ -152,7 +152,7 @@ public class Task_Assembly2DB extends TaskXT{
 						else logger.debug("Biodatabase id: "+biodatabase_id);
 						int pid = bs.getTerm(manager.getCon(), this.programid, this.programid);
 						if(pid < 0){
-							manager.getBioSQLXT().addAssemblerTerm(bs, manager.getCon(), programid);
+							manager.getBioSQLXT().addAssemblerTerm(bs, manager.getCon(), programid, division);
 							pid = bs.getTerm(manager.getCon(), this.programid, this.programid);
 						}
 						if(pid < 0){

@@ -5,9 +5,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
 
+import tools.Tools_Array;
 import tools.Tools_String;
 import tools.Tools_System;
 import databases.bioSQL.interfaces.BioSQL;
@@ -17,6 +19,7 @@ public class MySQL_Extended implements BioSQLExtended{
 
 	private int assemblyontid =-1;
 	private int assemblytermid =-1;
+	Logger logger = Logger.getRootLogger();
 	
 	public double getDatabaseVersion(Connection con) {
 		String g = "SELECT DatabaseVersion FROM info WHERE NUMB=1";
@@ -28,6 +31,7 @@ public class MySQL_Extended implements BioSQLExtended{
 				r = set.getString("DatabaseVersion");
 			}
 			Double b = null;
+			st.close();
 			if(r.startsWith("v")){
 				b = Tools_String.parseString2Double(r.substring(1));
 			}
@@ -39,7 +43,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			}
 		}
 		catch(SQLException sq){
-			Logger.getRootLogger().error("Failed to retrieve database index", sq);
+			logger.error("Failed to retrieve database index", sq);
 			return -1;
 		}
 	}
@@ -53,7 +57,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			return true;
 		}
 		catch(SQLException se){
-			Logger.getRootLogger().error("Failed to create biodatabase table", se);
+			logger.error("Failed to create biodatabase table", se);
 			return false;
 		}
 	}
@@ -70,7 +74,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			st.close();
 		}
 		catch(SQLException se){
-			Logger.getRootLogger().error("Failed to create biodatabase table", se);
+			logger.error("Failed to create biodatabase table", se);
 		}
 		return db;
 	}
@@ -92,7 +96,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			return true;
 		}
 		catch(SQLException se){
-			Logger.getRootLogger().error("Failed to create info table string ", se);
+			logger.error("Failed to create info table string ", se);
 			return false;
 		}
 		
@@ -113,7 +117,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			return true;
 		}
 		catch(SQLException se){
-			Logger.getRootLogger().error("Failed to create bioentry_synonym table", se);
+			logger.error("Failed to create bioentry_synonym table", se);
 			return false;
 		}
 	}
@@ -125,7 +129,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			st.close();
 		} 
 		catch (SQLException e) {
-			Logger.getRootLogger().error("Error adding index to bioentry_division",e);
+			logger.error("Error adding index to bioentry_division",e);
 			return false;
 		}
 		if(addDefaultAssemblyOntology(boss, con)){
@@ -159,11 +163,11 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 	}
 	
-	public boolean addAssemblerTerm(BioSQL boss, Connection con, String name){
+	public boolean addAssemblerTerm(BioSQL boss, Connection con, String name, String division){
 		int ontology = this.getDefaultAssemblyOntology(boss, con);
 		int termid = boss.getTerm(con, name, name);
 		if(termid < 0){
-			return boss.addTerm(con, name, assemblerdescription, name, null,ontology) ?
+			return boss.addTerm(con, name, assemblerdescription, division, null,ontology) ?
 					((termid=boss.getTerm(con, name, name)) > -1) : false;
 		}
 		else{
@@ -174,7 +178,7 @@ public class MySQL_Extended implements BioSQLExtended{
 	public int getDefaultAssemblyOntology(BioSQL boss, Connection con){
 		if(this.assemblyontid == -1){
 			if(!addDefaultAssemblyOntology(boss, con)){
-				Logger.getRootLogger().error("Adding the Default Ontology term has failed");
+				logger.error("Adding the Default Ontology term has failed");
 			}
 		}
 		return this.assemblyontid;
@@ -183,7 +187,7 @@ public class MySQL_Extended implements BioSQLExtended{
 	public int getDefaultAssemblyTerm(BioSQL boss, Connection con){
 		if(this.assemblytermid == -1){
 			if(!addDefaultAssemblyTerm(boss, con)){
-				Logger.getRootLogger().error("Adding the Default Assembly Term has failed");
+				logger.error("Adding the Default Assembly Term has failed");
 			}
 		}
 		return this.assemblytermid;
@@ -201,13 +205,67 @@ public class MySQL_Extended implements BioSQLExtended{
 			while(set.next()){
 				names.put(set.getString("name"),set.getString("identifier"));
 			}
+			st.close();
 		}
 		catch(SQLException sq){
-			Logger.getRootLogger().error("Failure to retrieve contigname and identifier data");
+			logger.error("Failure to retrieve contigname and identifier data");
 		}
 		return names;
 	}
 	
+	public int[] getReads(Connection con, int bioentry_id){
+		LinkedList<Integer> ints = new LinkedList<Integer>();
+		try{
+			Statement st = con.createStatement();
+			ResultSet set = st.executeQuery("SELECT subject_bioentry_id FROM bioentry_relationship WHERE object_bioentry_id="+bioentry_id);
+			while(set.next()){
+				ints.add(set.getInt("subject_bioentry_id"));
+			}
+			st.close();
+		}
+		catch(SQLException sq){
+			logger.error("Failed to get Reads" , sq);
+		}
+		return Tools_Array.ListInt2int(ints);
+	}
+	
+	
+	public int getContigFromRead(Connection con, int bioentry_id, String division){
+		int l = -1;
+		try{
+			Statement st = con.createStatement();
+			ResultSet set = st.executeQuery("SELECT object_bioentry_id FROM bioentry_relationship INNER JOIN bioentry ON " +
+					"bioentry_relationship.object_bioentry_id=bioentry.bioentry_id WHERE bioentry_relationship.subject_bioentry_id="+bioentry_id+
+					" AND bioentry.division="+division);
+			while(set.next()){
+				l = set.getInt(1);
+			}
+			st.close();
+			return l;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to retrieve contig attached");
+			return -2;
+		}
+	}
+	
+	public String[] getNamesFromTerm(Connection con, String identifier){
+		try{
+			String[] info = new String[2];
+			Statement st = con.createStatement();
+			ResultSet set = st.executeQuery("SELECT name, definition FROM term WHERE identifier='"+identifier+"'");
+			while(set.next()){
+				info[0] = set.getString("name");
+				info[1] = set.getString("definition");
+			}
+			st.close();
+			return null;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to retrieve contig attached");
+			return null;
+		}
+	}
 	
 	/* INDEV function
 	 * 
@@ -237,12 +295,11 @@ public class MySQL_Extended implements BioSQLExtended{
 			seqfeature_id = boss.getSeqFeature(con, read_id, term_id, programid, 0);
 		}
 		if(seqfeature_id < 0){
-			Logger.getRootLogger().error("SeqFeature Id was not retrieved");
+			logger.error("SeqFeature Id was not retrieved");
 			return false;
 		}
 		else{
 			return boss.getLocation(con, seqfeature_id, 0) <0 ? boss.addLocation(con, seqfeature_id, null, term_id, start, stop, strand, 0) : true ; 
 		}
 	}
-
 }
