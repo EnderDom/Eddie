@@ -44,6 +44,7 @@ public class MapManager{
 	private static String indexFileName= "index_maps.xml";
 	private static String separator =":##:"; //Whatever this is, it should be something that wouldn't exist in filepath	
 	private File mapfoldere;
+	private static String mapfileext = "eddmap";
 	Logger logger = Logger.getRootLogger();
 	Document mapindex;
 	
@@ -139,7 +140,7 @@ public class MapManager{
 				return loadMapFile(cachedMapFile[2]);
 			}
 			else{
-				logger.error("Map does not exist");
+				logger.error("Map does not exist: " + filepath1 + " & " + filepath2);
 				return null;
 			}
 		}
@@ -152,7 +153,7 @@ public class MapManager{
 				return loadMapFile(cachedMapFile[2]);
 			}
 			else{
-				logger.error("Map does not exist");
+				logger.error("Map does not exist: " + filepath1 + " & " + filepath2);
 				return null;
 			}
 		}
@@ -267,11 +268,11 @@ public class MapManager{
 	}
 	
 	private File checkName(String mapfilename){
-		File file = new File(getMapFolderPath()+mapfilename+".map");
+		File file = new File(getMapFolderPath()+mapfilename+mapfileext);
 		int c=0;
 		if(file.exists()){
 			while(file.exists()){
-				file = new File(getMapFolderPath()+mapfilename+"_"+c+".map");
+				file = new File(getMapFolderPath()+mapfilename+"_"+c+mapfileext);
 				c++;
 			}
 		}

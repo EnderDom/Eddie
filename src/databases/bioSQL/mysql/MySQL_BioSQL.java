@@ -342,9 +342,7 @@ public class MySQL_BioSQL implements BioSQL{
 				name = identifier;
 				stmt = con.prepareStatement("SELECT term_id FROM term WHERE identifier=?");
 			}
-			else{
-				stmt.setString(1, name);
-			}
+			stmt.setString(1, name);
 			set = stmt.executeQuery();
 			while(set.next()){
 				id = set.getInt("term_id");
@@ -360,7 +358,7 @@ public class MySQL_BioSQL implements BioSQL{
 			return id;
 		}
 		catch(SQLException se){
-			logger.error("Failed to retrieve ontology id for "+ name, se);
+			logger.error("Failed to retrieve term id for "+ name, se);
 			return -2;
 		}
 	}

@@ -232,11 +232,12 @@ public class MySQL_Extended implements BioSQLExtended{
 	
 	public int getContigFromRead(Connection con, int bioentry_id, String division){
 		int l = -1;
+		String r = "SELECT object_bioentry_id FROM bioentry_relationship INNER JOIN bioentry ON " +
+		"bioentry_relationship.object_bioentry_id=bioentry.bioentry_id WHERE bioentry_relationship.subject_bioentry_id="+bioentry_id+
+		" AND bioentry.division='"+division+"'";
 		try{
 			Statement st = con.createStatement();
-			ResultSet set = st.executeQuery("SELECT object_bioentry_id FROM bioentry_relationship INNER JOIN bioentry ON " +
-					"bioentry_relationship.object_bioentry_id=bioentry.bioentry_id WHERE bioentry_relationship.subject_bioentry_id="+bioentry_id+
-					" AND bioentry.division="+division);
+			ResultSet set = st.executeQuery(r);
 			while(set.next()){
 				l = set.getInt(1);
 			}
@@ -244,7 +245,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			return l;
 		}
 		catch(SQLException sq){
-			logger.error("Failed to retrieve contig attached");
+			logger.error("Failed to retrieve contig attached, SQL: " + r);
 			return -2;
 		}
 	}
@@ -259,10 +260,10 @@ public class MySQL_Extended implements BioSQLExtended{
 				info[1] = set.getString("definition");
 			}
 			st.close();
-			return null;
+			return info;
 		}
 		catch(SQLException sq){
-			logger.error("Failed to retrieve contig attached");
+			logger.error("Failed to retrieve contig attached ");
 			return null;
 		}
 	}

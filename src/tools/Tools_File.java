@@ -81,7 +81,7 @@ public abstract class Tools_File {
 		int count = names.size();
 		File[] subfiles = folder.listFiles();
 		if(subfiles.length != names.size()){
-			Logger.getRootLogger().warn("There are "+subfiles + " to map to " + names.size() + ", it is advised, to another files, lest they affect mapping");
+			Logger.getRootLogger().warn("There are "+subfiles.length + " to map to " + names.size() + ", it is advised, to another files, lest they affect mapping");
 		}
 		int matchcount=0;
 		int namecount=0;

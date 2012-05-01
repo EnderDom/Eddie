@@ -61,14 +61,8 @@ public class PropertyLoader implements Module{
      * though this one has been written from scratch
      */
     public static int engineversion = 4;
-    
-<<<<<<< HEAD:ui/PropertyLoader.java
-    public static double guiversion = 0.15;
-    public static String edition = "Main";
-=======
     public static double guiversion = 0.19;
     public static String edition = "Development";
->>>>>>> xp:src/ui/PropertyLoader.java
     Level level;
     public static Logger logger;
     public String[] actions;

@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -28,7 +27,6 @@ import tasks.MapManager;
 import tasks.Task;
 import tools.Tools_Array;
 import tools.Tools_File;
-import tools.Tools_String;
 import tools.Tools_System;
 import tools.bio.graphics.Tools_RoughImages;
 import tools.graphics.Tools_Image;
@@ -56,7 +54,6 @@ public class Task_ContigComparison extends Task{
 	public Task_ContigComparison(){
 		setHelpHeader("--This is the Help Message for the ContigComparison Task--");
 		outformat = "PDF";
-		mapman = new MapManager(ui.getPropertyLoader());
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
@@ -75,7 +72,7 @@ public class Task_ContigComparison extends Task{
 				contignames = new String[]{cmd.getOptionValue("c")};
 			}
 			else{
-				Tools_Array.mergeStrings(contignames, new String[]{cmd.getOptionValue("c")});
+				contignames = Tools_Array.mergeStrings(contignames, new String[]{cmd.getOptionValue("c")});
 			}
 		}
 	}
@@ -91,7 +88,7 @@ public class Task_ContigComparison extends Task{
 		options.addOption(new Option("d1","division1", true, "First 6-letter division ie CLCBIO"));
 		options.addOption(new Option("i","input", true, "List of contigs to report (Assumed division 1)," +
 				" as is in ACE file, separated by newline"));
-		options.addOption(new Option("c","contig", true, "First 6-letter division ie CLCBIO"));
+		options.addOption(new Option("c","contig", true, "Name of contig as is in ace file, alternative to input"));
 		options.addOption(new Option("d2","division2", true, "Second 6-letter division ie NEWBLE"));
 		options.addOption(new Option("b1","blast1", true, "Blast folder for the first input"));
 		options.addOption(new Option("b2","blast2", true, "Blast folder for the second input"));
@@ -109,6 +106,10 @@ public class Task_ContigComparison extends Task{
 		logger.debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		if(testmode){
 			runTest();
+			return;
+		}
+		if(division1 == null || division2 == null){
+			logger.error("Failed Due to no division stated");
 			return;
 		}
 		if(contignames == null || contignames.length == 0){
@@ -131,7 +132,7 @@ public class Task_ContigComparison extends Task{
 			logger.error("Could not open a connection to the database");
 			return;
 		}
-		
+		mapman = new MapManager(ui.getPropertyLoader());
 		logger.info("Checks complete, Continuing...");
 		database_id = manager.getEddieDBID();
 		bsxt = manager.getBioSQLXT();
@@ -140,31 +141,37 @@ public class Task_ContigComparison extends Task{
 		logger.debug("Database ID: " + this.database_id);
 		logger.info("Starting Mapping Sequences to blasts");
 		logger.debug("Checking for previous map");
-		
+
+		//Holds the actual name as is in file (ACE) record
 		HashMap<String, String> name2id1 = bsxt.getContigNameNIdentifier(manager.getCon(), division1);
 		HashMap<String, String> name2id2 = bsxt.getContigNameNIdentifier(manager.getCon(), division2);
+		
+		//Holds the Contig id 2 blast file for division 1
 		contig2file1 = mapFiles(name2id1, b1, blastfolder1, division1);
 		if(contig2file1 == null){
 			logger.error("Failed to map files for " + division1);
 			return;
 		}
+		//Holds the Contig id 2 blast file for division 2
 		contig2file2 = mapFiles(name2id2, b2, blastfolder2, division2);
 		if(contig2file2 == null){
 			logger.error("Failed to map files for " + division2);
 			return;
 		}
+	
 		String assembler1 = bsxt.getNamesFromTerm(manager.getCon(), division1)[0];
 		String assembler2 = bsxt.getNamesFromTerm(manager.getCon(), division2)[0];
 		File t = null;
 		PDFBuilder builder = null;
+		int mcount =0;
 		try {
-			 builder = new PDFBuilder();
-		
+			builder = new PDFBuilder();
 			for(String s : name2id1.keySet()){
 				for(int i =0 ;i < contignames.length; i++){
-					if(contig2file1.get(s).equals(contignames[i])){
-						logger.debug("Developing Conitg " + contignames[i]);
-						int contig_id = bs.getBioEntry(manager.getCon(), s, null, manager.getEddieDBID());
+					if(s.equals(contignames[i])){
+						mcount++;
+						logger.debug("Developing Contig " + contignames[i]);
+						int contig_id = bs.getBioEntry(manager.getCon(),name2id1.get(s), null, manager.getEddieDBID());
 						ContigFactory factory = new ContigFactory();
 						ContigXT contigxt = factory.getContigXT(manager,contig_id, division1);
 						contigxt = getTopContigAndColors(contigxt, division2);
@@ -177,60 +184,54 @@ public class Task_ContigComparison extends Task{
 						contigxt.overlayContig(othercontig, topcontigid);
 						
 						logger.debug("Retrieving Blast Data");
-						t = new File(contig2file1.get(s));
-						try {
-							XML_Blastx blastx = new XML_Blastx(t);
-							contigxt.getBlastData(blastx);
-						} 
-						catch (Exception e) {
-							logger.error("Failed to parse blast file " + t.getPath() + ", you sure this is a blast XML?");
-						}
-						logger.debug("About to retrieve top contig " + topcontigname[0]);
-						t = new File(contig2file2.get(topcontigname[0]));
+//						t = new File(contig2file1.get(s));
+//						try {
+//							XML_Blastx blastx = new XML_Blastx(t);
+//							contigxt.getBlastData(blastx);
+//						} 
+//						catch (Exception e) {
+//							logger.error("Failed to parse blast file " + t.getPath() + ", you sure this is a blast XML?");
+//						}
+//						logger.debug("About to retrieve top contig " + topcontigname[0]);
+//						t = new File(contig2file2.get(topcontigname[0]));
 						
 						BufferedImage c1 = Tools_RoughImages.drawContigRough(contignames[i]+" - " + assembler1, false, contigxt.getReadPositions(), contigxt.getBlasts(), contigxt.getColors(), 10, 1);
 						BufferedImage c2 = Tools_RoughImages.drawContigRough(topcontigname[0] + " - " + assembler2, false, othercontig.getReadPositions(), othercontig.getBlasts(),  othercontig.getColors(), 10, 1);
 						BufferedImage c3 = Tools_Image.simpleMerge(c1, contigxt.getOffset(), c2, othercontig.getOffset(),10, Tools_RoughImages.background, Tools_RoughImages.defaultBGR);
-						builder.nextPage();
 						builder.drawBufferedImage(c3);
+						builder.nextPage();
 					}
-				}
-			}
+				 }
+			 }
 		} 
 		catch (IOException e1) {
 			logger.error("Failed to start pdfbuilder", e1);
 			return;
 		}
+		if(mcount == contignames.length)logger.debug("Dealt with " + mcount + " of " + contignames.length);
+		else logger.debug("Failed to deal with all contigs " +(contignames.length-mcount) + " of " + contignames.length + " failed");
 		try{
 			builder.save(output+".pdf");
 		}
 		catch(IOException io){
 			logger.error("Failed to save pdf", io);
-			try{
-				logger.error("Attempting to save locally to OUT_DUMP.pdf");
-				builder.save("OUT_DUMP.pdf");
-			}
-			catch(IOException io2){
-				logger.error("Failed to save pdf, again", io);
-			}
-			catch (COSVisitorException e2) {
-				logger.error("Failed to save pdf, again", e2);
-			}
 		} 
 		catch (COSVisitorException e) {
 			logger.error("Failed to save pdf", e);
 		}
-		System.out.println("Method still incomplete!");
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
 	}
 		
 	public ContigXT getTopContigAndColors(ContigXT xt, String division){
-		
-		for(int i : xt.getReadIDs()){
-			int j = bsxt.getContigFromRead(manager.getCon(), i, division);
+		if(xt == null){
+			logger.error("Why the fuck are you null!?");
+		}
+		int[] rids = xt.getReadIDs();
+		for(int t =0; t < rids.length; t++){
+			int j = bsxt.getContigFromRead(manager.getCon(), rids[t], division);
 			if(j > -2){
-				xt.setContig(i, j);
+				xt.setContig(t, j);
 			}
 			else logger.error("Error!!!");//TODO better error message
 		}
@@ -245,7 +246,7 @@ public class Task_ContigComparison extends Task{
 		if(mapman.hasMap(division, b.getPath())){
 			logger.debug("Has previous map, Loading...");
 			try{
-				contig2file =mapman.getMap(division1, b.getPath());
+				contig2file =mapman.getMap(division, b.getPath());
 				gotmap = true;
 			}
 			catch(IOException io){

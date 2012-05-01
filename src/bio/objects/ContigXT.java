@@ -48,7 +48,6 @@ public class ContigXT extends BasicContig{
 		this.reads = new String[readcount];
 		this.reads_pos = new int[2][readcount];
 		this.colors = new short[readcount];
-		this.contigs = new int[readcount];
 	}
 	
 	public short[] getColors(){
@@ -68,7 +67,9 @@ public class ContigXT extends BasicContig{
 	}
 	
 	public void setReadIDs(int[] read_ids){
+		logger.trace("Read IDs set, array length" + read_ids.length);
 		this.read_ids = read_ids;
+		this.contigs = new int[read_ids.length];
 	}
 	                         
 	public int[] getReadIDs(){
@@ -120,8 +121,8 @@ public class ContigXT extends BasicContig{
 			if(sequence !=null){
 				this.reads_seqs[readcounter] = sequence;
 			}
-			reads_pos[0][readcount] = start;
-			reads_pos[1][readcount] = length;
+			reads_pos[0][readcounter] = start;
+			reads_pos[1][readcounter] = length;
 			colors[readcounter] = color;
 			readcounter++;
 			return true;
