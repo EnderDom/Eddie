@@ -24,7 +24,6 @@ import tools.Tools_File;
 import tools.Tools_System;
 import tools.bio.Tools_Blast;
 import tools.bio.Tools_Fasta;
-import ui.UI;
 
 public class Task_BlastLocal extends TaskXT{
 	
@@ -34,7 +33,6 @@ public class Task_BlastLocal extends TaskXT{
 	private String blastparams;
 	private String workspace;
 	protected boolean keepargs = true;
-	private UI ui;
 	private HashMap<String, String> sequences;
 	int start;
 	int blastcomplete;
@@ -124,34 +122,7 @@ public class Task_BlastLocal extends TaskXT{
 	public void run(){
 		setComplete(started);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
-		
-		Checklist checklist = new Checklist(workspace, this.getClass().getName());
-		if(checklist.check()){
-			logger.trace("Moved to recovering past Task");
-			int userinput = ui.requiresUserYNI("There is an unfinished Local Blast task, Details: "+checklist.getLast()+" Would you like to recover it (yes), delete it (no) or ignore it (cancel)?","Recovered Unfinished Task...");
-			if(userinput == 1){
-				if(!checklist.closeLastTask()){
-					logger.error("Failed to delete last task");
-				}
-				else{
-					logger.debug("Cleared Task");
-				}
-			}
-			if(userinput == 0){
-				args = checklist.getComment();
-				if(args != null){
-					super.parseArgs(args.split(" "));
-					checklist.recoverLast();
-				}
-				else{
-					logger.error("An error occured, Comment does not contain arguments");
-				}
-			}
-			else{
-				checklist = new Checklist(workspace, this.getClass().getName());
-			}
-		}
-		
+		openChecklist();		
 		if(input != null && output != null && !err){
 			File in = new File(input);
 			File out = new File(output);
@@ -252,14 +223,6 @@ public class Task_BlastLocal extends TaskXT{
 		}
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
-	}
-	
-	public boolean wantsUI(){
-		return true;
-	}
-	
-	public void addUI(UI ui){
-		this.ui = ui;
 	}
 	
 	public boolean isKeepArgs(){

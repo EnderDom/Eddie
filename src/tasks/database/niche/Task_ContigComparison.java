@@ -50,6 +50,8 @@ public class Task_ContigComparison extends Task{
 	private String[] contignames;
 	private BioSQLExtended bsxt; 
 	private BioSQL bs;
+	private boolean debug;
+	private File debugfile;
 	
 	public Task_ContigComparison(){
 		setHelpHeader("--This is the Help Message for the ContigComparison Task--");
@@ -59,6 +61,7 @@ public class Task_ContigComparison extends Task{
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
 		//if(cmd.hasOption("f"))outformat=cmd.getOptionValue("f");
+		if(cmd.hasOption("debug"))debug = true;
 		if(cmd.hasOption("o"))output = cmd.getOptionValue("o");
 		if(cmd.hasOption("d1"))division1 = cmd.getOptionValue("d1");
 		if(cmd.hasOption("d2"))division2 = cmd.getOptionValue("d2");
@@ -92,6 +95,7 @@ public class Task_ContigComparison extends Task{
 		options.addOption(new Option("d2","division2", true, "Second 6-letter division ie NEWBLE"));
 		options.addOption(new Option("b1","blast1", true, "Blast folder for the first input"));
 		options.addOption(new Option("b2","blast2", true, "Blast folder for the second input"));
+		options.addOption(new Option("debug", false, "Output debug data dump"));
 	}
 	
 	public Options getOptions(){
@@ -164,6 +168,7 @@ public class Task_ContigComparison extends Task{
 		File t = null;
 		PDFBuilder builder = null;
 		int mcount =0;
+		
 		try {
 			builder = new PDFBuilder();
 			for(String s : name2id1.keySet()){
@@ -194,7 +199,37 @@ public class Task_ContigComparison extends Task{
 //						}
 //						logger.debug("About to retrieve top contig " + topcontigname[0]);
 //						t = new File(contig2file2.get(topcontigname[0]));
-						
+						if(debug){
+							pushDebug("Main Contig: " + contignames[i]);
+							pushDebug("Contig identifier:" + name2id1.get(s));
+							pushDebug("Matched to contig: " + topcontigname[0]);
+							pushDebug("");
+							pushDebug("Main Contig INFO:");
+							int[] j = contigxt.getReadIDs();
+							for(int k = 0; k < j.length ; k++){
+								pushDebug("Read: " + j[k] + " match to " + contigxt.getContig(k) + "("+bs.getBioEntryNames(manager.getCon(), contigxt.getContig(k) )[0]+")");
+							}
+							pushDebug("Top Match Contig INFO:");
+							int[] l = othercontig.getReadIDs();
+							for(int k = 0; k < l.length ; k++){
+								pushDebug("Read: " + l[k]+ " match to " + othercontig.getContig(k) + "("+bs.getBioEntryNames(manager.getCon(), othercontig.getContig(k) )[0]+")");
+							}
+							pushDebug("");
+							pushDebug("Positioning:");
+							pushDebug("");
+							int[][] pos = contigxt.getReadPositions();
+							for(int k = 0; k < j.length ; k++){
+								String[] names = bs.getBioEntryNames(manager.getCon(),j[k]);
+								pushDebug(j[k]+" "+names[0]+" ("+names[2]+") " + " START: " + pos[0][k] + " LEN: " +pos[1][k]);
+							}
+							pushDebug("");
+							pushDebug("");
+							int[][] pos2 = othercontig.getReadPositions();
+							for(int k = 0; k < l.length ; k++){
+								String[] names = bs.getBioEntryNames(manager.getCon(),l[k]);
+								pushDebug(l[k]+" "+names[0]+" ("+names[2]+") " + " START: " + pos2[0][k] + " LEN: " +pos2[1][k]);
+							}
+						}
 						BufferedImage c1 = Tools_RoughImages.drawContigRough(contignames[i]+" - " + assembler1, false, contigxt.getReadPositions(), contigxt.getBlasts(), contigxt.getColors(), 10, 1);
 						BufferedImage c2 = Tools_RoughImages.drawContigRough(topcontigname[0] + " - " + assembler2, false, othercontig.getReadPositions(), othercontig.getBlasts(),  othercontig.getColors(), 10, 1);
 						BufferedImage c3 = Tools_Image.simpleMerge(c1, contigxt.getOffset(), c2, othercontig.getOffset(),10, Tools_RoughImages.background, Tools_RoughImages.defaultBGR);
@@ -333,6 +368,15 @@ public class Task_ContigComparison extends Task{
 	
 	public void addUI(UI ui){
 		this.ui = ui;
+	}
+	
+	public void pushDebug(String s){
+		if(debugfile == null){
+			debugfile= new File("contig_compare_debug.txt");
+			if(debugfile.exists())debugfile.delete();
+			Tools_File.quickWrite("--New Debug File--", debugfile, true);
+		}
+		Tools_File.quickWrite(s+Tools_System.getNewline(), debugfile, true);
 	}
 	
 }

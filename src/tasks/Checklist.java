@@ -179,7 +179,7 @@ public class Checklist {
 	 * @return whether saved or not
 	 */
 	public boolean update(String line){
-		logger.debug("Checklist updated");
+		logger.trace("Checklist updated");
 		return Tools_File.quickWrite(line+Tools_System.getNewline(), task, true);
 	}
 	
@@ -194,19 +194,19 @@ public class Checklist {
 		return task.delete();
 	}
 	
-	//TODO --> fix
+	//TODO FIX ASAP!!
+	//TODO FIX ASAP!!
+	//TODO FIX ASAP!!
 	public String[] loadHeadFromFile(File file){
 		String[] data = new String[4];
 		logger.debug("Reading Data from checklist file");
 		try{
-			System.out.println(file.getPath());
 			FileInputStream fis = new FileInputStream(file);
 			InputStreamReader in = new InputStreamReader(fis, "UTF-8");
 			BufferedReader reader = new BufferedReader(in);
 			String line = "";
 			while((line = reader.readLine()) != null){
 				if(line.contains("<DATA>"))break;				
-				System.out.println(line);
 				if(line.startsWith("<START>")){
 					data[0] = Tools_String.cutLineBetween("<START>", "</START>", line);
 				}

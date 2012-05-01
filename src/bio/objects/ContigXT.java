@@ -192,5 +192,9 @@ public class ContigXT extends BasicContig{
 			for(int i =0;i < blasts[1].length; i++)blasts[1][i]=stops.get(i)-starts.get(i);
 		}
 	}
+	
+	public int getContig(int index){
+		return this.contigs[index];
+	}
 }
  
