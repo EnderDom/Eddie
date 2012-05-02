@@ -227,7 +227,7 @@ public class Task_Assembly2DB extends TaskXT{
 												bs.addLocation(manager.getCon(), seqfeature_id, null, term_id,start, end, 0,0);
 											}
 											else{
-												String sql = new String("UPDATE location SET start_pos="+start+" AND end_pos="+end+" WHERE seqfeature_id="+seqfeature_id);
+												String sql = new String("UPDATE location SET start_pos="+start+", end_pos="+end+" WHERE seqfeature_id="+seqfeature_id);
 												try{
 													System.out.print("\r"+(count) +" : Remapping...             ");
 													Statement st = manager.getCon().createStatement();

@@ -83,6 +83,9 @@ public class XML_Blastx{
 				else if(list.item(i).getNodeName().equalsIgnoreCase("Iteration_query-def")){
 					this.blastcache.put("Iteration_query-def", list.item(i).getTextContent());
 				}
+				else if(list.item(i).getNodeName().equalsIgnoreCase("Iteration_query-len")){
+					this.blastcache.put("Iteration_query-len", list.item(i).getTextContent());
+				}
 			}
 		}
 	}

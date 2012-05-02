@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import org.apache.log4j.Logger;
 
 import tools.Tools_Array;
+import tools.Tools_Math;
 import tools.Tools_String;
 import bio.objects.BasicContig;
 import bio.sequence.FourBitSequence;
@@ -24,12 +25,25 @@ public class ContigXT extends BasicContig{
 	private int[] contigs;
 	private int[] uniqs;
 	private int[] sizes;
-	public static short TOP_MATCHED = 0;
-	public static short COLOR_MATCHED = 1;
-	public static short UNMATCHED = 2;
+	public static short TOP_MATCHED =1;
+	public static short COLOR_MATCHED = 2;
+	public static short UNMATCHED =0;
 	private boolean colorinit;
 	private Logger logger = Logger.getRootLogger();
 	
+	
+	/*
+	 * Used to shift everything up to zero to more easily draw 
+	 */
+	public void tiltShift(){
+		int min = Tools_Math.getMinValue(this.reads_pos[0]);
+		if(min < 0){
+			min = Math.abs(min);
+			for(int i =0; i < this.reads_pos.length; i++){
+				this.reads_pos[0][i] +=min; 
+			}
+		}
+	}
 	
 	public void setBlasts(int[][] blasts){
 		this.blasts = blasts;
@@ -77,6 +91,7 @@ public class ContigXT extends BasicContig{
 	}
 	
 	public void initColors(){
+		logger.debug("Initialising colors for "+ getName());
 		uniqs = Tools_Array.getUniqueValues(this.contigs);
 		sizes = new int[uniqs.length];
 		for(int i = 0; i < contigs.length; i++){
@@ -90,19 +105,14 @@ public class ContigXT extends BasicContig{
 		//This needs to be betterified
 		Tools_Array.sortBothByFirst(sizes, uniqs);
 		for(int i = 0; i< contigs.length ; i++){
-			for(int j = uniqs.length-1; j > -1; j--){
-				if(contigs[i] == -1){
-					colors[i] = UNMATCHED;
-				}
-				else{
-					if(j == uniqs.length-1){
-						colors[i] = TOP_MATCHED;
-					}
-					else{
-						colors[i] = COLOR_MATCHED;
-						break;
-					}
-				}
+			if(contigs[i] == uniqs[uniqs.length-1]){
+				colors[i] = TOP_MATCHED;
+			}
+			else if(contigs[i] == -1){
+				colors[i] = UNMATCHED;
+			}
+			else{
+				colors[i] = COLOR_MATCHED;
 			}
 		}
 		colorinit=true;
@@ -134,7 +144,8 @@ public class ContigXT extends BasicContig{
 	
 	public void overlayContig(ContigXT xt, int top){
 		logger.debug("Overlaying Contig");
-		
+		this.tiltShift();
+		xt.tiltShift();
 		if(uniqs[uniqs.length-1] != top){
 			logger.debug("Recoloring...");
 			for(int i =0; i < colors.length; i++){
@@ -159,16 +170,17 @@ public class ContigXT extends BasicContig{
 			}
 		}
 		int offset_init = (int)Math.round((double)dif/(double)c);
-		if(offset_init < 0) this.offset=Math.abs(offset_init);
-		else xt.offset = Math.abs(offset_init);
+		if(offset_init < 0) this.offset+=Math.abs(offset_init);
+		else xt.offset += Math.abs(offset_init);
 	}
 	
 	public void getBlastData (XML_Blastx blastx) throws Exception{
+		logger.debug("Retrieveing data from blastx...");
 		int query_len = Tools_String.parseString2Int(blastx.getBlastTagContents("Iteration_query-len"));
 		LinkedList<Integer> starts = new LinkedList<Integer>();
 		LinkedList<Integer> stops = new LinkedList<Integer>();
-		for(int j =0; j < blastx.getNoOfHits(); j++){
-			for(int l =0; l < blastx.getNoOfHsps(j); l++){
+		for(int j =1; j < blastx.getNoOfHits()+1; j++){
+			for(int l =1; l < blastx.getNoOfHsps(j); l++){//Note +1 need to sort this out at some point>?????
 				Integer frame = Tools_String.parseString2Int(blastx.getHspTagContents("Hsp_hit-frame", j,l));
 				Integer start = Tools_String.parseString2Int(blastx.getHspTagContents("Hsp_hit-frame", j,l));
 				Integer stop = Tools_String.parseString2Int(blastx.getHspTagContents("Hsp_hit-frame", j,l));
@@ -195,6 +207,14 @@ public class ContigXT extends BasicContig{
 	
 	public int getContig(int index){
 		return this.contigs[index];
+	}
+	
+	public int[] getUniqs(){
+		return this.uniqs;
+	}
+	
+	public int[] getSizes(){
+		return this.sizes;
 	}
 }
  

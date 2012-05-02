@@ -61,4 +61,20 @@ public class Tools_Math {
 		return max;
 	}
 	
+	public static int getMaxValue(int data[]){
+		int o = data[0];
+		for(int i = 1; i < data.length; i++){
+			if(data[i] > o)o=data[i];
+		}
+		return o;
+	}
+	public static int getMinValue(int data[]){
+		int o = data[0];
+		for(int i = 1; i < data.length; i++){
+			if(data[i] < o)o=data[i];
+		}
+		return o;
+	}
+	
+	
 }

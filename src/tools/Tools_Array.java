@@ -3,6 +3,8 @@ package tools;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 public abstract class Tools_Array {
 
 	public static String[] mergeStrings(String[] a, String[] b){
@@ -93,5 +95,31 @@ public abstract class Tools_Array {
 			a[j + 1] = ai;
 			b[j + 1] = bi;
 		}
+	}
+
+	//A poor algorhythm, to be improved i'm sure
+	public static int[][] convert2DepthArray(int[][] blasts) {
+		int[] ends = new int[blasts[1].length];
+		for(int i =0; i < blasts[1].length; i++)ends[i]=blasts[0][i]+blasts[1][i];
+		int[] starts = blasts[0];
+		ArrayList<Integer> pos = new ArrayList<Integer>();
+		ArrayList<Integer> dep = new ArrayList<Integer>();
+		for(int i = 0 ; i < starts.length; i++){
+			pos.add(starts[i]);
+			dep.add(1);
+			pos.add(ends[i]);
+			dep.add(-1);
+		}
+		int[] poss = ListInt2int(pos);
+		int[] deps  = ListInt2int(dep);
+		Tools_Array.sortBothByFirst(poss, deps);
+		int[][] returned = new int[2][poss.length];
+		int depss = 0;
+		for(int i =0 ; i < poss.length; i++){
+			returned[0][i] = poss[i];
+			depss += deps[i];
+			returned[1][i] = depss;
+		}
+		return returned;
 	}
 }

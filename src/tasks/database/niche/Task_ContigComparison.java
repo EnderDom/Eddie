@@ -3,6 +3,7 @@ package tasks.database.niche;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -27,6 +28,7 @@ import tasks.MapManager;
 import tasks.Task;
 import tools.Tools_Array;
 import tools.Tools_File;
+import tools.Tools_Math;
 import tools.Tools_System;
 import tools.bio.graphics.Tools_RoughImages;
 import tools.graphics.Tools_Image;
@@ -52,6 +54,8 @@ public class Task_ContigComparison extends Task{
 	private BioSQL bs;
 	private boolean debug;
 	private File debugfile;
+	private static double contigcutoff = 0.2;
+	private boolean reads;
 	
 	public Task_ContigComparison(){
 		setHelpHeader("--This is the Help Message for the ContigComparison Task--");
@@ -67,6 +71,7 @@ public class Task_ContigComparison extends Task{
 		if(cmd.hasOption("d2"))division2 = cmd.getOptionValue("d2");
 		if(cmd.hasOption("b1"))blastfolder1 = cmd.getOptionValue("b1");
 		if(cmd.hasOption("b2"))blastfolder2 = cmd.getOptionValue("b2");
+		if(cmd.hasOption("reads"))reads=true;
 		if(cmd.hasOption("i")){
 			contignames = Tools_File.quickRead(new File(cmd.getOptionValue("i"))).split(Tools_System.getNewline());
 		}
@@ -96,6 +101,7 @@ public class Task_ContigComparison extends Task{
 		options.addOption(new Option("b1","blast1", true, "Blast folder for the first input"));
 		options.addOption(new Option("b2","blast2", true, "Blast folder for the second input"));
 		options.addOption(new Option("debug", false, "Output debug data dump"));
+		options.addOption(new Option("r","reads", false, "Draw read names on image"));
 	}
 	
 	public Options getOptions(){
@@ -103,11 +109,27 @@ public class Task_ContigComparison extends Task{
 	}
 	
 	/*
-	 * Status: Currently a bit shit
+	 * Forgive me, had paper revisions to do
+	 * John wanted to show the that there was
+	 * limited difference between the two
+	 * assemblies for the main contigs we were
+	 * talking about. This was my cobbled together
+	 * solution. Quite a lot of improvements could
+	 * and should be done. For a starts I hate the 
+	 * ContigFactory. I think a read2contig object 
+	 * could be created. And a simple contig object
+	 * which contains data. This would then be extended
+	 * to a 'graphical' contig which could be drawn in 
+	 * a variety of ways. Perhaps look into JalView and 
+	 * consider a way of implementing it so it would 
+	 * be easy for the contig to be drawn in a jalview sub
+	 * window. But for now I give you this shite.
+	 * 
 	 */
 	public void run(){
 		setComplete(started);
 		logger.debug("Started running Assembly Task @ "+Tools_System.getDateNow());
+		
 		if(testmode){
 			runTest();
 			return;
@@ -179,26 +201,46 @@ public class Task_ContigComparison extends Task{
 						int contig_id = bs.getBioEntry(manager.getCon(),name2id1.get(s), null, manager.getEddieDBID());
 						ContigFactory factory = new ContigFactory();
 						ContigXT contigxt = factory.getContigXT(manager,contig_id, division1);
+						contigxt.setName(contignames[i] + " - " + assembler1);
 						contigxt = getTopContigAndColors(contigxt, division2);
 						int topcontigid = contigxt.getTopContig();
 						String[] topcontigname = bs.getBioEntryNames(manager.getCon(), topcontigid);
 						logger.debug("Top Contig is: " + topcontigname[0]);
 						ContigXT othercontig = factory.getContigXT(manager, topcontigid, division2);
+						othercontig.setName(topcontigname[0] + " - " + assembler2);
 						othercontig = getTopContigAndColors(othercontig, division1);
-						othercontig.initColors();
 						contigxt.overlayContig(othercontig, topcontigid);
 						
-						logger.debug("Retrieving Blast Data");
-//						t = new File(contig2file1.get(s));
-//						try {
-//							XML_Blastx blastx = new XML_Blastx(t);
-//							contigxt.getBlastData(blastx);
-//						} 
-//						catch (Exception e) {
-//							logger.error("Failed to parse blast file " + t.getPath() + ", you sure this is a blast XML?");
-//						}
-//						logger.debug("About to retrieve top contig " + topcontigname[0]);
-//						t = new File(contig2file2.get(topcontigname[0]));
+						logger.debug("Retrieving Blast Data for "+name2id1.get(s));
+						t = new File(contig2file1.get(name2id1.get(s)));
+						ArrayList<String> blasts = new ArrayList<String>();
+						try {
+							XML_Blastx blastx = new XML_Blastx(t);
+							blasts.add("");
+							blasts.add("TOP 3 Blasts for " + contignames[i] + " - "+assembler1); 
+							blasts.add("");
+							for(int k =1; k < blastx.getNoOfHits() && k < 4;k ++){
+								blasts.add("HIT"+k+": "+blastx.getHitTagContents("Hit_def", k));
+							}
+						} 
+						catch (Exception e) {
+							logger.error("Failed to parse blast file " + t.getPath() + ", you sure this is a blast XML?",e);
+						}
+						logger.debug("About to retrieve contig " + topcontigname[0] +" blast data");
+						t = new File(contig2file2.get(topcontigname[2]));
+						try {
+							XML_Blastx blastx = new XML_Blastx(t);
+							blasts.add("TOP 3 Blasts for " + topcontigname[0] + " - "+assembler2);
+							blasts.add("");
+							for(int k =1; k < blastx.getNoOfHits() && k < 4;k ++){
+								blasts.add("HIT"+k+": "+blastx.getHitTagContents("Hit_def", k));
+							}
+							blasts.add("");
+						} 
+						catch (Exception e) {
+							logger.error("Failed to parse blast file " + t.getPath() + ", you sure this is a blast XML?", e);
+						}
+						logger.debug("About to retrieve top contig " + topcontigname[0]);
 						if(debug){
 							pushDebug("Main Contig: " + contignames[i]);
 							pushDebug("Contig identifier:" + name2id1.get(s));
@@ -230,11 +272,43 @@ public class Task_ContigComparison extends Task{
 								pushDebug(l[k]+" "+names[0]+" ("+names[2]+") " + " START: " + pos2[0][k] + " LEN: " +pos2[1][k]);
 							}
 						}
-						BufferedImage c1 = Tools_RoughImages.drawContigRough(contignames[i]+" - " + assembler1, false, contigxt.getReadPositions(), contigxt.getBlasts(), contigxt.getColors(), 10, 1);
-						BufferedImage c2 = Tools_RoughImages.drawContigRough(topcontigname[0] + " - " + assembler2, false, othercontig.getReadPositions(), othercontig.getBlasts(),  othercontig.getColors(), 10, 1);
+						if(mcount != 1)builder.nextPage();
+						builder.writeSimpleHeader("Assembly to Assembly Comparison of " + contignames[i] + " from Assembly " + assembler1);
+						builder.paragraph();
+						builder.writeLines(writeStats(contigxt, othercontig, assembler1, assembler2));
+						builder.writeSimpleHeader("Top Blasts:");
+						builder.writeLines(blasts.toArray(new String[0]));
+						builder.writeLines("Figure " + mcount + " shows a diagram of the two assemblies");
+						builder.nextPage();
+						builder.writeSimpleHeader("Figure " + mcount);
+
+						String[] reads1 = null;
+						String[] reads2 = null;
+						if(reads){
+							logger.debug("Getting reads, again... Did this somewhere else methinks?");
+							int[] reads1_ids = contigxt.getReadIDs();
+							reads1 =new String[reads1_ids.length];
+							for(int o =0;  o < reads1_ids.length ;o ++){
+								reads1[o] = bs.getBioEntryNames(manager.getCon(), reads1_ids[o])[0];
+							}
+							reads1_ids = othercontig.getReadIDs();
+							reads2 = new String[reads1_ids.length];
+							for(int o =0;  o < reads1_ids.length ; o ++){
+								reads2[o] = bs.getBioEntryNames(manager.getCon(), reads1_ids[o])[0];
+							}
+						}
+						BufferedImage c1 = Tools_RoughImages.drawContigRough(contigxt.getName(), reads1, false, contigxt.getReadPositions(), contigxt.getBlasts(), contigxt.getColors(), 10, 1);
+						BufferedImage c2 = Tools_RoughImages.drawContigRough(othercontig.getName(), reads2, false, othercontig.getReadPositions(), othercontig.getBlasts(),  othercontig.getColors(), 10, 1);
 						BufferedImage c3 = Tools_Image.simpleMerge(c1, contigxt.getOffset(), c2, othercontig.getOffset(),10, Tools_RoughImages.background, Tools_RoughImages.defaultBGR);
 						builder.drawBufferedImage(c3);
 						builder.nextPage();
+						builder.writeLines("Figure " + mcount + " shows the "+contignames[0]+" from the "+assembler1+" aligned horizontally with the most similar contig, in this case "
+								+topcontigname+" from "+assembler2+
+								", based on comparing reads used in the assembly." +
+								". They have been labbelled with Read Names. Green" +
+								" bars represent reads shared by both contigs. " +
+								"Yellow bars represent reads which are present in the other assembly, but not in the top paired contig (the one in the figure). " +
+								"Red bars represent reads which were not included in the " +assembler2 +" assembly", 8);
 					}
 				 }
 			 }
@@ -244,7 +318,11 @@ public class Task_ContigComparison extends Task{
 			return;
 		}
 		if(mcount == contignames.length)logger.debug("Dealt with " + mcount + " of " + contignames.length);
-		else logger.debug("Failed to deal with all contigs " +(contignames.length-mcount) + " of " + contignames.length + " failed");
+		else{
+			logger.error("Failed to deal with all contigs " +(contignames.length-mcount) + " of " + contignames.length + " failed");
+			logger.info("Make sure contig names are the same as appear in the assembly ace file");
+		}
+		
 		try{
 			builder.save(output+".pdf");
 		}
@@ -256,6 +334,43 @@ public class Task_ContigComparison extends Task{
 		}
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
+	}
+	
+	public String[] writeStats(ContigXT main, ContigXT other, String assembler1, String assembler2){
+		ArrayList<String> towrite = new ArrayList<String>();
+		int[] uniqs = main.getUniqs();
+		int[] sizes = main.getSizes();
+		
+		towrite.add(new String("Reads within "+main.getName() + " are included within (Show contigs >"+contigcutoff*100+"% match):"));
+		towrite.add("");
+		String top = getStats(uniqs, sizes, towrite, assembler2);
+		towrite.add("");
+		towrite.add(new String("Reads within the top contig : "+top + " match reads in these contigs from " + assembler1));
+		towrite.add("");
+		uniqs = other.getUniqs();
+		sizes = other.getSizes();
+		getStats(uniqs, sizes, towrite, assembler1);
+		towrite.add("");
+		return towrite.toArray(new String[0]);
+	}
+	
+	public String getStats(int[] uniqs, int[] sizes, ArrayList<String> towrite, String assembler2){
+		double d = 0;
+		double total = (double)Tools_Math.sum(sizes);
+		String top = "";
+		for(int i =uniqs.length-1 ; i >-1; i--){
+			d = (double)sizes[i]/total;
+			if(i ==uniqs.length-1){
+				String[] names =  bs.getBioEntryNames(manager.getCon(), uniqs[i]);
+				towrite.add("__"+(i+1)+") " +names[0] + " - " + assembler2 + " : " + sizes[i]+ " reads ("+ Tools_Math.round(d*100,2)+"%)");
+				top = names[0];
+			}
+			else if(d > contigcutoff){
+				String[] names =  bs.getBioEntryNames(manager.getCon(), uniqs[i]);
+				towrite.add("__"+(i+1)+") " +names[0] + " - " + assembler2 + " : " + sizes[i]+ " reads ("+ Tools_Math.round(d*100,2)+"%)");
+			}
+		}
+		return top;
 	}
 		
 	public ContigXT getTopContigAndColors(ContigXT xt, String division){
@@ -335,8 +450,8 @@ public class Task_ContigComparison extends Task{
 		int[][]b3 = new int[][]{b1,b2};
 		
 		logger.debug("Generating Images");
-		BufferedImage c1 = Tools_RoughImages.drawContigRough("Contig1",false, pos1, b3, colors1, 10, 5);
-		BufferedImage c2 = Tools_RoughImages.drawContigRough("Contig2",false, pos2, b3, colors2, 10, 5);
+		BufferedImage c1 = Tools_RoughImages.drawContigRough("Contig1",null,false, pos1, b3, colors1, 10, 5);
+		BufferedImage c2 = Tools_RoughImages.drawContigRough("Contig2",null,false, pos2, b3, colors2, 10, 5);
 		BufferedImage c3 = Tools_Image.simpleMerge(c1, 3, c2, 0,10, Tools_RoughImages.background, Tools_RoughImages.defaultBGR);
 		logger.debug("Saving Images");
 		Tools_Image.image2PngFile("test1", c1);

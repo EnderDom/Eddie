@@ -7,6 +7,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 
+import tools.Tools_Array;
 import tools.Tools_Math;
 
 /*
@@ -18,14 +19,15 @@ public class Tools_RoughImages {
 	public static int margin = 15;
 	public static int nameheader =20;
 	public static Color background = Color.white;
-	public static Color[] defaultcolors = new Color[]{new Color(255,0,0), new Color(0,255,0)};
+	public static Color[] defaultcolors = new Color[]{new Color(255,0,0), new Color(0,255,0),  new Color(255,255,0),};
 	public static int defaultBGR = BufferedImage.TYPE_USHORT_565_RGB;
 	/*
 	 * INDEV
 	 */
-	public static BufferedImage drawContigRough(String name, boolean boxed, int[][] pos, int[][] blasts, short[] colors, int heightbar, int widthperbp){
+	public static BufferedImage drawContigRough(String name, String[] reads, boolean boxed, int[][] pos, int[][] blasts, short[] colors, int heightbar, int widthperbp){
 		
 		//Get width of image
+		
 		int maxwidth = Tools_Math.getMaxXValue(pos)*widthperbp;
 		int height= pos[0].length*heightbar;
 		//Add default margins
@@ -62,9 +64,7 @@ public class Tools_RoughImages {
 		}
 		if(blasts != null){
 			h+=heightbar;
-			int blastalpha= 2;
-			if(blasts[0].length < 125)blastalpha = (int)Math.round((double)255/(double)blasts[0].length);
-			Color blast = new Color(0, 0, 255,blastalpha);
+			Color blast = new Color(0, 0, 255);		
 			g2.setColor(blast);
 			for(int i =0; i < blasts[0].length; i++){
 				blasts[0][i]*=widthperbp;
@@ -81,6 +81,10 @@ public class Tools_RoughImages {
 			g2.fillRect((pos[0][i]*widthperbp)+margin, h, (pos[1][i]*widthperbp), heightbar);
 			g2.setColor(Color.black);
 			g2.drawRect((pos[0][i]*widthperbp)+margin, h, (pos[1][i]*widthperbp), heightbar);
+			if(reads != null){
+				g2.setFont(new Font("Times New Roman", Font.PLAIN, 7));
+				g2.drawString(reads[i], (pos[0][i]*widthperbp)+margin+1, h+heightbar-1);
+			}
 			h+=heightbar;
 		}
 		image.flush();

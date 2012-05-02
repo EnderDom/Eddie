@@ -232,10 +232,10 @@ public class ACEFileParser implements Iterator<ACERecord>{
 	public void parseAS(String line){
 		String[] s = line.split(" ");
 		if(s.length >2){
-			logger.info("File claims to contain " + s[1] + " contigs made of "+s[2]+" reads");
-			Integer i = Tools_String.parseString2Int(s[1]);
+			logger.info("File claims to contain " + s[s.length-2] + " contigs made of "+s[s.length-1]+" reads");
+			Integer i = Tools_String.parseString2Int(s[s.length-1]);
 			if(i != null)this.contigs = i; 
-			i = Tools_String.parseString2Int(s[2]);
+			i = Tools_String.parseString2Int(s[s.length-2]);
 			if(i != null)this.reads = i;
 			
 		}

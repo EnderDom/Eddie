@@ -78,12 +78,6 @@ public class ACERecord implements Cloneable {
 	
 	public void setReadName(String readname){
 		seqs[readcount] = new FourBitSequence(current.toString());
-		if(readcount-1 > -1){
-			if(this.getReadOffset(readcount-1) < 0){
-				seqs[readcount].toReverseComp();
-				offset[0][readcount-1]=this.getConsensus().getLength()+this.getReadOffset(readcount-1);
-			}
-		}
 		if(seqs[readcount].length() != expectedlength && seqs[readcount].getActualLength() != expectedlength){
 			logger.warn("Expected length "+expectedlength+" of the read is not equal to its total("+seqs[readcount].getActualLength()+") or actual("+seqs[readcount].length()+") ([!*]) length ");
 		}
