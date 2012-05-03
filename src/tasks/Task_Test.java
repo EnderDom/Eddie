@@ -24,6 +24,7 @@ import bio.assembly.ACEFileParser;
 import bio.assembly.ACERecord;
 
 import tools.Tools_Array;
+import tools.Tools_Fun;
 import tools.Tools_String;
 import ui.PropertyLoader;
 import ui.UI;
@@ -36,10 +37,11 @@ import gui.EddieGUI;
 
 public class Task_Test extends Task{
 
-	UI ui;
-	PropertyLoader load;
-	CommandLine cmd;
-	Logger logger = Logger.getLogger("Testing");
+	protected UI ui; 
+	protected PropertyLoader load;
+	protected CommandLine cmd;
+	protected Logger logger = Logger.getLogger("Testing");
+	protected Checklist checklist;
 	
 	public Task_Test(){
 		complete = -1;
@@ -55,7 +57,7 @@ public class Task_Test extends Task{
 		try{
 			System.out.println("Running test");
 			
-			testSortMethod();
+			testRot13();
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -86,6 +88,20 @@ public class Task_Test extends Task{
 	/*															*/
 	/*															*/
 	/************************************************************/
+	
+	public void testChecklist(){
+		
+	}
+	
+	public void testRot13(){
+		String hw = new String("hello my name is dominic.");
+		System.out.println(hw);
+		hw = Tools_Fun.rot13(hw);
+		System.out.println(hw);
+		hw = Tools_Fun.rot13(hw);
+		System.out.println(hw);
+	}
+	
 	
 	public void testSortMethod(){
 		int a[] = new int[]{5,5,5,1,2,2,2,2,2,100};
@@ -211,5 +227,33 @@ public class Task_Test extends Task{
 		System.out.println();
 	}
 	
+	public void openChecklist(){
+		checklist = new Checklist(ui.getPropertyLoader().getWorkspace(), this.getClass().getName());
+		if(checklist.check()){
+			logger.trace("Moved to recovering past Task");
+			int userinput = ui.requiresUserYNI("There is an unfinished task, Details: "+checklist.getLast()+" Would you like to recover it (yes), delete it (no) or ignore it (cancel)?","Recovered Unfinished Task...");
+			if(userinput == 1){
+				if(!checklist.closeLastTask()){
+					logger.error("Failed to delete last task");
+				}
+				else{
+					logger.debug("Cleared Task");
+				}
+			}
+			if(userinput == 0){
+				args = checklist.getComment();
+				if(args != null){
+					super.parseArgs(args.split(" "));
+					checklist.recoverLast();
+				}
+				else{
+					logger.error("An error occured, Comment does not contain arguments");
+				}
+			}
+			else{
+				checklist = new Checklist(ui.getPropertyLoader().getWorkspace(), this.getClass().getName());
+			}
+		}
+	}
 }
 

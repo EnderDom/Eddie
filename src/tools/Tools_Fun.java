@@ -5,15 +5,17 @@ package tools;
  */
 
 public abstract class Tools_Fun {
-
-	public static String getExitMessage(){
+	
+	public static String getFunnyMessage(){
 		String[] messages = new String[]{
 				";)",
 				"I'm Sorry Dave, but I just can't do that.",
-				"ciao",
-				"bye bye",
-				"bye",
-				"Eddie protects the USER"
+				"Eddie protects the USER",
+				"User intelligence test enabled, press computer power button to continue",
+				"Row row row your boat, gently down the stream. Merrily merrily merrily merrily. Life is but a dream",
+				"Warp 5 Mr.Pilot. Engage!",
+				"This application is sponsored by Soylent Green, No artificial colors or preservatives. Made entirely from vegetables *who couldn't fight back*",
+				"EnderDom is currently unavailable, as he remains mostly dead, in order to avoid paying taxes"
 		};
 		
 		return getRandom(messages);
@@ -32,5 +34,21 @@ public abstract class Tools_Fun {
 		System.out.println("Contact: Please speak to Dr. Smith at the Institute");
 		System.out.println("");
 		System.out.println("");
-	}	
+	}
+	
+	public static String rot13(String s){
+		String[] alphabet = new String[]{"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"};
+		String[] alphabet2 = new String[]{"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+		s=s.toLowerCase();
+		for(int j =0; j < alphabet.length; j++){
+			if(j+13 < 26){
+				s=s.replaceAll(alphabet[j], alphabet2[j+13]);
+			}
+			else{
+				s=s.replaceAll(alphabet[j], alphabet2[j+13-26]);
+			}
+		}
+		s=s.toLowerCase();
+		return s;
+	}
 }

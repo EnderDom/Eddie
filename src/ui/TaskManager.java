@@ -6,12 +6,13 @@ import org.apache.log4j.Logger;
 
 import databases.legacy.DBInterface;
 
-
 import tasks.Task;
+import tools.Tools_Fun;
 
 
 public class TaskManager extends Thread{
 
+	Logger logger = Logger.getRootLogger();
 	DBInterface db;
 	int corepoollimit;
 	int auxilpoollimit;
@@ -29,7 +30,6 @@ public class TaskManager extends Thread{
 	private boolean started;
 	int taskcounter;
 	UI top;
-	Logger log = Logger.getLogger("TaskManager");
 	
 	public TaskManager(int i, int j){
 		this.corepoollimit = i;
@@ -40,9 +40,9 @@ public class TaskManager extends Thread{
 	}
 	
 	public void addTask(Task task) {
-		log.debug("Task add to the task list");
+		logger.debug("Task add to the task list");
 		if(task.isHelpmode()){
-			log.debug("Task went to helpmode, not adding to Task Manager");
+			logger.debug("Task went to helpmode, not adding to Task Manager");
 		}
 		else{
 			if(task.isCore()){
@@ -56,6 +56,9 @@ public class TaskManager extends Thread{
 				task.setID(taskcounter);
 				logTask(task);
 				taskcounter++;
+				if(taskcounter % 100 == 0){
+					logger.debug(Tools_Fun.getFunnyMessage());
+				}
 			}
 			if(!started){
 				run();
@@ -116,7 +119,7 @@ public class TaskManager extends Thread{
 	
 	public void run(){
 		started = true;
-		log.debug("Task Manager has been started");
+		logger.debug("Task Manager has been started");
 		coretasklist = new Task[corepoollimit];
 		auxiltasklist = new Task[auxilpoollimit];
 		Core = new ExtendedExecutor(corepoollimit);
@@ -134,13 +137,13 @@ public class TaskManager extends Thread{
 				try {
 					sleep(10000);
 				} catch (InterruptedException e) {
-					log.error("Interrupt",e);
+					logger.error("Interrupt",e);
 				}
 			}
 		}
 		Core.shutdown();
 		Auxil.shutdown();
-		log.debug("Task Manager has no more tasks, shutting down");
+		logger.debug("Task Manager has no more tasks, shutting down");
 		started = false;
 	}
 	

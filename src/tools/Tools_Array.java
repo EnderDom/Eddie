@@ -3,8 +3,6 @@ package tools;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 public abstract class Tools_Array {
 
 	public static String[] mergeStrings(String[] a, String[] b){

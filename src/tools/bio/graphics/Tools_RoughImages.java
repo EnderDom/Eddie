@@ -7,7 +7,6 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 
-import tools.Tools_Array;
 import tools.Tools_Math;
 
 /*
@@ -24,18 +23,42 @@ public class Tools_RoughImages {
 	/*
 	 * INDEV
 	 */
-	public static BufferedImage drawContigRough(String name, String[] reads, boolean boxed, int[][] pos, int[][] blasts, short[] colors, int heightbar, int widthperbp){
+	public static BufferedImage drawContigRough(String name, String[] reads, boolean boxed, int[][] pos, int[][] blasts, short[] colors, int heightbar, double widthperbp){
 		
 		//Get width of image
+		if(reads == null || reads.length  < 1){
+			BufferedImage image = new BufferedImage(100, 100, defaultBGR);
+			Graphics g = image.getGraphics();
+			Graphics2D g2 = (Graphics2D)g;
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+			g2.setColor(background);
+			g2.drawRect(0, 0, 100, 100);
+			g2.fillRect(0, 0, 100, 100);
+			g2.setFont(new Font("Times New Roman", Font.PLAIN, 12));
+			g2.setColor(Color.black);
+			g2.drawString("No Complement Contig Found",1, 50);
+			image.flush();
+			return image;
+		}
+		if(reads.length > 50){
+			reads = null;
+		}
+		int maxwidth = (int)Math.round((double)Tools_Math.getMaxXValue(pos)*widthperbp);
+		if(maxwidth > 60000){
+			widthperbp = 60000.0/(double)Tools_Math.getMaxXValue(pos);
+			maxwidth = (int)Math.round((double)Tools_Math.getMaxXValue(pos)*widthperbp);
+		}
 		
-		int maxwidth = Tools_Math.getMaxXValue(pos)*widthperbp;
 		int height= pos[0].length*heightbar;
 		//Add default margins
 		maxwidth+=margin*2;
 		height +=margin*2;
 		if(name != null) height+=nameheader;
 		if(blasts != null)height +=heightbar*3; //Additionalbar, plus 2 margins
-		
+		if(height > 30000){
+			height = 30000;
+			heightbar =3;
+		}
 		BufferedImage image = new BufferedImage(maxwidth, height, defaultBGR);
 		Graphics g = image.getGraphics();
 		Graphics2D g2 = (Graphics2D)g;
@@ -78,12 +101,12 @@ public class Tools_RoughImages {
 				generateMoreColors(colors[i]);
 			}
 			g2.setColor(defaultcolors[colors[i]]);
-			g2.fillRect((pos[0][i]*widthperbp)+margin, h, (pos[1][i]*widthperbp), heightbar);
+			g2.fillRect((int)Math.round(pos[0][i]*widthperbp) +margin, h, (int)Math.round(pos[1][i]*widthperbp), heightbar);
 			g2.setColor(Color.black);
-			g2.drawRect((pos[0][i]*widthperbp)+margin, h, (pos[1][i]*widthperbp), heightbar);
+			g2.drawRect((int)Math.round(pos[0][i]*widthperbp)+margin, h, (int)Math.round(pos[1][i]*widthperbp), heightbar);
 			if(reads != null){
 				g2.setFont(new Font("Times New Roman", Font.PLAIN, 7));
-				g2.drawString(reads[i], (pos[0][i]*widthperbp)+margin+1, h+heightbar-1);
+				g2.drawString(reads[i], (int)Math.round(pos[0][i]*widthperbp)+margin+1, h+heightbar-1);
 			}
 			h+=heightbar;
 		}

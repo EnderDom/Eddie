@@ -31,6 +31,9 @@ public class StreamGobbler extends Thread{
 	            	if(cache){
 	            		buffer.append(line + newline);
 	            	}
+	            	else{
+	            		//Send to digital oblivion
+	            	}
             } 
         catch (IOException ioe){
         	Logger.getRootLogger().warn("IO Issue", ioe);

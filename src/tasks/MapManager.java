@@ -44,7 +44,7 @@ public class MapManager{
 	private static String indexFileName= "index_maps.xml";
 	private static String separator =":##:"; //Whatever this is, it should be something that wouldn't exist in filepath	
 	private File mapfoldere;
-	private static String mapfileext = "eddmap";
+	private static String mapfileext = ".eddmap";
 	Logger logger = Logger.getRootLogger();
 	Document mapindex;
 	
@@ -85,7 +85,6 @@ public class MapManager{
 		LinkedList<Element> remove = null;
 		for(int i =0; i < list.getLength(); i++){
 			Element n = (Element)list.item(i);
-			
 			if(n.getTextContent().equals(one)||n.getTextContent().equals(two)){
 				logger.debug("Previous Map build found");
 				this.cachedMapFile = new String[3];
@@ -338,3 +337,4 @@ public class MapManager{
 	}
 	
 }
+

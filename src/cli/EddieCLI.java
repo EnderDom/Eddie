@@ -77,7 +77,7 @@ public class EddieCLI implements UI {
 		while(sc.hasNext()){
 			response = sc.next();
 			if(response.contentEquals("exit")){
-				System.out.println("Eddie>"+Tools_Fun.getExitMessage());
+				System.out.println("Eddie>"+Tools_Fun.getFunnyMessage());
 				break;
 			}
 			else{

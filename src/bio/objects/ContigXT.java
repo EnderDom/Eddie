@@ -92,30 +92,36 @@ public class ContigXT extends BasicContig{
 	
 	public void initColors(){
 		logger.debug("Initialising colors for "+ getName());
-		uniqs = Tools_Array.getUniqueValues(this.contigs);
-		sizes = new int[uniqs.length];
-		for(int i = 0; i < contigs.length; i++){
-			for(int j =0; j < uniqs.length; j++){
-				if(contigs[i] == uniqs[j]){
-					sizes[j]++;
-					break;
+		if(contigs.length > 0){
+			uniqs = Tools_Array.getUniqueValues(this.contigs);
+			sizes = new int[uniqs.length];
+			for(int i = 0; i < contigs.length; i++){
+				for(int j =0; j < uniqs.length; j++){
+					if(contigs[i] == uniqs[j]){
+						sizes[j]++;
+						break;
+					}
 				}
 			}
-		}
-		//This needs to be betterified
-		Tools_Array.sortBothByFirst(sizes, uniqs);
-		for(int i = 0; i< contigs.length ; i++){
-			if(contigs[i] == uniqs[uniqs.length-1]){
-				colors[i] = TOP_MATCHED;
+			Tools_Array.sortBothByFirst(sizes, uniqs);
+			for(int i = 0; i< contigs.length ; i++){
+				if(contigs[i] == uniqs[uniqs.length-1]){
+					colors[i] = TOP_MATCHED;
+				}
+				else if(contigs[i] == -1){
+					colors[i] = UNMATCHED;
+				}
+				else{
+					colors[i] = COLOR_MATCHED;
+				}
 			}
-			else if(contigs[i] == -1){
+			colorinit=true;
+		}
+		else{
+			for(int i = 0; i< contigs.length ; i++){
 				colors[i] = UNMATCHED;
 			}
-			else{
-				colors[i] = COLOR_MATCHED;
-			}
 		}
-		colorinit=true;
 	}
 	
 	public int getTopContig(){
