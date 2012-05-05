@@ -1,4 +1,6 @@
-package tasks;
+package tasks.testing;
+
+import tasks.Task;
 
 public class DummyTask extends Task {
 

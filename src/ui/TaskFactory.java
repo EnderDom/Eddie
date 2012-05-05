@@ -1,7 +1,7 @@
 package ui;
 
-import tasks.DummyTask;
 import tasks.Task;
+import tasks.testing.DummyTask;
 
 public class TaskFactory {
 

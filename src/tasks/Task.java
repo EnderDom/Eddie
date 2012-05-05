@@ -21,7 +21,7 @@ import tools.Tools_Task;
 import ui.TaskManager;
 import ui.UI;
 
-public class Task implements Runnable, Future<Object> {
+public abstract class Task implements Runnable, Future<Object> {
 
 	private int id;
 	private boolean core;
@@ -179,11 +179,12 @@ public class Task implements Runnable, Future<Object> {
 			return false;
 		}
 	}
+	
 	public int getComplete() {
 		return complete;
 	}
 
-	public void setComplete(int complete) {
+	protected void setComplete(int complete) {
 		this.complete = complete;
 	}
 
@@ -220,7 +221,7 @@ public class Task implements Runnable, Future<Object> {
 		this.helpmode = helpmode;
 	}
 
-	public void runTest(){
+	protected void runTest(){
 		System.out.println("");
 		System.out.println("--TEST MODE--");
 		System.out.println("");

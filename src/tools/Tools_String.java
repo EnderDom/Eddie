@@ -2,7 +2,10 @@ package tools;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
@@ -123,5 +126,16 @@ public abstract class Tools_String {
 	public static List<String> sortStringsByLength(List<String> list){
 		Collections.sort(list, new Tools_String_Comparator());
 		return list;
+	}
+	
+	public static String[] pattern2List(Pattern p, String s){
+		Matcher m = p.matcher(s);
+		LinkedList<String> strs = new LinkedList<String>();
+		int start = 0;
+		while(m.find(start)){
+			strs.add(m.group());
+			start = m.end();
+		}
+		return strs.toArray(new String[0]);
 	}
 }

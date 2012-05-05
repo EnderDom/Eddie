@@ -72,9 +72,10 @@ public class PropertyLoader implements Module{
 	public String[] args;
 	public String modulename;
 	private String slash;
-	
+
+	//DO NOT CHANGE POSITIONS!  
 	public static String[] defaultKeys = new String[]{"DBHOST", "DBNAME", "DBUSER", "AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR", "ESTSCAN_BIN", "FILES_XML"};
-	public static String[] defaultKeysUN = new String[]{"PREFLNF","MODULES", "VERSION","DBTYPE","DBDRIVER"};
+	public static String[] defaultKeysUN = new String[]{"PREFLNF","MODULES", "VERSION","DBTYPE","DBDRIVER", "TESTDATADIR"};
 	
 	public PropertyLoader() {
 		rootfolder = getEnvirons();
@@ -450,7 +451,7 @@ public class PropertyLoader implements Module{
 	
 	public String[][] getUnchangableStats(){
 		String[] stats = defaultKeysUN;
-		String[] stats_val = new String[]{defaultlnf, rootfolder+"Modules"+Tools_System.getFilepathSeparator(), guiversion+"","mysql","com.mysql.jdbc.Driver"};
+		String[] stats_val = new String[]{defaultlnf, rootfolder+"Modules"+Tools_System.getFilepathSeparator(), guiversion+"","mysql","com.mysql.jdbc.Driver", "/home/dominic/bioapps/eddie4/test/"};
 		String[][] ret = new String[2][stats.length];
 		ret[0] = stats;
 		ret[1] = stats_val;
@@ -514,6 +515,10 @@ public class PropertyLoader implements Module{
 		s[3] =this.getProp("DBNAME");
 		s[4] =this.getProp("DBUSER");
 		return s;
+	}
+	
+	public String getTestDataDir(){
+		return this.getPropOrSet("TESTDATADIR", "/home/dominic/bioapps/eddie4/test/");
 	}
 	
 	/****************************************************************************/

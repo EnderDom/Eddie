@@ -158,9 +158,12 @@ public class PDFBuilder {
 		StringBuffer builder = new StringBuffer();
 		for(c =0; c < s.length ; c++){
 			float strlen = getWidthofString(s[c]) ;
-			if(currentheight+margin > pageHeight){ //If new page needed
+			if(currentheight+margin > pageHeight || currentheight-margin < 0){ //If new page needed
 				nextPage();
-				currentheight = pageHeight-margin;
+				contentStream = new PDPageContentStream(document, currentpage, true, true);
+				contentStream.beginText();
+				contentStream.setFont(font, fontsize );
+				contentStream.moveTextPositionByAmount(margin, currentheight );
 			}
 			if(len + strlen > this.pageWidth-(margin*2)){ //If adding word makes line too long
 				contentStream.drawString(builder.toString());
@@ -188,7 +191,10 @@ public class PDFBuilder {
 		if(builder.length() > 0){
 			if(currentheight+margin > pageHeight){
 				nextPage();
-				currentheight = margin;
+				contentStream = new PDPageContentStream(document, currentpage, true, true);
+				contentStream.beginText();
+				contentStream.setFont(font, fontsize );
+				contentStream.moveTextPositionByAmount(margin, currentheight );
 			}
 			contentStream.drawString(builder.toString());
 			contentStream.moveTextPositionByAmount(0, -lineheight);

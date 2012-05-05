@@ -1,6 +1,7 @@
 package tools.graphics;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -12,6 +13,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import javax.imageio.ImageIO;
+
+import tools.Tools_System;
+import ui.PropertyLoader;
 
 public class Tools_Image {
 
@@ -81,8 +85,7 @@ public class Tools_Image {
 		return image;
 	}
 	
-	public static boolean image2File(String filepath, BufferedImage img, String filetype){
-		File outputfile = new File(filepath+"."+filetype);
+	public static boolean image2File(File outputfile, BufferedImage img, String filetype){
 		try {
 			ImageIO.write(img, filetype, outputfile);
 			return true;
@@ -90,6 +93,11 @@ public class Tools_Image {
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	public static boolean image2File(String filepath, BufferedImage img, String filetype){
+		File outputfile = new File(filepath+"."+filetype);
+		return image2File(outputfile, img, filetype);
 	}
 	
 	public static boolean image2PngFile(String filepath,BufferedImage img){
@@ -104,6 +112,27 @@ public class Tools_Image {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		ImageIO.write(img,"png",os);
 		return new ByteArrayInputStream(os.toByteArray());
+	}
+	
+	public static BufferedImage drawTestImage(){
+		BufferedImage image = new BufferedImage(200,200,BufferedImage.TYPE_4BYTE_ABGR);
+		
+		Graphics g = image.getGraphics();
+		Graphics2D g2 = (Graphics2D)g;
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+		g2.setColor(Color.white);
+		g2.drawRect(0, 0, 200, 200);
+		g2.fillRect(0, 0, 200, 200);
+		g2.setColor(Color.black);
+		g2.drawRect(50, 50, 100, 100);
+		g2.setColor(Color.orange);
+		g2.fillRect(50, 50, 100, 100);
+		g2.setColor(Color.black);
+		g2.setFont(new Font("Times New Roman", Font.PLAIN, 12));
+		g2.drawString("TEST IMAGE BY Eddie v" + PropertyLoader.getFullVersion(), 75, 75);
+		g2.drawString(Tools_System.getDateNow(), 75, 85);
+		g2.drawString(System.getProperty("os.name")+" " + System.getProperty("os.arch"), 75, 95);
+		return image;
 	}
 	
 }

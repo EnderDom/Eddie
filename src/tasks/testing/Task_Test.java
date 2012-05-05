@@ -1,4 +1,4 @@
-package tasks;
+package tasks.testing;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,6 +23,8 @@ import databases.manager.DatabaseManager;
 import bio.assembly.ACEFileParser;
 import bio.assembly.ACERecord;
 
+import tasks.Checklist;
+import tasks.Task;
 import tools.Tools_Array;
 import tools.Tools_Fun;
 import tools.Tools_String;
