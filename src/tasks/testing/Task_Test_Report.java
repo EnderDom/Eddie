@@ -88,6 +88,7 @@ public class Task_Test_Report extends Task{
 		}
 		logger.debug("Got hrefs");
 		for(int i = 0 ; i < list.size(); i++){
+			logger.debug("Page "+i);
 			String s1 = Tools_Web.urlReader(root+list.get(i));
 			//String[] imgs = Tools_Web.stripImages(s1);
 			int start = -1;
@@ -97,24 +98,27 @@ public class Task_Test_Report extends Task{
 			}
 			String[] s11 = s1.split("<P>");
 			for(int j =0;j < s11.length; j++)s11[j]=s11[j].replaceAll("<(.*?)>", "");
-			
-			//TXT
-			Report report = new Report();
-			report.setFileAndType(testfolder+defaultout+Tools_System.getFilepathSeparator()+"alice"+i+".txt", Report.OUT_TEXT);
-			report.addParagraphs(s11);
-			report.saveAndClose();
-			
+
 			//HTML
-			report = new Report();
+			logger.debug("Writing to HTML File");
+			Report report = new Report();
 			report.setFileAndType(testfolder+defaultout+Tools_System.getFilepathSeparator()+"alice"+i+".html", Report.OUT_HTML);
 			report.addParagraphs(s11);
 			report.saveAndClose();
 			
+			//TXT
+//			logger.debug("Writing to Text File");
+//			Report report = new Report();
+//			report.setFileAndType(testfolder+defaultout+Tools_System.getFilepathSeparator()+"alice"+i+".txt", Report.OUT_TEXT);
+//			report.addParagraphs(s11);
+//			report.saveAndClose();
+			
 			//PDF
-			report = new Report();
-			report.setFileAndType(testfolder+defaultout+Tools_System.getFilepathSeparator()+"alice"+i+".pdf", Report.OUT_PDF);
-			report.addParagraphs(s11);
-			report.saveAndClose();
+//			logger.debug("Writing to PDF File, err... expect errors");
+//			report = new Report();
+//			report.setFileAndType(testfolder+defaultout+Tools_System.getFilepathSeparator()+"alice"+i+".pdf", Report.OUT_PDF);
+//			report.addParagraphs(s11);
+//			report.saveAndClose();
 		}
 	}
 	

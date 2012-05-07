@@ -131,6 +131,44 @@ public class Report {
 		}
 	}
 
+	public boolean addHeader(String s){
+		if(outtype == OUT_HTML){
+			try{
+				if(!paragraphStart){
+					s = "</p>"+s;
+				}
+				addParagraphEnd=false;				
+				writer.write("<h2>"+s+"</h2>");
+				writer.flush();
+				return true;
+			}
+			catch(IOException io){
+				logger.error("Failed to write to File", io);
+				return false;
+			}
+		}
+		if(outtype == OUT_PDF){
+			try{
+				if(!paragraphStart){
+					builder.paragraph();
+					paragraphStart=true;
+				}
+				builder.writeSimpleHeader(s);
+				return true;
+			}
+			catch(IOException io){
+				logger.error("Failed to write to PDF", io);
+				return false;
+			}
+		}
+		if(outtype == OUT_TEXT){
+			return addLine("----------"+s.toUpperCase()+"-------");
+		}
+		else{
+			return false;
+		}
+	}
+	
 	public boolean addLine(String s){
 		if(outtype == OUT_TEXT){
 			try{
@@ -210,6 +248,16 @@ public class Report {
 	public boolean saveAndClose(){
 		if(outtype == OUT_TEXT || outtype == OUT_HTML){
 			try{
+				if(outtype == OUT_HTML){
+					if(addParagraphEnd){
+						writer.write("</p></html>");
+						writer.flush();
+					}
+					else{
+						writer.write("</p></html>");
+						writer.flush();
+					}
+				}
 				writer.close();
 				return true;
 			}
@@ -242,5 +290,10 @@ public class Report {
 		else{
 			this.defaultHeader = "<head>"+s+"</head>";
 		}
+	}
+
+
+	public void addAsOneParagraph(String string) {
+		addAsOneParagraph(new String[]{string});
 	}
 }

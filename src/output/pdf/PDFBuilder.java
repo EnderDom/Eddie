@@ -25,9 +25,19 @@ import tools.Tools_System;
 import ui.PropertyLoader;
 
 /**
- * Currently Sketchy at best but does the job
+ *
  * 
  * @author Dominic Wood
+ *
+ *
+ * This just doesn't work
+ * 
+ * If I there was a @Borked tag I'd add it 
+ * I may switch to iTextPDF instead as much
+ * as I don't want to give up, I just can't
+ * understand what the problem is here. (It
+ * undoubtably is something i've miss understood)
+ * 
  *
  */
 

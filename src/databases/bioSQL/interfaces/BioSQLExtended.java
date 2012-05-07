@@ -45,9 +45,18 @@ public interface BioSQLExtended {
 	
 	public boolean mapRead2Contig(Connection con, BioSQL boss, int contig_id, int read_id, int programid, int start, int stop, int strand);
 	
+	/**
+	 * 
+	 * @param con
+	 * @param bioentry_id
+	 * @return int array, will return array of length 0 if no contigs attached
+	 * to the contig id or a null object if there was an SQLException
+	 */
 	public int[] getReads(Connection con, int bioentry_id);
 	
 	public int getContigFromRead(Connection con, int bioentry_id, String division);
 	
 	public String[] getNamesFromTerm(Connection con, String identifier);
+	
+	
 }

@@ -222,13 +222,13 @@ public class MySQL_Extended implements BioSQLExtended{
 				ints.add(set.getInt("subject_bioentry_id"));
 			}
 			st.close();
+			return Tools_Array.ListInt2int(ints);
 		}
 		catch(SQLException sq){
 			logger.error("Failed to get Reads" , sq);
+			return null;
 		}
-		return Tools_Array.ListInt2int(ints);
 	}
-	
 	
 	public int getContigFromRead(Connection con, int bioentry_id, String division){
 		int l = -1;

@@ -1,14 +1,15 @@
 package tools;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.LinkedList;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.imageio.ImageIO;
 
 import org.apache.log4j.Logger;
 
@@ -39,14 +40,7 @@ public class Tools_Web {
 	
 	public static String[] stripImages(String website){
 		Pattern p = Pattern.compile("<img[^>]*src=\"([^\"]*)",Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(website);
-		LinkedList<String> strs = new LinkedList<String>();
-		int start = 0;
-		while(m.find(start)){
-			strs.add(m.group());
-			start = m.end();
-		}
-		return strs.toArray(new String[0]);
+		return Tools_String.pattern2List(p, website);
 	}
 	
 	public static String[] stripUrls(String website){
@@ -76,5 +70,23 @@ public class Tools_Web {
 			}
 		}
 		return input;
+	}
+	
+	public static BufferedImage imageFromUrl(String url){
+		BufferedImage img = null;
+		try{
+			URLEncoder.encode(url, "UTF-8");
+		}
+		catch(UnsupportedEncodingException encod){
+			Logger.getRootLogger().error("Encoding Exception in method urlReader.", encod);
+		}
+		try{
+			URL site = new URL(url);
+			img = ImageIO.read(site);
+		}
+		catch(IOException iox){
+			Logger.getRootLogger().error("IO Issue: " + url, iox);
+		}
+		return img;
 	}
 }
