@@ -122,6 +122,32 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 	}
 	
+	public boolean addBioentryDbxrefCols(Connection con) {
+		String alters[] = new String[]{
+				"ALTER TABLE bioentry_dbxref ADD COLUMN (evalue DOUBLE PRECISION );",
+				"ALTER TABLE bioentry_dbxref ADD COLUMN (score MEDIUMINT);",
+				"ALTER TABLE bioentry_dbxref ADD COLUMN (dbxref_startpos INT);",
+				"ALTER TABLE bioentry_dbxref ADD COLUMN (dbxref_endpos INT);",
+				"ALTER TABLE bioentry_dbxref ADD COLUMN (dbxref_frame TINYINT);",
+				"ALTER TABLE bioentry_dbxref ADD COLUMN (bioentry_startpos INT);",
+				"ALTER TABLE bioentry_dbxref ADD COLUMN (bioentry_endpos INT);",
+				"ALTER TABLE bioentry_dbxref ADD COLUMN (bioentry_frame TINYINT);",
+				"CREATE INDEX bioentry_dbxref_evalue ON bioentry_dbxref(evalue);"
+		};
+		try{
+			Statement st = con.createStatement();
+			for(String s: alters)st.executeUpdate(s);
+			st.close();
+			return true;
+		}
+		catch(SQLException se){
+			logger.error("Failed to alter bioentry_dbxref table", se);
+			return false;
+		}
+	}
+	
+	
+	
 	public boolean setupAssembly(BioSQL boss, Connection con){		
 		try {
 			Statement st = con.createStatement();

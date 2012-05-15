@@ -29,6 +29,8 @@ public interface BioSQLExtended {
 	
 	public boolean addBioEntrySynonymTable(Connection con);
 	
+	public boolean addBioentryDbxrefCols(Connection con);
+	
 	public boolean setupAssembly(BioSQL boss, Connection con);
 	
 	public boolean addDefaultAssemblyOntology(BioSQL boss, Connection con);
@@ -57,6 +59,8 @@ public interface BioSQLExtended {
 	public int getContigFromRead(Connection con, int bioentry_id, String division);
 	
 	public String[] getNamesFromTerm(Connection con, String identifier);
+
+
 	
 	
 }

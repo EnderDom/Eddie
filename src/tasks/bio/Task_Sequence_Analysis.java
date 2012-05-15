@@ -14,12 +14,11 @@ import bio.fasta.Fasta;
 import bio.fasta.FastaParser;
 import bio.sequence.Sequences;
 
-
-import tasks.TaskXT;
+import tasks.TaskXTwIO;
 import tools.Tools_System;
 
 @SuppressWarnings("deprecation")
-public class Task_Sequence_Analysis extends TaskXT{
+public class Task_Sequence_Analysis extends TaskXTwIO{
 	
 	protected String qual;
 	Sequences seqs;

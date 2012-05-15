@@ -106,6 +106,8 @@ public class Task_BioSQLDB extends Task{
 			logger.debug("Setting up database");
 			BioSQLExtended bsxt = manager.getBioSQLXT();
 			bsxt.addLegacyVersionTable(manager.getCon(),new String(PropertyLoader.getFullVersion()+""), new String(DatabaseManager.getDatabaseversion()+""));
+			bsxt.addBioEntrySynonymTable(manager.getCon());
+			bsxt.addBioentryDbxrefCols(manager.getCon());
 			return bsxt.setupAssembly(manager.getBioSQL(), manager.getCon());
 		}
 		else return false;

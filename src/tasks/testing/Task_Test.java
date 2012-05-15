@@ -24,7 +24,7 @@ import bio.assembly.ACEFileParser;
 import bio.assembly.ACERecord;
 
 import tasks.Checklist;
-import tasks.Task;
+import tasks.TaskXT;
 import tools.Tools_Array;
 import tools.Tools_Fun;
 import tools.Tools_String;
@@ -37,7 +37,7 @@ import ui.UI;
 //import net.sf.samtools.SAMFileHeader.SortOrder;
 import gui.EddieGUI;
 
-public class Task_Test extends Task{
+public class Task_Test extends TaskXT{
 
 	protected UI ui; 
 	protected PropertyLoader load;
@@ -72,10 +72,6 @@ public class Task_Test extends Task{
 	
 	public void parseArgsSub(CommandLine cmd){
 		this.cmd = cmd;
-	}
-	
-	public boolean wantsUI(){
-		return true;
 	}
 	
 	public void addUI(UI ui){
@@ -229,33 +225,5 @@ public class Task_Test extends Task{
 		System.out.println();
 	}
 	
-	public void openChecklist(){
-		checklist = new Checklist(ui.getPropertyLoader().getWorkspace(), this.getClass().getName());
-		if(checklist.check()){
-			logger.trace("Moved to recovering past Task");
-			int userinput = ui.requiresUserYNI("There is an unfinished task, Details: "+checklist.getLast()+" Would you like to recover it (yes), delete it (no) or ignore it (cancel)?","Recovered Unfinished Task...");
-			if(userinput == 1){
-				if(!checklist.closeLastTask()){
-					logger.error("Failed to delete last task");
-				}
-				else{
-					logger.debug("Cleared Task");
-				}
-			}
-			if(userinput == 0){
-				args = checklist.getComment();
-				if(args != null){
-					super.parseArgs(args.split(" "));
-					checklist.recoverLast();
-				}
-				else{
-					logger.error("An error occured, Comment does not contain arguments");
-				}
-			}
-			else{
-				checklist = new Checklist(ui.getPropertyLoader().getWorkspace(), this.getClass().getName());
-			}
-		}
-	}
 }
 

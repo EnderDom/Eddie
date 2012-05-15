@@ -9,6 +9,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
@@ -47,6 +48,8 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
     private DesktopPane desktop;
     FileViewer view;
     public DatabaseManager dbmanager;
+    private static String iconpath = "eddie.png";
+    
     
 	public EddieGUI(PropertyLoader loader){
 		super("Eddie v"+PropertyLoader.guiversion + " " + PropertyLoader.edition + " Edition");
@@ -62,10 +65,12 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		
 		//Centres frame
 		this.setLocationRelativeTo(null);
+		
 		//Load Properties
 		load = loader;
 		load.loadPropertiesGUI(this);
 		Tools_UI.changeLnF(load.getLastLNF(), this);
+		this.setIconImage(new ImageIcon(getClass().getResource(iconpath)).getImage());
 		
 		//Module Build
 		modmanager = new ModuleManager(load.getModuleFolder());

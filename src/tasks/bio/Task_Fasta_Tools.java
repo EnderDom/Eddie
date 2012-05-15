@@ -11,11 +11,11 @@ import org.apache.log4j.Logger;
 import bio.fasta.Fasta;
 import bio.fasta.FastaParser;
 
-import tasks.TaskXT;
+import tasks.TaskXTwIO;
 import tools.Tools_String;
 import tools.Tools_System;
 
-public class Task_Fasta_Tools extends TaskXT{
+public class Task_Fasta_Tools extends TaskXTwIO{
 	
 	protected String qual;
 	Fasta fasta;

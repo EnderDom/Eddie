@@ -61,7 +61,7 @@ public class Checklist {
 	private String workspace;
 	private File folder;
 	private File task;
-	protected Logger logger = Logger.getLogger("CheckListLogger");
+	protected Logger logger = Logger.getRootLogger();
 	private boolean opentasks;
 	private File lasttask;
 	private String comment;
@@ -87,9 +87,10 @@ public class Checklist {
 		int k =-1;
 		if(folder.listFiles() != null){
 			for(File file : folder.listFiles()){
+				System.out.println(file.getPath());
 				String name = file.getName();
 				if(name.contains(taskname+"__")){
-					logger.trace("Checklist found " + file.getName());
+					logger.debug("Checklist found " + file.getName());
 					if(lasttask == null)lasttask =file;
 					l = Tools_String.parseString2Int(name.substring(name.indexOf("__")+2,name.length()));
 					if(l != null){
@@ -127,8 +128,7 @@ public class Checklist {
 		String n= Tools_System.getNewline();
 		bui.append("Task: "+ lastinfo[1] + Tools_System.getNewline()+n);
 		bui.append("Date/Time started: "+ lastinfo[0]+n);
-		bui.append("Input: "+ lastinfo[2]+n);
-		bui.append("Info: "+ lastinfo[3]+n);
+		bui.append("Info: "+ lastinfo[2]+n);
 		return bui.toString();
 	}
 	
@@ -147,9 +147,10 @@ public class Checklist {
 	 * data. Comment should be unique to 
 	 * define if the task is the same being rerun.
 	 */
-	public boolean start(String comment, String input){
+	public boolean start(String args){
 		logger.debug("Checklist started");
 		boolean success = true;
+		this.comment = args;
 		if(!recover){
 			try {
 				logger.trace("Creating new file...");
@@ -161,10 +162,9 @@ public class Checklist {
 			if(success){
 				String write = "<START>"+Tools_System.getDateNow()+"</START>"+Tools_System.getNewline();
 				String taskword = "<TASK>"+taskname+"</TASK>"+Tools_System.getNewline();
-				input = "<INPUT>"+input+"</INPUT>"+Tools_System.getNewline();
-				comment = "<COMMENT>"+comment+"</COMMENT>"+Tools_System.getNewline();
+				String com = "<ARGS>"+comment+"</ARGS>"+Tools_System.getNewline();
 				String data = "<DATA>"+Tools_System.getNewline();
-				success = Tools_File.quickWrite(write+input+taskword+comment+data, task, true);
+				success = Tools_File.quickWrite(write+taskword+com+data, task, true);
 			}
 		}
 		else{
@@ -197,8 +197,8 @@ public class Checklist {
 	//TODO FIX ASAP!!
 	//TODO FIX ASAP!!
 	//TODO FIX ASAP!!
-	public String[] loadHeadFromFile(File file){
-		String[] data = new String[4];
+	private String[] loadHeadFromFile(File file){
+		String[] data = new String[3];
 		logger.debug("Reading Data from checklist file");
 		try{
 			FileInputStream fis = new FileInputStream(file);
@@ -213,12 +213,9 @@ public class Checklist {
 				if(line.startsWith("<TASK>")){
 					data[1] = Tools_String.cutLineBetween("<TASK>", "</TASK>", line);
 				}
-				if(line.startsWith("<INPUT>")){
-					data[2] = Tools_String.cutLineBetween("<INPUT>", "</INPUT>", line);
-				}
-				if(line.startsWith("<COMMENT>")){
-					data[3] = Tools_String.cutLineBetween("<COMMENT>", "</COMMENT>", line);
-					this.comment = data[3];
+				if(line.startsWith("<ARGS>")){
+					data[2] = Tools_String.cutLineBetween("<ARGS>", "</ARGS>", line);
+					this.comment = data[2];
 					break;
 				}
 			}
@@ -268,7 +265,7 @@ public class Checklist {
 		return lasttask.delete();
 	}
 	
-	public String getComment(){
+	public String getArgs(){
 		if(comment == null){
 			loadHeadFromFile(lasttask);
 		}

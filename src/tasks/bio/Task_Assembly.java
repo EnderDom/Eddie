@@ -16,12 +16,12 @@ import bio.assembly.ACEParser;
 import bio.assembly.ACERecord;
 import bio.fasta.Fasta;
 
-import tasks.TaskXT;
+import tasks.TaskXTwIO;
 import tools.Tools_String;
 import tools.Tools_System;
 
 @SuppressWarnings("deprecation")
-public class Task_Assembly extends TaskXT{
+public class Task_Assembly extends TaskXTwIO{
 	
 	boolean coverage;
 	boolean getfasta;

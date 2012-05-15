@@ -20,7 +20,7 @@ import databases.bioSQL.interfaces.BioSQL;
 import databases.bioSQL.interfaces.BioSQLExtended;
 import databases.manager.DatabaseManager;
 
-import tasks.TaskXT;
+import tasks.TaskXTwIO;
 import tools.Tools_System;
 
 /**
@@ -35,7 +35,7 @@ import tools.Tools_System;
  * ...Maybe.
  */
 
-public class Task_Assembly2DB extends TaskXT{
+public class Task_Assembly2DB extends TaskXTwIO{
 
 	private boolean uploadreads;
 	private boolean uploadcontigs;
@@ -111,7 +111,7 @@ public class Task_Assembly2DB extends TaskXT{
 						if(fastq)parser.parseFastq(file);
 						else parser.parseFasta(file);
 						
-						checklist.start(this.args, this.input);
+						checklist.start(this.args);
 						
 						LinkedHashMap<String, String> sequences = fasta.getSequences();
 						BioSQL bs = manager.getBioSQL();

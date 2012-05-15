@@ -14,12 +14,12 @@ import bio.assembly.ACERecord;
 import bio.xml.XML_Blastx;
 
 import tasks.MapManager;
-import tasks.TaskXT;
+import tasks.TaskXTwIO;
 import tools.Tools_File;
 import tools.Tools_System;
 import ui.UI;
 
-public class Task_ChimeraAnalysis extends TaskXT{
+public class Task_ChimeraAnalysis extends TaskXTwIO{
 	
 	private String blastfolders; //Path containing the blast files
 	HashMap<String, String>contig2file;

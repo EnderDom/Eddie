@@ -19,13 +19,13 @@ import bio.fasta.Fasta;
 import bio.fasta.FastaParser;
 
 import tasks.Checklist;
-import tasks.TaskXT;
+import tasks.TaskXTwIO;
 import tools.Tools_File;
 import tools.Tools_System;
 import tools.bio.Tools_Blast;
 import tools.bio.Tools_Fasta;
 
-public class Task_BlastLocal extends TaskXT{
+public class Task_BlastLocal extends TaskXTwIO{
 	
 	private String blast_db;
 	private String blast_bin;
@@ -122,7 +122,7 @@ public class Task_BlastLocal extends TaskXT{
 	public void run(){
 		setComplete(started);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
-		openChecklist();		
+		openChecklist();
 		if(input != null && output != null && !err){
 			File in = new File(input);
 			File out = new File(output);
@@ -131,7 +131,6 @@ public class Task_BlastLocal extends TaskXT{
 				if(filetype == null)filetype = this.detectFileType(in.getName());
 				logger.debug("Filetype is set to " + this.filetype);
 				if(filetype.equals("FASTQ") || filetype.equals("FASTA")){
-					checklist.start(this.args, this.input);
 					//Load Fasta-->
 					Fasta fasta = new Fasta();
 					if(filetype.equals("FASTQ"))fasta.setFastq(true);
@@ -164,7 +163,6 @@ public class Task_BlastLocal extends TaskXT{
 					checklist.complete();
 				}
 				else if(filetype.equals("ACE")){//TODO test new ACE File More thoroughly
-					checklist.start(this.args, this.input);
 					boolean cont = false;
 					try {
 						ACEFileParser parser = new ACEFileParser(new FileInputStream(this.input));
@@ -229,7 +227,7 @@ public class Task_BlastLocal extends TaskXT{
 		return true;
 	}
 	
-	public void trimRecovered(String[] data){
+	private void trimRecovered(String[] data){
 		int j=0;
 		for(int i =0;i < data.length; i++){
 			if(sequences.containsKey(data[i])){

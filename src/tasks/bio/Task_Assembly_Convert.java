@@ -17,10 +17,10 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
 
-import tasks.TaskXT;
+import tasks.TaskXTwIO;
 import tools.Tools_System;
 
-public class Task_Assembly_Convert extends TaskXT{
+public class Task_Assembly_Convert extends TaskXTwIO{
 	
 	int conversiontype;
 	private static int BAM2SAM = 1;

@@ -7,12 +7,11 @@ import java.util.Properties;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
-import tasks.TaskXT;
+import tasks.TaskXTwIO;
 import tools.Tools_System;
 import tools.Tools_Task;
 
-
-public class Task_ESTScan extends TaskXT{
+public class Task_ESTScan extends TaskXTwIO{
 	
 	
 	private String ESTScanBin;
