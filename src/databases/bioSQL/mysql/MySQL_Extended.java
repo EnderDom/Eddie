@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import tools.Tools_Array;
 import tools.Tools_String;
 import tools.Tools_System;
+import tools.bio.Tools_Contig;
 import databases.bioSQL.interfaces.BioSQL;
 import databases.bioSQL.interfaces.BioSQLExtended;
 
@@ -294,6 +295,24 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 	}
 	
+	public int getBioEntryId(BioSQL boss, Connection con, String name, boolean fuzzy, int biodatabase_id){
+		int entry =-1;
+		entry = boss.getBioEntry(con, name, name, biodatabase_id);
+		if(entry == -1){
+			entry = boss.getBioEntrywName(con, name);
+		}
+		if(entry == -1 && fuzzy){
+			String[] s = Tools_Contig.stripContig(name);
+			if(s == null)return entry;
+			else{
+				for(String sa : s){
+					entry = boss.getBioEntrywName(con, sa);
+				}
+			}
+		}
+		return entry;
+	}
+	
 	/* INDEV function
 	 * 
 	 * Currently as Reads are likely uploaded without padding
@@ -329,4 +348,5 @@ public class MySQL_Extended implements BioSQLExtended{
 			return boss.getLocation(con, seqfeature_id, 0) <0 ? boss.addLocation(con, seqfeature_id, null, term_id, start, stop, strand, 0) : true ; 
 		}
 	}
+
 }

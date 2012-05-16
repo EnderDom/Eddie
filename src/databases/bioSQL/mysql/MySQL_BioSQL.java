@@ -286,6 +286,23 @@ public class MySQL_BioSQL implements BioSQL{
 		return entry;
 	}
 	
+	public int getBioEntrywName(Connection con, String name){
+		int entry =-1;
+		try{
+			Statement st = con.createStatement();
+			ResultSet set = st.executeQuery("SELECT id FROM bioentry WHERE name='"+name+"'");
+			while(set.next()){
+				entry = set.getInt("id");
+				if(set.next()) logger.warn("Other ids are available with this name " + name);
+				break;
+			}
+		}
+		catch(SQLException sq){
+			logger.error("Failed to get bioentry id with name: " +name, sq);
+		}
+		return entry;
+	}
+	
 	public int getBioEntryRelationship(Connection con, int bioentry_object_id, int bioentry_subject_id, int term_id){
 
 		int entry =-1;

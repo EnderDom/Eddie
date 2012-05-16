@@ -16,6 +16,7 @@ import tools.Tools_System;
 public class Task_Blast extends TaskXT{
 	
 	private boolean upload;
+	private boolean fuzzynames;
 	private String input;
 	private File[] files;
 	private boolean[] ignore;
@@ -34,6 +35,8 @@ public class Task_Blast extends TaskXT{
 		super.buildOptions();
 		options.addOption(new Option("u","upload", false, "Perform default setup"));
 		options.addOption(new Option("i","input", true, "Input folder or file"));
+		options.addOption(new Option("f","fuzzy", true, "Check for fuzzy names before failing, " +
+				"may be help if blast query-id is different from database id. May lead to incorrect "));
 	}
 	
 	public Options getOptions(){

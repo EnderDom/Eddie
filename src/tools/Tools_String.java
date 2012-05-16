@@ -89,11 +89,14 @@ public abstract class Tools_String {
 	}
 
 	/**
-	 * Doesn't work for floats and negative numbers
-	 * @param String containing some numbers
+	 *  Doesn't work for floats and negative numbers
+	 *  Will return real integers, ie contig0001 wil be returned as 1
+	 * @param name string containing some numbers
 	 * @return longest integer within the text string, assumming
-	 * that non-numeric characters separate the integers
+	 * that non-numeric characters separate the integers,
+	 *  or -1 if no number is found
 	 */
+	
 	public static int getLongestInt(String name) {
 		name = name.replaceAll( "[^\\d]", " ");
 		String[] i = name.split(" ");
@@ -119,7 +122,7 @@ public abstract class Tools_String {
 	
 	/**
 	 * 
-	 * @param list
+	 * @param list list object containing Strings, with len>1
 	 * @return list sorted by string length and then by alphabetical order
 	 * 
 	 */

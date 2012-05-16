@@ -2,6 +2,8 @@ package bio.xml;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
+
 import databases.manager.DatabaseManager;
 
 import tools.Tools_String;
@@ -11,6 +13,7 @@ public class XMLHelper_Blastx {
 	public XML_Blastx blastx;
 	public DatabaseManager manager;
 	private int contig_id;
+	Logger logger = Logger.getRootLogger(); 
 	
 	/*
 	 * Laziness :)
@@ -57,6 +60,16 @@ public class XMLHelper_Blastx {
 	}
 	
 	//Order is Hit-Start, Hit-Stop, Hit-Frame, Query-Start, Query-Stop, Query-Frame
+	
+	/**
+	 * This is straight from blast xml so will be 1-based 
+	 * ie 1bp == first bp == Seq[0]
+	 * 
+	 * @param hit_num hit number
+	 * @param hsp_num hsp number
+	 * @return a integer array containing the hit-from, hit-to, hit-frame,
+	 * query-from, query-to, query-frame
+	 */
 	public int[] getStartsStopsFrames(int hit_num, int hsp_num) throws Exception{
 		int[] arr = new int[6];
 		String[] tags = new String[]{"Hsp_hit-from", "Hsp_hit-to","Hsp_hit-frame",
@@ -78,11 +91,32 @@ public class XMLHelper_Blastx {
 		this.contig_id = contig_id;
 	}
 	
-	public boolean upload2BioSQL(){
+	/**
+	 * Runs a method to relevant Blast XML data into
+	 * the BioSQL database.
+	 * @param manager The biosql Default DatabaseManager
+	 * 
+	 * @param fuzzy In the event the sequence names are similar
+	 * but not exactly the same as the blast-query names this will check
+	 * for similar naming conventions. This is mainly here for me, as 
+	 * CLCBio fasta output is named as ConsensusfromContigX whilst
+	 * the ace file has naming Contig_X
+	 * 
+	 * @return true if script ran with 
+	 * no errors
+	 */
+	public boolean upload2BioSQL(DatabaseManager manager, boolean fuzzy){
 		if(contig_id == -1){
-			
+			String nom = blastx.getBlastTagContents("BlastOutput_query-ID");
+			contig_id =  manager.getBioSQLXT().getBioEntryId(manager.getBioSQL(),manager.getCon(), nom, fuzzy, manager.getEddieDBID());
 		}
-		
-		return false;
+		if(contig_id == -1){
+			logger.warn("Failed to upload to mysql as query-ID was not found in database");
+			return false;
+		}
+		else{
+			
+			return false;
+		}
 	}
 }

@@ -60,7 +60,7 @@ public interface BioSQLExtended {
 	
 	public String[] getNamesFromTerm(Connection con, String identifier);
 
-
+	public int getBioEntryId(BioSQL boss, Connection con, String name, boolean fuzzy, int biodatabase_id);
 	
 	
 }
