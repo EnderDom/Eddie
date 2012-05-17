@@ -261,8 +261,8 @@ public class XML_Blastx{
 							r = delta;
 						}
 					}
-				} catch (Exception e) {
-					e.printStackTrace();
+				} catch (Exception ex) {
+					Logger.getRootLogger().error(ex);
 				}				
 			}
 		}
@@ -279,9 +279,9 @@ public class XML_Blastx{
 						if(to < e){
 							e=to;
 						}
-					}
+					}				
 				} catch (Exception ex) {
-					ex.printStackTrace();
+					Logger.getRootLogger().error(ex);
 				}				
 			}
 		}

@@ -22,7 +22,7 @@ public class TaskXTwIO extends TaskXT{
 	
 	public void parseArgsSub(CommandLine cmd){
 		if(!cmd.hasOption("input")){
-			logger.warn("Input file has not been set.");
+			logger.debug("Input file has not been set.");
 		}
 		else{
 			setInput(cmd.getOptionValue("input"));
