@@ -197,5 +197,8 @@ public class Fasta implements FastaHandler, Sequences{
 		return trimcount;
 	}
 
+	public boolean hasSequence(String name){
+		return sequences.containsKey(name);
+	}
 	
 }
