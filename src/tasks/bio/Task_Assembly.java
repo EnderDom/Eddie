@@ -123,9 +123,19 @@ public class Task_Assembly extends TaskXTwIO{
 			}
 			else if(getfasta){
 				Logger.getRootLogger().debug("Get Fasta option set");
-				if(this.output != null){
-					ACEObject ace = getAce();
-					Fasta fasta = ace.getFastaFromConsensus();
+				if(this.output != null && input != null){
+					try{
+					ACEFileParser parser = new ACEFileParser(new File(this.input));
+					Fasta fasta = new Fasta();
+					ACERecord record = null;
+					int c=0;
+					while(parser.hasNext()){
+						record = parser.next();
+						fasta.addSequence(record.getContigName(), record.getConsensusAsString().replaceAll("-", ""));
+						c++;
+						System.out.print("\r"+ c);
+					}
+					System.out.println();
 					File filez = new File(output);//TODO add overwritable option
 					if(!filez.exists() || this.overwrite){
 						boolean complete = false;
@@ -141,6 +151,10 @@ public class Task_Assembly extends TaskXTwIO{
 					}
 					else{
 						Logger.getRootLogger().error("Output already exists");
+					}
+					}
+					catch(IOException io){
+						logger.error("Failed to parse to fasta",io);
 					}
 				}
 				else{

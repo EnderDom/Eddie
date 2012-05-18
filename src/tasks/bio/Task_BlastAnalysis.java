@@ -122,6 +122,8 @@ public class Task_BlastAnalysis extends TaskXTwIO{
 						int contigswithblasts = 0;
 						int blast10 = 0;
 						int avcov=0;
+						int hits =0;
+						int hsps = 0;
 						count=0;
 						XML_Blastx xml = null;
 						for(String contig : contig2file.keySet()){
@@ -134,6 +136,9 @@ public class Task_BlastAnalysis extends TaskXTwIO{
 										if(xml.getNoOfHits() > 9){
 											blast10++;
 										}
+										int[] hitcount = xml.getNumberofHitsBelow(this.e);
+										hits+=hitcount[0];
+										hsps+=hitcount[1];
 									}
 								}
 							}
@@ -143,11 +148,13 @@ public class Task_BlastAnalysis extends TaskXTwIO{
 							System.out.print("\r(No."+count+") : " + contig + "        ");
 							count++;
 						}
+						double ratio = ((double)((int)(((double)hsps/(double)hits)*100)))/100;
 						System.out.println();
 						System.out.println("--STATS--");
 						System.out.println("Sequences with blast results: " + contigswithblasts);
 						System.out.println("Sequences >9 blast results: " + blast10);
 						System.out.println("No. of bp matched: "+avcov+"bp");
+						System.out.println("Hit to Hsp Ratio: "+ratio);
 						System.out.println("---------");
 					}
 				}
@@ -184,9 +191,7 @@ public class Task_BlastAnalysis extends TaskXTwIO{
 						else{
 							c++;
 						}
-						String nom = xml.getBlastTagContents("Iteration_query-ID"); 
-						System.out.println(ee + " | "+nom);
-						//System.out.print("\r"+(c2+c) + " of " +l + "    ");
+						System.out.print("\r"+ (c2+c) + " of " +l);
 					}
 					catch(Exception e){
 						logger.error("Failed to parse blast file", e);

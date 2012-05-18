@@ -125,8 +125,8 @@ public class PropertyLoader implements Module{
 	
 	private void buildOptions(){
 		options = new Options();
-		options.addOption(new Option("p", "props", true, "Use this as default properties file"));
-		options.addOption(new Option("g", "gui", false, "Set to GUI rather than CLI (indev)"));
+		options.addOption(new Option("props", "props", true, "Use this as default properties file"));
+		options.addOption(new Option("gui", "gui", false, "Set to GUI rather than CLI (indev)"));
 		//options.addOption(new Option("persist", false, "If CLI set, this will stop CLI from closing without further args"));
 		options.addOption(new Option("h", "help", false, "Help Menu"));
 		options.addOption(new Option("l", "log", true, "Set Log Level {TRACE,DEBUG,INFO,WARN,ERROR,FATAL}"));
