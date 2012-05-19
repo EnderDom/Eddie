@@ -1,8 +1,10 @@
 package tasks.testing;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -22,6 +24,8 @@ import databases.manager.DatabaseManager;
 
 import bio.assembly.ACEFileParser;
 import bio.assembly.ACERecord;
+import bio.fasta.Fasta;
+import bio.fasta.FastaParser;
 
 import tasks.Checklist;
 import tasks.TaskXT;
@@ -58,8 +62,8 @@ public class Task_Test extends TaskXT{
 		 */
 		try{
 			System.out.println("Running test");
+			runSomething();
 			
-			testRot13();
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -90,6 +94,82 @@ public class Task_Test extends TaskXT{
 	public void testChecklist(){
 		
 	}
+	
+	public void runSomething(){
+		try{
+			File file = new File("/home/dominic/Desktop/nc.cgi.html");
+			File file2 = new File("/home/dominic/Desktop/ncbiupload.fna");
+			
+			Fasta fasta = new Fasta();
+			FastaParser parser = new FastaParser(fasta);
+			parser.parseFasta(file2);
+			
+			FileInputStream fis = new FileInputStream(file);
+			InputStreamReader in = new InputStreamReader(fis, "UTF-8");
+			BufferedReader reader = new BufferedReader(in);
+			String line = "";
+			String name = "";
+			int start = -1;
+			String ot = "";
+			while((line = reader.readLine()) != null){
+				if((start = line.indexOf("Sequence ID :")) != -1){
+					int end = line.indexOf("</strong>");
+					if(end != -1 && end > start){
+						name = line.substring(start+new String("Sequence ID :").length(), end).trim();
+					}
+				}
+				else if((start = line.indexOf(" match:")) != -1){
+					ot = line.substring(start+new String(" match:</a> ").length(), line.length()).trim();
+					//System.out.println(name + " : " + ot);
+					String[] s = ot.trim().split("-");
+					if(s.length > 0){
+						Integer sta = Tools_String.parseString2Int(s[0]);
+						Integer sto = Tools_String.parseString2Int(s[1]);
+						if(sta != null && sto != null){
+							if(fasta.hasSequence(name+" [organism=Deroceras reticulatum]" )){
+								String seq = fasta.getSequences().get(name+" [organism=Deroceras reticulatum]");
+								int halfway = seq.length()/2;
+								if(sta > halfway){
+									logger.debug(name + " to be trimmed left");
+									logger.debug("Trim @"+sta+"-"+sto);
+									logger.debug("Length Before " + seq.length());
+									String trim = seq.substring(sta-1, seq.length());
+									seq = seq.substring(0, sta-1);
+									logger.debug("Length After " + seq.length());
+									logger.debug("Trimmed Region:" +trim);
+								}
+								else{
+									logger.debug(name + " to be trimmed right");
+									logger.debug("Trim @"+sta+"-"+sto);
+									logger.debug("Length Before " + seq.length());
+									String trim = seq.substring(0, sto-1);
+									seq = seq.substring(sto-1, seq.length());
+									logger.debug("Length After " + seq.length());
+									logger.debug("Trimmed Region:" +trim);
+								}
+								fasta.getSequences().put(name+" [organism=Deroceras reticulatum]", seq);
+							}
+							else{
+								logger.error("Sequence  "+ name +"does not exist in fasta file");
+							}
+						}
+						else{
+							logger.error(ot + " could not parsed into start and stop ");
+						}
+					}
+					else{
+						logger.error(ot + " could not parsed into start and stop ");
+					}
+				}
+			}
+			fasta.save2Fasta(new File("/home/dominic/Desktop/ncbiupload_trimmed.fna"));
+			
+		}
+		catch(IOException io){
+			io.printStackTrace();
+		}
+	}
+	
 	
 	public void testRot13(){
 		String hw = new String("hello my name is dominic.");
