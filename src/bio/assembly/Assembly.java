@@ -1,17 +1,23 @@
 package bio.assembly;
 
+/**
+ * @author Dominic Matthew Wood
+ * 
+ * Currently everything that implements this is deprecated
+ * but I quite like the idea of having an interface for assemblies 
+ * for things like coverage and retrieved contig number etc.
+ */
+@SuppressWarnings("javadoc")
 public interface Assembly {
 
-	
-	/*
-	 * Get Number of contigs in the assembly
-	 */
+
 	public int getContigsSize();
 
 	/*
 	 * Get the index of the contig
 	 * with contigname parameter
 	 */
+
 	public int getContigIndex(String contigname);
 	
 	/*

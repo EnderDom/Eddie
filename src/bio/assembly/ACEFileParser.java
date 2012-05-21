@@ -49,10 +49,19 @@ public class ACEFileParser implements Iterator<ACERecord>{
 	Logger logger = Logger.getLogger("ACEFileParser");
 	int warn;
 	
+	/**
+	 * @param file Ace file input
+	 * @throws IOException
+	 */
 	public ACEFileParser(File file) throws IOException{
 		this(new FileInputStream(file));
 	}
 	
+	/**
+	 * 
+	 * @param stream
+	 * @throws IOException
+	 */
 	public ACEFileParser(InputStream stream) throws IOException{
         init(stream);
 	}
@@ -69,15 +78,33 @@ public class ACEFileParser implements Iterator<ACERecord>{
         currentsw=CO;
 	}
 	
+	/**
+	 * Implementing Iterator interface
+	 * 
+	 * @return true if another record is available
+	 * else false
+	 */
 	public boolean hasNext() {
 		if(currentline == null) return false;
 		else return true;
 	}
 	
+	/**
+	 * set current record to null
+	 */
 	public void remove() {
 		this.currentrecord=null;
 	}
 
+	/**
+	 * Implements Iterator interface
+	 * 
+	 * Removes the Current ACERecord held in 
+	 * the parser and parses then next Contig
+	 * 
+	 * @return ACERecord object which holds one
+	 * contig from the Assembly file
+	 */
 	public ACERecord next() {
 		currentrecord = new ACERecord();
 		parseLine(currentsw, currentline);
@@ -150,7 +177,7 @@ public class ACEFileParser implements Iterator<ACERecord>{
 		return currentrecord;
 	}
 	
-	public void parseLine(int sw, String line){
+	private void parseLine(int sw, String line){
 		switch(sw){
 			case 0: parseAS(line);break;//AS
 			case 1: parseFirstCO(line);break; //CO
@@ -171,7 +198,7 @@ public class ACEFileParser implements Iterator<ACERecord>{
 	
 	
 	
-	public void parseFirstCO(String line){
+	private void parseFirstCO(String line){
 		String[] s = line.split(" ");
 		if(s.length > 5){
 			this.currentrecord.setContigName(s[1]);
@@ -200,7 +227,7 @@ public class ACEFileParser implements Iterator<ACERecord>{
 		currentsw=CO_;
 	}
 	
-	public void parseFirstRD(String line){
+	private void parseFirstRD(String line){
 		String[] s = line.split(" ");
 		if(s.length > 4){
 			this.currentrecord.setReadName(s[1]);
@@ -229,7 +256,7 @@ public class ACEFileParser implements Iterator<ACERecord>{
 		currentsw=CO_;
 	}
 	
-	public void parseAS(String line){
+	private void parseAS(String line){
 		String[] s = line.split(" ");
 		if(s.length >2){
 			logger.info("File claims to contain " + s[s.length-2] + " contigs made of "+s[s.length-1]+" reads");
@@ -244,7 +271,7 @@ public class ACEFileParser implements Iterator<ACERecord>{
 		}
 	}
 	
-	public void parseAF(String line){
+	private void parseAF(String line){
 		String[] s = line.split(" ");
 		if(s.length >3){
 			Integer l = Tools_String.parseString2Int(s[3]);
@@ -259,7 +286,8 @@ public class ACEFileParser implements Iterator<ACERecord>{
 			logger.error("AF data line too small, parse error");
 		}
 	}
-	public void parseBS(String line){
+	
+	private void parseBS(String line){
 		String[] s = line.split(" ");
 		if(s.length >3){
 			Integer l1 = Tools_String.parseString2Int(s[1]);
@@ -276,7 +304,7 @@ public class ACEFileParser implements Iterator<ACERecord>{
 		}
 	}
 	
-	public void parseQA(String line){
+	private void parseQA(String line){
 		String[] s = line.split(" ");
 		if(s.length >4){
 			Integer l1 = Tools_String.parseString2Int(s[1]);
@@ -296,10 +324,23 @@ public class ACEFileParser implements Iterator<ACERecord>{
 		}
 	}
 
+	/**
+	 * 
+	 * @return returns the number of contigs 
+	 * in the ACE file as stated by the header
+	 * of the ACE file. Note, if the ACE file
+	 * is malformed this may be different from
+	 * what is really there
+	 */
 	public int getContigSize() {
 		return contigs;
 	}
 
+	/**
+	 * 
+	 * @return the number of reads
+	 * in the assembly as stated by the File Header
+	 */
 	public int getReadsSize() {
 		return reads;
 	}

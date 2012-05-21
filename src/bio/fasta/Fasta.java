@@ -13,6 +13,13 @@ import bio.sequence.Sequences;
 import tools.bio.Tools_Fasta;
 import tools.bio.Tools_Sequences;
 
+
+/**
+ * @author dominic
+ * This ought to be replace with something from 
+ * BioJava,  but I don't have time
+ */
+
 public class Fasta implements FastaHandler, Sequences{
 
 	private LinkedHashMap<String, String> sequences;

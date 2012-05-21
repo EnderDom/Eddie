@@ -332,22 +332,8 @@ public class FileViewerModel extends AbstractTableModel{
 		Logger.getRootLogger().warn("incomplete method here!!!");
 		return "FASTA";
 	}
-	 
-	public FileOptions rowPopupClicked(int row){
-		//Builds a popup menu based on the filetype
-		FileOptions pop = new FileOptions(getFileTypeAt(row));
-		/* Defaults
-		 * 
-		 */
-		return pop;
-	}
 	
 	private Node getRootNode(){
-		NodeList list = this.data.getChildNodes();
-		if(list.getLength() == 0){ 
-			Logger.getRootLogger().error("XML incorrectly formatted, missing root node"); 
-			return null;
-		}
-		else return list.item(0);
+		return (this.data.getChildNodes().getLength() > 0) ? this.data.getChildNodes().item(0) : null;
 	}
 }

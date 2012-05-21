@@ -8,13 +8,11 @@ import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
-import org.apache.log4j.Logger;
 
 import bio.assembly.ACEFileParser;
 import bio.assembly.ACEObject;
 import bio.assembly.ACEParser;
 import bio.assembly.ACERecord;
-import bio.fasta.Fasta;
 
 import tasks.TaskXTwIO;
 import tools.Tools_String;
@@ -56,7 +54,6 @@ public class Task_Assembly extends TaskXTwIO{
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("coverage", false, "Coverage analysis Ace File"));
-		options.addOption(new Option("getfasta", false, "Save Consensus Sequences as fasta"));
 		options.addOption(new Option("stats", false, "Get Statistics regarding file"));
 		options.addOption(new Option("range", true, "Range Integer"));
 		options.addOption(new Option("numbcontig", true, "Contig Number to analyse"));
@@ -65,7 +62,7 @@ public class Task_Assembly extends TaskXTwIO{
 	
 	public void run(){
 		setComplete(started);
-		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
+		logger.debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		if(testmode)runTest();
 		else{
 			if(stats){
@@ -93,11 +90,11 @@ public class Task_Assembly extends TaskXTwIO{
 				}
 			}
 			else if(coverage){
-				Logger.getRootLogger().debug("Coverage Option Set");
+				logger.debug("Coverage Option Set");
 				ACEObject ace = getAce();
 				if(contig != -1){
 					name = ace.getRefName(contig);
-					Logger.getRootLogger().debug("Contig : " + name + " retrieved");
+					logger.debug("Contig : " + name + " retrieved");
 				}
 				if(name != null){
 					try{
@@ -114,45 +111,19 @@ public class Task_Assembly extends TaskXTwIO{
 						System.out.println("#############################");
 					}
 					catch(Exception e){
-						Logger.getRootLogger().error("Out of Cheese Error...", e);
+						logger.error("Out of Cheese Error...", e);
 					}
 				}
 				else{
-					Logger.getRootLogger().info("Contig Name is null... not yet finished");
-				}
-			}
-			else if(getfasta){
-				Logger.getRootLogger().debug("Get Fasta option set");
-				if(this.output != null){
-					ACEObject ace = getAce();
-					Fasta fasta = ace.getFastaFromConsensus();
-					File filez = new File(output);//TODO add overwritable option
-					if(!filez.exists() || this.overwrite){
-						boolean complete = false;
-						try{
-							complete = fasta.save2Fasta(filez);
-						}
-						catch(Exception e){
-							Logger.getRootLogger().error("Error Saving Fasta", e);
-						}
-						if(!complete){
-							Logger.getRootLogger().error("File was not successfully saved");						
-						}
-					}
-					else{
-						Logger.getRootLogger().error("Output already exists");
-					}
-				}
-				else{
-					Logger.getRootLogger().error("Set Output!");
+					logger.info("Contig Name is null... not yet finished");
 				}
 			}
 			else{
-				Logger.getRootLogger().info("Not Task set");
+				logger.info("Not Task set");
 			}			
 		}
 		
-		Logger.getRootLogger().debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
+		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
 	}
 	
@@ -164,7 +135,7 @@ public class Task_Assembly extends TaskXTwIO{
 			if(!input.endsWith(".ace") && !input.endsWith(".ACE")){
 				logger.warn("Warning the specified input does not have the standard file tag");
 			}
-			Logger.getRootLogger().debug("Parsing ACE file");
+			logger.debug("Parsing ACE file");
 			ACEParser parser = new ACEParser(obj);
 			try {
 				parser.parseAce(ace);
@@ -181,7 +152,7 @@ public class Task_Assembly extends TaskXTwIO{
 	}
 	//TODO test padded string	
 	public void runTest(){
-		Logger.getRootLogger().debug("Testing Assembly Task");
+		logger.debug("Testing Assembly Task");
 		
 		
 	}

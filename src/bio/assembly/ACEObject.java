@@ -11,31 +11,32 @@ import tools.bio.Tools_Sequences;
 import bio.fasta.Fasta;
 import bio.sequence.Sequences;
 
-@Deprecated //Use ACEFileParser/ACERecord
+/**
+ * @author dominic
+ * Deprecated, USE ACEFileParser
+ *  Have a problem with multiple reads with same name
+ * this has a workaround, but I need to change the way
+ * the data is stored so reads are linked to contig better
+ * ie, having reads indexed as contig_read-no rather than their
+ * read name, as this can be duplicate in ace files
+ * 
+ * NOTE: Works with small ACE files only
+ * 
+ * tested on <100MB files and seems to work okay with 1GB ram
+ * >100MB the parser (on 1GB) seems to recursively slow 
+ * 512MB file seems to crash parser
+ * Will need to re-work this, as Tablet can load ACE files >100MB on same machine
+ * where this class can't. Seemingly using HashMaps for data
+ * storage is a bad idea. I am looking into just auto-loading the
+ * data straight into SAMRecord class from SAMtools/Picard 3rd party,
+ * but I still need to look into this.
+ * 
+ *   ALL values are converted to 0 index/base
+ */
+@SuppressWarnings({ "javadoc", "deprecation" })
+@Deprecated
 public class ACEObject implements ACEHandler, Assembly, Sequences {
 
-	
-	//ALL values are converted to 0 index/base
-	/**
-	 * Have a problem with multiple reads with same name
-	 * this has a workaround, but I need to change the way
-	 * the data is stored so reads are linked to contig better
-	 * ie, having reads indexed as contig_read-no rather than their
-	 * read name, as this can be duplicate in ace files
-	 * 
-	 * NOTE: Works with small ACE files only
-	 * 
-	 * tested on <100MB files and seems to work okay with 1GB ram
-	 * >100MB the parser (on 1GB) seems to recursively slow 
-	 * 512MB file seems to crash parser
-	 * Will need to re-work this, as Tablet can load ACE files >100MB on same machine
-	 * where this class can't. Seemingly using HashMaps for data
-	 * storage is a bad idea. I am looking into just auto-loading the
-	 * data straight into SAMRecord class from SAMtools/Picard 3rd party,
-	 * but I still need to look into this. 
-	 * 
-	 */
-	
 	HashMap<Integer, String> contignumb;
 	HashMap<String, String> contigs;
 	HashMap<String, String> qualities;
@@ -53,7 +54,7 @@ public class ACEObject implements ACEHandler, Assembly, Sequences {
 	/*
 	 * Sets the methods for calculating average coverage 
 	 */
-	public int averagecoveragecalc = 1;
+	private int averagecoveragecalc = 1;
 	
 	private int[] lens;
 	
@@ -65,6 +66,12 @@ public class ACEObject implements ACEHandler, Assembly, Sequences {
 	private int readcount;
 	
 	
+	/**
+	 * Constructor
+	 * 
+	 * Object acts as a default handler if all data
+	 * is to be kept
+	 */
 	public ACEObject(){
 		contigs = new LinkedHashMap<String, String>();
 		qualities = new LinkedHashMap<String, String>();
@@ -77,6 +84,7 @@ public class ACEObject implements ACEHandler, Assembly, Sequences {
 		rangeleftpad = new LinkedHashMap<String, Integer>();
 		rangerightpad = new LinkedHashMap<String, Integer>();
 	}
+	
 	
 	public void setRefName(String name) {
 		currentcontig++;
@@ -258,7 +266,7 @@ public class ACEObject implements ACEHandler, Assembly, Sequences {
 		 * This method takes the depth of coverage at each bp of the consensus sequence
 		 * (that is not a * or -) and averages the depth
 		 */
-		if(this.averagecoveragecalc == 0){
+		if(this.getAveragecoveragecalc() == 0){
 			double d1 = 0;
 			for(int i = 0 ; i < contigs.get(contigindex).length();i++){
 				if(contigs.get(contigindex).charAt(i) != '*' && contigs.get(contigindex).charAt(i) != '-')
@@ -438,5 +446,13 @@ public class ACEObject implements ACEHandler, Assembly, Sequences {
 	
 	public int getNoOfSequences(){
 		return this.contigs.size();
+	}
+
+	public int getAveragecoveragecalc() {
+		return averagecoveragecalc;
+	}
+
+	public void setAveragecoveragecalc(int averagecoveragecalc) {
+		this.averagecoveragecalc = averagecoveragecalc;
 	}
 }

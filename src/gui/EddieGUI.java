@@ -48,7 +48,8 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
     private DesktopPane desktop;
     FileViewer view;
     public DatabaseManager dbmanager;
-    private static String iconpath = "eddie.png";
+    public static String iconpath = "eddie.png";
+    public static String quizicon = "eddie_question.png";
     
     
 	public EddieGUI(PropertyLoader loader){

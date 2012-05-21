@@ -33,12 +33,12 @@ public class FileViewer extends JInternalFrame implements TableModelListener, Mo
 	protected String modulename;
 	Logger logger = Logger.getLogger(this.getClass().getName());
 	FileOptions ops;
-	boolean poped;
+	MouseListener listener;
 	
 	public FileViewer(){
 		super("File List",true,false,true,true);
 		modulename = this.getClass().getName();
-		
+		ops = new FileOptions(this);
 	}
 	
 	public void init(){
@@ -142,36 +142,25 @@ public class FileViewer extends JInternalFrame implements TableModelListener, Mo
 	}
 
 	public void mouseExited(MouseEvent arg0) {
-		if(poped){
-			poped = false;
-			ops.setVisible(false);
-			this.getParent().remove(ops);
-		}
+		
 	}
 
 	public void mousePressed(MouseEvent arg0) {
-		if(!poped){
 			if(arg0.isPopupTrigger() || arg0.getButton() == MouseEvent.BUTTON2){
 				Point p = arg0.getPoint();
 				int rowz = table.rowAtPoint(p);
-				logger.trace("FileViewer registered a popup activating click @ row"+rowz);
-				ops = this.model.rowPopupClicked(rowz);
-				ops.setLocation(arg0.getXOnScreen(), arg0.getYOnScreen());
-				this.getParent().add(ops);
-				ops.setVisible(true);
-				poped = true;
+				logger.trace("FileViewer registered a popup activating click @ row "+rowz);
+				if(rowz!=-1){
+					ops.reset(model.getFileTypeAt(rowz));
+					ops.show(arg0.getComponent(), arg0.getX(), arg0.getY());
+				}
 			}
-		}
-		else{
-			poped = false;
-			ops.setVisible(false);
-			this.remove(ops);
-		}
+
 	}
 
 	public void mouseReleased(MouseEvent arg0) {
 		
 	}
-	
+
 }
 

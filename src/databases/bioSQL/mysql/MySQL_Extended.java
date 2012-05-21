@@ -257,6 +257,7 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 	}
 	
+	
 	public int getContigFromRead(Connection con, int bioentry_id, String division){
 		int l = -1;
 		String r = "SELECT object_bioentry_id FROM bioentry_relationship INNER JOIN bioentry ON " +
@@ -301,6 +302,8 @@ public class MySQL_Extended implements BioSQLExtended{
 		if(entry == -1){
 			entry = boss.getBioEntrywName(con, name);
 		}
+		//This could lead to unexpected results, probably 
+		//should be removed if to be used by anyone other than me
 		if(entry == -1 && fuzzy){
 			String[] s = Tools_Contig.stripContig(name);
 			if(s == null)return entry;
@@ -326,6 +329,7 @@ public class MySQL_Extended implements BioSQLExtended{
 	 * data in the database
 	 * 
 	 */
+	
 	public boolean mapRead2Contig(Connection con, BioSQL boss, int contig_id, int read_id, int programid, int start, int stop, int strand){
 		int term_id = this.getDefaultAssemblyTerm(boss, con);
 		if(boss.getBioEntryRelationship(con, contig_id, read_id, term_id) <0){

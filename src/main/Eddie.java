@@ -9,13 +9,14 @@ import ui.PropertyLoader;
 import gui.EddieGUI;
 
 /**
- * @author Dominic Wood
+ * @author Dominic Matthew Wood
  *
  */
 public class Eddie {
-	
+
 	/**
-	 * @param args
+	 * 
+	 * @param args input arguments
 	 */
 	public static void main(String[] args) {
 			int retvalue = 4;

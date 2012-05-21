@@ -8,6 +8,7 @@ import org.apache.commons.cli.Options;
 
 import databases.manager.DatabaseManager;
 
+import bio.xml.XMLHelper_Blastx;
 import bio.xml.XML_Blastx;
 
 import tasks.TaskXT;
@@ -29,13 +30,14 @@ public class Task_Blast extends TaskXT{
 	public void parseArgsSub(CommandLine cmd){
 		if(cmd.hasOption("u"))upload=true;
 		if(cmd.hasOption("i"))input=cmd.getOptionValue("i");
+		if(cmd.hasOption("f"))fuzzynames = true;
 	}
 	
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("u","upload", false, "Perform default setup"));
 		options.addOption(new Option("i","input", true, "Input folder or file"));
-		options.addOption(new Option("f","fuzzy", true, "Check for fuzzy names before failing, " +
+		options.addOption(new Option("f","fuzzy", false, "Check for fuzzy names before failing, " +
 				"may be help if blast query-id is different from database id. May lead to incorrect "));
 	}
 	
@@ -69,7 +71,7 @@ public class Task_Blast extends TaskXT{
 				for(;i < files.length; i++){
 					if(!ignore[i]){
 						try{
-							uploadBlastFile(manager, files[i]);
+							uploadBlastFile(manager, files[i], this.fuzzynames);
 						}
 						catch(Exception e){
 							logger.error("Failed to parse file " + files[i].getName(),e);
@@ -84,7 +86,7 @@ public class Task_Blast extends TaskXT{
 			}
 			else{
 				try{
-					uploadBlastFile(manager, in);
+					uploadBlastFile(manager, in, this.fuzzynames);
 				}
 				catch(Exception e){
 					logger.error("Failed to parse file " + in.getName(),e);
@@ -96,10 +98,9 @@ public class Task_Blast extends TaskXT{
 	    setComplete(finished);
 	}
 	
-	public static void uploadBlastFile(DatabaseManager manager, File file) throws Exception{
-
-			XML_Blastx xml = new XML_Blastx(file);
-			
+	public static void uploadBlastFile(DatabaseManager manager, File file, boolean fuzzynames) throws Exception{
+		XMLHelper_Blastx helper = new XMLHelper_Blastx(new XML_Blastx(file));
+		helper.upload2BioSQL(manager, fuzzynames);
 	}
 	
 	private void trimRecovered(String[] data){
