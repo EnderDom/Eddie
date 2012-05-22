@@ -33,7 +33,6 @@ import bio.sequence.Sequences;
  * 
  *   ALL values are converted to 0 index/base
  */
-@SuppressWarnings({ "javadoc", "deprecation" })
 @Deprecated
 public class ACEObject implements ACEHandler, Assembly, Sequences {
 

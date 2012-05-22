@@ -17,7 +17,7 @@ import tools.Tools_String;
  * 
  * Used this as a reference for format specifications http://www.cbcb.umd.edu/research/contig_representation.shtml
  */
-@SuppressWarnings({ "javadoc", "deprecation" })
+@Deprecated
 public class ACEParser {
 
 	public ACEHandler handler;

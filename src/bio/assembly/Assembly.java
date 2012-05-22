@@ -7,7 +7,7 @@ package bio.assembly;
  * but I quite like the idea of having an interface for assemblies 
  * for things like coverage and retrieved contig number etc.
  */
-@SuppressWarnings("javadoc")
+
 public interface Assembly {
 
 

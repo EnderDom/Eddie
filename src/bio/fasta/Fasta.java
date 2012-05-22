@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
@@ -26,6 +29,7 @@ public class Fasta implements FastaHandler, Sequences{
 	private LinkedHashMap<String, String> qualities;
 	private boolean fastq;
 	private int[] list_of_lens; 
+	Logger logger = Logger.getRootLogger();
 	
 	public Fasta(){
 		sequences = new LinkedHashMap<String, String>();
@@ -51,6 +55,11 @@ public class Fasta implements FastaHandler, Sequences{
 		addQuality(title, quality);
 	}
 
+	public void remove(String title){
+		sequences.remove(title);
+		if(qualities.containsValue(title)) qualities.remove(title);
+	}
+	
 	public void setFastq(boolean fastq) {
 		this.fastq =fastq;
 		if(qualities == null)qualities = new LinkedHashMap<String, String>();
@@ -124,7 +133,7 @@ public class Fasta implements FastaHandler, Sequences{
 			count++;
 		}
 		out.close();fstream.close();
-		Logger.getRootLogger().info("Fasta Saved Successfully");
+		logger.info("Fasta Saved Successfully");
 		if(count == sequences.keySet().size())return true;
 		else return false;
 	}
@@ -189,18 +198,16 @@ public class Fasta implements FastaHandler, Sequences{
 	
 	public int trimSequences(int tr){
 		int trimcount = 0;
-		System.out.print("\r");
-		String[] s = sequences.keySet().toArray(new String[0]);
-		for(int i=0; i < s.length;i++){
-			String seq = sequences.get(s[i]);
+		LinkedList<String> toremove = new LinkedList<String>();
+		for(String s : sequences.keySet()){
+			String seq = sequences.get(s);
 			if(seq.length() < tr){
-				sequences.remove(s[i]);
-				if(qualities.containsValue(s[i])) qualities.remove(s[i]);
+				logger.info("Remove Sequence " + s +" of length " + seq.length());
+				toremove.add(s);
 				trimcount++;
 			}
-			System.out.print("\rSubsequence: "+i);
 		}
-		System.out.println();
+		for(String s : toremove)remove(s);
 		return trimcount;
 	}
 
@@ -208,4 +215,66 @@ public class Fasta implements FastaHandler, Sequences{
 		return sequences.containsKey(name);
 	}
 	
+	public int removeSequencesWithNs(int Ns){
+		int i=0;
+		StringBuilder build = new StringBuilder();
+		for(int j =0; j < Ns; j++){
+			build.append("N");
+		}
+		Pattern p = Pattern.compile(build.toString());
+		LinkedList<String> toremove = new LinkedList<String>();
+		for(String s : sequences.keySet()){
+			String sequence = sequences.get(s);
+			Matcher m = p.matcher(sequence);
+			if(m.find()){
+				logger.info("Remove Sequence "+s +" due to having to many Ns");
+				toremove.add(s);
+				i++;
+			}
+		}
+		for(String s : toremove)remove(s);
+		return i;
+	}
+	
+	public int removeSequencesWithPercNs(int Perc){
+		int i=0;
+		int r = 1;
+		double perc =((double)Perc)/100.0;
+		LinkedList<String> toremove = new LinkedList<String>();
+		for(String s : sequences.keySet()){
+			String sequence = sequences.get(s).toUpperCase();
+			r = (int)((double)sequence.length()*perc);
+			
+			int index =0;
+			while(r-- > -1 && (index = sequence.indexOf("N", index+1))!=-1);
+			if(r <1){
+				logger.info("Removing "+ s + " due to infringing <"+Perc+"% Ns");
+				toremove.add(s);
+				i++;
+			}
+		}
+		for(String s : toremove)remove(s);
+		return i;
+	}
+	
+	public int replaceNames(String s1, String s2){
+		LinkedHashMap<String, String> seqs2 = new LinkedHashMap<String, String>();
+		LinkedHashMap<String, String> quals2 = new LinkedHashMap<String, String>();
+		int i = 0;
+		for(String s : sequences.keySet()){
+			if(s.indexOf(s1) != -1)i++;
+			String two = s.replaceAll(s1, s2);
+			seqs2.put(two, sequences.get(s));
+			if(qualities.containsValue(s)) quals2.put(two, qualities.get(s));
+		}
+		if(this.sequences.size() != seqs2.size()){
+			logger.error("An error occured, for some reason the" +
+					" new hashmap is not the same size as the old one. No changes made.");
+		}
+		else{
+			this.sequences = seqs2;
+			this.qualities = quals2;
+		}
+		return i;
+	}
 }

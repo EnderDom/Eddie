@@ -49,7 +49,6 @@ public class ACERecord implements Cloneable {
 		cons = new StringBuilder();
 	}
 	
-	@SuppressWarnings("javadoc")
 	/** 
 	 * @see java.lang.Object#clone()
 	 * @return ACERecord
