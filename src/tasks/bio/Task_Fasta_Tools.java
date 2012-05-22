@@ -26,6 +26,8 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 	private int trimPercNs;
 	private String string1;
 	private String string2;
+	private String rename;
+	private int offset;
 	private boolean replace;
 	private boolean convert;
 	
@@ -144,15 +146,23 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 			int u = this.fasta.replaceNames(string1,string2);
 			logger.info(u+" Sequences renamed");
 		}
+		if(rename != null){
+			if(replace)logger.warn("replace and rename should not be set together.");
+			logger.info(" Renaming Sequences...");
+			int u = this.fasta.renameSeqs(rename, offset);
+			logger.info(u+" Sequences renamed");
+		}
 		if(stats){
 			logger.info("Retrieving Statistics...");
 			System.out.println("Total No. of Sequences: 	" + this.fasta.getNoOfSequences());
-			long[] arr = fasta.getAllStats();
-			System.out.println("Total No. of Bps: 		" + arr[0]);
-			System.out.println("Minumum Sequence Length: 	" + arr[1]);
-			System.out.println("Maximum Sequence Length: 	" + arr[2]);
-			System.out.println("N50:				" + arr[3]);
-			System.out.println("N90: 				" + arr[4]);
+			long[] stats= fasta.getAllStats();
+			System.out.println("No. of bp: " + stats[0] + "bp");
+			System.out.println("Min Sequence Length: " + stats[1] + "bp");
+			System.out.println("Max Sequence Length: " + stats[2] + "bp");
+			System.out.println("n50: " + stats[3]);
+			System.out.println("n90: " + stats[4]);
+			System.out.println("Sequences >500bp " + stats[5]);
+			System.out.println("Sequences >1Kb " + stats[6]);
 		}
 		
 		//OTHER fasta tools
@@ -172,6 +182,8 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 		options.addOption(new Option("convert", false, "Convert files to another file type"));
 		options.addOption(new Option("trimPercNs", true, "Remove any sequence where the percentage of Ns is greater than this INTEGER value"));
 		options.addOption(new Option("trimRowNs", true, "Remove any sequences with a row of Ns greater than this"));
+		options.addOption(new Option("rename", true, "Renames string with counter ie -rename \"Contig\" would rename Contig1, Contig2 etc"));
+		options.addOption(new Option("offset", true, "if rename is set, this offsets the counter, so -rename Contig -offset 50 would rename Contig50, Contig51"));
 		options.addOption(new Option("replace", true, "Replace a with b in fasta names use " +
 				">< between find and replace, ie -replace \"Contig_><Contigous File\" would " +
 				"replace fasta names with >Contig_1 to >Contigous File1"));
@@ -214,6 +226,19 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 			}
 			
 		}
+		if(cmd.hasOption("offset")){
+			Integer i =Tools_String.parseString2Int(cmd.getOptionValue("offset"));
+			if(i != null){
+				this.offset = i;
+			}
+			else{
+				logger.warn("Offset set, but is not a number");
+			}
+			
+		}
+		if(cmd.hasOption("rename")){
+			rename = cmd.getOptionValue("rename");
+		} 
 		if(cmd.hasOption("qual")){
 			qual = cmd.getOptionValue("qual");
 		} 
@@ -252,3 +277,4 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 		this.qual = qual;
 	}
 }
+

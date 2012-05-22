@@ -257,6 +257,23 @@ public class Fasta implements FastaHandler, Sequences{
 		return i;
 	}
 	
+	/**
+	 * This replaces string1 with string2 within the names of fastas
+	 * ie .
+	 * s1 = "Contig"
+	 * s2 = "ConsensusContig"
+	 * 
+	 * If the names were "Contig_x [organism=Deroceras reticulatum]"
+	 * they would become:
+	 * "ConsensusContig_x [organism=Deroceras reticulatum]"
+	 * 
+	 * 
+	 * @param s1 Find String 
+	 * @param s2 Replace string
+	 * @return the number of names which have been modified (Note:
+	 * not the number of modifications (Multiple modifications per string
+	 * will happen if s1 occurs more than once and this is not counted)
+	 */
 	public int replaceNames(String s1, String s2){
 		LinkedHashMap<String, String> seqs2 = new LinkedHashMap<String, String>();
 		LinkedHashMap<String, String> quals2 = new LinkedHashMap<String, String>();
@@ -277,4 +294,37 @@ public class Fasta implements FastaHandler, Sequences{
 		}
 		return i;
 	}
+	
+	/**
+	 * Renames the sequence to s1 + (start + count).
+	 * This admittedly assumes the strings are in a
+	 * suitable order. As LinkedHashMap was used they
+	 * should be in the order they were read in as.
+	 * 
+	 * 
+	 * @param s1
+	 * @param start
+	 * @return Number of sequences renamed, 
+	 * this should be all of them
+	 */
+	public int renameSeqs(String s1, int start){
+		LinkedHashMap<String, String> seqs2 = new LinkedHashMap<String, String>();
+		LinkedHashMap<String, String> quals2 = new LinkedHashMap<String, String>();
+		int i = start;
+		for(String s : sequences.keySet()){
+			seqs2.put(s1+start, sequences.get(s));
+			if(qualities.containsValue(s)) quals2.put(s1+start, qualities.get(s));
+			i++;
+		}
+		if(this.sequences.size() != seqs2.size()){
+			logger.error("An error occured, for some reason the" +
+					" new hashmap is not the same size as the old one. No changes made.");
+		}
+		else{
+			this.sequences = seqs2;
+			this.qualities = quals2;
+		}
+		return i-start;
+	}
+	
 }

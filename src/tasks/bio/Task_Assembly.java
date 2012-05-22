@@ -17,6 +17,7 @@ import bio.assembly.ACERecord;
 import tasks.TaskXTwIO;
 import tools.Tools_String;
 import tools.Tools_System;
+import tools.bio.Tools_Sequences;
 
 @SuppressWarnings("deprecation")
 public class Task_Assembly extends TaskXTwIO{
@@ -71,17 +72,27 @@ public class Task_Assembly extends TaskXTwIO{
 					int count=0;
 					int totalread=0;
 					long totalbp = 0;
+					int[] lengths = new int[parse.getContigSize()];
 					while(parse.hasNext()){
 						ACERecord record = parse.next();
 						System.out.print("\r(No."+count+") : " + record.getContigName() + "        ");
+						lengths[count] = record.getConsensus().getActualLength();
 						count++;
 						totalread+=record.getNoOfReads();
 						totalbp+=record.getTotalBpofReads();
 					}
+					long[] stats = Tools_Sequences.SequenceStats(lengths);
 					System.out.println();
 					System.out.println("No. of Contigs: " + count);
+					System.out.println("Total Contig Length: " + stats[0]+ "bp");
+					System.out.println("Min-Max Lengths: " + stats[1] +"-"+stats[2] + "bp");
+					System.out.println("n50: " + stats[3]);
+					System.out.println("n90: " + stats[4]);
+					System.out.println("Contigs >500bp: " + stats[5]);
+					System.out.println("Contigs >1Kbp: " + stats[6]);
 					System.out.println("Total No. of Reads: " + totalread);
 					System.out.println("Total No. of Bp: " + totalbp);
+					
 				}
 				catch (FileNotFoundException e) {
 					logger.error("No file called " + this.input,e);
@@ -158,3 +169,4 @@ public class Task_Assembly extends TaskXTwIO{
 	}
 	
 }
+
