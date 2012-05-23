@@ -8,11 +8,18 @@ import java.awt.event.ItemEvent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
+import modules.Module;
+
 import org.apache.log4j.Logger;
+
+import tools.Tools_Array;
 
 public class FileOptions implements ActionListener{
 
-	public static String[] filetypes = new String[]{"DEFAULT", "FASTA", "FASTQ","QUAL", "SAM", "BAM"};
+	public String[] menunames;
+	public String[] filetypes;
+	public Module[] persists;
+	public String[] classnames;
 	int filetype =-1;
 	Logger logger = Logger.getRootLogger();
 	JPopupMenu menu;
@@ -27,11 +34,14 @@ public class FileOptions implements ActionListener{
 	
 	public void reset(String filetypea){
 		menu.removeAll();
-		for(int i =0; i < filetypes.length; i++){
-			if(filetypes[i].equals(filetypea)){
-				filetype =i;
-				logger.debug("Filetype "+filetypea+" is recognised");
-				break;
+		
+		if(filetypes != null){
+			for(int i =0; i < filetypes.length; i++){
+				if(filetypes[i].equals(filetypea)){
+					filetype =i;
+					logger.debug("Filetype "+filetypea+" is recognised");
+					break;
+				}
 			}
 		}
 		buildDefaultMenuItems();
@@ -53,10 +63,11 @@ public class FileOptions implements ActionListener{
 		//menu.add(item2);
 		menu.add(item3);
 		menu.add(item4);
+		menu.addSeparator();
 	}
 	
 	private void buildFileTypeMenuItems(String filetypea){
-		//TODO
+		
 	}
 	
 	public boolean isValid(){
@@ -82,7 +93,29 @@ public class FileOptions implements ActionListener{
 
 	public void actionPerformed(ActionEvent actionevent) {
 		logger.trace("Action: " + actionevent.getActionCommand());
+		
 	}
 	
-	
+	public void registerClasses(String[] menus, String[] types, Module cla){
+		String cl = cla.getClass().getPackage()+"."+cla.getClass().getName();
+		if(this.filetypes == null){
+			this.menunames = menus;
+			this.filetypes = types;
+			this.classnames = new String[filetypes.length];
+			for(int i =0;i < classnames.length; i++)classnames[i]=cl;
+			this.persists = new Module[filetypes.length];
+			if(cla.isPersistant()){
+				for(int i =0;i < persists.length; i++)persists[i]=cla;
+			}
+		}
+		else{
+			menunames = Tools_Array.mergeStrings(menunames, menus);
+			filetypes = Tools_Array.mergeStrings(filetypes, types);
+			int j =0;
+			String[] temp = new String[menunames.length];
+			for(; j< classnames.length ; j++)temp[j]=classnames[j];
+			for(; j < menunames.length; j++)temp[j] = cla.;
+			
+		}
+	}
 }

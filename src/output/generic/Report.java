@@ -21,6 +21,9 @@ import ui.PropertyLoader;
  * 
  * NOTE: pdf output still a 'work in progress'
  * 
+ * 
+ * I'm an idiot > just use Document for the HTML stuff, Gah!
+ * 
  */
 
 public class Report {

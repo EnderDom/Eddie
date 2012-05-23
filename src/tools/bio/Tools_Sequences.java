@@ -6,10 +6,12 @@ import tools.Tools_Math;
 
 public class Tools_Sequences {
 	
-	/*
+	/**
 	 * Source code taken from 
 	 * 
 	 * http://asap.ahabs.wisc.edu/mauve/mauve-developer-guide/mauve-development-overview.html
+	 * 
+	 * @see src/org/gel/mauve/assembly/AssemblyScorer.java
 	 * 
 	 * which appears to be under the GPL (v3) licence 
 	 * 

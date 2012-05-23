@@ -1,5 +1,8 @@
 package modules.bio;
 
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+
 import org.apache.log4j.Logger;
 import tasks.bio.Task_Assembly;
 import tasks.bio.Task_Convert;
@@ -8,12 +11,11 @@ import tasks.bio.Task_BlastLocal;
 import tasks.bio.Task_ChimeraAnalysis;
 import tasks.bio.Task_Fasta_Tools;
 import tasks.bio.Task_WebInterPro;
+import tools.Tools_Modules;
 import gui.EddieGUI;
 import cli.EddieCLI;
 
-import modules.Module_Basic;
-
-public class Module_Bio extends Module_Basic{
+public class Module_Bio {
 	
 	public String menustring = "Tools";
 	public String menuItemName = "Biology Tools";
@@ -45,6 +47,25 @@ public class Module_Bio extends Module_Basic{
 		}
 	}
 	
+	public void addToGui(EddieGUI biodesktopgui) {
+		JMenuBar menu = biodesktopgui.getJMenuBar();
+		build(menu, biodesktopgui);
+	}
+	
+	public void build(JMenuBar menubar, EddieGUI gui){
+		int i =0;
+		String[] actions1 = new String[1];
+		JMenuItem menuItem = new JMenuItem(getMenuItemName());
+	    menuItem.setActionCommand(getModuleName()+i);
+	    actions1[i] = getModuleName()+i;
+	    setActions(actions1);
+	    menuItem.addActionListener(gui);
+	    Tools_Modules.add2JMenuBar(menubar, menuItem, new String(getMenuString()), true);
+	}
+	
+	public void setActions(String[] actions) {
+		this.actions = actions;
+	}
 	
 	public void addToCli(EddieCLI cli) {
 		

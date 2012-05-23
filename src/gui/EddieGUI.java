@@ -73,6 +73,13 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		Tools_UI.changeLnF(load.getLastLNF(), this);
 		this.setIconImage(new ImageIcon(getClass().getResource(iconpath)).getImage());
 		
+		/*
+		 * This needs to be started before modmanager,
+		 * as modules will want to register classes with it 
+		 */
+		view = new FileViewer();
+		
+		
 		//Module Build
 		modmanager = new ModuleManager(load.getModuleFolder());
      
@@ -89,12 +96,15 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		setContentPane(desktop);
 	
 		modmanager.init();
-		modmanager.setupGUI(this);	
+		modmanager.setupGUI(this);
+		
+		modmanager.addPrebuiltModule("FILEVIEWER", view, this);
+		
 		modmanager.addPrebuiltModule("PROPERTYLOADER", load, this);
 		modmanager.addPrebuiltModule("MYSELF", modmanager, this);
 		
-		view = new FileViewer();
-		modmanager.addPrebuiltModule("FILEVIEWER", view, this);
+		
+		
 
 		Logger.getRootLogger().debug("Set EddieGUI to Visible");
 		//Finish

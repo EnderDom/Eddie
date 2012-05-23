@@ -100,7 +100,7 @@ public class Task_Assembly extends TaskXTwIO{
 					logger.error("Could not parse " + this.input,e);
 				}
 			}
-			else if(coverage){
+			else if(coverage){//TODO upgrade
 				logger.debug("Coverage Option Set");
 				ACEObject ace = getAce();
 				if(contig != -1){
