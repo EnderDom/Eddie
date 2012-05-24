@@ -92,8 +92,7 @@ public class FileOptions implements ActionListener{
 	}
 
 	public void actionPerformed(ActionEvent actionevent) {
-		logger.trace("Action: " + actionevent.getActionCommand());
-		
+		logger.trace("Action: " + actionevent.getActionCommand());		
 	}
 	
 	public void registerClasses(String[] menus, String[] types, Module cla){
@@ -114,8 +113,8 @@ public class FileOptions implements ActionListener{
 			int j =0;
 			String[] temp = new String[menunames.length];
 			for(; j< classnames.length ; j++)temp[j]=classnames[j];
-			for(; j < menunames.length; j++)temp[j] = cla.;
-			
+			//for(; j < menunames.length; j++)temp[j];
+			//TODO complete
 		}
 	}
 }

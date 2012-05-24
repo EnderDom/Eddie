@@ -290,9 +290,9 @@ public class MySQL_BioSQL implements BioSQL{
 		int entry =-1;
 		try{
 			Statement st = con.createStatement();
-			ResultSet set = st.executeQuery("SELECT id FROM bioentry WHERE name='"+name+"'");
+			ResultSet set = st.executeQuery("SELECT bioentry_id FROM bioentry WHERE name='"+name+"'");
 			while(set.next()){
-				entry = set.getInt("id");
+				entry = set.getInt("bioentry_id");
 				if(set.next()) logger.warn("Other ids are available with this name " + name);
 				break;
 			}
@@ -418,6 +418,20 @@ public class MySQL_BioSQL implements BioSQL{
 		}
 	}
 	
+	public String getSequence(Connection con, int bioentry_id){
+		String str = null;
+		try {
+			Statement st = con.createStatement();
+			set = st.executeQuery("SELECT seq FROM biosequence WHERE bioentry_id="+bioentry_id);
+			while(set.next()){
+				str = set.getString("seq");
+			}
+		} 
+		catch (SQLException e) {
+			logger.error("Failed to get sequence for contig id " + bioentry_id, e);
+		}	
+		return str;
+	}
 	
 	/**
 	 * Builds the Default bioSQL 1.0.1 schema

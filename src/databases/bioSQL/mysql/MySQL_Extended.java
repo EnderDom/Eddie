@@ -305,11 +305,19 @@ public class MySQL_Extended implements BioSQLExtended{
 		//This could lead to unexpected results, probably 
 		//should be removed if to be used by anyone other than me
 		if(entry == -1 && fuzzy){
+			logger.debug("Could not get id with "+name);
 			String[] s = Tools_Contig.stripContig(name);
 			if(s == null)return entry;
 			else{
 				for(String sa : s){
 					entry = boss.getBioEntrywName(con, sa);
+					if(entry != -1){
+						logger.info("Retrieve data based on name " + sa);
+						break;
+					}
+					else{
+						logger.debug("Could not get id with "+sa);
+					}
 				}
 			}
 		}

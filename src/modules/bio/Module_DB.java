@@ -7,20 +7,23 @@ import org.apache.log4j.Logger;
 import tasks.database.Task_Assembly2DB;
 import tasks.database.Task_BioSQLDB;
 import tasks.database.Task_Blast;
+import tasks.database.Task_dbTools;
 import cli.EddieCLI;
 import modules.Module_Basic;
 
 public class Module_DB extends Module_Basic{
 	
 	//Change to Options ...?
-	protected String[] tasks = new String[]{"sqladmin", "sqluploader", "uploadblast"}; 
-	protected String[] taskinfo = new String[]{"Builds/Modifies the Default bioSQL Database for Eddie", "Upload Stuff to the Database", "Upload blast hit data to database"};
+	protected String[] tasks = new String[]{"sqladmin", "sqluploader", "uploadblast", "dbtools"}; 
+	protected String[] taskinfo = new String[]{"Builds/Modifies the Default bioSQL Database for Eddie",
+			"Upload Stuff to the Database", "Upload blast hit data to database", "	Tools for pulling various data from database"};
 	
 	/*
 	 * This needs to match the class ->
 	 * Will not be changed if class name is changed!!!
 	 */
-	protected String[] classes = new String[]{Task_BioSQLDB.class.getName(), Task_Assembly2DB.class.getName(), Task_Blast.class.getName()};
+	protected String[] classes = new String[]{Task_BioSQLDB.class.getName(), Task_Assembly2DB.class.getName(), 
+			Task_Blast.class.getName(), Task_dbTools.class.getName()};
 	
 	protected String[] actions;
 	

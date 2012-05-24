@@ -89,4 +89,6 @@ public interface BioSQL {
 	public int getLocation(Connection con, int seqfeature_id, int rank);
 	
 	public int getBioEntrywName(Connection con, String name);
+	
+	public String getSequence(Connection con, int bioentry_id);
 }

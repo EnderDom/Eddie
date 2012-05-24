@@ -3,6 +3,8 @@ package modules.bio;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
+import modules.Module_Basic;
+
 import org.apache.log4j.Logger;
 import tasks.bio.Task_Assembly;
 import tasks.bio.Task_Convert;
@@ -15,7 +17,7 @@ import tools.Tools_Modules;
 import gui.EddieGUI;
 import cli.EddieCLI;
 
-public class Module_Bio {
+public class Module_Bio extends Module_Basic{
 	
 	public String menustring = "Tools";
 	public String menuItemName = "Biology Tools";

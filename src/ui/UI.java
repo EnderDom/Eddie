@@ -15,6 +15,10 @@ public interface UI {
 	Logger logger = Logger.getLogger("UILogger");
 	
 	EventListenerList listenerList = new EventListenerList();
+	
+	public static int YES =0;
+	public static int NO =1;
+	public static int CANCEL =2;
 
 	public void exit();
 	
@@ -30,6 +34,16 @@ public interface UI {
 	
 	public String requiresUserPassword(String message, String title);
 	
+	
+	/**
+	 * 
+	 * @param message
+	 * @param title
+	 * @return integer value, responses:
+	 * 0 = yes
+	 * 1 = no
+	 * 2 = cancel
+	 */
 	public int requiresUserYNI(String message, String title);
 	
 	public void sendAlert(String alert);
