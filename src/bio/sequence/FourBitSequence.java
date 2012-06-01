@@ -51,7 +51,7 @@ public class FourBitSequence implements CharSequence{
 	 * this will either consider the 
 	 * sequence reversed and complimented
 	 */
-	boolean LorR;
+	boolean forward = true;
 		
 	long lmask;
 	long rmask;
@@ -99,11 +99,11 @@ public class FourBitSequence implements CharSequence{
 		 * This could potential lead to issues when bugs are left uncaught, as
 		 * such if calling bp positions outside sequence is not needed use getInside()
 		 */
-		if(pos >= this.length || pos < this.length*-1) return getAsChar(0, this.LorR);
+		if(pos >= this.length || pos < this.length*-1) return getAsChar(0, this.forward);
 		else{
-			boolean lor = this.LorR;
+			boolean lor = this.forward;
 			if(pos < 0){
-				/* Assuming that negative value refers to LorR reversecomp char
+				/* Assuming that negative value refers to forward reversecomp char
 				 * Also assumes that -pos is == the position from length
 				 * ie -1 == the last index for sequence 
 				 * thus for ATCG
@@ -181,11 +181,11 @@ public class FourBitSequence implements CharSequence{
 	}
 	
 	public String getAsStringRevComp(){
-		return new String(getAsCharArray(!this.LorR));
+		return new String(getAsCharArray(!this.forward));
 	}
 
 	public String getAsString(){
-		return new String(getAsCharArray(this.LorR));
+		return new String(getAsCharArray(this.forward));
 	}
 	
 	/*
@@ -240,7 +240,7 @@ public class FourBitSequence implements CharSequence{
 	}
 	
 	private static char getAsChar(long charvalue, boolean forward){
-		if(!forward){
+		if(forward){
 				 if(charvalue==0x1) return 'A';
 			else if(charvalue==0x2) return 'C';
 			else if(charvalue==0x4) return 'G';
@@ -361,7 +361,7 @@ public class FourBitSequence implements CharSequence{
 	 * flips reversecomp flag
 	 */
 	public void toReverseComp(){
-		this.LorR = !this.LorR;
+		this.forward = !this.forward;
 	}
 	
 	public int getLength(){

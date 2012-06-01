@@ -196,6 +196,25 @@ public class Fasta implements FastaHandler, Sequences{
 		return this.sequences.size();
 	}
 	
+	public int size(){
+		return getNoOfSequences();
+	}
+	
+	public String getSequence(int i){
+		for(String s : sequences.keySet()){
+			if(i==0){
+				return sequences.get(s);
+			}
+			i--;
+		}
+		return null;
+	}
+	
+	public String getSequence(String key){
+		return this.sequences.get(key);
+	}
+	
+	
 	public int trimSequences(int tr){
 		int trimcount = 0;
 		LinkedList<String> toremove = new LinkedList<String>();

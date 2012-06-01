@@ -18,6 +18,7 @@ import cli.LazyPosixParser;
 
 import tools.Tools_System;
 import tools.Tools_Task;
+import tools.bio.Tools_Bio_File;
 import ui.TaskManager;
 import ui.UI;
 
@@ -243,17 +244,7 @@ public abstract class Task implements Runnable, Future<Object> {
 	 * 
 	 */
 	public String detectFileType(String filename){
-		String[] filesuffix = new String[]{".ace",".sam",".fna",".fasta","fastq"};
-		String[] filetype = new String[]{"ACE","SAM","FASTA","FASTA","FASTQ"};
-		String filetype_val = "UNKNOWN";
-		for(int i=0; i < filesuffix.length; i++){
-			if(filename.endsWith(filesuffix[i])){
-				filetype_val = filetype[i];
-				break;
-			}
-		}
-		Logger.getRootLogger().debug("Filetype detected as " + filetype_val);
-		return filetype_val;
+		return Tools_Bio_File.detectFileType(filename);
 	}
 
 }

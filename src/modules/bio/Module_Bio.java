@@ -7,6 +7,7 @@ import modules.Module_Basic;
 
 import org.apache.log4j.Logger;
 import tasks.bio.Task_Assembly;
+import tasks.bio.Task_BioTools;
 import tasks.bio.Task_Convert;
 import tasks.bio.Task_BlastAnalysis;
 import tasks.bio.Task_BlastLocal;
@@ -23,10 +24,11 @@ public class Module_Bio extends Module_Basic{
 	public String menuItemName = "Biology Tools";
 	//Change to Options ...?
 	protected String[] tasks = new String[]{"blast", "webblast", "blast2sql","converter","assemblytools", "fastatools", 
-			"iprscanweb", "chimera", "blastanalysis"}; 
+			"iprscanweb", "chimera", "blastanalysis", "biotools"}; 
 	protected String[] taskinfo = new String[]{"	run a blast program", "run web blast", 
 			"Upload blast results to mysql db", "converts bio Files", "Assembly Tools", "Fasta Tools",
-			"Send sequences to IPRScan Web Service", "	Run chimera analysis using ACE and blast files",  "Run analysis using fasta and blast files"};
+			"Send sequences to IPRScan Web Service", "	Run chimera analysis using ACE and blast files", 
+			"Run analysis using fasta and blast files", "General single sequence manipulation tools"};
 	
 	/*
 	 * This needs to match the class ->
@@ -34,7 +36,8 @@ public class Module_Bio extends Module_Basic{
 	 */
 	protected String[] classes = new String[]{Task_BlastLocal.class.getName(),Task_BlastLocal.class.getName(),
 			Task_BlastLocal.class.getName(),Task_Convert.class.getName(), Task_Assembly.class.getName(),
-			Task_Fasta_Tools.class.getName(), Task_WebInterPro.class.getName(), Task_ChimeraAnalysis.class.getName(), Task_BlastAnalysis.class.getName()};
+			Task_Fasta_Tools.class.getName(), Task_WebInterPro.class.getName(), Task_ChimeraAnalysis.class.getName(), 
+			Task_BlastAnalysis.class.getName(),Task_BioTools.class.getName()};
 	
 	protected String[] actions;
 	
