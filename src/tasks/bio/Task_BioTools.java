@@ -6,6 +6,8 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
+import databases.manager.DatabaseManager;
+
 import bio.sequence.FourBitSequence;
 
 import tasks.TaskXT;
@@ -23,6 +25,7 @@ public class Task_BioTools extends TaskXT{
 	private String output;
 	private String contig;
 	private FourBitSequence sequence;
+	private boolean strip;
 	
 	public Task_BioTools(){
 		setHelpHeader("--This is the Help Message for the General Bio Tools Task--");
@@ -30,10 +33,13 @@ public class Task_BioTools extends TaskXT{
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
+		logger.trace("Parsing args for Biotools task");
 		if(cmd.hasOption("rc"))rc = true;
 		if(cmd.hasOption("i"))input = cmd.getOptionValue("i");
 		if(cmd.hasOption("o"))output = cmd.getOptionValue("o");
 		if(cmd.hasOption("c"))contig = cmd.getOptionValue("c");
+		if(cmd.hasOption("f"))fuzzy = true;
+		if(cmd.hasOption("strip"))strip = true;
 		if(cmd.hasOption("s"))sequence = new FourBitSequence(cmd.getOptionValue("s"));
 		if(cmd.hasOption("xindex")){
 			Integer temp = Tools_String.parseString2Int(cmd.getOptionValue("xindex"));
@@ -51,6 +57,7 @@ public class Task_BioTools extends TaskXT{
 		options.addOption(new Option("f","fuzzy", false, "Try to retrieve with fuzzy naming, if -c is not found"));
 		options.addOption(new Option("x","xindex", true, "Index of sequence in fasta to use (0 == is the first)"));
 		options.addOption(new Option("output", true, "If you wish to output to file, else output is printed to console"));
+		options.addOption(new Option("strip", false, "Remove any -/* from sequence before doing anything"));
 	}
 	
 	public Options getOptions(){
@@ -63,8 +70,11 @@ public class Task_BioTools extends TaskXT{
 		
 		if(sequence != null);
 		else{
-			sequence = Tools_Sequences.getSequenceFromSomewhere(logger, this.ui, input, contig, index, fuzzy);
-			if(sequence == null)return;
+			sequence = Tools_Sequences.getSequenceFromSomewhere(logger, new DatabaseManager(this.ui, this.password), input, contig, index, fuzzy, strip);
+			if(sequence == null){
+				logger.error("Sequence returned was null, premature terminating");
+				return;
+			}
 		}
 		if(rc){
 			if(output == null){
@@ -78,7 +88,6 @@ public class Task_BioTools extends TaskXT{
 				Tools_File.quickWrite(s, new File(output), false);
 			}
 		}
-		
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
 	}

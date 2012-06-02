@@ -36,6 +36,16 @@ public class DatabaseManager {
 		this.ui = ui;
 		this.loader= ui.getPropertyLoader();
 	}
+	
+	public DatabaseManager(UI ui, String password){
+		this.ui = ui;
+		this.loader= ui.getPropertyLoader();
+		this.password = password;
+	}
+	
+	public void setPassword(String pass){
+		this.password = pass;
+	}
 
 	public boolean open(){
 		if(openDefaultConnection(true) != null){
@@ -59,20 +69,12 @@ public class DatabaseManager {
 			if(this.con == null){
 				logger.error("Argh, failed to connect to database");
 			}
+			return this.con;
 		}
-		catch(SQLException e){
+		catch(Exception e){
 			logger.error("Params{ DBTYPE:"+dbtype+" DBDRIVER:"+driver+" DBHOST:"+dbhost+" DBNAME:"+dbname+" DBUSER:" + dbuser +"}",e);
-		} 
-		catch (InstantiationException e) {
-			logger.error("Params{ DBTYPE:"+dbtype+" DBDRIVER:"+driver+" DBHOST:"+dbhost+" DBNAME:"+dbname+" DBUSER:" + dbuser +"}",e);
-		} 
-		catch (IllegalAccessException e) {
-			logger.error("Params{ DBTYPE:"+dbtype+" DBDRIVER:"+driver+" DBHOST:"+dbhost+" DBNAME:"+dbname+" DBUSER:" + dbuser +"}",e);
+			return null;
 		}
-		catch (ClassNotFoundException e) {
-			logger.error("Params{ DBTYPE:"+dbtype+" DBDRIVER:"+driver+" DBHOST:"+dbhost+" DBNAME:"+dbname+" DBUSER:" + dbuser +"}",e);
-		}
-		return this.con;
 	}
 
 	public Connection openDefaultConnection(boolean db){

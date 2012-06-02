@@ -13,7 +13,6 @@ import bio.fasta.FastaParser;
 import bio.sequence.FourBitSequence;
 
 import tools.Tools_Math;
-import ui.UI;
 
 public class Tools_Sequences {
 	
@@ -26,7 +25,11 @@ public class Tools_Sequences {
 	 * 
 	 * which appears to be under the GPL (v3) licence 
 	 * 
-	 * Returns stats for an array of lengths
+	 * @param arr_of_lengths  and array of integers, the length
+	 * of the array can be anything, this should be the lengths
+	 * of all the sequences within a set of sequences.
+	 * 
+	 * @return Returns stats for an array of lengths
 	 * presumably from a fasta or assembly file
 	 * [0] Sum of Lengths (no of bp)
 	 * [1] min length
@@ -35,6 +38,9 @@ public class Tools_Sequences {
 	 * [4] n90
 	 * [5] seqs > 500bp
 	 * [6] seqs > 1Kb
+	 * 
+	 * 
+	 * 
 	 */
 	public static long[] SequenceStats(int[] arr_of_lengths){
 		Arrays.sort(arr_of_lengths);
@@ -64,6 +70,11 @@ public class Tools_Sequences {
 		return ret;
 	}
 	
+	/**
+	 * @see SequenceStats() in this class
+	 * @param arr_of_lengths 
+	 * @return the n50 for this array of integers
+	 */
 	public static int n50(int[] arr_of_lengths){
 		Arrays.sort(arr_of_lengths);
 		long sum = Tools_Math.sum(arr_of_lengths);
@@ -76,7 +87,34 @@ public class Tools_Sequences {
 	}
 	
 	
-	public static FourBitSequence getSequenceFromSomewhere(Logger logger, UI ui, String input, String contig, int index, boolean fuzzy){
+	/*
+	 * The number of errors is insane here,
+	 * I may need to look into some sort of
+	 * error codes... hmmm... However the level
+	 * of abstraction may then get insane itself.
+	*/
+	/**
+	 * This takes either a Contig name
+	 * and either extracts the sequence based on the 
+	 * name from a fasta, or from the database
+	 * 
+	 * 
+	 * 
+	 * @param logger
+	 * @param manager DatabaseManager, won't actually be used if
+	 * this is not a database query, should look into a better
+	 * way of potentially doing this but I'm lazy
+	 * @param input  should be a filepath
+	 * @param contig  name of a sequence in the fasta or database
+	 * @param index   if index is set, rather than getting a specific named sequence
+	 * from the multifasta, it retrieves the index, with 0 being the first sequence
+	 * @param fuzzy   set this to have a certain to use slight naming
+	 *  variations, this is mainly for my personal convinience
+	 * @param strip  boolean, set to true if you want all the '*'/'-' removed
+	 * @return A FourBitSequence object using the input
+	 */
+	public static FourBitSequence getSequenceFromSomewhere(Logger logger, DatabaseManager manager, String input, String contig, int index, boolean fuzzy, boolean strip){
+		String seq = null;
 		if(input != null){
 			String file = Tools_Bio_File.detectFileType(input);
 			if(file.contains("FAST")){
@@ -90,28 +128,37 @@ public class Tools_Sequences {
 						else parser.parseFasta(in);
 						if(fasta.size() == 1)index=0;
 						if(index != -1){
-							String seq = fasta.getSequence(index);
-							if(seq != null){
-								return new FourBitSequence(seq);
-							}
-							else{
-								logger.error("Failure to retrieve data which should be retrievable");
-							}
+							seq = fasta.getSequence(index);
+							if(seq == null)logger.error("Failure to retrieve data which should be retrievable");
 						}
 						else if(contig != null){
 							if(fasta.hasSequence(contig)){
-								return new FourBitSequence(fasta.getSequence(contig));
+								seq = fasta.getSequence(contig);
 							}
 							else if(fuzzy){
-								String[] names = Tools_Contig.stripContig(contig);
-								int i =0;
-								while(!fasta.hasSequence(names[i]) && i < names.length)i++;
-								if(fasta.hasSequence(names[i])){
-									logger.info("Retrieved sequence " + names[i] + " from fasta file");
-									return new FourBitSequence(fasta.getSequence(names[i]));
+								String[] s = fasta.getTruncatedNames();
+								for(int j =0; j < s.length; j++){
+									if(s.equals(contig)){
+										seq= fasta.getSequence(j);
+										logger.info(contig + " matched to the fasta " + fasta.getSequenceName(j));
+										break;
+									}
 								}
-								else{
-									logger.error("Could not get " + contig +" from fasta");
+								
+								String[] names = Tools_Contig.stripContig(contig);
+								if(names != null){
+									for(int i =0; i < s.length; i++){
+										for(int j =0; j < names.length; j++){
+											if(s[i].toLowerCase().equals(names[j].toLowerCase())){
+												logger.info(contig+" was retrieved as \""+fasta.getSequenceName(i)+"\"");
+												seq = fasta.getSequence(i);
+												break;
+											}
+										}
+									}
+								}
+								if(seq == null){
+									logger.error("Incomprehensible gibberish error: " + contig + " is not a real thing");
 								}
 							}
 						}
@@ -134,22 +181,35 @@ public class Tools_Sequences {
 			}
 		}
 		else if(contig != null){
-			DatabaseManager manager = new DatabaseManager(ui);
-			manager.open();
-			int bioentry = manager.getBioSQL().getBioEntry(manager.getCon(), contig, contig, manager.getEddieDBID());
-			if(bioentry < 1 && fuzzy){
-				logger.info("Could not find "+ contig + " looking with fuzzy names");
-				bioentry = manager.getBioSQLXT().getBioEntryId(manager.getBioSQL(),manager.getCon(), contig, fuzzy, manager.getEddieDBID());
-			}
-			if(bioentry > 0){
-				String seq = manager.getBioSQL().getSequence(manager.getCon(), bioentry);
-				manager.close();
-				return new FourBitSequence(seq);
+			logger.debug("Retrieving id for "+contig+" from database");
+			if(manager.open()){
+				logger.debug("Database connection open...");
+				int bioentry = manager.getBioSQLXT().getBioEntryId(manager.getBioSQL(),manager.getCon(), contig, fuzzy, manager.getEddieDBID());
+				if(bioentry > 0){
+					seq = manager.getBioSQL().getSequence(manager.getCon(), bioentry);				
+					manager.close();
+				}
+				else if(bioentry < 1 && !fuzzy){
+					logger.warn("Failed to retrieve sequence information for "+contig + " try using fuzzy (-f)");
+				}
+				else{
+					logger.warn("Failed to retrieve sequence information for "+contig);
+				}
 			}
 			else{
-				logger.warn("Failed to retrieve sequence information for "+contig);
+				logger.error("Failed to establish Database Connection");
 			}
 		}
-		return null;
+		else{
+			logger.error("No contig or input set");
+		}
+		if(seq==null){
+			return null;
+		}
+		else{
+			if(strip)seq=(seq=seq.replaceAll("-", "")).replaceAll("\\*", "");
+			else logger.trace("Not stripping -/* from sequence");
+			return new FourBitSequence(seq);
+		}
 	}
 }

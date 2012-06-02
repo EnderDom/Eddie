@@ -140,8 +140,8 @@ public class PropertyLoader implements Module{
 		HelpFormatter help = new HelpFormatter();
 		help.printHelp("ls", "-- Eddie v"+guiversion+" Help Menu --", options, "-- Share And Enjoy! --");
 		System.out.println();
-		System.out.println("Use -c -task for list of command line tasks");
-		System.out.println("Use -c -task taskname -opts for that task's helpmenu");
+		System.out.println("Use -task for list of command line tasks");
+		System.out.println("Use -task taskname -opts for that task's helpmenu");
 	}
 
 	private boolean loadPropertiesInit(){

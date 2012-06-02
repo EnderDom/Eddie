@@ -321,6 +321,9 @@ public class MySQL_Extended implements BioSQLExtended{
 				}
 			}
 		}
+		else{
+			logger.debug("Entry retrieved without fuzziness required");
+		}
 		return entry;
 	}
 	

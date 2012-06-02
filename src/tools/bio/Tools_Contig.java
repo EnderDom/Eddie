@@ -12,6 +12,12 @@ public class Tools_Contig {
 				return new String[]{sub, "Contig_"+i, "Contig"+i, "ConsensusfromContig"+i, "contig"+i, "contig_"+i, "isotig"+i};
 			}
 		}
+		else{
+			i=Tools_String.getLongestInt(name);
+			if(i != -1){
+				return new String[]{"contig_"+i, "contig"+i, "consensusfromcontig"+i, "isotig"+i, "sequence"+i, "seq"+i, i+"","sequence_"+i, "seq_"+i, "gi:"+i ,"gi"+i ,i+""};
+			}
+		}
 		return null;
 	}
 	

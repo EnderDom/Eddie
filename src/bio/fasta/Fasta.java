@@ -345,5 +345,31 @@ public class Fasta implements FastaHandler, Sequences{
 		}
 		return i-start;
 	}
+
+	public String[] getTruncatedNames() {
+		String[] s = new String[this.size()];
+		int i =0;
+		int index =0;
+		for(String name : this.sequences.keySet()){
+			if((index=name.indexOf(" ")) != -1){
+				s[i] = name.substring(0, index);
+			}
+			else{
+				s[i] = name;
+			}
+			i++;
+		}
+		return s;
+	}
+
+	public String getSequenceName(int i){
+		for(String s : sequences.keySet()){
+			if(i==0){
+				return s;
+			}
+			i--;
+		}
+		return null;
+	}
 	
 }

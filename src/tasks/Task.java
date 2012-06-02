@@ -38,7 +38,8 @@ public abstract class Task implements Runnable, Future<Object> {
 	protected boolean testmode;
 	protected String args;
 	protected String helpheader = "--This is the Help Message of the Default Task--";
-
+	protected String password =null;
+	
 	/*
 	 * complete note:
 	 * -1 == unstarted, but init
@@ -90,18 +91,26 @@ public abstract class Task implements Runnable, Future<Object> {
 		try {
 			CommandLine cmd = parser.parse(getOptions(), args);
 			if(cmd.hasOption("test")){
-				
 				testmode =true;
 			}
-			if(cmd.hasOption("opts")){
-				printHelpMessage();
-				helpmode = true;
+			if(cmd.hasOption("p")){
+				this.password = cmd.getOptionValue("p");
 			}
-			else{
-				parseArgsSub(cmd);
-			}
+			
+		/*	 Don't mess these 2 up, like i've done before :)	*/
+		/**/if(cmd.hasOption("opts")){							//
+		/**/	printHelpMessage();								//
+		/**/	helpmode = true;								//
+		/**/}													//
+		/**/else{												//
+		/**/	parseArgsSub(cmd);								//
+		/**/}													//
+		/*	 Don't mess these 2 up, like i've done before :)	*/
+			
 		}
 		catch(ParseException e){
+			Logger.getRootLogger().trace("ParseExecption was throw, " +
+					"but not printed, as its not important");
 		}
 		if(isKeepArgs()){
 			String st = new String();
@@ -208,6 +217,7 @@ public abstract class Task implements Runnable, Future<Object> {
 		options = new Options();
 		options.addOption(new Option("opts", false, "Help Menu for this specific task"));
 		options.addOption(new Option("test", false, "Runs any test for this task"));
+		options.addOption(new Option("p", "password", true, "Add a password to a task if it is needed"));
 	}
 	
 	public Options getOptions(){
