@@ -73,7 +73,7 @@ public class FourBitSequence implements CharSequence{
 	public void init(int nlength){
 		if(nlength < 0) throw new NegativeArraySizeException();
 		rmask = 0xf;
-		lmask = 0xf;
+		lmask = 0xf;//Should replace with  0xF000000000000000L;
 		lmask <<=60;
 		
 		this.length = nlength;
@@ -203,7 +203,7 @@ public class FourBitSequence implements CharSequence{
 		int arraycount=0;
 		if(!forward){
 			for(int i =0; i < dna.length; i++){
-				long mask = 0xf;
+				long mask = 0xf; //Should replace with  0xF000000000000000L;
 				mask <<=60;
 				long charvalue = 0x0;
 				for(int j = 0; j <64; j+=4){
@@ -217,7 +217,7 @@ public class FourBitSequence implements CharSequence{
 		}
 		else{
 			for(int i =dna.length-1; i > -1; i--){
-				long mask = 0xf;		
+				long mask = 0xf; 		
 				long charvalue = 0x0;
 				int shift = 64;
 				int jshift = 0;
@@ -395,5 +395,50 @@ public class FourBitSequence implements CharSequence{
 	public String toString(){
 		return this.getAsString();
 	}
-		
+	
+	/**
+	 * 
+	 * @param frame is 0-based
+	 * @param forward
+	 * @return char array of protein values
+	 */
+	public char[] getProtein(int frame, boolean forward){
+		Logger.getRootLogger().warn("Not yet implemented fully");
+		char[] arr = new char[this.length+frame];
+		long skit = 0x0000000000000000L;
+		long mask = 0x0000000000000FFFL;
+		int j=0;
+		if(forward){
+			for(int i =0; i < dna.length; i++){
+				for(int y =64-(frame*4); y > -1;y-=12){
+					skit = (dna[i]>>y)&mask;
+					arr[j]= getAmino(skit, forward);
+				}
+				if(frame == 0 && dna.length-1 != i){
+					skit = (dna[i]>>60)|(dna[i+1]&(mask>>4));
+				}
+				else if(frame == 2 && dna.length-1 != i){
+					skit = (dna[i]>>56)|(dna[i+1]&(mask>>8));
+				}
+			}
+		}
+		return arr;
+	}
+	
+	public static char getAmino(long skit, boolean forward){
+		if(forward){
+			if((skit & 0x000000000000042FL) == 0)return 'A'; //GCN
+			if((skit & 0x000000000000024FL) == 0)return 'R'; //CGN
+			if((skit & 0x0000000000000345L) == 0)return 'R';//MGR
+			if((skit & 0x000000000000011AL) == 0)return 'N';//AAY
+			if((skit & 0x0000000000000844L) == 0)return 'W'; //TGG
+			if((skit & 0x0000000000000184L) == 0)return 'M'; //ATG
+			//TODO
+			return 'X';
+		}
+		else{
+			
+		}
+		return '!';
+	}
 }
