@@ -62,8 +62,6 @@ public class Task_Test extends TaskXT{
 		 */
 		try{
 			System.out.println("Running test");
-			runSomething();
-			
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -206,7 +204,7 @@ public class Task_Test extends TaskXT{
 	
 	
 	public void databaseTest(){
-		DatabaseManager manager = this.ui.getDatabaseManager();
+		DatabaseManager manager = this.ui.getDatabaseManager(password);
 		manager.open();
 		BioSQL bs = manager.getBioSQL();
 		BioSQLExtended bsxt = manager.getBioSQLXT();

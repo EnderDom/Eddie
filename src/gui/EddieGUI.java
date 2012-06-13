@@ -33,7 +33,6 @@ import ui.PropertyLoader;
 import ui.TaskManager;
 import ui.UI;
 import ui.UIEvent;
-import ui.UIEventListener;
 
 public class EddieGUI extends JFrame implements ActionListener, WindowListener, UI, FileReciever{
 
@@ -255,24 +254,9 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	public void sendFiles(String[] files){
 		Logger.getRootLogger().warn("This is method is called when fileadderer is not parented by a module");
 	}
-	
-	public void addUIEventListener(UIEventListener listener) {
-		listenerList.add(UIEventListener.class, listener);
-	}
-
-	public void removeUIEventListener(UIEventListener listener) {
-		listenerList.remove(UIEventListener.class, listener);
-	}
 
 	public void fireUIEvent(UIEvent evt) {
-		Object[] listeners = listenerList.getListenerList();
-        // Each listener occupies two elements - the first is the listener class
-        // and the second is the listener instance
-        for (int i=0; i<listeners.length; i+=2) {
-            if (listeners[i]==UIEventListener.class) {
-                ((UIEventListener)listeners[i+1]).UIEventOccurred(evt);
-            }
-        }
+		logger.debug("UI event caught, nothing yet actually added");
 	}
 
 	public String requiresUserInput(String message, String title) {
@@ -289,9 +273,9 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	}
 	
 	//Returns the default DatabaseManager
-	public DatabaseManager getDatabaseManager(){
+	public DatabaseManager getDatabaseManager(String password){
 		if(this.dbmanager == null){
-			this.dbmanager = new DatabaseManager(this);
+			this.dbmanager = new DatabaseManager(this, password);
 		}
 		return this.dbmanager;
 	}
@@ -302,5 +286,4 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		}
 		this.dbmanager = dbmanager;
 	}
-
 }

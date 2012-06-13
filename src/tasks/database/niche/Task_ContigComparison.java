@@ -40,7 +40,6 @@ public class Task_ContigComparison extends Task{
 	private String blastfolder2;
 	private String output;
 	public MapManager mapman;
-	public DatabaseManager manager;
 	private UI ui;
 	private int database_id;
 	private String[] contignames;
@@ -140,7 +139,7 @@ public class Task_ContigComparison extends Task{
 			return;
 		}
 		logger.info("Starting database manager...");
-		manager = this.ui.getDatabaseManager();
+		DatabaseManager manager = this.ui.getDatabaseManager(password);
 		if(!manager.open()){
 			logger.error("Could not open a connection to the database");
 			return;
@@ -201,7 +200,7 @@ public class Task_ContigComparison extends Task{
 						}
 						else{
 							int[][] contigs = contigmap.getContigsAboveThreshold(contigcutoff);
-							report.addAsOneParagraph(getStats(contigs, assembler2, contigmap, contigmap.getTopRealContig()));
+							report.addAsOneParagraph(getStats(manager, contigs, assembler2, contigmap, contigmap.getTopRealContig()));
 						}
 						
 						logger.debug("Identifying Top Contig And generating Map");
@@ -221,7 +220,7 @@ public class Task_ContigComparison extends Task{
 							int[][] contigs = othercontig.getContigsAboveThreshold(contigcutoff);
 							logger.debug("Reporting " + contigs[0].length+ " Contigs matched via reads");
 							report.addAsOneParagraph("Comparison with " + othercontig.getContigName() + " - " +assembler2);
-							report.addAsOneParagraph(getStats(contigs, assembler1, othercontig, contigmap.getContigId()));
+							report.addAsOneParagraph(getStats(manager, contigs, assembler1, othercontig, contigmap.getContigId()));
 							logger.debug("Contig2Contig Mapping Stage is complete.");
 							logger.debug("Starting Blast Mapping");
 							blastmap = new Blast2BlastMap(new File(contig2file1.get(name2id1.get(s))), new File(contig2file2.get(othercontignames[2])));
@@ -290,7 +289,7 @@ public class Task_ContigComparison extends Task{
 	}
 	
 	
-	public String[] getStats(int[][] contigs, String assembler, Contig2ContigMap map, int topmatch){
+	public String[] getStats(DatabaseManager manager, int[][] contigs, String assembler, Contig2ContigMap map, int topmatch){
 		String[] contigdescript = new String[contigs[0].length];
 		for(int ind = 0; ind < contigs[0].length ; ind++){
 			if(contigs[0][ind] == -1){

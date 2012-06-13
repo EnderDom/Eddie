@@ -90,7 +90,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		setComplete(started);
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		openChecklist();
-		DatabaseManager manager = this.ui.getDatabaseManager();
+		DatabaseManager manager = this.ui.getDatabaseManager(password);
 		if(manager.open()){
 			//UPLOADING READS
 			if(uploadreads){

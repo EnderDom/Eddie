@@ -39,6 +39,7 @@ public abstract class Task implements Runnable, Future<Object> {
 	protected String args;
 	protected String helpheader = "--This is the Help Message of the Default Task--";
 	protected String password =null;
+	Logger logger = Logger.getRootLogger();
 	
 	/*
 	 * complete note:

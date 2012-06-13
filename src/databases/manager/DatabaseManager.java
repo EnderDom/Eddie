@@ -66,15 +66,25 @@ public class DatabaseManager {
 			}
 			logger.debug("About to run: " + mys);
 			this.con = DriverManager.getConnection(mys, dbuser, dbpass);
-			if(this.con == null){
-				logger.error("Argh, failed to connect to database");
-			}
-			return this.con;
 		}
-		catch(Exception e){
+		catch (SQLException e) {
 			logger.error("Params{ DBTYPE:"+dbtype+" DBDRIVER:"+driver+" DBHOST:"+dbhost+" DBNAME:"+dbname+" DBUSER:" + dbuser +"}",e);
-			return null;
+			this.con = null;
+		} 
+		catch (InstantiationException e) {
+			logger.error("Could not create driver "+driver+" sql class instance ",e);
+			this.con = null;
+		} 
+		catch (IllegalAccessException e) {
+			logger.error("Could not access sql class",e);
+			this.con = null;
+		} 
+		catch (ClassNotFoundException e) {
+			logger.error("Could not create sql class",e);
+			this.con = null;
 		}
+
+		return this.con;
 	}
 
 	public Connection openDefaultConnection(boolean db){

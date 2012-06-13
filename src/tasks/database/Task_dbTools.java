@@ -20,7 +20,7 @@ public class Task_dbTools extends TaskXT{
 	private String contig;
 	private boolean readsasfasta;
 	private String output;
-	private DatabaseManager manager;
+
 	
 	public Task_dbTools(){
 		setHelpHeader("--Database Tools--");
@@ -45,7 +45,7 @@ public class Task_dbTools extends TaskXT{
 		setComplete(started);
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		if(readsasfasta){
-			manager = new DatabaseManager(this.ui);
+			DatabaseManager manager = ui.getDatabaseManager(password);
 			if(manager.open()){
 				if(contig != null && output != null){
 					int m = manager.getBioSQLXT().getBioEntryId(manager.getBioSQL(), manager.getCon(), contig, true, manager.getEddieDBID());

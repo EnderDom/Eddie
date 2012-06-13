@@ -2,19 +2,15 @@
 
 package ui;
 
-import javax.swing.event.EventListenerList;
-
 import org.apache.log4j.Logger;
 
 import databases.manager.DatabaseManager;
 
 import tasks.Task;
 
-public interface UI {
+public interface UI{
 	
 	Logger logger = Logger.getLogger("UILogger");
-	
-	EventListenerList listenerList = new EventListenerList();
 	
 	public static int YES =0;
 	public static int NO =1;
@@ -48,16 +44,20 @@ public interface UI {
 	
 	public void sendAlert(String alert);
 	
-	public void addUIEventListener(UIEventListener listener);
-
-	public void removeUIEventListener(UIEventListener listener);	
-
-	void fireUIEvent(UIEvent evt);
-	
 	public PropertyLoader getPropertyLoader();
 	
-	public DatabaseManager getDatabaseManager();
+	/**
+	 * 
+	 * @param password  this can be null if no password is given, 
+	 * the manager will ask the password from the user when connecting
+	 * @return
+	 */
+	public DatabaseManager getDatabaseManager(String password);
 	
 	public void setDatabaseManager(DatabaseManager manager);
+	
+	public void fireUIEvent(UIEvent evt);
+	
+
 	
 }

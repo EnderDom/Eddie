@@ -396,7 +396,13 @@ public class FourBitSequence implements CharSequence{
 		return this.getAsString();
 	}
 	
+	
 	/**
+	 * 
+	 * Currently only supports standard IUPAC notation
+	 * for alternative codon translation, use BioJava
+	 * 
+	 * UNTESTED AS YET
 	 * 
 	 * @param frame is 0-based
 	 * @param forward
@@ -431,14 +437,60 @@ public class FourBitSequence implements CharSequence{
 			if((skit & 0x000000000000024FL) == 0)return 'R'; //CGN
 			if((skit & 0x0000000000000345L) == 0)return 'R';//MGR
 			if((skit & 0x000000000000011AL) == 0)return 'N';//AAY
-			if((skit & 0x0000000000000844L) == 0)return 'W'; //TGG
+			if((skit & 0x000000000000041AL) == 0)return 'D';//GAY
+			if((skit & 0x000000000000084AL) == 0)return 'C';//TGY
+			if((skit & 0x0000000000000215L) == 0)return 'Q';//CAR
+			if((skit & 0x0000000000000415L) == 0)return 'E';//GAR
+			if((skit & 0x000000000000044FL) == 0)return 'G';//GGN
+			if((skit & 0x000000000000018BL) == 0)return 'I';//ATH
 			if((skit & 0x0000000000000184L) == 0)return 'M'; //ATG
-			//TODO
+			if((skit & 0x0000000000000A85L) == 0)return 'L';//YTR
+			if((skit & 0x000000000000028FL) == 0)return 'L';//CTN
+			if((skit & 0x0000000000000115L) == 0)return 'K';//AAR
+			if((skit & 0x000000000000088AL) == 0)return 'F';//TTY
+			if((skit & 0x000000000000022FL) == 0)return 'P';//CCN
+			if((skit & 0x000000000000082FL) == 0)return 'S';//TCN
+			if((skit & 0x000000000000014AL) == 0)return 'S';//AGY
+			if((skit & 0x000000000000012FL) == 0)return 'T';//ACN
+			if((skit & 0x0000000000000844L) == 0)return 'W'; //TGG
+			if((skit & 0x000000000000081AL) == 0)return 'Y'; //TAY
+			if((skit & 0x000000000000048FL) == 0)return 'V'; //GTN
+			if((skit & 0x0000000000000815L) == 0)return '.'; //TAR
+			if((skit & 0x0000000000000851L) == 0)return '.'; //TRA
+			// Could add support for J/Z ??
 			return 'X';
 		}
 		else{
-			
+			// I'm to lazy to actually right these out properly
+			// just f&r 0x0000000000000 for ~0xFFFFFFFFFFFFF
+			// this means an extra operation until I change it
+			if((skit & ~0xFFFFFFFFFFFFF42FL) == 0)return 'A'; //GCN 
+			if((skit & ~0xFFFFFFFFFFFFF24FL) == 0)return 'R'; //CGN
+			if((skit & ~0xFFFFFFFFFFFFF345L) == 0)return 'R';//MGR
+			if((skit & ~0xFFFFFFFFFFFFF11AL) == 0)return 'N';//AAY
+			if((skit & ~0xFFFFFFFFFFFFF41AL) == 0)return 'D';//GAY
+			if((skit & ~0xFFFFFFFFFFFFF84AL) == 0)return 'C';//TGY
+			if((skit & ~0xFFFFFFFFFFFFF215L) == 0)return 'Q';//CAR
+			if((skit & ~0xFFFFFFFFFFFFF415L) == 0)return 'E';//GAR
+			if((skit & ~0xFFFFFFFFFFFFF44FL) == 0)return 'G';//GGN
+			if((skit & ~0xFFFFFFFFFFFFF18BL) == 0)return 'I';//ATH
+			if((skit & ~0xFFFFFFFFFFFFF184L) == 0)return 'M'; //ATG
+			if((skit & ~0xFFFFFFFFFFFFFA85L) == 0)return 'L';//YTR
+			if((skit & ~0xFFFFFFFFFFFFF28FL) == 0)return 'L';//CTN
+			if((skit & ~0xFFFFFFFFFFFFF115L) == 0)return 'K';//AAR
+			if((skit & ~0xFFFFFFFFFFFFF88AL) == 0)return 'F';//TTY
+			if((skit & ~0xFFFFFFFFFFFFF22FL) == 0)return 'P';//CCN
+			if((skit & ~0xFFFFFFFFFFFFF82FL) == 0)return 'S';//TCN
+			if((skit & ~0xFFFFFFFFFFFFF14AL) == 0)return 'S';//AGY
+			if((skit & ~0xFFFFFFFFFFFFF12FL) == 0)return 'T';//ACN
+			if((skit & ~0xFFFFFFFFFFFFF844L) == 0)return 'W'; //TGG
+			if((skit & ~0xFFFFFFFFFFFFF81AL) == 0)return 'Y'; //TAY
+			if((skit & ~0xFFFFFFFFFFFFF48FL) == 0)return 'V'; //GTN
+			if((skit & ~0xFFFFFFFFFFFFF815L) == 0)return '.'; //TAR
+			if((skit & ~0xFFFFFFFFFFFFF851L) == 0)return '.'; //TRA
 		}
 		return '!';
 	}
+	
 }
+

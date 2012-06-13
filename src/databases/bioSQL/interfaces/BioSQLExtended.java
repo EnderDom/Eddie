@@ -23,6 +23,13 @@ public interface BioSQLExtended {
 
 	public boolean addLegacyVersionTable(Connection con, String version, String dbversion);
 	
+	/**
+	 * Returns the database version from the 'info' tool
+	 * 
+	 * @param con
+	 * @return double value of the database
+	 * returns -1 if version could not be retrieved
+	 */
 	public double getDatabaseVersion(Connection con);
 	
 	public int getEddieFromDatabase(Connection con);

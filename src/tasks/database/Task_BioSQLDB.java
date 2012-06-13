@@ -31,6 +31,7 @@ public class Task_BioSQLDB extends Task{
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("setup", false, "Perform default setup"));
+		options.getOption("test").setDescription("Test the database connection");
 	}
 	
 	public Options getOptions(){
@@ -40,8 +41,11 @@ public class Task_BioSQLDB extends Task{
 	public void run(){
 		setComplete(started);
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
-		
-		DatabaseManager manager = this.ui.getDatabaseManager();
+		if(testmode){
+			runTest();
+			return;
+		}
+		DatabaseManager manager = this.ui.getDatabaseManager(password);
 		manager.createAndOpen();
 		int biodatabase_id = manager.getEddieDBID();
 		if(biodatabase_id > -1){
@@ -111,5 +115,31 @@ public class Task_BioSQLDB extends Task{
 			return bsxt.setupAssembly(manager.getBioSQL(), manager.getCon());
 		}
 		else return false;
+	}
+	
+	protected void runTest(){
+		System.out.println("");
+		System.out.println("--TEST MODE--");
+		System.out.println("");
+		System.out.println("Initialising Database Manager");
+		DatabaseManager manager = new DatabaseManager(ui, password);
+		System.out.println("Opening default connection...");
+		boolean com = manager.open();
+		if(!com)System.out.println("Failed to connect to the database");
+		if(com){
+			System.out.println("Successfully connected to database");
+			double d = manager.getBioSQLXT().getDatabaseVersion(manager.getCon());
+			if(d != -1){
+				System.out.println("Although connection established, the database version could not be ascertained");
+			}
+			else{
+				System.out.println("This database appears to be the correct version for eddie");
+			}
+			System.out.println("Closing database manager...");
+			com= manager.close();
+			if(com)System.out.println("Successfully closed the database manager");
+			if(!com)System.out.println("Failed to close manager?");
+		}
+		
 	}
 }
