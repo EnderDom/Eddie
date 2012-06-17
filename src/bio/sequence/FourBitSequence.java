@@ -2,6 +2,8 @@ package bio.sequence;
 
 import org.apache.log4j.Logger;
 
+import tools.Tools_Bit;
+
 /*
  * 
  * Experimental 4 bit sequence object
@@ -72,9 +74,8 @@ public class FourBitSequence implements CharSequence{
 	
 	public void init(int nlength){
 		if(nlength < 0) throw new NegativeArraySizeException();
-		rmask = 0xf;
-		lmask = 0xf;//Should replace with  0xF000000000000000L;
-		lmask <<=60;
+		rmask = 0x000000000000000FL;
+		lmask = 0xF000000000000000L;  
 		
 		this.length = nlength;
 		/*
@@ -146,28 +147,28 @@ public class FourBitSequence implements CharSequence{
 			int offset = i >> bitoff;
 			if(offset == dna.length)this.extend(16); //Should only be necessary if this is instantiated without string
 			switch (arr[i]) {
-				case 'A' : dna[offset] <<= 4; dna[offset] |= 0x1; break;
-				case 'C' : dna[offset] <<= 4; dna[offset] |= 0x2; break;
-				case 'G' : dna[offset] <<= 4; dna[offset] |= 0x4; break;
-				case 'T' : dna[offset] <<= 4; dna[offset] |= 0x8; break;
+				case 'A' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000001L; break;
+				case 'C' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000002L; break;
+				case 'G' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000004L; break;
+				case 'T' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000008L; break;
 				
-				case 'R' : dna[offset] <<= 4; dna[offset] |= 0x5; break;
-				case 'Y' : dna[offset] <<= 4; dna[offset] |= 0xa; break;
-				case 'S' : dna[offset] <<= 4; dna[offset] |= 0x6; break;
-				case 'W' : dna[offset] <<= 4; dna[offset] |= 0x9; break;
-				case 'K' : dna[offset] <<= 4; dna[offset] |= 0xc; break;
-				case 'M' : dna[offset] <<= 4; dna[offset] |= 0x3; break;
+				case 'R' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000005L; break;
+				case 'Y' : dna[offset] <<= 4; dna[offset] |= 0x000000000000000aL; break;
+				case 'S' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000006L; break;
+				case 'W' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000009L; break;
+				case 'K' : dna[offset] <<= 4; dna[offset] |= 0x000000000000000cL; break;
+				case 'M' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000003L; break;
 				
-				case 'B' : dna[offset] <<= 4; dna[offset] |= 0xe; break;
-				case 'D' : dna[offset] <<= 4; dna[offset] |= 0xd; break;
-				case 'H' : dna[offset] <<= 4; dna[offset] |= 0xb; break;
-				case 'V' : dna[offset] <<= 4; dna[offset] |= 0x7; break;
+				case 'B' : dna[offset] <<= 4; dna[offset] |= 0x000000000000000eL; break;
+				case 'D' : dna[offset] <<= 4; dna[offset] |= 0x000000000000000dL; break;
+				case 'H' : dna[offset] <<= 4; dna[offset] |= 0x000000000000000bL; break;
+				case 'V' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000007L; break;
 				
-				case 'N' : dna[offset] <<= 4; dna[offset] |= 0xf; break;
-				case 'X' : dna[offset] <<= 4; dna[offset] |= 0xf; break;
-				case '-' : dna[offset] <<= 4; dna[offset] |= 0x0; this.actlength--; break;
-				case '*' : dna[offset] <<= 4; dna[offset] |= 0x0; this.actlength--; break;
-				case '.' : dna[offset] <<= 4; dna[offset] |= 0x0; this.actlength--; break;
+				case 'N' : dna[offset] <<= 4; dna[offset] |= 0x000000000000000fL; break;
+				case 'X' : dna[offset] <<= 4; dna[offset] |= 0x000000000000000fL; break;
+				case '-' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000000L; this.actlength--; break;
+				case '*' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000000L; this.actlength--; break;
+				case '.' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000000L; this.actlength--; break;
 				default  : Logger.getRootLogger().warn("Input Non-DNA character: " + arr[i]);this.length--; break; 
 			}
 		}
@@ -203,8 +204,7 @@ public class FourBitSequence implements CharSequence{
 		int arraycount=0;
 		if(!forward){
 			for(int i =0; i < dna.length; i++){
-				long mask = 0xf; //Should replace with  0xF000000000000000L;
-				mask <<=60;
+				long mask = 0xF000000000000000L; //Should replace with  0xF000000000000000L;
 				long charvalue = 0x0;
 				for(int j = 0; j <64; j+=4){
 					charvalue = (mask & dna[i])>>>(60-j);
@@ -217,8 +217,8 @@ public class FourBitSequence implements CharSequence{
 		}
 		else{
 			for(int i =dna.length-1; i > -1; i--){
-				long mask = 0xf; 		
-				long charvalue = 0x0;
+				long mask = 0x000000000000000FL; 		
+				long charvalue =  0x0000000000000000L;
 				int shift = 64;
 				int jshift = 0;
 				if(i==dna.length-1){ 
@@ -241,45 +241,45 @@ public class FourBitSequence implements CharSequence{
 	
 	private static char getAsChar(long charvalue, boolean forward){
 		if(forward){
-				 if(charvalue==0x1) return 'A';
-			else if(charvalue==0x2) return 'C';
-			else if(charvalue==0x4) return 'G';
-			else if(charvalue==0x8) return 'T';
+				 if(charvalue==0x0000000000000001L) return 'A';
+			else if(charvalue==0x0000000000000002L) return 'C';
+			else if(charvalue==0x0000000000000004L) return 'G';
+			else if(charvalue==0x0000000000000008L) return 'T';
 			
-			else if(charvalue==0x5) return 'R';
-			else if(charvalue==0xa) return 'Y';
-			else if(charvalue==0x6) return 'S';
-			else if(charvalue==0x9) return 'W';
-			else if(charvalue==0xc) return 'K';
-			else if(charvalue==0x3) return 'M';
+			else if(charvalue==0x0000000000000005L) return 'R';
+			else if(charvalue==0x000000000000000aL) return 'Y';
+			else if(charvalue==0x0000000000000006L) return 'S';
+			else if(charvalue==0x0000000000000009L) return 'W';
+			else if(charvalue==0x000000000000000cL) return 'K';
+			else if(charvalue==0x0000000000000003L) return 'M';
 			
-			else if(charvalue==0xe) return 'B';
-			else if(charvalue==0xd) return 'D';
-			else if(charvalue==0xb) return 'H';
-			else if(charvalue==0x7) return 'V';
+			else if(charvalue==0x000000000000000eL) return 'B';
+			else if(charvalue==0x000000000000000dL) return 'D';
+			else if(charvalue==0x000000000000000bL) return 'H';
+			else if(charvalue==0x0000000000000007L) return 'V';
 			
-			else if(charvalue==0xf) return 'N';
+			else if(charvalue==0x000000000000000fL) return 'N';
 			else return '-';
 		}
 		else{
-				 if(charvalue==0x1) return 'T';
-			else if(charvalue==0x2) return 'G';
-			else if(charvalue==0x4) return 'C';
-			else if(charvalue==0x8) return 'A';
+				 if(charvalue==0x0000000000000001L) return 'T';
+			else if(charvalue==0x0000000000000002L) return 'G';
+			else if(charvalue==0x0000000000000004L) return 'C';
+			else if(charvalue==0x0000000000000008L) return 'A';
 			
-			else if(charvalue==0x5) return 'Y';
-			else if(charvalue==0xa) return 'R';
-			else if(charvalue==0x6) return 'S';
-			else if(charvalue==0x9) return 'W';
-			else if(charvalue==0xc) return 'M';
-			else if(charvalue==0x3) return 'K';
+			else if(charvalue==0x0000000000000005L) return 'Y';
+			else if(charvalue==0x000000000000000aL) return 'R';
+			else if(charvalue==0x0000000000000006L) return 'S';
+			else if(charvalue==0x0000000000000009L) return 'W';
+			else if(charvalue==0x000000000000000cL) return 'M';
+			else if(charvalue==0x0000000000000003L) return 'K';
 			
-			else if(charvalue==0xe) return 'V';
-			else if(charvalue==0xd) return 'H';
-			else if(charvalue==0xb) return 'D';
-			else if(charvalue==0x7) return 'B';
+			else if(charvalue==0x000000000000000eL) return 'V';
+			else if(charvalue==0x000000000000000dL) return 'H';
+			else if(charvalue==0x000000000000000bL) return 'D';
+			else if(charvalue==0x0000000000000007L) return 'B';
 			
-			else if(charvalue==0xf) return 'N';
+			else if(charvalue==0x000000000000000fL) return 'N';
 			else return '-';
 		}
 	}
@@ -414,18 +414,24 @@ public class FourBitSequence implements CharSequence{
 		long skit = 0x0000000000000000L;
 		long mask = 0x0000000000000FFFL;
 		int j=0;
+		int y = 12+(frame*4);
 		if(forward){
 			for(int i =0; i < dna.length; i++){
-				for(int y =64-(frame*4); y > -1;y-=12){
-					skit = (dna[i]>>y)&mask;
+				System.out.println("----------------");
+				System.out.println(Tools_Bit.LongAsHexString(dna[i]));
+				System.out.println("----------------");
+				for(; y <65;y+=12){
+					if(y < 11 && i != 0){
+						skit = (dna[i]>>>64-y | dna[i-1]<<y) &mask;
+					}
+					else{
+						skit = (dna[i]>>>64-y)&mask;
+					}
+					System.out.println(y + " : " +new String(getAsChar(skit&0xF, true)+"") + new String(getAsChar((skit>>4)&0xF,true) +"") + new String(getAsChar((skit>>8)&0xF, true) +"" ) + " : "+ Tools_Bit.LongAsHexString(skit));
 					arr[j]= getAmino(skit, forward);
+					j++;
 				}
-				if(frame == 0 && dna.length-1 != i){
-					skit = (dna[i]>>60)|(dna[i+1]&(mask>>4));
-				}
-				else if(frame == 2 && dna.length-1 != i){
-					skit = (dna[i]>>56)|(dna[i+1]&(mask>>8));
-				}
+				y-=64;
 			}
 		}
 		return arr;
