@@ -2,8 +2,6 @@ package bio.sequence;
 
 import org.apache.log4j.Logger;
 
-import tools.Tools_Bit;
-
 /*
  * 
  * Experimental 4 bit sequence object
@@ -31,7 +29,7 @@ public class FourBitSequence implements CharSequence{
 	/*
 	 * The actual DNA store
 	 */
-	long[] dna;
+	protected long[] dna;
 	
 	/*
 	 * Mask:
@@ -39,24 +37,26 @@ public class FourBitSequence implements CharSequence{
 	 * offset by the right bitwise shift
 	 * ie ..1111 
 	 */
-	int bitmask = 0xf;
+	protected int bitmask = 0xf;
 	
-	int bitoff = 4; //2 less powers from BitSet's 6 as DNA is 4 bits large
+	protected int bitoff = 4; //2 less powers from BitSet's 6 as DNA is 4 bits large
 	
 	//Length in bp of sequence inc. '*'
-	int length;
+	protected int length;
 	//Length without '*'/'-'
-	int actlength;
+	protected int actlength;
 	
 	/*
 	 * Read bits from left or right
 	 * this will either consider the 
 	 * sequence reversed and complimented
 	 */
-	boolean forward = true;
+	protected boolean forward = true;
 		
-	long lmask;
-	long rmask;
+	protected static long lmask = 0xF000000000000000L;
+	protected static long rmask = 0x000000000000000FL;  
+	
+
 	
 	public FourBitSequence(){
 		init(16);
@@ -72,11 +72,8 @@ public class FourBitSequence implements CharSequence{
 		parseString(sequence);
 	}
 	
-	public void init(int nlength){
+	protected void init(int nlength){
 		if(nlength < 0) throw new NegativeArraySizeException();
-		rmask = 0x000000000000000FL;
-		lmask = 0xF000000000000000L;  
-		
 		this.length = nlength;
 		/*
 		 * Note: would shift only by 6
@@ -94,13 +91,14 @@ public class FourBitSequence implements CharSequence{
 		dna = new long[length_long];
 	}
 	
-	public char get(int pos){
+	
+	protected long getLong(int pos){
 		/* 
 		 * This method will return '-' for any values outside the actual sequence
 		 * This could potential lead to issues when bugs are left uncaught, as
 		 * such if calling bp positions outside sequence is not needed use getInside()
 		 */
-		if(pos >= this.length || pos < this.length*-1) return getAsChar(0, this.forward);
+		if(pos >= this.length || pos < this.length*-1) return 0x0L;
 		else{
 			boolean lor = this.forward;
 			if(pos < 0){
@@ -123,8 +121,12 @@ public class FourBitSequence implements CharSequence{
 			}
 			int offset = pos >> bitoff;
 			int sub_numb = 60-(pos % 16)*4;
-			return getAsChar(rmask&(this.dna[offset]>>sub_numb), lor);
+			return (rmask&(this.dna[offset]>>sub_numb));
 		}
+	}
+	
+	public char get(int pos){
+		return getAsChar(getLong(pos), this.forward);
 	}
 	
 	/*
@@ -204,42 +206,40 @@ public class FourBitSequence implements CharSequence{
 		int arraycount=0;
 		if(!forward){
 			for(int i =0; i < dna.length; i++){
-				long mask = 0xF000000000000000L; //Should replace with  0xF000000000000000L;
-				long charvalue = 0x0;
+				long charvalue = 0x0000000000000000L;
 				for(int j = 0; j <64; j+=4){
-					charvalue = (mask & dna[i])>>>(60-j);
+					charvalue = (lmask & dna[i])>>>(60-j);
 					array[arraycount] = getAsChar(charvalue, forward);
 					arraycount++;
 					if(arraycount == this.length)break;
-					mask>>>=4;
+					lmask>>>=4;
 				}
 			}
 		}
 		else{
 			for(int i =dna.length-1; i > -1; i--){
-				long mask = 0x000000000000000FL; 		
 				long charvalue =  0x0000000000000000L;
 				int shift = 64;
 				int jshift = 0;
 				if(i==dna.length-1){ 
 					shift = (this.length % 16)*4;
 					jshift = (64-shift);
-					mask<<=jshift;
+					rmask<<=jshift;
 				}
 				for(int j = 0; j <shift; j+=4){
-					charvalue = (mask & dna[i])>>j+jshift;
+					charvalue = (rmask & dna[i])>>j+jshift;
 					//System.out.println(Tools_Bit.LongAsBitString(charvalue));
 					array[arraycount] = getAsChar(charvalue, forward);
 					arraycount++;
 					if(arraycount == this.length)break;
-					mask<<=4;
+					rmask<<=4;
 				}
 			}
 		}
 		return array;
 	}
 	
-	private static char getAsChar(long charvalue, boolean forward){
+	protected static char getAsChar(long charvalue, boolean forward){
 		if(forward){
 				 if(charvalue==0x0000000000000001L) return 'A';
 			else if(charvalue==0x0000000000000002L) return 'C';
@@ -328,7 +328,7 @@ public class FourBitSequence implements CharSequence{
 		this.actlength += seq.getActualLength();
 		
 		//Recreate dna data as in init()
-		int length_long = this.length >> bitoff;			
+		int length_long = this.length >> bitoff;
 		if ((this.length & bitmask) != 0)length_long++;
 		long[] data = new long[length_long];
 		
@@ -349,12 +349,17 @@ public class FourBitSequence implements CharSequence{
 	/*
 	 * Extends the length of the dna[]
 	 */
-	private void extend(int len){
+	protected void extend(int len){
 		long[] newdna = new long[dna.length+len];
 		for(int i =0; i < dna.length ; i++){
 			newdna[i] = dna[i];
 		}
 		this.dna=newdna;
+	}
+	
+	public String insertString(int pos){
+		//TODO
+		return null;
 	}
 	
 	/*
@@ -396,107 +401,9 @@ public class FourBitSequence implements CharSequence{
 		return this.getAsString();
 	}
 	
-	
-	/**
-	 * 
-	 * Currently only supports standard IUPAC notation
-	 * for alternative codon translation, use BioJava
-	 * 
-	 * UNTESTED AS YET
-	 * 
-	 * @param frame is 0-based
-	 * @param forward
-	 * @return char array of protein values
-	 */
-	public char[] getProtein(int frame, boolean forward){
-		Logger.getRootLogger().warn("Not yet implemented fully");
-		char[] arr = new char[this.length+frame];
-		long skit = 0x0000000000000000L;
-		long mask = 0x0000000000000FFFL;
-		int j=0;
-		int y = 12+(frame*4);
-		if(forward){
-			for(int i =0; i < dna.length; i++){
-				System.out.println("----------------");
-				System.out.println(Tools_Bit.LongAsHexString(dna[i]));
-				System.out.println("----------------");
-				for(; y <65;y+=12){
-					if(y < 11 && i != 0){
-						skit = (dna[i]>>>64-y | dna[i-1]<<y) &mask;
-					}
-					else{
-						skit = (dna[i]>>>64-y)&mask;
-					}
-					System.out.println(y + " : " +new String(getAsChar(skit&0xF, true)+"") + new String(getAsChar((skit>>4)&0xF,true) +"") + new String(getAsChar((skit>>8)&0xF, true) +"" ) + " : "+ Tools_Bit.LongAsHexString(skit));
-					arr[j]= getAmino(skit, forward);
-					j++;
-				}
-				y-=64;
-			}
-		}
-		return arr;
+	public long[] getDataArray(){
+		return this.dna;
 	}
-	
-	public static char getAmino(long skit, boolean forward){
-		if(forward){
-			if((skit & 0x000000000000042FL) == 0)return 'A'; //GCN
-			if((skit & 0x000000000000024FL) == 0)return 'R'; //CGN
-			if((skit & 0x0000000000000345L) == 0)return 'R';//MGR
-			if((skit & 0x000000000000011AL) == 0)return 'N';//AAY
-			if((skit & 0x000000000000041AL) == 0)return 'D';//GAY
-			if((skit & 0x000000000000084AL) == 0)return 'C';//TGY
-			if((skit & 0x0000000000000215L) == 0)return 'Q';//CAR
-			if((skit & 0x0000000000000415L) == 0)return 'E';//GAR
-			if((skit & 0x000000000000044FL) == 0)return 'G';//GGN
-			if((skit & 0x000000000000018BL) == 0)return 'I';//ATH
-			if((skit & 0x0000000000000184L) == 0)return 'M'; //ATG
-			if((skit & 0x0000000000000A85L) == 0)return 'L';//YTR
-			if((skit & 0x000000000000028FL) == 0)return 'L';//CTN
-			if((skit & 0x0000000000000115L) == 0)return 'K';//AAR
-			if((skit & 0x000000000000088AL) == 0)return 'F';//TTY
-			if((skit & 0x000000000000022FL) == 0)return 'P';//CCN
-			if((skit & 0x000000000000082FL) == 0)return 'S';//TCN
-			if((skit & 0x000000000000014AL) == 0)return 'S';//AGY
-			if((skit & 0x000000000000012FL) == 0)return 'T';//ACN
-			if((skit & 0x0000000000000844L) == 0)return 'W'; //TGG
-			if((skit & 0x000000000000081AL) == 0)return 'Y'; //TAY
-			if((skit & 0x000000000000048FL) == 0)return 'V'; //GTN
-			if((skit & 0x0000000000000815L) == 0)return '.'; //TAR
-			if((skit & 0x0000000000000851L) == 0)return '.'; //TRA
-			// Could add support for J/Z ??
-			return 'X';
-		}
-		else{
-			// I'm to lazy to actually right these out properly
-			// just f&r 0x0000000000000 for ~0xFFFFFFFFFFFFF
-			// this means an extra operation until I change it
-			if((skit & ~0xFFFFFFFFFFFFF42FL) == 0)return 'A'; //GCN 
-			if((skit & ~0xFFFFFFFFFFFFF24FL) == 0)return 'R'; //CGN
-			if((skit & ~0xFFFFFFFFFFFFF345L) == 0)return 'R';//MGR
-			if((skit & ~0xFFFFFFFFFFFFF11AL) == 0)return 'N';//AAY
-			if((skit & ~0xFFFFFFFFFFFFF41AL) == 0)return 'D';//GAY
-			if((skit & ~0xFFFFFFFFFFFFF84AL) == 0)return 'C';//TGY
-			if((skit & ~0xFFFFFFFFFFFFF215L) == 0)return 'Q';//CAR
-			if((skit & ~0xFFFFFFFFFFFFF415L) == 0)return 'E';//GAR
-			if((skit & ~0xFFFFFFFFFFFFF44FL) == 0)return 'G';//GGN
-			if((skit & ~0xFFFFFFFFFFFFF18BL) == 0)return 'I';//ATH
-			if((skit & ~0xFFFFFFFFFFFFF184L) == 0)return 'M'; //ATG
-			if((skit & ~0xFFFFFFFFFFFFFA85L) == 0)return 'L';//YTR
-			if((skit & ~0xFFFFFFFFFFFFF28FL) == 0)return 'L';//CTN
-			if((skit & ~0xFFFFFFFFFFFFF115L) == 0)return 'K';//AAR
-			if((skit & ~0xFFFFFFFFFFFFF88AL) == 0)return 'F';//TTY
-			if((skit & ~0xFFFFFFFFFFFFF22FL) == 0)return 'P';//CCN
-			if((skit & ~0xFFFFFFFFFFFFF82FL) == 0)return 'S';//TCN
-			if((skit & ~0xFFFFFFFFFFFFF14AL) == 0)return 'S';//AGY
-			if((skit & ~0xFFFFFFFFFFFFF12FL) == 0)return 'T';//ACN
-			if((skit & ~0xFFFFFFFFFFFFF844L) == 0)return 'W'; //TGG
-			if((skit & ~0xFFFFFFFFFFFFF81AL) == 0)return 'Y'; //TAY
-			if((skit & ~0xFFFFFFFFFFFFF48FL) == 0)return 'V'; //GTN
-			if((skit & ~0xFFFFFFFFFFFFF815L) == 0)return '.'; //TAR
-			if((skit & ~0xFFFFFFFFFFFFF851L) == 0)return '.'; //TRA
-		}
-		return '!';
-	}
-	
+
 }
 

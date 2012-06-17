@@ -31,6 +31,7 @@ public class DatabaseManager {
 	private BioSQLExtended biosqlext;
 	private int biodatabase_id =-1;
 	private static int databaseversion =2;
+	private boolean isOpen;
 	
 	public DatabaseManager(UI ui){
 		this.ui = ui;
@@ -83,7 +84,7 @@ public class DatabaseManager {
 			logger.error("Could not create sql class",e);
 			this.con = null;
 		}
-
+		if(this.con !=null)isOpen=true;
 		return this.con;
 	}
 
@@ -196,4 +197,10 @@ public class DatabaseManager {
 			return -1;
 		}
 	}
+	
+	public boolean isOpen(){
+		return this.isOpen;
+	}
+	
+	
 }

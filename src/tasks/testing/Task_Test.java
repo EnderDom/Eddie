@@ -17,7 +17,6 @@ import net.sf.samtools.SAMRecord;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.log4j.Logger;
-
 import databases.bioSQL.interfaces.BioSQL;
 import databases.bioSQL.interfaces.BioSQLExtended;
 import databases.manager.DatabaseManager;
@@ -26,7 +25,6 @@ import bio.assembly.ACEFileParser;
 import bio.assembly.ACERecord;
 import bio.fasta.Fasta;
 import bio.fasta.FastaParser;
-import bio.sequence.FourBitSequence;
 
 import tasks.Checklist;
 import tasks.TaskXT;
@@ -92,7 +90,6 @@ public class Task_Test extends TaskXT{
 	/*															*/
 	/************************************************************/
 	
-	
 	public void testBitTools(){
 		long a = 0x000000000000042FL;
 		long b = 0xF000FFFF0000042FL;
@@ -117,88 +114,8 @@ public class Task_Test extends TaskXT{
 	
 	public void task4bitSequence(){
 		
-		String nucleotide = "ATGGCTGAACTGAAAGTTGGAATTAACGGATTT" +
-				"GGGCGCATTGGTCGTCTGACCCTGCGTGCTGCGCTCCAGAAAA" +
-				"ACGTTAATGTTGTTGCAGTCAATGATCCTTTCATTAGTCTGGA" +
-				"GTACATGGTCTACATGTTTAAGTATGATTCTACACACGGCCGCT" +
-				"ATAAGGGTAAAGTGGCAGAGAACAATGGCAAACTTGAGATCGAT" +
-				"GGGCACCTCATCACAGTCTTTGCTGAGCGAGATCCAGCTGCCA" +
-				"TTAACTGGAAGTCTGCTGGGGCCAACTATGTGGTAGAGTCAAC" +
-				"TGGAGTGTTCACAACCGCTGACAAAGCAAATGTGCACATAAAAA" +
-				"GTGGAGGTGCTAGCAAGGTTGTAATCTCTGCACCATCTGCTGAT" +
-				"GCTCCAATGTTTGTGATTGGTGTAAACGACGACAAATACACGAA" +
-				"GGACATGACTGTGGTCAGTAATGCTTCCTGCACAACTAACTGTC" +
-				"TGGCCCCCCTGGTCAAGGTCATCAATGACAATTTTGGCATCGTT" +
-				"GAGGGTTTGATGACAACCGTACATGCTACCACCGCCACACAGAAG" +
-				"ACTGTAGATGGACCCAGCAACAAGGACTGGCGAGGAGGTCGTGGG" +
-				"GCTCAACAAAACATCATTCCCTCATCTACAGGGGCTGCTAAAGCT" +
-				"GTGGGGAAAGTCATCCCTGCTGTTAACAACAAACTCACAGGCATG" +
-				"GCTTTTAGAGTTCCTGTTCCTGATGTCTCAGTTGTGGATCTAACT" +
-				"GTCAGGTTGGAGAAAGGGGCAACTTATGATGAGATTAAAAAGGCA" +
-				"ATTAAGGATGCCTCTGAGGGATATTTGAGAGGAATTCTGGGTTAC" +
-				"ACTGAAGAGGATGTTGTGTCTCAGGACTTCCTTGGAGACCCCCGC" +
-				"AGCTCTATTTTTGATGCTAATGCTGGCATTGCCCTGAATAACAAT" +
-				"TTTGTCAAGCTTGTGTCCTGGTATGACAATGAATATGGATACAGC" +
-				"AACCGGGTGGTTGAGCTCCTCCAACATATGTATAAAGTGGATCAC";
+	
 		
-		String amino = "MAELKVGINGFGRIGRLTLRAALQKNVNVVAVNDPFISL" +
-				"EYMVYMFKYDSTHGRYKGKVAENNGKLEIDGHLITVFAERDPAAI" +
-				"NWKSAGANYVVESTGVFTTADKANVHIKSGGASKVVISAPSADA" +
-				"PMFVIGVNDDKYTKDMTVVSNASCTTNCLAPLVKVINDNFGIVEG" +
-				"LMTTVHATTATQKTVDGPSNKDWRGGRGAQQNIIPSSTGAAKAV" +
-				"GKVIPAVNNKLTGMAFRVPVPDVSVVDLTVRLEKGATYDEIKKAIKD" +
-				"ASEGYLRGILGYTEEDVVSQDFLGDPRSSIFDANAGIALNNNFVKLV" +
-				"SWYDNEYGYSNRVVELLQHMYKVDHQ.";
-		
-		FourBitSequence fourbit = new FourBitSequence(nucleotide);
-		String amino2 = new String(fourbit.getProtein(0, true));
-		if(amino.contentEquals(amino2)){
-			System.out.println("Excellent, the translation was successful");
-		}
-		else{
-			System.out.println("Direct comparison failed");
-			for(int i =0; i< amino.length(); i++){
-				if(amino2.length() == i){
-					System.out.println("Translation missing "+amino.substring(i, amino.length()));
-					break;
-				}
-				if(amino.charAt(i) != amino2.charAt(i)){
-					System.out.println("Eddie translated " + amino.charAt(i) + " as " + amino2.charAt(i));
-				}
-			}
-		}
-		
-//		nucleotide = "GAYGARCARATHYTRGTNATGGCTGAACTGAAA" +
-//				"GTTGGAATTAACGGATTTGGGCGCATTGGTCGTCTGACCCTGC" +
-//				"GTGCTGCGCTCCAGAAAAACGTTAATGTTGTTGCAGTCGARAA" +
-//				"TGATCCTTTCATTAGTCTGGAGTACATGGTCTACATGTTTAAG" +
-//				"TATGATTCTACACACGGCCGCTATAAGGGTAAAGTGGCAGAGA" +
-//				"ACAATGGCAAACTTGAGATCGATGGGCACCTCATCNNNNNNNAA" +
-//				"AAACTCGATCGATCGATCGACTGANTTATN";
-//
-//		amino = "XXXXXXMAELKVGINGFGRIGRLTLRAALQKNVNVVAVX" +
-//				"NDPFISLEYMVYMFKYDSTHGRYKGKVAENNGKLEIDGHLIXXXKLDRSID.XX";
-//		
-//		System.out.println();
-//		System.out.println("Second Test");
-//		System.out.println();
-//		fourbit = new FourBitSequence(nucleotide);
-//		amino2 = new String(fourbit.getProtein(0, true));
-//		if(amino.contentEquals(amino2)){
-//			System.out.println("Excellent, the translation was successful");
-//		}
-//		else{
-//			System.out.println("Direct comparison failed");
-//			for(int i =0; i< amino.length(); i++){
-//				if(amino2.length() == i){
-//					System.out.println("Translation missing "+amino.substring(i, amino.length()));
-//					break;
-//				}
-//				if(amino.charAt(i) != amino2.charAt(i)){
-//					//System.out.println("Eddie translated " + amino.charAt(i) + " as " + amino2.charAt(i));
-//				}
-//			}
-//		}
 	}
 	
 	public void testChecklist(){
