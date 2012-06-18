@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="lib/" kind="src" path="src"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/commons-cli-1.2/commons-cli-1.2.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/lib/commons-cli-1.2/commons-cli-1.2-sources.jar">
+	<classpathentry excluding="com.github.enderdom.eddie/lib/;com.github.enderdom.eddie/exe" kind="src" path="com.github.enderdom.eddie/src"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/commons-cli-1.2/commons-cli-1.2.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/commons-cli-1.2/commons-cli-1.2-sources.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="jar:file:/home/dominic/apps/eclipse/EddieXP/lib/commons-cli-1.2/commons-cli-1.2-javadoc.jar!/"/>
+			<attribute name="javadoc_location" value="jar:file:/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/commons-cli-1.2/commons-cli-1.2-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/apache-log4j-1.2.16/log4j-1.2.16.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/lib/apache-log4j-1.2.16/src"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/apache-log4j-1.2.16/log4j-1.2.16.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/apache-log4j-1.2.16/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/picard/picard-1.65.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/picard/sam-1.65.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/biojava3/biojava3-core-3.0.3.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/lib/biojava3/biojava3-core-3.0.3-sources.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan/jaxrpc.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan/axis.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan/activation.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan/commons-discovery-0.2.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan/commons-logging-1.0.4.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan/mail.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan/saaj.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan/servlet.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan/wsdl4j-1.5.1.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/iprscan/IPRScan_AxisM.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/biojava3/biojava3-ws-3.0.3.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/lib/biojava3/biojava3-ws-3.0.3-sources.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/biojava1.8/blast-1.8.1.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/lib/biojava1.8/blast-1.8.1-sources.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/biojava1.8/core-1.8.1.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/lib/biojava1.8/core-1.8.1-sources.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/SQL/mysql-connector-java-5.1.6.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/pdfbox/pdfbox-1.6.0.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/lib/pdfbox/pdfbox-1.6.0-src.zip"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/pdfbox/fontbox-1.6.0.jar"/>
-	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/lib/jfreechart/jfreechart-1.0.14.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/picard/picard-1.65.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/picard/sam-1.65.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/biojava3/biojava3-core-3.0.3.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/biojava3/biojava3-core-3.0.3-sources.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/iprscan/jaxrpc.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/iprscan/axis.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/iprscan/activation.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/iprscan/commons-discovery-0.2.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/iprscan/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/iprscan/mail.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/iprscan/saaj.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/iprscan/servlet.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/iprscan/wsdl4j-1.5.1.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/iprscan/IPRScan_AxisM.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/biojava3/biojava3-ws-3.0.3.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/biojava3/biojava3-ws-3.0.3-sources.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/biojava1.8/blast-1.8.1.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/biojava1.8/blast-1.8.1-sources.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/biojava1.8/core-1.8.1.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/biojava1.8/core-1.8.1-sources.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/SQL/mysql-connector-java-5.1.6.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/pdfbox/pdfbox-1.6.0.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/pdfbox/pdfbox-1.6.0-src.zip"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/pdfbox/fontbox-1.6.0.jar"/>
+	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/jfreechart/jfreechart-1.0.14.jar"/>
+	<classpathentry kind="output" path="com.github.enderdom.eddie/bin"/>
 </classpath>
