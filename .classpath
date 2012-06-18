@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="com.github.enderdom.eddie/lib/;com.github.enderdom.eddie/exe" kind="src" path="com.github.enderdom.eddie/src"/>
+	<classpathentry excluding="com.github.enderdom.eddie/lib/" kind="src" path="com.github.enderdom.eddie/src"/>
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/commons-cli-1.2/commons-cli-1.2.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/commons-cli-1.2/commons-cli-1.2-sources.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="jar:file:/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/commons-cli-1.2/commons-cli-1.2-javadoc.jar!/"/>
