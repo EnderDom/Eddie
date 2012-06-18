@@ -17,7 +17,13 @@ import ui.UI;
 
 import gui.EddieGUI;
 
-
+/**
+ * 
+ * @author EnderDom
+ *
+ * I'm not even sure why I spent so much time on this...
+ *
+ */
 public class DefaultLNF implements Module{
 	
 	public static String menuname = "Window";

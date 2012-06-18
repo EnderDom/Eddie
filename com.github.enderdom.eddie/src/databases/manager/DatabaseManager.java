@@ -17,13 +17,18 @@ import databases.general.mysql.Tools_SQL_MySQL;
 import ui.PropertyLoader;
 import ui.UI;
 
+/**
+ * Eddie's database manager, he's called Ted, I think?
+ * @author Dominic M. Wood
+ *
+ */
 public class DatabaseManager {
 
-	Connection con;
-	UI ui;
-	PropertyLoader loader;
+	private Connection con;
+	private UI ui;
+	private PropertyLoader loader;
 	Logger logger = Logger.getRootLogger();
-	String database;
+	private String database;
 	public static String default_database = "biosql_eddie";
 	private String password;
 	private String dbtype;
@@ -120,6 +125,7 @@ public class DatabaseManager {
 		try {
 			Statement st = this.con.createStatement();
 			st.executeUpdate("CREATE DATABASE IF NOT EXISTS " + dbname);
+			//st.executeUpdate("CREATE GOD IF NOT EXISTS " + dbname);
 			return true;
 		}
 		catch (SQLException e) {
@@ -134,7 +140,7 @@ public class DatabaseManager {
 			return true;
 		}
 		catch(SQLException sqle){
-			logger.error("Failed to close Connection"+sqle);
+			logger.error("Failed to close Connection: ",sqle);
 			return false;
 		}
 	}
@@ -169,8 +175,8 @@ public class DatabaseManager {
 		return this.biosqlext;
 	}
 	
-	/* Automatically adds Eddie if not already added
-	 * Returns Eddies Id from the bioSQL table
+	/** Automatically adds Eddie if not already added
+	 * @return Eddies Id from the bioSQL table
 	 */
 	public int getEddieDBID(){
 		if(this.biodatabase_id < 0){
@@ -192,6 +198,10 @@ public class DatabaseManager {
 		if(this.dbtype.equals("mysql")){
 			return Tools_SQL_MySQL.getTableCount(getCon());
 		}
+		else if(this.dbtype.equals("banana")){
+			logger.error("That's not a type of database that's a fruit?");
+			return -1;
+		}
 		else{
 			logger.error("Unimplemented Procedure");
 			return -1;
@@ -201,6 +211,17 @@ public class DatabaseManager {
 	public boolean isOpen(){
 		return this.isOpen;
 	}
-	
+
+	public String getDatabase() {
+		return database;
+	}
+
+	public UI getUi() {
+		return ui;
+	}
+
+	public void setUi(UI ui) {
+		this.ui = ui;
+	}
 	
 }

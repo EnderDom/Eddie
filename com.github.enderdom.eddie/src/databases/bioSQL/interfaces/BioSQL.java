@@ -8,6 +8,10 @@ import java.sql.Connection;
  * should be added to the Extended class using these base methods 
  * @author Dominic Wood
  *
+ * In general this is some sort of hybrid bastardisation of bioSQL, 
+ * meant to help improve the portability of my data, but undoubtably
+ * will further mire me into a sea of bioinformatic oblivion.
+ *
  */
 
 public interface BioSQL {
@@ -58,6 +62,18 @@ public interface BioSQL {
 	
 	/**
 	 * 
+	 * @param con
+	 * @param dbname
+	 * @param accession
+	 * @param version
+	 * @return if insert was successful
+	 */
+	public boolean addDBxref(Connection con, String dbname, String accession, int version);
+		
+	public String[] getBioEntryNames(Connection con, int bioentry_id);
+	
+	/**
+	 * 
 	 * Input is the identifier and/or accession,  
 	 * the method will check identifier first, if it is not null
 	 * then if accession is null or no result from identifier
@@ -73,9 +89,6 @@ public interface BioSQL {
 	 * 
 	 * 
 	 */
-	
-	public String[] getBioEntryNames(Connection con, int bioentry_id);
-	
 	public int getBioEntry(Connection con, String identifier, String accession, int biodatabase);
 	
 	public int getOntology(Connection con, String name);
@@ -91,4 +104,6 @@ public interface BioSQL {
 	public int getBioEntrywName(Connection con, String name);
 	
 	public String getSequence(Connection con, int bioentry_id);
+	
+	public int getDBxRef(Connection con, String dbname, String accession);
 }

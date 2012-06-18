@@ -30,6 +30,7 @@ public class XML_Blastx{
 	String filepath;
 	Hashtable<String, String> blastcache;
 	int[] hits;
+	Logger logger = Logger.getRootLogger();
 	
 	public  XML_Blastx(String filepath) throws Exception{
 		this(new File(filepath));
@@ -49,8 +50,7 @@ public class XML_Blastx{
 		try {
 			elementList = XMLHelper.selectElements(blastDoc.getDocumentElement(), "BlastOutput_iterations/Iteration[Iteration_hits]");
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("XML parse issue or something..?", e);
 		}
 		if(elementList != null){
 			if(elementList.size() == 1){
@@ -58,7 +58,7 @@ public class XML_Blastx{
 				parseLayerIterations(element);
 			}
 			else{
-				Logger.getRootLogger().warn("Not yet supporting multi Blast result files");
+				logger.warn("Not yet supporting multi Blast result files");
 			}
 		}
 		if(dropDOM){
@@ -104,12 +104,11 @@ public class XML_Blastx{
 	}
 
 	
-	/*
+	/**
 	 * Parse Layer Hit and Hsp both assume a structure where Hit/Hsp_num
 	 * tag is the first one in the xml section. If this is not the case, the
 	 * result is keys will be generic and overwritten. 
 	 */
-	
 	private LinkedList<Integer> parseLayerHit(NodeList list, LinkedList<Integer> hsp_sizes){
 		String[] tags = new String[]{"Hit_num", "Hit_id", "Hit_def", "Hit_accession", "Hit_len"};
 		String[] keys = tags.clone();
@@ -186,7 +185,7 @@ public class XML_Blastx{
 		}
 	}
 	
-	/*
+	/**
 	 * Get Number of hsps at Hit Numb
 	 * Hit_num = 0 will return -1 as 
 	 * there is not hit 0
@@ -199,12 +198,12 @@ public class XML_Blastx{
 		return this.blastcache.get(tag);
 	}
 	
-	/*
+	/**
 	 * Note, because of 'bioindexing' aka funtimes,
 	 * Start looping at 1 not zero for hit_num,
 	 * but length remains the same 
 	 * 
-	 * 
+	 * @return says exactly what it does on the tin 
 	 */
 	
 	public String getHitTagContents(String tag, int hit_num) throws Exception{
@@ -229,14 +228,21 @@ public class XML_Blastx{
 		}
 	}
 	
-	//Change a tag, set boolean to true to change all by that tag, 
-	//else only the first will be changed
+	/**
+	 * Change a tag, set boolean to true to change all by that tag,
+	 * else only the first will be changed 
+	 * @param tag
+	 * @param value
+	 * @param all
+	 * 
+	 * Never tested or used, may melt computer
+	 */
 	public void changeValue(String tag, String value, boolean all){
 		NodeList list = this.blastDoc.getElementsByTagName(tag);
 		for(int i =0; i < list.getLength(); i++){
-			System.out.println("Changing " + list.item(i).getTextContent() + " to " + value);
+			logger.debug("Changing " + list.item(i).getTextContent() + " to " + value);
 			list.item(i).setTextContent(value);
-			System.out.println("Value now: " + list.item(i).getTextContent());
+			logger.debug("Value now: " + list.item(i).getTextContent());
 			if(!all) break;
 		}
 	}
@@ -262,7 +268,7 @@ public class XML_Blastx{
 						}
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error("Failed to do the simplest of tasks :(", e);
 				}				
 			}
 		}
@@ -281,7 +287,7 @@ public class XML_Blastx{
 						}
 					}
 				} catch (Exception ex) {
-					ex.printStackTrace();
+					logger.error("Unhelpful error message", ex);
 				}				
 			}
 		}

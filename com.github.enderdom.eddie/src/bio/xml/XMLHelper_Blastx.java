@@ -8,16 +8,22 @@ import databases.manager.DatabaseManager;
 
 import tools.Tools_String;
 
+/**
+ * 
+ * @author EnderDom
+ *
+ * A lazy add-ons class for blastx
+ * although in theory would work with any
+ * blast XML class if I ever were to get around to
+ * writing them.
+ *
+ */
 public class XMLHelper_Blastx {
 
 	public XML_Blastx blastx;
 	public DatabaseManager manager;
 	private int contig_id;
 	Logger logger = Logger.getRootLogger(); 
-	
-	/*
-	 * Laziness :)
-	 */
 	
 	public XMLHelper_Blastx(File file) throws Exception{
 		new XML_Blastx(file);
@@ -38,9 +44,9 @@ public class XMLHelper_Blastx {
 	}
 	
 	public String getBlastDatabase(){
-		return blastx.getBlastTagContents("BlastOutput_db");
+			return blastx.getBlastTagContents("BlastOutput_db");
 	}
-
+	
 	public String getHitAccession(int index) throws Exception{
 		return blastx.getHitTagContents("Hit_accession", index);
 	}
@@ -59,9 +65,9 @@ public class XMLHelper_Blastx {
 		else throw new Exception("An error occured attempting to parse the hsp score " +s );
 	}
 	
-	//Order is Hit-Start, Hit-Stop, Hit-Frame, Query-Start, Query-Stop, Query-Frame
-	
 	/**
+	 * Order is Hit-Start, Hit-Stop, Hit-Frame, Query-Start, Query-Stop, Query-Frame
+	 * 
 	 * This is straight from blast xml so will be 1-based 
 	 * ie 1bp == first bp == Seq[0]
 	 * 
@@ -102,10 +108,12 @@ public class XMLHelper_Blastx {
 	 * CLCBio fasta output is named as ConsensusfromContigX whilst
 	 * the ace file has naming Contig_X
 	 * 
+	 * @param dbname ie genbank, swiss, uniprot, go, kegg, interpro etc...
+	 * 
 	 * @return true if script ran with 
 	 * no errors
 	 */
-	public boolean upload2BioSQL(DatabaseManager manager, boolean fuzzy){
+	public boolean upload2BioSQL(DatabaseManager manager, boolean fuzzy, String dbname){
 		if(contig_id == -1){
 			String nom = blastx.getBlastTagContents("BlastOutput_query-ID");
 			contig_id =  manager.getBioSQLXT().getBioEntryId(manager.getBioSQL(),manager.getCon(), nom, fuzzy, manager.getEddieDBID());
@@ -115,7 +123,16 @@ public class XMLHelper_Blastx {
 			return false;
 		}
 		else{
-			
+			if(dbname == null){
+				logger.warn("Not Database name set, using default: 'genbank'");
+				dbname = "genbank";
+			}
+			for(int i =1; i < blastx.getNoOfHits(); i++){
+				for(int j=1 ; j < blastx.getNoOfHsps(i); j++){
+					//TODO loop through hits and upload					
+				}
+			}
+
 			return false;
 		}
 	}

@@ -1,9 +1,11 @@
 package databases.bioSQL.mysql;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -16,6 +18,13 @@ import tools.bio.Tools_Contig;
 import databases.bioSQL.interfaces.BioSQL;
 import databases.bioSQL.interfaces.BioSQLExtended;
 
+/**
+ * 
+ * @author Dominic M. Wood
+ *
+ * Methods to sordid to go into BioSQL
+ *
+ */
 public class MySQL_Extended implements BioSQLExtended{
 
 	private int assemblyontid =-1;
@@ -123,6 +132,21 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 	}
 	
+	/**
+	 * This table alteration was added to hold more detailed information
+	 * about the relationship between the external database reference and the
+	 * bioentry. Without this there is now way of ascertaining how strong or weak the
+	 * link between these two is. I have read several blogs lambasting the wholesale uploading of
+	 * xml into databases, so I realise that recreating the flat file data in the database
+	 * may be a bad mistake. However I see no alternative method or storing this data
+	 * so it can be accessed from multiple locations by both eddie and any websites.
+	 * 
+	 * I have not included the hit number in this. For two reasons, one is that without the specifics
+	 * of the blast run from perspective of the database are not known (for now). The second is that 
+	 * there is no actual need for this. Uploaded hsps as multiple rows and just using score or e-value
+	 * for ordering should suffice for recreating the pertinant data, IMHO.
+	 * 
+	 */
 	public boolean addBioentryDbxrefCols(Connection con) {
 		String alters[] = new String[]{
 				"ALTER TABLE bioentry_dbxref ADD COLUMN (evalue DOUBLE PRECISION );",
@@ -325,6 +349,59 @@ public class MySQL_Extended implements BioSQLExtended{
 			logger.debug("Entry retrieved without fuzziness required");
 		}
 		return entry;
+	}
+	
+	
+	/**
+	 * @see #addBioentryDbxrefCols(Connection)
+	 * 	 
+	 * @param con SQL Connection
+	 * @param bioentry_id
+	 * @param dbxref_id
+	 * @param rank
+	 * @param evalue
+	 * @param score
+	 * @param dbxref_startpos
+	 * @param dbxref_endpos
+	 * @param dbxref_frame
+	 * @param bioentry_startpos
+	 * @param bioentry_endpos
+	 * @param bioentry_frame
+	 * @return boolean , false if execute failed or sql exception thrown 
+	 */
+	public boolean setDbxref(Connection con, int bioentry_id, int dbxref_id, Integer rank, Double evalue, Integer score, Integer dbxref_startpos,
+			Integer dbxref_endpos,Integer dbxref_frame, Integer bioentry_startpos,Integer bioentry_endpos,Integer bioentry_frame){
+		String sql = "INSERT INTO dbxref_ (bioentry_id, dbxref_id, rank, evalue,score, dbxref_startpos,"+
+			"dbxref_endpos, dbxref_frame, bioentry_startpos, bioentry_endpos, bioentry_frame) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+		try {
+			PreparedStatement ment = con.prepareStatement(sql);
+			ment.setInt(1, bioentry_id);
+			ment.setInt(2, dbxref_id);
+			if(rank != null) ment.setInt(3, rank);
+			else ment.setNull(3, Types.INTEGER);
+			if(evalue != null) ment.setDouble(4, evalue);
+			else ment.setNull(4, Types.DOUBLE);
+			if(score != null) ment.setInt(5, score);
+			else ment.setNull(5, Types.INTEGER);
+			if(dbxref_startpos != null) ment.setInt(6, dbxref_startpos);
+			else ment.setNull(6, Types.INTEGER);
+			if(dbxref_endpos != null) ment.setInt(7, dbxref_endpos);
+			else ment.setNull(7, Types.INTEGER);
+			if(dbxref_frame != null) ment.setInt(8, dbxref_frame);
+			else ment.setNull(8, Types.INTEGER);
+			if(bioentry_startpos != null) ment.setInt(9, bioentry_startpos);
+			else ment.setNull(9, Types.INTEGER);
+			if(bioentry_endpos != null) ment.setInt(10, bioentry_endpos);
+			else ment.setNull(10, Types.INTEGER);
+			if(bioentry_frame != null) ment.setInt(11, bioentry_frame);
+			else ment.setNull(11, Types.INTEGER);
+			return ment.execute();
+		} 
+		catch (SQLException e) {
+			logger.error("Failed to add bioentry_dbxref entry", e);
+			return false;
+		}
+		
 	}
 	
 	/* INDEV function
