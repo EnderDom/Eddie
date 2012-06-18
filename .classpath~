@@ -28,5 +28,5 @@
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/pdfbox/pdfbox-1.6.0.jar" sourcepath="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/pdfbox/pdfbox-1.6.0-src.zip"/>
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/pdfbox/fontbox-1.6.0.jar"/>
 	<classpathentry kind="lib" path="/home/dominic/apps/eclipse/EddieXP/com.github.enderdom.eddie/lib/jfreechart/jfreechart-1.0.14.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="output" path="com.github.enderdom.eddie/bin"/>
 </classpath>

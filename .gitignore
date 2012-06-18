@@ -1,0 +1,7 @@
+#eclipse bin directory
+com.github.enderdom.eddie/bin/
+
+#OS Specific stuff
+#
+#Dolphin
+.directory
