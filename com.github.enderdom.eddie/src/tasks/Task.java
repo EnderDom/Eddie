@@ -197,6 +197,7 @@ public abstract class Task implements Runnable, Future<Object> {
 
 	protected void setComplete(int complete) {
 		this.complete = complete;
+		logger.info("Task was set to complete");
 	}
 
 	public boolean isTry2Close() {

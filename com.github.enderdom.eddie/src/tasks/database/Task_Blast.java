@@ -22,6 +22,7 @@ public class Task_Blast extends TaskXT{
 	private File[] files;
 	private boolean[] ignore;
 	DatabaseManager manager;
+	private String dbname;
 	
 	public Task_Blast(){
 		setHelpHeader("--This is the Help Message for the the blast Task--");
@@ -29,6 +30,7 @@ public class Task_Blast extends TaskXT{
 	
 	public void parseArgsSub(CommandLine cmd){
 		if(cmd.hasOption("u"))upload=true;
+		if(cmd.hasOption("db"))dbname=cmd.getOptionValue("db");
 		if(cmd.hasOption("i"))input=cmd.getOptionValue("i");
 		if(cmd.hasOption("f"))fuzzynames = true;
 	}
@@ -37,6 +39,7 @@ public class Task_Blast extends TaskXT{
 		super.buildOptions();
 		options.addOption(new Option("u","upload", false, "Perform default setup"));
 		options.addOption(new Option("i","input", true, "Input folder or file"));
+		options.addOption(new Option("db","dbname", true, "Default database name, such as genbank, uniprot etc..."));
 		options.addOption(new Option("f","fuzzy", false, "Check for fuzzy names before failing, " +
 				"may be help if blast query-id is different from database id. May lead to incorrect "));
 	}
@@ -63,15 +66,12 @@ public class Task_Blast extends TaskXT{
 				if(checklist.inRecovery()){
 					trimRecovered(checklist.getData());
 				}
-				else{
-					
-				}
 				int i=0;
 				int c =0;
 				for(;i < files.length; i++){
 					if(!ignore[i]){
 						try{
-							uploadBlastFile(manager, files[i], this.fuzzynames);
+							uploadBlastFile(manager, files[i], this.fuzzynames, this.dbname);
 						}
 						catch(Exception e){
 							logger.error("Failed to parse file " + files[i].getName(),e);
@@ -86,7 +86,7 @@ public class Task_Blast extends TaskXT{
 			}
 			else{
 				try{
-					uploadBlastFile(manager, in, this.fuzzynames);
+					uploadBlastFile(manager, in, this.fuzzynames, this.dbname);
 				}
 				catch(Exception e){
 					logger.error("Failed to parse file " + in.getName(),e);
@@ -98,9 +98,9 @@ public class Task_Blast extends TaskXT{
 	    setComplete(finished);
 	}
 	
-	public static void uploadBlastFile(DatabaseManager manager, File file, boolean fuzzynames) throws Exception{
+	public static void uploadBlastFile(DatabaseManager manager, File file, boolean fuzzynames, String dbname) throws Exception{
 		XMLHelper_Blastx helper = new XMLHelper_Blastx(new XML_Blastx(file));
-		helper.upload2BioSQL(manager, fuzzynames);
+		helper.upload2BioSQL(manager, fuzzynames, dbname);
 	}
 	
 	private void trimRecovered(String[] data){

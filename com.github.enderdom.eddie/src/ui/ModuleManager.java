@@ -28,6 +28,14 @@ import cli.EddieCLI;
 
 import tools.Tools_XML;
 
+/**
+ * 
+ * @author EnderDom
+ * 
+ * Either a thoroughly horrible abstracted dislocated system or the ravings
+ * of a madman. 
+ *
+ */
 public class ModuleManager implements Module{
 
 	/*

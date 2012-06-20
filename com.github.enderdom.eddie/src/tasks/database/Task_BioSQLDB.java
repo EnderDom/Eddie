@@ -18,6 +18,7 @@ public class Task_BioSQLDB extends Task{
 	private UI ui;
 	private Logger logger = Logger.getRootLogger();
 	private boolean setup;
+	private String table;
 	
 	public Task_BioSQLDB(){
 		setHelpHeader("--This is the Help Message for the the AdminBioSQLDB Task--");
@@ -26,11 +27,13 @@ public class Task_BioSQLDB extends Task{
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
 		if(cmd.hasOption("setup"))setup=true;
+		if(cmd.hasOption("table"))table = cmd.getOptionValue("table");
 	}
 	
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("setup", false, "Perform default setup"));
+		options.addOption(new Option("table", true,  "Add a specific non-biosql table or table mod, use -table list for list of tables"));
 		options.getOption("test").setDescription("Test the database connection");
 	}
 	
@@ -45,13 +48,35 @@ public class Task_BioSQLDB extends Task{
 			runTest();
 			return;
 		}
+		if(table.contentEquals("list") ){
+			System.out.println("---List of Tables Available---");
+			System.out.println("legacy");
+			System.out.println("synonym");
+			System.out.println("xrefs");
+			System.out.println("assembly");
+			System.out.println("---								 ---");
+			return;
+		}
 		DatabaseManager manager = this.ui.getDatabaseManager(password);
-		manager.createAndOpen();
+		if(!manager.open()){
+			logger.error("Failed to open Database manager");
+			return;
+		}
 		int biodatabase_id = manager.getEddieDBID();
 		if(biodatabase_id > -1){
 			if(setup){
+				logger.debug("Setting up database...");
 				setup(manager);
 				logger.info("Done setting Up");
+			}
+			else if(table != null){
+				logger.debug("Identifying table...");
+				if(createDefaultTable(manager, table)){
+					logger.info("Successfully setup table or at least listed tables to be setup.");
+				}
+				else{
+					logger.info("Failed to setup table");
+				}
 			}
 			else{
 				logger.warn("No option set");
@@ -62,7 +87,7 @@ public class Task_BioSQLDB extends Task{
 		}
 		manager.close();
 		
-		Logger.getRootLogger().debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
+		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
 	}
 	
@@ -115,6 +140,34 @@ public class Task_BioSQLDB extends Task{
 			return bsxt.setupAssembly(manager.getBioSQL(), manager.getCon());
 		}
 		else return false;
+	}
+
+	public boolean createDefaultTable(DatabaseManager manager, String table){
+		if(table.contentEquals("legacy")){
+			if(manager.isOpen()){
+				return manager.getBioSQLXT().addLegacyVersionTable(manager.getCon(),new String(PropertyLoader.getFullVersion()+""), new String(DatabaseManager.getDatabaseversion()+""));
+			}
+		}
+		else if(table.contentEquals("synonym")){
+			if(manager.isOpen()){
+				return manager.getBioSQLXT().addBioEntrySynonymTable(manager.getCon());
+			}
+		}
+		else if(table.contentEquals("xrefs")){
+			if(manager.isOpen()){
+				return manager.getBioSQLXT().addBioentryDbxrefCols(manager.getCon());
+			}
+		}
+		else if(table.contentEquals("assembly")){
+			if(manager.isOpen()){
+				return manager.getBioSQLXT().setupAssembly(manager.getBioSQL(), manager.getCon());
+			}
+		}
+		else{
+			logger.warn("Table: " + table + " not recognised as a table used by Eddie");
+			return false;
+		}
+		return false;
 	}
 	
 	protected void runTest(){
