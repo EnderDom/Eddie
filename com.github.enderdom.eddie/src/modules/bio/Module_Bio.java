@@ -111,4 +111,9 @@ public class Module_Bio extends Module_Basic{
 	public String getModuleName(){
 		return this.getClass().getName();
 	}
+
+	public boolean isTest() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

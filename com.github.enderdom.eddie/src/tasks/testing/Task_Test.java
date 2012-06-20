@@ -15,8 +15,6 @@ import net.sf.samtools.SAMProgramRecord;
 import net.sf.samtools.SAMReadGroupRecord;
 import net.sf.samtools.SAMRecord;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.log4j.Logger;
 import databases.bioSQL.interfaces.BioSQL;
 import databases.bioSQL.interfaces.BioSQLExtended;
 import databases.manager.DatabaseManager;
@@ -27,19 +25,18 @@ import bio.fasta.Fasta;
 import bio.fasta.FastaParser;
 
 import tasks.Checklist;
-import tasks.TaskXT;
 import tools.Tools_Array;
 import tools.Tools_Bit;
 import tools.Tools_Fun;
 import tools.Tools_String;
+import tools.Tools_System;
+import tools.Tools_Task;
 import ui.PropertyLoader;
-import ui.UI;
 //import net.sf.samtools.SAMFileHeader;
 //import net.sf.samtools.SAMProgramRecord;
 //import net.sf.samtools.SAMReadGroupRecord;
 //import net.sf.samtools.SAMRecord;
 //import net.sf.samtools.SAMFileHeader.SortOrder;
-import gui.EddieGUI;
 
 /**
  * Testing class script
@@ -48,20 +45,11 @@ import gui.EddieGUI;
  * @author dominic
  *
  */
-public class Task_Test extends TaskXT{
+public class Task_Test extends Task_Test_Basic{
 
-	protected UI ui; 
-	protected PropertyLoader load;
-	protected CommandLine cmd;
-	protected Logger logger = Logger.getLogger("Testing");
+	
 	protected Checklist checklist;
-	
-	public Task_Test(){
-		complete = -1;
-		this.testmode = true;
-	}
-	
-	
+
 	
 	public void runTest(){
 		/*
@@ -76,19 +64,7 @@ public class Task_Test extends TaskXT{
 		}
 	}
 	
-	public void addToGui(EddieGUI biodesktopgui) {
-		
-	}
 	
-	public void parseArgsSub(CommandLine cmd){
-		this.cmd = cmd;
-	}
-	
-	public void addUI(UI ui){
-		logger.trace("UI added to " + this.getClass().getName());
-		this.ui = ui;
-		this.load = ui.getPropertyLoader();
-	}
 	
 	/************************************************************/
 	/*															*/
@@ -96,6 +72,16 @@ public class Task_Test extends TaskXT{
 	/*															*/
 	/*															*/
 	/************************************************************/
+	
+	
+	public void testProcessRunner(){
+		 System.out.println("Quick Test of Process Runner");
+		 if(Tools_System.isWindows())System.out.println(Tools_Task.runProcess("dir", true)[0].toString());
+		 else System.out.println(Tools_Task.runProcess("ls", true)[0].toString());
+		 System.out.println();
+		 System.out.println();
+		 System.out.println("That should be where we're at?");
+	}
 	
 	public void testBitTools(){
 		long a = 0x000000000000042FL;

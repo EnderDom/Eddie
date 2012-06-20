@@ -17,7 +17,6 @@ import org.apache.log4j.Logger;
 import cli.LazyPosixParser;
 
 import tools.Tools_System;
-import tools.Tools_Task;
 import tools.bio.Tools_Bio_File;
 import ui.TaskManager;
 import ui.UI;
@@ -72,15 +71,10 @@ public abstract class Task implements Runnable, Future<Object> {
 			System.out.println("--This is the default Task run message--");
 			System.out.println();
 			System.out.println("If you're seeing this message it means the Task Manager is working,");
-		    System.out.println("But that you are running the default Task class for some reason.");
-		    System.out.println();
-		    System.out.println("Quick Test of Process Runner");
-		    if(Tools_System.isWindows())System.out.println(Tools_Task.runProcess("dir", true)[0].toString());
-		    else System.out.println(Tools_Task.runProcess("ls", true)[0].toString());
-		    System.out.println();
-		    System.out.println();
-		    System.out.println("That should be where we're at?");
-		    System.out.println();
+		    System.out.println("But that you are running the default Task run method for some reason.");
+		    System.out.println("");
+		    System.out.println("The most likely reason is that both testmode is not enabled and the " +
+		    		"class that has extended this Task class has not overwrote the default run()");
 		}
 		Logger.getRootLogger().debug("Finished running task @ "+Tools_System.getDateNow());
 	    setComplete(finished);

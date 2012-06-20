@@ -382,15 +382,19 @@ public class ModuleManager implements Module{
 		}		
 	}
 	
-	public void printAllTasks(){
+	public void printAllTasks(boolean test){
 		for(String key : module_classpath.keySet()){
 			try {
 				if(!module_classpath.get(key).startsWith(persistkeyword)){
 					Module temp =(Module)Class.forName(module_classpath.get(key)).getConstructor().newInstance();
-					temp.printTasks();
+					if(temp.isTest() == test){
+						temp.printTasks();
+					}
 				}
 				else{
-					modules[this.persistedObjectIndex.get(module_classpath.get(key))].printTasks();
+					if(modules[this.persistedObjectIndex.get(module_classpath.get(key))].isTest() == test){
+						modules[this.persistedObjectIndex.get(module_classpath.get(key))].printTasks();
+					}
 				}
 			} catch (IllegalArgumentException e) {
 				Logger.getRootLogger().error("Error printing tasks for key "+key, e);
@@ -464,5 +468,9 @@ public class ModuleManager implements Module{
 
 	public void resetModuleName(String name) {
 		this.modulename = name;
+	}
+
+	public boolean isTest() {
+		return false;
 	}
 }

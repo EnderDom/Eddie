@@ -11,6 +11,7 @@
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/picard/picard-1.65.jar"/>
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/picard/sam-1.65.jar"/>
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/biojava3/biojava3-core-3.0.3.jar" sourcepath="com.github.enderdom.eddie/lib/biojava3/biojava3-core-3.0.3-sources.jar"/>
+	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/melting/melting5.jar" sourcepath="com.github.enderdom.eddie/lib/melting/melting5.jar"/>
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/iprscan/jaxrpc.jar"/>
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/iprscan/axis.jar"/>
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/iprscan/activation.jar"/>

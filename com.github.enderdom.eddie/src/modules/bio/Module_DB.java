@@ -81,4 +81,10 @@ public class Module_DB extends Module_Basic{
 	public String getModuleName(){
 		return this.getClass().getName();
 	}
+
+
+	public boolean isTest() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

@@ -55,4 +55,6 @@ public interface Module
 
     public abstract void resetModuleName(String name);
 
+    public abstract boolean isTest();
+    
 }

@@ -3,6 +3,7 @@ package modules;
 import gui.EddieGUI;
 
 import tasks.testing.Task_Test;
+import tasks.testing.Task_Test_Melting;
 import tasks.testing.Task_Test_Report;
 
 /*
@@ -12,9 +13,9 @@ import tasks.testing.Task_Test_Report;
 
 public class Module_Test extends Module_Basic{
 	
-	protected String[] tasks = new String[]{"testrun", "testReport"}; 
-	protected String[] taskinfo = new String[]{"	run a test program", "generates the test Report"};
-	protected String[] classes = new String[]{Task_Test.class.getName(), Task_Test_Report.class.getName()};
+	protected String[] tasks = new String[]{"testrun", "testReport", "Melting"}; 
+	protected String[] taskinfo = new String[]{"	run a test program", "generates the test Report", "	Testing the melting lib"};
+	protected String[] classes = new String[]{Task_Test.class.getName(), Task_Test_Report.class.getName(), Task_Test_Melting.class.getName()};
 	
 	public Module_Test(){
 		
@@ -34,5 +35,9 @@ public class Module_Test extends Module_Basic{
 	
 	public void addToGui(EddieGUI biodesktopgui) {
 		
+	}
+	
+	public boolean isTest(){
+		return true;
 	}
 }

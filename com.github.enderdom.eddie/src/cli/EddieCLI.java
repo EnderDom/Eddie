@@ -98,19 +98,22 @@ public class EddieCLI implements UI {
 					if(modmanager.isTask(task)){
 						modmanager.runTask(this,task);
 					}
+					else if(task.contentEquals("test")){
+						printTaskList(true);
+					}
 					else {
 						Logger.getRootLogger().error("No Tasks with the name "+task+" available");
-						printTaskList();
+						printTaskList(false);
 					}
 				}
 				else {
 					Logger.getRootLogger().error("Empty Task Argument");
-					printTaskList();
+					printTaskList(false);
 				}
 			}
 			else{
 				Logger.getRootLogger().trace("No Task Set");
-				printTaskList();
+				printTaskList(false);
 			}
 		} catch (ParseException e) {
 			logger.error("Failed To Parse Input Options", e);
@@ -160,15 +163,18 @@ public class EddieCLI implements UI {
 		options.addOption(new Option("task", true, "Select a task to run"));
 	}
 
-	public void printTaskList(){
-		System.out.println("List of tasks available:");
+	public void printTaskList(boolean test){
+		if(!test)System.out.println("List of tasks available:");
+		else System.out.println("List of Test Tasks available:");
 		System.out.println();
 		System.out.println();
-		modmanager.printAllTasks();
+		modmanager.printAllTasks(test);
 		System.out.println();
 		System.out.println();
 		System.out.println("include after -task");
 		System.out.println("Example: -task taskname -arg1 one -arg2 two");
+		System.out.println();
+		System.out.println("Also: For a list of tests available add -task test");
 	}
 
 	public void update(Task task) {

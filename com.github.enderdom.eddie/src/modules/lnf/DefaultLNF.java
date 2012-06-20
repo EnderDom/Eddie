@@ -155,6 +155,11 @@ public class DefaultLNF implements Module{
 	public void resetModuleName(String name) {
 		this.modulename = name;
 	}
+
+	public boolean isTest() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 	
 }

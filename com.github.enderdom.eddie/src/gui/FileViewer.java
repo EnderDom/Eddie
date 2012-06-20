@@ -162,5 +162,10 @@ public class FileViewer extends JInternalFrame implements TableModelListener, Mo
 		
 	}
 
+	public boolean isTest() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
 
