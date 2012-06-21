@@ -32,7 +32,7 @@ public class EddieCLI implements UI {
 	private String[] args;
 	private Options options;
 	
-	public  EddieCLI(PropertyLoader loader, boolean persist){
+	public EddieCLI(PropertyLoader loader, boolean persist){
 		System.out.println("Eddie v" + (PropertyLoader.engineversion+PropertyLoader.guiversion) + " by (S.C.Corp.)");
 		load = loader;
 		load.loadPropertiesCLI();

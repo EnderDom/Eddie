@@ -95,7 +95,10 @@ public class PropertyLoader implements Module{
 				retvalue = 1;
 			}
 			else if(cmd.hasOption("about")){
-				retvalue = 5;
+				retvalue = 6;
+			}
+			else if(cmd.hasOption("lite")){
+				retvalue = 6;
 			}
 			else{
 				if(cmd.hasOption("g")){ 
@@ -127,6 +130,7 @@ public class PropertyLoader implements Module{
 		options = new Options();
 		options.addOption(new Option("p", "props", true, "Use this as default properties file"));
 		options.addOption(new Option("g", "gui", false, "Set to GUI rather than CLI (indev)"));
+		//options.addOption(new Option("e", "lite", false, "Eddie Lite, a lighter mode which loads less clunge")); WIP
 		//options.addOption(new Option("persist", false, "If CLI set, this will stop CLI from closing without further args"));
 		options.addOption(new Option("h", "help", false, "Help Menu"));
 		options.addOption(new Option("l", "log", true, "Set Log Level {TRACE,DEBUG,INFO,WARN,ERROR,FATAL}"));
