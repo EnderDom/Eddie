@@ -17,7 +17,6 @@ public interface Module
     
     public abstract void addToCli(EddieCLI cli);    
     
-        
 	public abstract String[] getActions();
 
 	public abstract String[] getTasks();

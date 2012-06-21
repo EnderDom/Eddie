@@ -110,10 +110,13 @@ public class XMLHelper_Blastx {
 	 * 
 	 * @param dbname ie genbank, swiss, uniprot, go, kegg, interpro etc...
 	 * 
+	 * @param force force rows to be completely ovewritten even if sequence and database
+	 * reference has already been linked
+	 * 
 	 * @return true if script ran with 
 	 * no errors
 	 */
-	public boolean upload2BioSQL(DatabaseManager manager, boolean fuzzy, String dbname){
+	public boolean upload2BioSQL(DatabaseManager manager, boolean fuzzy, String dbname, boolean force){
 		if(contig_id == -1){
 			String nom = blastx.getBlastTagContents("BlastOutput_query-ID");
 			contig_id =  manager.getBioSQLXT().getBioEntryId(manager.getBioSQL(),manager.getCon(), nom, fuzzy, manager.getEddieDBID());
@@ -127,12 +130,30 @@ public class XMLHelper_Blastx {
 				logger.warn("Not Database name set, using default: 'genbank'");
 				dbname = "genbank";
 			}
-			for(int i =1; i < blastx.getNoOfHits(); i++){
-				for(int j=1 ; j < blastx.getNoOfHsps(i); j++){
-					//TODO loop through hits and upload					
+			try{
+				for(int i =1; i < blastx.getNoOfHits(); i++){
+					String acc = getHitAccession(i);
+					int dbx_ref =  manager.getBioSQL().getDBxRef(manager.getCon(), dbname, acc);
+					if(dbx_ref == -1)manager.getBioSQL().addDBxref(manager.getCon(), dbname, acc, 0);
+					dbx_ref =  manager.getBioSQL().getDBxRef(manager.getCon(), dbname, acc);
+					if(dbx_ref == -1){
+						logger.error("Could not upload accession " + acc);
+						return false;
+					}
+					for(int j=1 ; j < blastx.getNoOfHsps(i); j++){
+						if(!manager.getBioSQLXT().existsDbxRefId(manager.getCon(), contig_id, dbx_ref, j)){
+							int[] pos = this.getStartsStopsFrames(i, j);
+							manager.getBioSQLXT().setDbxref(manager.getCon(), contig_id, dbx_ref, j, this.getHspEvalue(i, j), this.getHspScore(i, j), pos[0], pos[1], pos[2],
+									pos[3], pos[4], pos[5]);
+						}
+					}
 				}
+				return true;
 			}
-			return false;
+			catch(Exception e){
+				logger.error("Error retrieving data from blast file ", e );
+				return false;
+			}
 		}
 	}
 }

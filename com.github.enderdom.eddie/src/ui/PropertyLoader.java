@@ -72,8 +72,19 @@ public class PropertyLoader implements Module{
 	public String[] args;
 	public String modulename;
 	private String slash;
+	private boolean isLogging;
+	
+	/*
+	 * Current Subproperties, others can be added
+	 * this just for ease 
+	 */
+	//Test subproperty file
+	public static String TestPrefs = "test";
+	public static String DB = "db";
+	//Database subproperty
+	
 
-	//DO NOT CHANGE POSITIONS!  
+	//DO NOT CHANGE POSITIONS!  //TODO move database stuff to a separate DBPrefs file like TestPrefs
 	public static String[] defaultKeys = new String[]{"DBHOST", "DBNAME", "DBUSER", "AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR", "ESTSCAN_BIN", "FILES_XML"};
 	public static String[] defaultKeysUN = new String[]{"PREFLNF","MODULES", "VERSION","DBTYPE","DBDRIVER", "TESTDATADIR"};
 	
@@ -149,12 +160,7 @@ public class PropertyLoader implements Module{
     	 * Create properties file in current folder
     	 */
         File prop = new File(getEnvirons()+propertyfilename);
-        
-        /*
-         * This defines whether properties loaded
-         */
-        boolean propsbeenloaded = false;
-        
+               
         /*
          * Check to see if it exists, if it does, set rootfolder to current folder
          */
@@ -163,17 +169,19 @@ public class PropertyLoader implements Module{
         	/*
         	 * File exists, so try and load it
         	 */
-        	propsbeenloaded = loadPropertyFile(prop);
+        	return ((this.props = loadPropertyFile(props, new File(System.getProperty("user.home")+slash+propertyfilename))) == null);
         }
         /*
          * If not, then see if file exists in the default user home directory
          * If it does, set rootfolder as user home
          */
         else if(new File(System.getProperty("user.home")+slash+propertyfilename).exists()){
-            rootfolder = System.getProperty("user.home")+slash;
-            propsbeenloaded = loadPropertyFile(new File(System.getProperty("user.home")+slash+propertyfilename));
+           rootfolder = System.getProperty("user.home")+slash;
+           return ((this.props = loadPropertyFile(props, new File(System.getProperty("user.home")+slash+propertyfilename))) == null);
         }
-        return propsbeenloaded;
+        else{
+        	return false;
+        }
 	}
 	
 	public void loadPropertiesCLI(){
@@ -266,16 +274,15 @@ public class PropertyLoader implements Module{
         }
     }
     
-    public boolean loadPropertyFile(File file){
-    	boolean load = false;
+    public Properties loadPropertyFile(Properties prop, File file){
     	 try{
-             props.load(new FileInputStream(file));
-             preLog("Trying to load Properties File From Previous Session");
-             load = true;
+            prop.load(new FileInputStream(file));
+            if(isLogging)	logger.info("Trying to load Properties File @"+file.getName());
+            else	preLog("Trying to load Properties File @"+file.getName());
+        	return prop;
          }
-         catch(FileNotFoundException filenotfoundexception) {load=false;}
-         catch(IOException ioexception) {load=false;}
-    	 return load;
+         catch(FileNotFoundException filenotfoundexception) {return null;}
+         catch(IOException ioexception) {return null;}
     }
     
 	private void startLog() {
@@ -307,10 +314,11 @@ public class PropertyLoader implements Module{
             }
             Logger.getRootLogger().setLevel(level);
             Logger.getRootLogger().info("Logger Initialised LVL: "+level.toString()+" @ "+Tools_System.getDateNow());
+            isLogging = true;
         } 
 		else{
             preLog("Logging has failed. Can Not Continue.");
-            System.exit(0);
+            preLog("This is a major issue, that will lead to downstream problems");
         }
 	}
 	
@@ -436,6 +444,40 @@ public class PropertyLoader implements Module{
 		}
 	}
 	
+	public boolean initilaseSubProperty(String name){
+		if(this.props.containsKey(name) && new File(this.getProp(name)).exists()){
+			logger.warn("This property name ["+name+"] already exists!");
+			return true;
+		}
+		else{
+			String path =  this.getWorkspace()+"prefs"+Tools_System.getFilepathSeparator()+name+".properties";
+			File folder = new File(this.getWorkspace()+"prefs");
+			if(!Tools_File.createFolderIfNotExists(folder)){
+				return false;
+			}
+			else{
+				if(save(path, new Properties())){
+					setPropertyValue(name,path);
+					return true;
+				}
+				else{
+					logger.error("Failed to initialise new subproperties ");
+					return false;
+				}
+			}
+		}
+	}
+	
+	public Properties getSubProperty(String property){
+		if(this.props.containsKey(property)){
+			return this.loadPropertyFile(new Properties(), new File(this.getProp(property)));
+		}
+		else{
+			logger.error("Failed to retrieve subproperty file for " + property);
+			return null;
+		}
+	}
+	
 	public String[][] getChangableStats(){
 		//These need to all be the same length
 		String[] stats = defaultKeys;
@@ -515,10 +557,6 @@ public class PropertyLoader implements Module{
 		s[3] =this.getProp("DBNAME");
 		s[4] =this.getProp("DBUSER");
 		return s;
-	}
-	
-	public String getTestDataDir(){
-		return this.getPropOrSet("TESTDATADIR", "/home/dominic/bioapps/eddie4/test/");
 	}
 	
 	/****************************************************************************/

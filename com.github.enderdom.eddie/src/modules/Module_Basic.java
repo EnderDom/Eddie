@@ -39,6 +39,7 @@ public abstract class Module_Basic implements Module{
 					Task t = (Task) Class.forName(getClasses()[i]).getConstructor().newInstance();
 					if(t != null){
 						if(t.wantsUI())t.addUI(cli);
+						t.addParent(this);
 						cli.addTask(t);
 					}
 				} 					
@@ -82,8 +83,7 @@ public abstract class Module_Basic implements Module{
 		}
 	}
 	public void addToCli(EddieCLI cli) {
-		// TODO Auto-generated method stub
-		
+		//TODO
 	}
 	
 	public String getModuleName(){

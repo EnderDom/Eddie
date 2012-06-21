@@ -26,6 +26,7 @@ public class Module_DB extends Module_Basic{
 			Task_Blast.class.getName(), Task_dbTools.class.getName()};
 	
 	protected String[] actions;
+
 	
 	public Module_DB(){
 		

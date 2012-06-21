@@ -69,5 +69,8 @@ public interface BioSQLExtended {
 
 	public int getBioEntryId(BioSQL boss, Connection con, String name, boolean fuzzy, int biodatabase_id);
 	
+	public boolean setDbxref(Connection con, int bioentry_id, int dbxref_id, int rank, Double evalue, Integer score, Integer dbxref_startpos,
+			Integer dbxref_endpos,Integer dbxref_frame, Integer bioentry_startpos,Integer bioentry_endpos,Integer bioentry_frame);
 	
+	public boolean existsDbxRefId(Connection con, int bioentry_id, int dbxref_id, int rank);
 }

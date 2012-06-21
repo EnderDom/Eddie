@@ -23,5 +23,4 @@ public class Task_Test_Melting extends Task_Test_Basic{
 	}
 
 	
-	
 }

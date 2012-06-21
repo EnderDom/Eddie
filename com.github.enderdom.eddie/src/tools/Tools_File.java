@@ -184,5 +184,11 @@ public abstract class Tools_File {
 		}
 		
 	}
+
+	public static boolean createFolderIfNotExists(File folder) {
+		if(folder.isDirectory()) return true;
+		else if(!folder.exists())return folder.mkdir();
+		else return false;
+	}
 	
 }

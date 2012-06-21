@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.Properties;
 
+import modules.Module_Test;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
@@ -24,6 +26,7 @@ public class Task_Test_Report extends Task{
 	private boolean alice;
 	private UI ui;
 	Logger logger= Logger.getRootLogger();
+	Properties testprops;
 	
 	public Task_Test_Report(){
 		
@@ -46,11 +49,10 @@ public class Task_Test_Report extends Task{
 	public void run(){
 		setComplete(started);
 		logger.debug("Started running Assembly Task @ "+Tools_System.getDateNow());
-		testfolder = ui.getPropertyLoader().getTestDataDir();
-		File testfold = new File(testfolder);
+		testprops = Module_Test.getProperties(this.ui);
+		File testfold = new File(testprops.getProperty(Module_Test.TestOutFolder));
 		if(!testfold.isDirectory()){
 			testfold.mkdir();
-			
 		}
 		checksubfolders();
 		if(alice){

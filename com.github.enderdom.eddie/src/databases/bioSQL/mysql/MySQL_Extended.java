@@ -30,12 +30,13 @@ public class MySQL_Extended implements BioSQLExtended{
 	private int assemblyontid =-1;
 	private int assemblytermid =-1;
 	Logger logger = Logger.getRootLogger();
+	ResultSet set;
 	
 	public double getDatabaseVersion(Connection con) {
 		String g = "SELECT DatabaseVersion FROM info WHERE NUMB=1";
 		try{
 			Statement st = con.createStatement();
-			ResultSet set = st.executeQuery(g);
+			set = st.executeQuery(g);
 			String r ="";
 			while(set.next()){
 				r = set.getString("DatabaseVersion");
@@ -252,7 +253,7 @@ public class MySQL_Extended implements BioSQLExtended{
 		HashMap<String, String> names = new HashMap<String, String>();
 		try{
 			Statement st = con.createStatement();
-			ResultSet set = st.executeQuery("SELECT identifier, name FROM bioentry WHERE division='"+division+"'");
+			set = st.executeQuery("SELECT identifier, name FROM bioentry WHERE division='"+division+"'");
 			while(set.next()){
 				names.put(set.getString("name"),set.getString("identifier"));
 			}
@@ -268,7 +269,7 @@ public class MySQL_Extended implements BioSQLExtended{
 		LinkedList<Integer> ints = new LinkedList<Integer>();
 		try{
 			Statement st = con.createStatement();
-			ResultSet set = st.executeQuery("SELECT subject_bioentry_id FROM bioentry_relationship WHERE object_bioentry_id="+bioentry_id);
+			set = st.executeQuery("SELECT subject_bioentry_id FROM bioentry_relationship WHERE object_bioentry_id="+bioentry_id);
 			while(set.next()){
 				ints.add(set.getInt("subject_bioentry_id"));
 			}
@@ -289,7 +290,7 @@ public class MySQL_Extended implements BioSQLExtended{
 		" AND bioentry.division='"+division+"'";
 		try{
 			Statement st = con.createStatement();
-			ResultSet set = st.executeQuery(r);
+			set = st.executeQuery(r);
 			while(set.next()){
 				l = set.getInt(1);
 			}
@@ -306,7 +307,7 @@ public class MySQL_Extended implements BioSQLExtended{
 		try{
 			String[] info = new String[2];
 			Statement st = con.createStatement();
-			ResultSet set = st.executeQuery("SELECT name, definition FROM term WHERE identifier='"+identifier+"'");
+			set = st.executeQuery("SELECT name, definition FROM term WHERE identifier='"+identifier+"'");
 			while(set.next()){
 				info[0] = set.getString("name");
 				info[1] = set.getString("definition");
@@ -355,6 +356,10 @@ public class MySQL_Extended implements BioSQLExtended{
 	/**
 	 * @see #addBioentryDbxrefCols(Connection)
 	 * 	 
+	 * rank is can actually be set as null, but as this will
+	 * often be use for blast hsp references, i am using it to denote
+	 * mutliple hsps between the same bioentry and dbx
+	 * 
 	 * @param con SQL Connection
 	 * @param bioentry_id
 	 * @param dbxref_id
@@ -369,16 +374,15 @@ public class MySQL_Extended implements BioSQLExtended{
 	 * @param bioentry_frame
 	 * @return boolean , false if execute failed or sql exception thrown 
 	 */
-	public boolean setDbxref(Connection con, int bioentry_id, int dbxref_id, Integer rank, Double evalue, Integer score, Integer dbxref_startpos,
-			Integer dbxref_endpos,Integer dbxref_frame, Integer bioentry_startpos,Integer bioentry_endpos,Integer bioentry_frame){
-		String sql = "INSERT INTO dbxref_ (bioentry_id, dbxref_id, rank, evalue,score, dbxref_startpos,"+
+	public boolean setDbxref(Connection con, int bioentry_id, int dbxref_id, int rank, Double evalue, Integer score, Integer dbxref_startpos,
+		Integer dbxref_endpos,Integer dbxref_frame, Integer bioentry_startpos,Integer bioentry_endpos,Integer bioentry_frame){
+		String sql = "INSERT INTO bioentry_dbxref (bioentry_id, dbxref_id, rank, evalue,score, dbxref_startpos,"+
 			"dbxref_endpos, dbxref_frame, bioentry_startpos, bioentry_endpos, bioentry_frame) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
 		try {
 			PreparedStatement ment = con.prepareStatement(sql);
 			ment.setInt(1, bioentry_id);
 			ment.setInt(2, dbxref_id);
-			if(rank != null) ment.setInt(3, rank);
-			else ment.setNull(3, Types.INTEGER);
+			ment.setInt(3, rank);
 			if(evalue != null) ment.setDouble(4, evalue);
 			else ment.setNull(4, Types.DOUBLE);
 			if(score != null) ment.setInt(5, score);
@@ -401,7 +405,21 @@ public class MySQL_Extended implements BioSQLExtended{
 			logger.error("Failed to add bioentry_dbxref entry", e);
 			return false;
 		}
-		
+	}
+	
+	public boolean existsDbxRefId(Connection con, int bioentry_id, int dbxref_id, int rank){
+		String sql = "SELECT COUNT(1) AS bool FROM bioentry_dbxref WHERE bioentry_id="+bioentry_id+" AND dbxref_id="+dbxref_id+" AND rank="+rank;
+		try {
+			PreparedStatement ment = con.prepareStatement(sql);
+			set = ment.executeQuery(sql);
+			while(set.next()){
+				return (set.getInt(1) > 0);
+			}
+		} 
+		catch (SQLException e) {
+			logger.error("Failed to add bioentry_dbxref entry", e);
+		}
+		return false;
 	}
 	
 	/* INDEV function
