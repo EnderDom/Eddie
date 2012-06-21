@@ -7,6 +7,10 @@ import org.apache.log4j.Logger;
 
 public class Tools_CLI {
 	
+	public static int yes = 0;
+	public static int no = 1;
+	public static int cancel = 2;
+	
 	public static String showInternalInputDialog(String title, String message){
 		System.out.println("--"+title+"--");
 		System.out.println();
@@ -36,15 +40,15 @@ public class Tools_CLI {
 		}
 		if(answer.toLowerCase().startsWith("y")){
 			Logger.getRootLogger().trace("User answered yes");
-			return 0;
+			return yes;
 		}
 		if(answer.toLowerCase().startsWith("n")){
 			Logger.getRootLogger().trace("User answered no");
-			return 1;
+			return no;
 		}
 		else{
 			Logger.getRootLogger().trace("Cancelled");
-			return 2;
+			return cancel;
 		}
 	}
 	
@@ -56,3 +60,5 @@ public class Tools_CLI {
 	}
 	
 }
+
+

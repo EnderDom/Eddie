@@ -106,8 +106,7 @@ public class Task_Test extends Task_Test_Basic{
 	
 	
 	public void task4bitSequence(){
-		
-	
+
 		
 	}
 	
