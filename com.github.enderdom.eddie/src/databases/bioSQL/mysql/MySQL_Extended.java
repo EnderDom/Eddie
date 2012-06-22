@@ -114,9 +114,9 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 
 	public boolean addBioEntrySynonymTable(Connection con) {
-		String table = "CREATE TABLE bioentry_synonym (" +
+		String table = "CREATE TABLE IF NOT EXISTS bioentry_synonym (" +
 				"bioentry_synonym_id INT(10) UNSIGNED NOT NULL auto_increment," +
-				"bioentry_id	    INT(10) UNSIGNED NOT NULL," +
+				"bioentry_id INT(10) UNSIGNED NOT NULL," +
 			  	"identifier   	VARCHAR(40) BINARY, " +
 				"PRIMARY KEY (bioentry_synonym_id)," +
 			 	"UNIQUE (identifier)" +
@@ -124,6 +124,46 @@ public class MySQL_Extended implements BioSQLExtended{
 		try{
 			Statement st = con.createStatement();
 			st.executeUpdate(table);
+			st.close();
+			return true;
+		}
+		catch(SQLException se){
+			logger.error("Failed to create bioentry_synonym table", se);
+			return false;
+		}
+	}
+	
+	/**
+	 * This table is supposed to store data of the specifics
+	 * of the program used on a specific bioentry which can then
+	 * be linked to tables like bioentry_dbxref. This is so the specifics of a run like
+	 * interpro scan or blast can be saved (like date, which is super important
+	 * as is need when citing)
+	 * 
+	 * 
+	 * @param con
+	 * @return successfully created table
+	 */
+	public boolean addRunTable(Connection con) {
+		//Should be run after bioentry_dbxref mods
+		String table = "CREATE TABLE IF NOT EXISTS run (" +
+				"run_id INT(10) UNSIGNED NOT NULL auto_increment," +
+				"bioentry_id INT(10) UNSIGNED NOT NULL auto_increment," +
+				"run_date date NOT NULL," +
+			  	"program VARCHAR(40) BINARY, " +
+			  	"dbname VARCHAR(40) BINARY, " +
+			  	"params TEXT, " +
+				"PRIMARY KEY (bioentry_id)," +
+			 	"UNIQUE (run_id)" +
+			") TYPE=INNODB;";
+		try{
+			Statement st = con.createStatement();
+			st.executeUpdate(table);
+			
+			String key1 = "ALTER TABLE run ADD CONSTRAINT FKbioentry_run"+
+			"FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id);
+			st.executeUpdate(key1);
+			
 			st.close();
 			return true;
 		}
@@ -150,7 +190,8 @@ public class MySQL_Extended implements BioSQLExtended{
 	 */
 	public boolean addBioentryDbxrefCols(Connection con) {
 		String alters[] = new String[]{
-				"ALTER TABLE bioentry_dbxref ADD COLUMN (evalue DOUBLE PRECISION );",
+				"ALTER TABLE bioentry_dbxref ADD COLUMN (run_id INT);",
+				"ALTER TABLE bioentry_dbxref ADD COLUMN (evalue DOUBLE PRECISION);",
 				"ALTER TABLE bioentry_dbxref ADD COLUMN (score MEDIUMINT);",
 				"ALTER TABLE bioentry_dbxref ADD COLUMN (dbxref_startpos INT);",
 				"ALTER TABLE bioentry_dbxref ADD COLUMN (dbxref_endpos INT);",

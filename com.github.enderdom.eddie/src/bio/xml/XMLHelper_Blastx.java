@@ -110,13 +110,10 @@ public class XMLHelper_Blastx {
 	 * 
 	 * @param dbname ie genbank, swiss, uniprot, go, kegg, interpro etc...
 	 * 
-	 * @param force force rows to be completely ovewritten even if sequence and database
-	 * reference has already been linked
-	 * 
 	 * @return true if script ran with 
 	 * no errors
 	 */
-	public boolean upload2BioSQL(DatabaseManager manager, boolean fuzzy, String dbname, boolean force){
+	public boolean upload2BioSQL(DatabaseManager manager, boolean fuzzy, String dbname){
 		if(contig_id == -1){
 			String nom = blastx.getBlastTagContents("BlastOutput_query-ID");
 			contig_id =  manager.getBioSQLXT().getBioEntryId(manager.getBioSQL(),manager.getCon(), nom, fuzzy, manager.getEddieDBID());
