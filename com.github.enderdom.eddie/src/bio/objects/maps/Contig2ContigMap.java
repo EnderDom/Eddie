@@ -53,7 +53,7 @@ public class Contig2ContigMap {
 	 * @return true if all went well
 	 */
 	public boolean retrieveReadIDs(DatabaseManager manager){
-		read_ids = manager.getBioSQLXT().getReads(manager.getCon(), contig_id);
+		read_ids = manager.getBioSQLXT().getReads(manager, contig_id);
 		return read_ids.length != 0;
 	}
 	
@@ -66,7 +66,7 @@ public class Contig2ContigMap {
 		this.contig_ids = new int[read_ids.length];
 		if(read_ids.length > 0){
 			for(int i =0 ; i < read_ids.length ; i++){
-				contig_ids[i] = manager.getBioSQLXT().getContigFromRead(manager.getCon(), read_ids[i], division2);
+				contig_ids[i] = manager.getBioSQLXT().getContigFromRead(manager, read_ids[i], division2);
 			}
 			
 			/*

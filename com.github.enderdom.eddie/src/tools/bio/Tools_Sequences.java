@@ -184,7 +184,7 @@ public class Tools_Sequences {
 			logger.debug("Retrieving id for "+contig+" from database");
 			if(manager.open()){
 				logger.debug("Database connection open...");
-				int bioentry = manager.getBioSQLXT().getBioEntryId(manager.getBioSQL(),manager.getCon(), contig, fuzzy, manager.getEddieDBID());
+				int bioentry = manager.getBioSQLXT().getBioEntryId(manager, contig, fuzzy, manager.getEddieDBID());
 				if(bioentry > 0){
 					seq = manager.getBioSQL().getSequence(manager.getCon(), bioentry);				
 					manager.close();

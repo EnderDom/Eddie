@@ -116,7 +116,7 @@ public class XMLHelper_Blastx {
 	public boolean upload2BioSQL(DatabaseManager manager, boolean fuzzy, String dbname){
 		if(contig_id == -1){
 			String nom = blastx.getBlastTagContents("BlastOutput_query-ID");
-			contig_id =  manager.getBioSQLXT().getBioEntryId(manager.getBioSQL(),manager.getCon(), nom, fuzzy, manager.getEddieDBID());
+			contig_id =  manager.getBioSQLXT().getBioEntryId(manager, nom, fuzzy, manager.getEddieDBID());
 		}
 		if(contig_id == -1){
 			logger.warn("Failed to upload to mysql as query-ID was not found in database");
@@ -138,9 +138,9 @@ public class XMLHelper_Blastx {
 						return false;
 					}
 					for(int j=1 ; j < blastx.getNoOfHsps(i); j++){
-						if(!manager.getBioSQLXT().existsDbxRefId(manager.getCon(), contig_id, dbx_ref, j)){
+						if(!manager.getBioSQLXT().existsDbxRefId(manager, contig_id, dbx_ref, j)){
 							int[] pos = this.getStartsStopsFrames(i, j);
-							manager.getBioSQLXT().setDbxref(manager.getCon(), contig_id, dbx_ref, j, this.getHspEvalue(i, j), this.getHspScore(i, j), pos[0], pos[1], pos[2],
+							manager.getBioSQLXT().setDbxref(manager, contig_id, dbx_ref, j, this.getHspEvalue(i, j), this.getHspScore(i, j), pos[0], pos[1], pos[2],
 									pos[3], pos[4], pos[5]);
 						}
 					}

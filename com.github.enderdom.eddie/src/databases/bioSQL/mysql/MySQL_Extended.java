@@ -15,8 +15,8 @@ import tools.Tools_Array;
 import tools.Tools_String;
 import tools.Tools_System;
 import tools.bio.Tools_Contig;
-import databases.bioSQL.interfaces.BioSQL;
 import databases.bioSQL.interfaces.BioSQLExtended;
+import databases.manager.DatabaseManager;
 
 /**
  * 
@@ -32,65 +32,12 @@ public class MySQL_Extended implements BioSQLExtended{
 	Logger logger = Logger.getRootLogger();
 	ResultSet set;
 	
-	public double getDatabaseVersion(Connection con) {
-		String g = "SELECT DatabaseVersion FROM info WHERE NUMB=1";
-		try{
-			Statement st = con.createStatement();
-			set = st.executeQuery(g);
-			String r ="";
-			while(set.next()){
-				r = set.getString("DatabaseVersion");
-			}
-			Double b = null;
-			st.close();
-			if(r.startsWith("v")){
-				b = Tools_String.parseString2Double(r.substring(1));
-			}
-			if(b == null){
-				return -1;
-			}
-			else{
-				return b;
-			}
-		}
-		catch(SQLException sq){
-			logger.error("Failed to retrieve database index", sq);
-			return -1;
-		}
-	}
-	
-	public boolean addEddie2Database(Connection con) {
-		String insert = new String("INSERT INTO biodatabase (name, authority, description) VALUES ('"+programname+"', '"+authority+"', '"+description+"')");
-		try{
-			Statement st = con.createStatement();
-			st.executeUpdate(insert);
-			st.close();
-			return true;
-		}
-		catch(SQLException se){
-			logger.error("Failed to create biodatabase table", se);
-			return false;
-		}
-	}
-	
-	public int getEddieFromDatabase(Connection con){
-		String insert = new String("SELECT biodatabase_id FROM biodatabase WHERE name='"+programname+"';");
-		int db =-1;
-		try{
-			Statement st = con.createStatement();
-			ResultSet set = st.executeQuery(insert);
-			while(set.next()){
-				db = set.getInt("biodatabase_id");
-			}
-			st.close();
-		}
-		catch(SQLException se){
-			logger.error("Failed to create biodatabase table", se);
-		}
-		return db;
-	}
-	
-	public boolean addLegacyVersionTable(Connection con, String version, String dbversion) {
+	/******************************************************************/
+	/* 
+	 * NEW TABLES HERE 
+	 */ 
+	 /******************************************************************/
+	public boolean addLegacyVersionTable(DatabaseManager manager, String version, String dbversion) {
 		String info_table = "CREATE TABLE IF NOT EXISTS info ("+
 		  "Numb INT(11) NOT NULL auto_increment,"+
 		  "DerocerasVersion VARCHAR(30),"+
@@ -100,10 +47,9 @@ public class MySQL_Extended implements BioSQLExtended{
 		String insert = new String("INSERT INTO info (Numb, DerocerasVersion, DatabaseVersion, LastRevision) VALUES (1, 'v"+version+"', 'v"+dbversion+"', '"+Tools_System.getDateNow("yyyy-MM-dd")+"')"+
 				" ON DUPLICATE KEY UPDATE DerocerasVersion='v"+version+"', DatabaseVersion='v"+dbversion+"', LastRevision='"+Tools_System.getDateNow("yyyy-MM-dd")+"' ;");
 		try{
-			Statement st = con.createStatement();
+			Statement st = manager.getStatement();
 			st.executeUpdate(info_table);
 			st.executeUpdate(insert);
-			st.close();
 			return true;
 		}
 		catch(SQLException se){
@@ -112,19 +58,23 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 		
 	}
-
-	public boolean addBioEntrySynonymTable(Connection con) {
+	
+	public boolean addBioEntrySynonymTable(DatabaseManager manager) {
 		String table = "CREATE TABLE IF NOT EXISTS bioentry_synonym (" +
 				"bioentry_synonym_id INT(10) UNSIGNED NOT NULL auto_increment," +
 				"bioentry_id INT(10) UNSIGNED NOT NULL," +
 			  	"identifier   	VARCHAR(40) BINARY, " +
 				"PRIMARY KEY (bioentry_synonym_id)," +
-			 	"UNIQUE (identifier)" +
+			 	"UNIQUE (identifier)," +
+			 	"PRIMARY KEY(bioentry_synonym_id)" +
 			") TYPE=INNODB;";
 		try{
-			Statement st = con.createStatement();
+			Statement st = manager.getStatement();
 			st.executeUpdate(table);
-			st.close();
+			String key1 = "ALTER TABLE bioentry_synonym ADD CONSTRAINT FKbioentry_synonym"+
+			"FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id)";
+			st.executeUpdate(key1);
+
 			return true;
 		}
 		catch(SQLException se){
@@ -141,37 +91,42 @@ public class MySQL_Extended implements BioSQLExtended{
 	 * as is need when citing)
 	 * 
 	 * 
-	 * @param con
+	 * @param manager
 	 * @return successfully created table
 	 */
-	public boolean addRunTable(Connection con) {
+	public boolean addRunTable(DatabaseManager manager) {
 		//Should be run after bioentry_dbxref mods
+		logger.debug("Creating run table...");
 		String table = "CREATE TABLE IF NOT EXISTS run (" +
-				"run_id INT(10) UNSIGNED NOT NULL auto_increment," +
-				"bioentry_id INT(10) UNSIGNED NOT NULL auto_increment," +
-				"run_date date NOT NULL," +
+				"run_id INT(10) UNSIGNED NOT NULL auto_increment, " +
+				"bioentry_id INT(10) UNSIGNED NOT NULL, " +
+				"run_date date NOT NULL, " +
 			  	"program VARCHAR(40) BINARY, " +
 			  	"dbname VARCHAR(40) BINARY, " +
 			  	"params TEXT, " +
-				"PRIMARY KEY (bioentry_id)," +
+				"PRIMARY KEY (bioentry_id), " +
 			 	"UNIQUE (run_id)" +
 			") TYPE=INNODB;";
 		try{
-			Statement st = con.createStatement();
+			Statement st = manager.getStatement();
 			st.executeUpdate(table);
-			
-			String key1 = "ALTER TABLE run ADD CONSTRAINT FKbioentry_run"+
-			"FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id);
+			logger.debug("Adding keys to database...");
+			String key1 = "ALTER TABLE run ADD CONSTRAINT FKbioentry_run "+
+			"FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id) ON DELETE CASCADE;";
 			st.executeUpdate(key1);
-			
-			st.close();
+			//Note, this will fail if addBioentryDbxrefsCols() has not been called previously
+			key1 = "ALTER TABLE bioentry_dbxref ADD CONSTRAINT FKbioentry_dbxref_run "+
+			"FOREIGN KEY (run_id) REFERENCES run(run_id) ON DELETE CASCADE;";
+			st.executeUpdate(key1);
 			return true;
 		}
 		catch(SQLException se){
-			logger.error("Failed to create bioentry_synonym table", se);
+			logger.error("Failed to create run table", se);
 			return false;
 		}
 	}
+	
+
 	
 	/**
 	 * This table alteration was added to hold more detailed information
@@ -187,8 +142,11 @@ public class MySQL_Extended implements BioSQLExtended{
 	 * there is no actual need for this. Uploaded hsps as multiple rows and just using score or e-value
 	 * for ordering should suffice for recreating the pertinant data, IMHO.
 	 * 
+	 * @param manager
+	 * 
+	 * @return whether or not it succeeded
 	 */
-	public boolean addBioentryDbxrefCols(Connection con) {
+	public boolean addBioentryDbxrefCols(DatabaseManager manager) {
 		String alters[] = new String[]{
 				"ALTER TABLE bioentry_dbxref ADD COLUMN (run_id INT);",
 				"ALTER TABLE bioentry_dbxref ADD COLUMN (evalue DOUBLE PRECISION);",
@@ -202,9 +160,8 @@ public class MySQL_Extended implements BioSQLExtended{
 				"CREATE INDEX bioentry_dbxref_evalue ON bioentry_dbxref(evalue);"
 		};
 		try{
-			Statement st = con.createStatement();
+			Statement st = manager.getStatement();
 			for(String s: alters)st.executeUpdate(s);
-			st.close();
 			return true;
 		}
 		catch(SQLException se){
@@ -214,72 +171,132 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 	
 	
+	/******************************************************************/
+	/* 
+	 * METHOD EXTENSIONS HERE 
+	 */ 
+	 /******************************************************************/
+	public double getDatabaseVersion(DatabaseManager manager) {
+		String g = "SELECT DatabaseVersion FROM info WHERE NUMB=1";
+		try{
+			Statement st = manager.getStatement();
+			set = st.executeQuery(g);
+			String r ="";
+			while(set.next()){
+				r = set.getString("DatabaseVersion");
+			}
+			Double b = null;
+			if(r.startsWith("v")){
+				b = Tools_String.parseString2Double(r.substring(1));
+			}
+			if(b == null){
+				return -1;
+			}
+			else{
+				return b;
+			}
+		}
+		catch(SQLException sq){
+			logger.error("Failed to retrieve database index", sq);
+			return -1;
+		}
+	}
 	
-	public boolean setupAssembly(BioSQL boss, Connection con){		
+	public boolean addEddie2Database(DatabaseManager manager) {
+		String insert = new String("INSERT INTO biodatabase (name, authority, description) VALUES ('"+programname+"', '"+authority+"', '"+description+"')");
+		try{
+			Statement st = manager.getStatement();
+			st.executeUpdate(insert);
+			return true;
+		}
+		catch(SQLException se){
+			logger.error("Failed to create biodatabase table", se);
+			return false;
+		}
+	}
+	
+	public int getEddieFromDatabase(DatabaseManager manager){
+		String insert = new String("SELECT biodatabase_id FROM biodatabase WHERE name='"+programname+"';");
+		int db =-1;
+		try{
+			Statement st = manager.getStatement();
+			ResultSet set = st.executeQuery(insert);
+			while(set.next()){
+				db = set.getInt("biodatabase_id");
+			}
+		}
+		catch(SQLException se){
+			logger.error("Failed to create biodatabase table", se);
+		}
+		return db;
+	}
+	
+
+	
+	public boolean setupAssembly(DatabaseManager manager){		
 		try {
-			Statement st = con.createStatement();
+			Statement st = manager.getStatement();
 			st.execute("CREATE INDEX bioentry_division ON bioentry(division);");
-			st.close();
 		} 
 		catch (SQLException e) {
 			logger.error("Error adding index to bioentry_division",e);
 			return false;
 		}
-		if(addDefaultAssemblyOntology(boss, con)){
-			return addDefaultAssemblyTerm(boss, con);
+		if(addDefaultAssemblyOntology(manager)){
+			return addDefaultAssemblyTerm(manager);
 		}
 		else{
 			return false;
 		}
 	}
 	
-	public boolean addDefaultAssemblyOntology(BioSQL boss, Connection con){
-		this.assemblyontid=boss.getOntology(con, ontology_name);
+	public boolean addDefaultAssemblyOntology(DatabaseManager manager){
+		this.assemblyontid=manager.getBioSQL().getOntology(manager.getCon(), ontology_name);
 		if(this.assemblyontid<0){
-			return boss.addOntology(con, ontology_name, description) ?
-					((this.assemblyontid=boss.getOntology(con, ontology_name))> -1) : false;
+			return manager.getBioSQL().addOntology(manager.getCon(), ontology_name, description) ?
+					((this.assemblyontid=manager.getBioSQL().getOntology(manager.getCon(), ontology_name))> -1) : false;
 		}
 		else{
 			return true;
 		}
 	}
 
-	public boolean addDefaultAssemblyTerm(BioSQL boss, Connection con){
-		int ontology = this.getDefaultAssemblyOntology(boss, con);
-		this.assemblytermid = boss.getTerm(con, term_name_id, term_name_id);
+	public boolean addDefaultAssemblyTerm(DatabaseManager manager){
+		int ontology = getDefaultAssemblyOntology(manager);
+		this.assemblytermid = manager.getBioSQL().getTerm(manager.getCon(), term_name_id, term_name_id);
 		if(this.assemblytermid < 0){
-			return boss.addTerm(con, term_name_id, term_description, term_name_id, null,ontology) ?
-					((this.assemblytermid=boss.getTerm(con, term_name_id, term_name_id)) > -1) : false;
+			return manager.getBioSQL().addTerm(manager.getCon(), term_name_id, term_description, term_name_id, null,ontology) ?
+					((this.assemblytermid=manager.getBioSQL().getTerm(manager.getCon(), term_name_id, term_name_id)) > -1) : false;
 		}
 		else{
 			return true;
 		}
 	}
 	
-	public boolean addAssemblerTerm(BioSQL boss, Connection con, String name, String division){
-		int ontology = this.getDefaultAssemblyOntology(boss, con);
-		int termid = boss.getTerm(con, name, name);
+	public boolean addAssemblerTerm(DatabaseManager manager, String name, String division){
+		int ontology = getDefaultAssemblyOntology(manager);
+		int termid = manager.getBioSQL().getTerm(manager.getCon(),name, name);
 		if(termid < 0){
-			return boss.addTerm(con, name, assemblerdescription, division, null,ontology) ?
-					((termid=boss.getTerm(con, name, name)) > -1) : false;
+			return manager.getBioSQL().addTerm(manager.getCon(), name, assemblerdescription, division, null,ontology) ?
+					((termid=manager.getBioSQL().getTerm(manager.getCon(), name, name)) > -1) : false;
 		}
 		else{
 			return true;
 		}
 	}
 	
-	public int getDefaultAssemblyOntology(BioSQL boss, Connection con){
+	public int getDefaultAssemblyOntology(DatabaseManager manager){
 		if(this.assemblyontid == -1){
-			if(!addDefaultAssemblyOntology(boss, con)){
+			if(!addDefaultAssemblyOntology(manager)){
 				logger.error("Adding the Default Ontology term has failed");
 			}
 		}
 		return this.assemblyontid;
 	}
 
-	public int getDefaultAssemblyTerm(BioSQL boss, Connection con){
+	public int getDefaultAssemblyTerm(DatabaseManager manager){
 		if(this.assemblytermid == -1){
-			if(!addDefaultAssemblyTerm(boss, con)){
+			if(!addDefaultAssemblyTerm(manager)){
 				logger.error("Adding the Default Assembly Term has failed");
 			}
 		}
@@ -290,15 +307,14 @@ public class MySQL_Extended implements BioSQLExtended{
 	 * and database identifier (ie CLCBio_Contig_0)
 	 */
 	
-	public HashMap<String, String>getContigNameNIdentifier(Connection con, String division){
+	public HashMap<String, String>getContigNameNIdentifier(DatabaseManager manager, String division){
 		HashMap<String, String> names = new HashMap<String, String>();
 		try{
-			Statement st = con.createStatement();
+			Statement st = manager.getStatement();
 			set = st.executeQuery("SELECT identifier, name FROM bioentry WHERE division='"+division+"'");
 			while(set.next()){
 				names.put(set.getString("name"),set.getString("identifier"));
 			}
-			st.close();
 		}
 		catch(SQLException sq){
 			logger.error("Failure to retrieve contigname and identifier data");
@@ -306,15 +322,14 @@ public class MySQL_Extended implements BioSQLExtended{
 		return names;
 	}
 	
-	public int[] getReads(Connection con, int bioentry_id){
+	public int[] getReads(DatabaseManager manager, int bioentry_id){
 		LinkedList<Integer> ints = new LinkedList<Integer>();
 		try{
-			Statement st = con.createStatement();
+			Statement st =manager.getStatement();
 			set = st.executeQuery("SELECT subject_bioentry_id FROM bioentry_relationship WHERE object_bioentry_id="+bioentry_id);
 			while(set.next()){
 				ints.add(set.getInt("subject_bioentry_id"));
 			}
-			st.close();
 			return Tools_Array.ListInt2int(ints);
 		}
 		catch(SQLException sq){
@@ -324,18 +339,17 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 	
 	
-	public int getContigFromRead(Connection con, int bioentry_id, String division){
+	public int getContigFromRead(DatabaseManager manager, int bioentry_id, String division){
 		int l = -1;
 		String r = "SELECT object_bioentry_id FROM bioentry_relationship INNER JOIN bioentry ON " +
 		"bioentry_relationship.object_bioentry_id=bioentry.bioentry_id WHERE bioentry_relationship.subject_bioentry_id="+bioentry_id+
 		" AND bioentry.division='"+division+"'";
 		try{
-			Statement st = con.createStatement();
+			Statement st = manager.getStatement();
 			set = st.executeQuery(r);
 			while(set.next()){
 				l = set.getInt(1);
 			}
-			st.close();
 			return l;
 		}
 		catch(SQLException sq){
@@ -344,16 +358,15 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 	}
 	
-	public String[] getNamesFromTerm(Connection con, String identifier){
+	public String[] getNamesFromTerm(DatabaseManager manager, String identifier){
 		try{
 			String[] info = new String[2];
-			Statement st = con.createStatement();
+			Statement st = manager.getStatement();
 			set = st.executeQuery("SELECT name, definition FROM term WHERE identifier='"+identifier+"'");
 			while(set.next()){
 				info[0] = set.getString("name");
 				info[1] = set.getString("definition");
 			}
-			st.close();
 			return info;
 		}
 		catch(SQLException sq){
@@ -362,11 +375,11 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 	}
 	
-	public int getBioEntryId(BioSQL boss, Connection con, String name, boolean fuzzy, int biodatabase_id){
+	public int getBioEntryId(DatabaseManager manager, String name, boolean fuzzy, int biodatabase_id){
 		int entry =-1;
-		entry = boss.getBioEntry(con, name, name, biodatabase_id);
+		entry = manager.getBioSQL().getBioEntry(manager.getCon(), name, name, biodatabase_id);
 		if(entry == -1){
-			entry = boss.getBioEntrywName(con, name);
+			entry = manager.getBioSQL().getBioEntrywName(manager.getCon(), name);
 		}
 		//This could lead to unexpected results, probably 
 		//should be removed if to be used by anyone other than me
@@ -376,7 +389,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			if(s == null)return entry;
 			else{
 				for(String sa : s){
-					entry = boss.getBioEntrywName(con, sa);
+					entry = manager.getBioSQL().getBioEntrywName(manager.getCon(), sa);
 					if(entry != -1){
 						logger.info("Retrieve data based on name " + sa);
 						break;
@@ -415,12 +428,12 @@ public class MySQL_Extended implements BioSQLExtended{
 	 * @param bioentry_frame
 	 * @return boolean , false if execute failed or sql exception thrown 
 	 */
-	public boolean setDbxref(Connection con, int bioentry_id, int dbxref_id, int rank, Double evalue, Integer score, Integer dbxref_startpos,
+	public boolean setDbxref(DatabaseManager manager, int bioentry_id, int dbxref_id, int rank, Double evalue, Integer score, Integer dbxref_startpos,
 		Integer dbxref_endpos,Integer dbxref_frame, Integer bioentry_startpos,Integer bioentry_endpos,Integer bioentry_frame){
 		String sql = "INSERT INTO bioentry_dbxref (bioentry_id, dbxref_id, rank, evalue,score, dbxref_startpos,"+
 			"dbxref_endpos, dbxref_frame, bioentry_startpos, bioentry_endpos, bioentry_frame) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
 		try {
-			PreparedStatement ment = con.prepareStatement(sql);
+			PreparedStatement ment = manager.getCon().prepareStatement(sql);
 			ment.setInt(1, bioentry_id);
 			ment.setInt(2, dbxref_id);
 			ment.setInt(3, rank);
@@ -448,10 +461,10 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 	}
 	
-	public boolean existsDbxRefId(Connection con, int bioentry_id, int dbxref_id, int rank){
+	public boolean existsDbxRefId(DatabaseManager manager, int bioentry_id, int dbxref_id, int rank){
 		String sql = "SELECT COUNT(1) AS bool FROM bioentry_dbxref WHERE bioentry_id="+bioentry_id+" AND dbxref_id="+dbxref_id+" AND rank="+rank;
 		try {
-			PreparedStatement ment = con.prepareStatement(sql);
+			PreparedStatement ment = manager.getCon().prepareStatement(sql);
 			set = ment.executeQuery(sql);
 			while(set.next()){
 				return (set.getInt(1) > 0);
@@ -463,7 +476,7 @@ public class MySQL_Extended implements BioSQLExtended{
 		return false;
 	}
 	
-	/* INDEV function
+	/** INDEV function
 	 * 
 	 * Currently as Reads are likely uploaded without padding
 	 * the start and end values from ACE files will be off
@@ -475,29 +488,41 @@ public class MySQL_Extended implements BioSQLExtended{
 	 * uploaded as a different version* ??? Though this would lead to a lot of excess
 	 * data in the database
 	 * 
+	 * @param manager database manager
+	 * @param contig_id to map to read, this should be a bioentry_id previously identified
+	 * @param read_id to map to contig, this should be a bioentry_id previously identified
+	 * @param programid 
+	 * @param start of read alignment to contig
+	 * @param stop where the read stops alignment
+	 * @param strand
+	 * 
+	 * @return succesful or not
 	 */
 	
-	public boolean mapRead2Contig(Connection con, BioSQL boss, int contig_id, int read_id, int programid, int start, int stop, int strand){
-		int term_id = this.getDefaultAssemblyTerm(boss, con);
-		if(boss.getBioEntryRelationship(con, contig_id, read_id, term_id) <0){
-			if(!boss.addBioEntryRelationship(con, contig_id, read_id, term_id, 0)){
+	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, int read_id, int programid, int start, int stop, int strand){
+		int term_id = getDefaultAssemblyTerm(manager);
+		if(manager.getBioSQL().getBioEntryRelationship(manager.getCon(), contig_id, read_id, term_id) <0){
+			if(!manager.getBioSQL().addBioEntryRelationship(manager.getCon(), contig_id, read_id, term_id, 0)){
 				return false;
 			}
 		}
-		int seqfeature_id = boss.getSeqFeature(con, read_id, term_id, programid, 0);
+		int seqfeature_id = manager.getBioSQL().getSeqFeature(manager.getCon(), read_id, term_id, programid, 0);
 		if(seqfeature_id < 0){
-			if(!boss.addSeqFeature(con, read_id, term_id, programid, assmbledread, 0)){
+			if(!manager.getBioSQL().addSeqFeature(manager.getCon(), read_id, term_id, programid, assmbledread, 0)){
 				return false;
 			}
-			seqfeature_id = boss.getSeqFeature(con, read_id, term_id, programid, 0);
+			seqfeature_id = manager.getBioSQL().getSeqFeature(manager.getCon(), read_id, term_id, programid, 0);
 		}
 		if(seqfeature_id < 0){
 			logger.error("SeqFeature Id was not retrieved");
 			return false;
 		}
 		else{
-			return boss.getLocation(con, seqfeature_id, 0) <0 ? boss.addLocation(con, seqfeature_id, null, term_id, start, stop, strand, 0) : true ; 
+			return manager.getBioSQL().getLocation(manager.getCon(), seqfeature_id, 0) <0 ?
+					manager.getBioSQL().addLocation(manager.getCon(), seqfeature_id, null, term_id, start, stop, strand, 0) : true ; 
 		}
 	}
+
+
 
 }

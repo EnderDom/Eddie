@@ -155,8 +155,8 @@ public class Task_ContigComparison extends Task{
 		logger.debug("Checking for previous map");
 
 		//Holds the actual name as is in file (ACE) record
-		HashMap<String, String> name2id1 = bsxt.getContigNameNIdentifier(manager.getCon(), division1);
-		HashMap<String, String> name2id2 = bsxt.getContigNameNIdentifier(manager.getCon(), division2);
+		HashMap<String, String> name2id1 = bsxt.getContigNameNIdentifier(manager, division1);
+		HashMap<String, String> name2id2 = bsxt.getContigNameNIdentifier(manager, division2);
 		
 		//Holds the Contig id 2 blast file for division 1
 		contig2file1 = mapFiles(name2id1, b1, blastfolder1, division1);
@@ -171,8 +171,8 @@ public class Task_ContigComparison extends Task{
 			return;
 		}
 	
-		String assembler1 = bsxt.getNamesFromTerm(manager.getCon(), division1)[0];
-		String assembler2 = bsxt.getNamesFromTerm(manager.getCon(), division2)[0];
+		String assembler1 = bsxt.getNamesFromTerm(manager, division1)[0];
+		String assembler2 = bsxt.getNamesFromTerm(manager, division2)[0];
 		Report report = new Report();
 		int mcount =0;
 		Blast2BlastMap blastmap = null;

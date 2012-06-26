@@ -172,7 +172,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 						else logger.debug("Biodatabase id: "+biodatabase_id);
 						int pid = bs.getTerm(manager.getCon(), this.programid, this.programid);
 						if(pid < 0){
-							manager.getBioSQLXT().addAssemblerTerm(bs, manager.getCon(), programid, division);
+							manager.getBioSQLXT().addAssemblerTerm(manager, programid, division);
 							pid = bs.getTerm(manager.getCon(), this.programid, this.programid);
 						}
 						if(pid < 0){
@@ -216,7 +216,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 									}
 									else{
 										//REMAPPING LOCATIONS
-										int term_id = manager.getBioSQLXT().getDefaultAssemblyTerm(bs, manager.getCon());
+										int term_id = manager.getBioSQLXT().getDefaultAssemblyTerm(manager);
 										for(int i =0 ; i < record.getNoOfReads(); i++){
 											int read_id  = bs.getBioEntry(manager.getCon(), record.getReadName(i), record.getReadName(i), biodatabase_id);
 											int seqfeature_id = bs.getSeqFeature(manager.getCon(), read_id, term_id, pid, 0);
@@ -298,7 +298,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 					//TODO add better strand info
 				}
 				System.out.print("\r"+"Mapping "+identifier+"... Read No."+i+"             ");
-				if(!bsxt.mapRead2Contig(manager.getCon(), bs, bioentry_id, read_id, pid, start, end, comp)){
+				if(!bsxt.mapRead2Contig(manager, bioentry_id, read_id, pid, start, end, comp)){
 					logger.error("Read mapping has failed");
 					return false;
 				}

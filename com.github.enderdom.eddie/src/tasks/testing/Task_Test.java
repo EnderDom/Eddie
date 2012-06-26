@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -229,12 +228,11 @@ public class Task_Test extends Task_Test_Basic{
 		manager.open();
 		BioSQL bs = manager.getBioSQL();
 		BioSQLExtended bsxt = manager.getBioSQLXT();
-		Connection con = manager.getCon();
-		int i = bsxt.getEddieFromDatabase(con);
-		if(i == -1)bsxt.addEddie2Database(con);
-		i = bsxt.getEddieFromDatabase(con);
+		int i = bsxt.getEddieFromDatabase(manager);
+		if(i == -1)bsxt.addEddie2Database(manager);
+		i = bsxt.getEddieFromDatabase(manager);
 		if(i != -1){
-			bs.addSequence(con, i, null, "TEST1",
+			bs.addSequence(manager.getCon(), i, null, "TEST1",
 					"TEST1", null, null, null, 0, "ATGCGACTAG", BioSQL.alphabet_DNA);
 		}
 		else{

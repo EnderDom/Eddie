@@ -48,12 +48,12 @@ public class Task_dbTools extends TaskXT{
 			DatabaseManager manager = ui.getDatabaseManager(password);
 			if(manager.open()){
 				if(contig != null && output != null){
-					int m = manager.getBioSQLXT().getBioEntryId(manager.getBioSQL(), manager.getCon(), contig, true, manager.getEddieDBID());
+					int m = manager.getBioSQLXT().getBioEntryId(manager, contig, true, manager.getEddieDBID());
 					if(m == -1){
 						logger.error("Failed to retrieve the ID for contig " + contig);
 					}
 					else{
-						int[] reads = manager.getBioSQLXT().getReads(manager.getCon(), m);
+						int[] reads = manager.getBioSQLXT().getReads(manager, m);
 						if(reads.length == 0){
 							logger.error("Failed to get any reads for contig " + contig + "(ID:"+m+")");
 							return;

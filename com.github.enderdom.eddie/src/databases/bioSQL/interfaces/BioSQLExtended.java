@@ -1,7 +1,8 @@
 package databases.bioSQL.interfaces;
 
-import java.sql.Connection;
 import java.util.HashMap;
+
+import databases.manager.DatabaseManager;
 
 public interface BioSQLExtended {
 
@@ -19,9 +20,9 @@ public interface BioSQLExtended {
 	
 	public static String assemblerdescription = "This Term is a unique for this Assembler";
 
-	public boolean addEddie2Database(Connection con);
+	public boolean addEddie2Database(DatabaseManager dbman);
 
-	public boolean addLegacyVersionTable(Connection con, String version, String dbversion);
+	public boolean addLegacyVersionTable(DatabaseManager dbman, String version, String dbversion);
 	
 	/**
 	 * Returns the database version from the 'info' tool
@@ -30,29 +31,31 @@ public interface BioSQLExtended {
 	 * @return double value of the database
 	 * returns -1 if version could not be retrieved
 	 */
-	public double getDatabaseVersion(Connection con);
+	public double getDatabaseVersion(DatabaseManager dbman);
 	
-	public int getEddieFromDatabase(Connection con);
+	public int getEddieFromDatabase(DatabaseManager dbman);
 	
-	public boolean addBioEntrySynonymTable(Connection con);
+	public boolean addBioEntrySynonymTable(DatabaseManager dbman);
 	
-	public boolean addBioentryDbxrefCols(Connection con);
+	public boolean addBioentryDbxrefCols(DatabaseManager dbman);
 	
-	public boolean setupAssembly(BioSQL boss, Connection con);
+	public boolean addRunTable(DatabaseManager dbman);
 	
-	public boolean addDefaultAssemblyOntology(BioSQL boss, Connection con);
+	public boolean setupAssembly(DatabaseManager dbman);
 	
-	public boolean addDefaultAssemblyTerm(BioSQL boss, Connection con);
+	public boolean addDefaultAssemblyOntology(DatabaseManager dbman);
 	
-	public boolean addAssemblerTerm(BioSQL boss, Connection con, String name, String division);
+	public boolean addDefaultAssemblyTerm(DatabaseManager dbman);
 	
-	public int getDefaultAssemblyTerm(BioSQL boss, Connection con);
+	public boolean addAssemblerTerm(DatabaseManager dbman, String name, String division);
 	
-	public int getDefaultAssemblyOntology(BioSQL boss, Connection con);
+	public int getDefaultAssemblyTerm(DatabaseManager dbman);
 	
-	public HashMap<String, String>getContigNameNIdentifier(Connection con, String division);
+	public int getDefaultAssemblyOntology(DatabaseManager dbman);
 	
-	public boolean mapRead2Contig(Connection con, BioSQL boss, int contig_id, int read_id, int programid, int start, int stop, int strand);
+	public HashMap<String, String>getContigNameNIdentifier(DatabaseManager dbman, String division);
+	
+	public boolean mapRead2Contig(DatabaseManager dbman, int contig_id, int read_id, int programid, int start, int stop, int strand);
 	
 	/**
 	 * 
@@ -61,16 +64,16 @@ public interface BioSQLExtended {
 	 * @return int array, will return array of length 0 if no contigs attached
 	 * to the contig id or a null object if there was an SQLException
 	 */
-	public int[] getReads(Connection con, int bioentry_id);
+	public int[] getReads(DatabaseManager manager, int bioentry_id);
 	
-	public int getContigFromRead(Connection con, int bioentry_id, String division);
+	public int getContigFromRead(DatabaseManager manager, int bioentry_id, String division);
 	
-	public String[] getNamesFromTerm(Connection con, String identifier);
+	public String[] getNamesFromTerm(DatabaseManager manager, String identifier);
 
-	public int getBioEntryId(BioSQL boss, Connection con, String name, boolean fuzzy, int biodatabase_id);
+	public int getBioEntryId(DatabaseManager manager, String name, boolean fuzzy, int biodatabase_id);
 	
-	public boolean setDbxref(Connection con, int bioentry_id, int dbxref_id, int rank, Double evalue, Integer score, Integer dbxref_startpos,
+	public boolean setDbxref(DatabaseManager manager, int bioentry_id, int dbxref_id, int rank, Double evalue, Integer score, Integer dbxref_startpos,
 			Integer dbxref_endpos,Integer dbxref_frame, Integer bioentry_startpos,Integer bioentry_endpos,Integer bioentry_frame);
 	
-	public boolean existsDbxRefId(Connection con, int bioentry_id, int dbxref_id, int rank);
+	public boolean existsDbxRefId(DatabaseManager manager, int bioentry_id, int dbxref_id, int rank);
 }

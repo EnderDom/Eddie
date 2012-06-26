@@ -37,6 +37,7 @@ public class DatabaseManager {
 	private int biodatabase_id =-1;
 	private static int databaseversion =2;
 	private boolean isOpen;
+	private Statement st;
 	
 	public DatabaseManager(UI ui){
 		this.ui = ui;
@@ -123,8 +124,9 @@ public class DatabaseManager {
 	public boolean createNewDatabase(String dbname){
 		openDefaultConnection(false);
 		try {
-			Statement st = this.con.createStatement();
-			st.executeUpdate("CREATE DATABASE IF NOT EXISTS " + dbname);
+			if(this.dbtype.equals("mysql")){
+				this.getStatement().executeUpdate("CREATE DATABASE IF NOT EXISTS " + dbname);
+			}
 			//st.executeUpdate("CREATE GOD IF NOT EXISTS " + dbname);
 			return true;
 		}
@@ -136,6 +138,7 @@ public class DatabaseManager {
 	
 	public boolean close(){
 		try{
+			this.st.close();
 			this.con.close();
 			return true;
 		}
@@ -181,10 +184,9 @@ public class DatabaseManager {
 	public int getEddieDBID(){
 		if(this.biodatabase_id < 0){
 			BioSQLExtended bsxt = getBioSQLXT();
-			Connection con = getCon();
-			if( (this.biodatabase_id= bsxt.getEddieFromDatabase(con)) <0 ){
-				bsxt.addEddie2Database(con);
-				this.biodatabase_id = bsxt.getEddieFromDatabase(con);
+			if( (this.biodatabase_id= bsxt.getEddieFromDatabase(this)) <0 ){
+				bsxt.addEddie2Database(this);
+				this.biodatabase_id = bsxt.getEddieFromDatabase(this);
 			}
 		}
 		return biodatabase_id;
@@ -222,6 +224,22 @@ public class DatabaseManager {
 
 	public void setUi(UI ui) {
 		this.ui = ui;
+	}
+
+	public Statement getStatement() {
+		if(st == null){
+			try {
+				st=con.createStatement();
+			} 
+			catch (SQLException e) {
+				logger.error("Error, failed to create statement", e);
+			}
+		}
+		return st;
+	}
+
+	public void setStatement(Statement st) {
+		this.st = st;
 	}
 	
 }

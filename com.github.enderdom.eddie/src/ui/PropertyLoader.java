@@ -109,7 +109,7 @@ public class PropertyLoader implements Module{
 				retvalue = 6;
 			}
 			else if(cmd.hasOption("lite")){
-				retvalue = 6;
+				retvalue = 5;
 			}
 			else{
 				if(cmd.hasOption("g")){ 
@@ -173,15 +173,17 @@ public class PropertyLoader implements Module{
         	/*
         	 * File exists, so try and load it
         	 */
-        	return ((this.props = loadPropertyFile(props, new File(System.getProperty("user.home")+slash+propertyfilename))) == null);
+        	this.props = loadPropertyFile(props, prop);
+        	return (this.props != null);
         }
         /*
          * If not, then see if file exists in the default user home directory
          * If it does, set rootfolder as user home
          */
         else if(new File(System.getProperty("user.home")+slash+propertyfilename).exists()){
-           rootfolder = System.getProperty("user.home")+slash;
-           return ((this.props = loadPropertyFile(props, new File(System.getProperty("user.home")+slash+propertyfilename))) == null);
+        	rootfolder = System.getProperty("user.home")+slash;
+        	this.props = loadPropertyFile(props, new File(System.getProperty("user.home")+slash+propertyfilename));
+           	return (this.props != null);
         }
         else{
         	return false;
@@ -190,7 +192,6 @@ public class PropertyLoader implements Module{
 	
 	public void loadPropertiesCLI(){
     	boolean propsbeenloaded = loadPropertiesInit();
-
         if(!propsbeenloaded){
         	/*
         	 * Alert user that there is properties file 
@@ -244,8 +245,7 @@ public class PropertyLoader implements Module{
 	                    choose.setDialogTitle("Please Choose Folder to Create EddieGUI Workspace in:");
 	                    int opt = choose.showOpenDialog(pane);
 	                    if(opt != 1){
-	                        if(choose.getSelectedFile() != null)
-	                        {
+	                        if(choose.getSelectedFile() != null){
 	                            String path = choose.getSelectedFile().getPath();
 	                            setWorkspacePath(path);
 	                        }
@@ -281,12 +281,30 @@ public class PropertyLoader implements Module{
     public Properties loadPropertyFile(Properties prop, File file){
     	 try{
             prop.load(new FileInputStream(file));
-            if(isLogging)	logger.info("Trying to load Properties File @"+file.getName());
-            else	preLog("Trying to load Properties File @"+file.getName());
+            if(isLogging)	logger.info("Trying to load Properties File @"+file.getPath());
+            else	preLog("Trying to load Properties File @ "+file.getPath());
         	return prop;
          }
-         catch(FileNotFoundException filenotfoundexception) {return null;}
-         catch(IOException ioexception) {return null;}
+         catch(FileNotFoundException fi) {
+        	 if(isLogging){
+        		 logger.error(fi);
+        	 }
+        	 else{
+        		 preLog("Property File not found");
+        		 fi.printStackTrace();
+        	 }
+        	 return null;
+         }
+         catch(IOException io) {
+        	 if(isLogging){
+        		 logger.error(io);
+        	 }
+        	 else{
+        		 preLog("IOException File not found");
+        		 io.printStackTrace();
+        	 }
+        	 return null;
+         }
     }
     
 	private void startLog() {
@@ -497,7 +515,7 @@ public class PropertyLoader implements Module{
 	
 	public String[][] getUnchangableStats(){
 		String[] stats = defaultKeysUN;
-		String[] stats_val = new String[]{defaultlnf, rootfolder+"Modules"+Tools_System.getFilepathSeparator(), guiversion+"","mysql","com.mysql.jdbc.Driver", "/home/dominic/bioapps/eddie4/test/"};
+		String[] stats_val = new String[]{defaultlnf, rootfolder+"Modules"+Tools_System.getFilepathSeparator(), guiversion+"","mysql","com.mysql.jdbc.Driver", "/home/user/eddie4/test/"};
 		String[][] ret = new String[2][stats.length];
 		ret[0] = stats;
 		ret[1] = stats_val;
