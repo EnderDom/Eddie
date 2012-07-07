@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import gui.EddieGUI;
 
 import tasks.testing.Task_Test;
+import tasks.testing.Task_Test_Biojavax;
 import tasks.testing.Task_Test_Melting;
 import tasks.testing.Task_Test_Report;
 import tools.Tools_File;
@@ -22,9 +23,9 @@ import ui.UI;
 
 public class Module_Test extends Module_Basic{
 	
-	protected String[] tasks = new String[]{"testrun", "testReport", "Melting"}; 
-	protected String[] taskinfo = new String[]{"	run a test program", "generates the test Report", "	Testing the melting lib"};
-	protected String[] classes = new String[]{Task_Test.class.getName(), Task_Test_Report.class.getName(), Task_Test_Melting.class.getName()};
+	protected String[] tasks = new String[]{"testrun", "testReport", "Melting", "Biojavax"}; 
+	protected String[] taskinfo = new String[]{"	run a test program", "generates the test Report", "	Testing the melting lib", "biojavax testing tools"};
+	protected String[] classes = new String[]{Task_Test.class.getName(), Task_Test_Report.class.getName(), Task_Test_Melting.class.getName(), Task_Test_Biojavax.class.getName()};
 	public static String TestRootFolder = "TestRootFolder";
 	public static String TestDataFolder = "TestDataFolder";
 	public static String TestOutFolder = "TestOutFolder";

@@ -72,6 +72,9 @@ public class Task_Test extends Task_Test_Basic{
 	/*															*/
 	/************************************************************/
 	
+	public void testBiojavax(){
+		
+	}
 	
 	public void testProcessRunner(){
 		 System.out.println("Quick Test of Process Runner");

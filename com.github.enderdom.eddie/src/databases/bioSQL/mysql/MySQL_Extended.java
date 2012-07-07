@@ -99,7 +99,6 @@ public class MySQL_Extended implements BioSQLExtended{
 		logger.debug("Creating run table...");
 		String table = "CREATE TABLE IF NOT EXISTS run (" +
 				"run_id INT(10) UNSIGNED NOT NULL auto_increment, " +
-				"bioentry_id INT(10) UNSIGNED NOT NULL, " +
 				"run_date date NOT NULL, " +
 			  	"program VARCHAR(40) BINARY, " +
 			  	"dbname VARCHAR(40) BINARY, " +
@@ -110,12 +109,8 @@ public class MySQL_Extended implements BioSQLExtended{
 		try{
 			Statement st = manager.getStatement();
 			st.executeUpdate(table);
-			logger.debug("Adding keys to database...");
-			String key1 = "ALTER TABLE run ADD CONSTRAINT FKbioentry_run "+
-			"FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id) ON DELETE CASCADE;";
-			st.executeUpdate(key1);
 			//Note, this will fail if addBioentryDbxrefsCols() has not been called previously
-			key1 = "ALTER TABLE bioentry_dbxref ADD CONSTRAINT FKbioentry_dbxref_run "+
+			String key1 = "ALTER TABLE bioentry_dbxref ADD CONSTRAINT FKbioentry_dbxref_run "+
 			"FOREIGN KEY (run_id) REFERENCES run(run_id) ON DELETE CASCADE;";
 			st.executeUpdate(key1);
 			return true;
