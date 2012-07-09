@@ -22,6 +22,10 @@ import databases.bioSQL.interfaces.BioSQL;
  * Using PreparedStatements which are initialised once and used
  * many times in the vain & unfounded hope that that will speed up
  * mysql database interaction. (It does in my mind, possibly nowhere else)
+ * 
+ * Also strings are created for every single method, these would do
+ * better as a static array
+ * 
  */
 
 public class MySQL_BioSQL implements BioSQL{
@@ -60,7 +64,14 @@ public class MySQL_BioSQL implements BioSQL{
 		LocationGET = null;
 	}
 	
-	public PreparedStatement init(Connection con, PreparedStatement ment, String sql) throws SQLException{
+	/* Method checks if the PreparedStatement has been initialised,
+	 * and if not, initialises it
+	 * 
+	 * This probably defeats the point of using PreparedStatements as
+	 * it a null check for every single sql query run...? Is this
+	 * going to slow down the process significantly, not sure??
+	 */
+	public static PreparedStatement init(Connection con, PreparedStatement ment, String sql) throws SQLException{
 		if(ment == null || ment.isClosed()){
 			ment = con.prepareStatement(sql);
 		}

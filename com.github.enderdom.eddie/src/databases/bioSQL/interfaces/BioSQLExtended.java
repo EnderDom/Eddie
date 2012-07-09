@@ -11,18 +11,10 @@ public interface BioSQLExtended {
 	public static String description = "Eddie Biology Software was created by Dominic Matthew Wood." +
 	" This software manipulates biological data and frequently holds data within databases." +
 	" In an attempt to maintain some level of inter-operability the main database framework used is BioSQL.";
-	
-	public static String ontology_name = "EDDIE_ASSEMBLY_LINKER";
-	public static String term_name_id = "Read Alignment";
-	public static String term_description = "Generic Term identifies the alignment of read (subject) to contig (object)";
-	
-	public static String assmbledread = "Assembled Read";
-	
-	public static String assemblerdescription = "This Term is a unique for this Assembler";
 
 	public boolean addEddie2Database(DatabaseManager dbman);
 
-	public boolean addLegacyVersionTable(DatabaseManager dbman, String version, String dbversion);
+	
 	
 	/**
 	 * Returns the database version from the 'info' tool
@@ -35,27 +27,19 @@ public interface BioSQLExtended {
 	
 	public int getEddieFromDatabase(DatabaseManager dbman);
 	
-	public boolean addBioEntrySynonymTable(DatabaseManager dbman);
+	//public boolean addBioEntrySynonymTable(DatabaseManager dbman);
 	
 	public boolean addBioentryDbxrefCols(DatabaseManager dbman);
 	
 	public boolean addRunTable(DatabaseManager dbman);
 	
-	public boolean setupAssembly(DatabaseManager dbman);
+	public boolean addAssemblyTable(DatabaseManager manager);
 	
-	public boolean addDefaultAssemblyOntology(DatabaseManager dbman);
-	
-	public boolean addDefaultAssemblyTerm(DatabaseManager dbman);
-	
-	public boolean addAssemblerTerm(DatabaseManager dbman, String name, String division);
-	
-	public int getDefaultAssemblyTerm(DatabaseManager dbman);
-	
-	public int getDefaultAssemblyOntology(DatabaseManager dbman);
+	public boolean addLegacyVersionTable(DatabaseManager dbman, String version, String dbversion);
 	
 	public HashMap<String, String>getContigNameNIdentifier(DatabaseManager dbman, String division);
 	
-	public boolean mapRead2Contig(DatabaseManager dbman, int contig_id, int read_id, int programid, int start, int stop, int strand);
+	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, int read_id, int read_version, int runid, int start, int stop, boolean trimmed);
 	
 	/**
 	 * 

@@ -27,16 +27,30 @@ import databases.manager.DatabaseManager;
  */
 public class MySQL_Extended implements BioSQLExtended{
 
-	private int assemblyontid =-1;
-	private int assemblytermid =-1;
 	Logger logger = Logger.getRootLogger();
 	ResultSet set;
+	
+	//GETS
+	PreparedStatement DbxrefGET;
+	
+	//SETS
+	PreparedStatement AssemblySET;
+	
+	//EXISTS
+	PreparedStatement DbxrefEXIST;
 	
 	/******************************************************************/
 	/* 
 	 * NEW TABLES HERE 
 	 */ 
 	 /******************************************************************/
+	
+	/**
+	 * Table for compatibility with previous versions of db
+	 * 
+	 * Yes I know storing versioning as a varchar is a bit of
+	 * a wtf.
+	 */
 	public boolean addLegacyVersionTable(DatabaseManager manager, String version, String dbversion) {
 		String info_table = "CREATE TABLE IF NOT EXISTS info ("+
 		  "Numb INT(11) NOT NULL auto_increment,"+
@@ -59,29 +73,29 @@ public class MySQL_Extended implements BioSQLExtended{
 		
 	}
 	
-	public boolean addBioEntrySynonymTable(DatabaseManager manager) {
-		String table = "CREATE TABLE IF NOT EXISTS bioentry_synonym (" +
-				"bioentry_synonym_id INT(10) UNSIGNED NOT NULL auto_increment," +
-				"bioentry_id INT(10) UNSIGNED NOT NULL," +
-			  	"identifier   	VARCHAR(40) BINARY, " +
-				"PRIMARY KEY (bioentry_synonym_id)," +
-			 	"UNIQUE (identifier)," +
-			 	"PRIMARY KEY(bioentry_synonym_id)" +
-			") TYPE=INNODB;";
-		try{
-			Statement st = manager.getStatement();
-			st.executeUpdate(table);
-			String key1 = "ALTER TABLE bioentry_synonym ADD CONSTRAINT FKbioentry_synonym"+
-			"FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id)";
-			st.executeUpdate(key1);
-
-			return true;
-		}
-		catch(SQLException se){
-			logger.error("Failed to create bioentry_synonym table", se);
-			return false;
-		}
-	}
+//	public boolean addBioEntrySynonymTable(DatabaseManager manager) {
+//		String table = "CREATE TABLE IF NOT EXISTS bioentry_synonym (" +
+//				"bioentry_synonym_id INT(10) UNSIGNED NOT NULL auto_increment," +
+//				"bioentry_id INT(10) UNSIGNED NOT NULL," +
+//			  	"identifier   	VARCHAR(40) BINARY, " +
+//				"PRIMARY KEY (bioentry_synonym_id)," +
+//			 	"UNIQUE (identifier)," +
+//			 	"PRIMARY KEY(bioentry_synonym_id)" +
+//			") TYPE=INNODB;";
+//		try{
+//			Statement st = manager.getStatement();
+//			st.executeUpdate(table);
+//			String key1 = "ALTER TABLE bioentry_synonym ADD CONSTRAINT FKbioentry_synonym"+
+//			"FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id)";
+//			st.executeUpdate(key1);
+//
+//			return true;
+//		}
+//		catch(SQLException se){
+//			logger.error("Failed to create bioentry_synonym table", se);
+//			return false;
+//		}
+//	}
 	
 	/**
 	 * This table is supposed to store data of the specifics
@@ -121,7 +135,54 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 	}
 	
-
+	/**
+	 * After several different attempts at jamming assembly data 
+	 * into the biosql database, this is my latest attempt.
+	 * 
+	 * Originally used a convoluted method of using pseudo terms & ontologies
+	 * to style an assembly, but gave up and just created a new table, 
+	 * this may break the database more, but its just a lot simpler.
+	 * 
+	 * So contig is contig_bioentry_id and read is read_bioentry_id
+	 * version is the version of biosequence to use, so basically
+	 * you should upload the aligned trimmed read as another 'version'
+	 * of the read. This will mean you will have to check available version
+	 * numbers, or alternative link a version to an assembly. 
+	 * 
+	 * As it uses run_id, the run id table should be created first
+	 * 
+	 * @param manager
+	 * @return boolean succesfully created table
+	 */
+	public boolean addAssemblyTable(DatabaseManager manager){
+		logger.debug("Creating assembly table...");
+		String table = "CREATE TABLE IF NOT EXISTS assembly (" +
+			"contig_bioentry_id INT(10) UNSIGNED NOT NULL,"+
+			"read_bioentry_id INT(10) UNSIGNED NOT NULL,"+
+			"read_version SMALLINT,"+
+			"run_id ,"+
+			"trimmed TINYINT,"+ //0 == not trimmed
+			"range_start INT(10),"+ //If trimmed this should just be the offset
+			"range_end INT(10),"+ 
+			")TYPE=INNODB;";
+		try{
+			Statement st = manager.getStatement();
+			st.executeUpdate(table);
+			String key1 = "ALTER TABLE assembly ADD CONSTRAINT FKcontig_bioentry_id"+
+					"FOREIGN KEY (contig_bioentry_id) REFERENCES bioentry(bioentry_id)";
+			st.executeUpdate(key1);
+			key1 = "ALTER TABLE assembly ADD CONSTRAINT FKread_bioentry_id"+
+					"FOREIGN KEY (read_bioentry_id) REFERENCES bioentry(bioentry_id)";
+			st.executeUpdate(key1);
+			
+			return true;
+		}
+		catch(SQLException se){
+			logger.error("Failed to create run table", se);
+			return false;
+		}
+	}
+	
 	
 	/**
 	 * This table alteration was added to hold more detailed information
@@ -130,7 +191,7 @@ public class MySQL_Extended implements BioSQLExtended{
 	 * link between these two is. I have read several blogs lambasting the wholesale uploading of
 	 * xml into databases, so I realise that recreating the flat file data in the database
 	 * may be a bad mistake. However I see no alternative method or storing this data
-	 * so it can be accessed from multiple locations by both eddie and any websites.
+	 * so it can be accessed from multiple locations by both eddie and any websites easily.
 	 * 
 	 * I have not included the hit number in this. For two reasons, one is that without the specifics
 	 * of the blast run from perspective of the database are not known (for now). The second is that 
@@ -164,13 +225,15 @@ public class MySQL_Extended implements BioSQLExtended{
 			return false;
 		}
 	}
-	
+
 	
 	/******************************************************************/
 	/* 
 	 * METHOD EXTENSIONS HERE 
 	 */ 
 	 /******************************************************************/
+	
+	
 	public double getDatabaseVersion(DatabaseManager manager) {
 		String g = "SELECT DatabaseVersion FROM info WHERE NUMB=1";
 		try{
@@ -225,83 +288,12 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 		return db;
 	}
-	
 
 	
-	public boolean setupAssembly(DatabaseManager manager){		
-		try {
-			Statement st = manager.getStatement();
-			st.execute("CREATE INDEX bioentry_division ON bioentry(division);");
-		} 
-		catch (SQLException e) {
-			logger.error("Error adding index to bioentry_division",e);
-			return false;
-		}
-		if(addDefaultAssemblyOntology(manager)){
-			return addDefaultAssemblyTerm(manager);
-		}
-		else{
-			return false;
-		}
-	}
-	
-	public boolean addDefaultAssemblyOntology(DatabaseManager manager){
-		this.assemblyontid=manager.getBioSQL().getOntology(manager.getCon(), ontology_name);
-		if(this.assemblyontid<0){
-			return manager.getBioSQL().addOntology(manager.getCon(), ontology_name, description) ?
-					((this.assemblyontid=manager.getBioSQL().getOntology(manager.getCon(), ontology_name))> -1) : false;
-		}
-		else{
-			return true;
-		}
-	}
-
-	public boolean addDefaultAssemblyTerm(DatabaseManager manager){
-		int ontology = getDefaultAssemblyOntology(manager);
-		this.assemblytermid = manager.getBioSQL().getTerm(manager.getCon(), term_name_id, term_name_id);
-		if(this.assemblytermid < 0){
-			return manager.getBioSQL().addTerm(manager.getCon(), term_name_id, term_description, term_name_id, null,ontology) ?
-					((this.assemblytermid=manager.getBioSQL().getTerm(manager.getCon(), term_name_id, term_name_id)) > -1) : false;
-		}
-		else{
-			return true;
-		}
-	}
-	
-	public boolean addAssemblerTerm(DatabaseManager manager, String name, String division){
-		int ontology = getDefaultAssemblyOntology(manager);
-		int termid = manager.getBioSQL().getTerm(manager.getCon(),name, name);
-		if(termid < 0){
-			return manager.getBioSQL().addTerm(manager.getCon(), name, assemblerdescription, division, null,ontology) ?
-					((termid=manager.getBioSQL().getTerm(manager.getCon(), name, name)) > -1) : false;
-		}
-		else{
-			return true;
-		}
-	}
-	
-	public int getDefaultAssemblyOntology(DatabaseManager manager){
-		if(this.assemblyontid == -1){
-			if(!addDefaultAssemblyOntology(manager)){
-				logger.error("Adding the Default Ontology term has failed");
-			}
-		}
-		return this.assemblyontid;
-	}
-
-	public int getDefaultAssemblyTerm(DatabaseManager manager){
-		if(this.assemblytermid == -1){
-			if(!addDefaultAssemblyTerm(manager)){
-				logger.error("Adding the Default Assembly Term has failed");
-			}
-		}
-		return this.assemblytermid;
-	}
-	
-	/* Returns the local name (ie from the ACE record, like Contig_1)
+	/**
+	 * Returns the local name (ie from the ACE record, like Contig_1)
 	 * and database identifier (ie CLCBio_Contig_0)
 	 */
-	
 	public HashMap<String, String>getContigNameNIdentifier(DatabaseManager manager, String division){
 		HashMap<String, String> names = new HashMap<String, String>();
 		try{
@@ -318,39 +310,12 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 	
 	public int[] getReads(DatabaseManager manager, int bioentry_id){
-		LinkedList<Integer> ints = new LinkedList<Integer>();
-		try{
-			Statement st =manager.getStatement();
-			set = st.executeQuery("SELECT subject_bioentry_id FROM bioentry_relationship WHERE object_bioentry_id="+bioentry_id);
-			while(set.next()){
-				ints.add(set.getInt("subject_bioentry_id"));
-			}
-			return Tools_Array.ListInt2int(ints);
-		}
-		catch(SQLException sq){
-			logger.error("Failed to get Reads" , sq);
-			return null;
-		}
+		//TODO
 	}
 	
 	
-	public int getContigFromRead(DatabaseManager manager, int bioentry_id, String division){
-		int l = -1;
-		String r = "SELECT object_bioentry_id FROM bioentry_relationship INNER JOIN bioentry ON " +
-		"bioentry_relationship.object_bioentry_id=bioentry.bioentry_id WHERE bioentry_relationship.subject_bioentry_id="+bioentry_id+
-		" AND bioentry.division='"+division+"'";
-		try{
-			Statement st = manager.getStatement();
-			set = st.executeQuery(r);
-			while(set.next()){
-				l = set.getInt(1);
-			}
-			return l;
-		}
-		catch(SQLException sq){
-			logger.error("Failed to retrieve contig attached, SQL: " + r);
-			return -2;
-		}
+	public int getContigFromRead(DatabaseManager manager, int bioentry_id, int run_id){
+		String sql = new String();
 	}
 	
 	public String[] getNamesFromTerm(DatabaseManager manager, String identifier){
@@ -428,27 +393,27 @@ public class MySQL_Extended implements BioSQLExtended{
 		String sql = "INSERT INTO bioentry_dbxref (bioentry_id, dbxref_id, rank, evalue,score, dbxref_startpos,"+
 			"dbxref_endpos, dbxref_frame, bioentry_startpos, bioentry_endpos, bioentry_frame) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
 		try {
-			PreparedStatement ment = manager.getCon().prepareStatement(sql);
-			ment.setInt(1, bioentry_id);
-			ment.setInt(2, dbxref_id);
-			ment.setInt(3, rank);
-			if(evalue != null) ment.setDouble(4, evalue);
-			else ment.setNull(4, Types.DOUBLE);
-			if(score != null) ment.setInt(5, score);
-			else ment.setNull(5, Types.INTEGER);
-			if(dbxref_startpos != null) ment.setInt(6, dbxref_startpos);
-			else ment.setNull(6, Types.INTEGER);
-			if(dbxref_endpos != null) ment.setInt(7, dbxref_endpos);
-			else ment.setNull(7, Types.INTEGER);
-			if(dbxref_frame != null) ment.setInt(8, dbxref_frame);
-			else ment.setNull(8, Types.INTEGER);
-			if(bioentry_startpos != null) ment.setInt(9, bioentry_startpos);
-			else ment.setNull(9, Types.INTEGER);
-			if(bioentry_endpos != null) ment.setInt(10, bioentry_endpos);
-			else ment.setNull(10, Types.INTEGER);
-			if(bioentry_frame != null) ment.setInt(11, bioentry_frame);
-			else ment.setNull(11, Types.INTEGER);
-			return ment.execute();
+			DbxrefGET = MySQL_BioSQL.init(manager.getCon(), DbxrefGET, sql);
+			DbxrefGET.setInt(1, bioentry_id);
+			DbxrefGET.setInt(2, dbxref_id);
+			DbxrefGET.setInt(3, rank);
+			if(evalue != null) DbxrefGET.setDouble(4, evalue);
+			else DbxrefGET.setNull(4, Types.DOUBLE);
+			if(score != null) DbxrefGET.setInt(5, score);
+			else DbxrefGET.setNull(5, Types.INTEGER);
+			if(dbxref_startpos != null) DbxrefGET.setInt(6, dbxref_startpos);
+			else DbxrefGET.setNull(6, Types.INTEGER);
+			if(dbxref_endpos != null) DbxrefGET.setInt(7, dbxref_endpos);
+			else DbxrefGET.setNull(7, Types.INTEGER);
+			if(dbxref_frame != null) DbxrefGET.setInt(8, dbxref_frame);
+			else DbxrefGET.setNull(8, Types.INTEGER);
+			if(bioentry_startpos != null) DbxrefGET.setInt(9, bioentry_startpos);
+			else DbxrefGET.setNull(9, Types.INTEGER);
+			if(bioentry_endpos != null) DbxrefGET.setInt(10, bioentry_endpos);
+			else DbxrefGET.setNull(10, Types.INTEGER);
+			if(bioentry_frame != null) DbxrefGET.setInt(11, bioentry_frame);
+			else DbxrefGET.setNull(11, Types.INTEGER);
+			return DbxrefGET.execute();
 		} 
 		catch (SQLException e) {
 			logger.error("Failed to add bioentry_dbxref entry", e);
@@ -457,10 +422,14 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 	
 	public boolean existsDbxRefId(DatabaseManager manager, int bioentry_id, int dbxref_id, int rank){
-		String sql = "SELECT COUNT(1) AS bool FROM bioentry_dbxref WHERE bioentry_id="+bioentry_id+" AND dbxref_id="+dbxref_id+" AND rank="+rank;
+		
+		String sql = "SELECT COUNT(1) AS bool FROM bioentry_dbxref WHERE bioentry_id=? AND dbxref_id=? AND rank=?";
 		try {
-			PreparedStatement ment = manager.getCon().prepareStatement(sql);
-			set = ment.executeQuery(sql);
+			DbxrefEXIST = MySQL_BioSQL.init(manager.getCon(), DbxrefEXIST, sql);
+			DbxrefEXIST.setInt(1, bioentry_id);
+			DbxrefEXIST.setInt(2, dbxref_id);
+			DbxrefEXIST.setInt(3, rank);
+			set = DbxrefEXIST.executeQuery();
 			while(set.next()){
 				return (set.getInt(1) > 0);
 			}
@@ -473,51 +442,38 @@ public class MySQL_Extended implements BioSQLExtended{
 	
 	/** INDEV function
 	 * 
-	 * Currently as Reads are likely uploaded without padding
-	 * the start and end values from ACE files will be off
-	 * This is currently not a major issue, as I have not in depth application 
-	 * that requires the exact positions.
-	 * But this may lead to downstream issues if developed upon, 
-	 * my considerations are to produce a CIGAR string-like for the differences between
-	 * the read padded and unpadded. Altenatively the modified sequences could be 
-	 * uploaded as a different version* ??? Though this would lead to a lot of excess
-	 * data in the database
 	 * 
 	 * @param manager database manager
 	 * @param contig_id to map to read, this should be a bioentry_id previously identified
 	 * @param read_id to map to contig, this should be a bioentry_id previously identified
-	 * @param programid 
-	 * @param start of read alignment to contig
+	 * @param runid
+	 * @param offset, where the read  
+	 * @param start of read alignment to contig relative to read, ie 4 = offset+4 for alignment
 	 * @param stop where the read stops alignment
-	 * @param strand
+	 * @param trimmed whether or not the read was trimmed
 	 * 
-	 * @return succesful or not
+	 * @return successful or not
 	 */
-	
-	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, int read_id, int programid, int start, int stop, int strand){
-		int term_id = getDefaultAssemblyTerm(manager);
-		if(manager.getBioSQL().getBioEntryRelationship(manager.getCon(), contig_id, read_id, term_id) <0){
-			if(!manager.getBioSQL().addBioEntryRelationship(manager.getCon(), contig_id, read_id, term_id, 0)){
-				return false;
-			}
-		}
-		int seqfeature_id = manager.getBioSQL().getSeqFeature(manager.getCon(), read_id, term_id, programid, 0);
-		if(seqfeature_id < 0){
-			if(!manager.getBioSQL().addSeqFeature(manager.getCon(), read_id, term_id, programid, assmbledread, 0)){
-				return false;
-			}
-			seqfeature_id = manager.getBioSQL().getSeqFeature(manager.getCon(), read_id, term_id, programid, 0);
-		}
-		if(seqfeature_id < 0){
-			logger.error("SeqFeature Id was not retrieved");
+
+	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, int read_id, int read_version, int runid, int start, int stop, boolean trimmed){
+		String sql = "INSERT INTO assembly (contig_bioentry_id, read_bioentry_id, read_version, run_id, trimmed, range_start, range_end) VALUES (?,?,?,?,?,?,?)";
+		try {
+			AssemblySET = MySQL_BioSQL.init(manager.getCon(), AssemblySET, sql);
+			AssemblySET.setInt(1, contig_id);
+			AssemblySET.setInt(2, read_id);
+			AssemblySET.setInt(3, read_version);
+			AssemblySET.setInt(4, runid);
+			if(trimmed) AssemblySET.setInt(5, 1); 
+			else AssemblySET.setInt(5, 0);
+			AssemblySET.setInt(6, start);
+			AssemblySET.setInt(7, stop);
+			return AssemblySET.execute();
+		} 
+		catch(SQLException e){
+			logger.error("Failed to insert assembly data into database", e);
 			return false;
 		}
-		else{
-			return manager.getBioSQL().getLocation(manager.getCon(), seqfeature_id, 0) <0 ?
-					manager.getBioSQL().addLocation(manager.getCon(), seqfeature_id, null, term_id, start, stop, strand, 0) : true ; 
-		}
 	}
-
-
-
+	
+	
 }

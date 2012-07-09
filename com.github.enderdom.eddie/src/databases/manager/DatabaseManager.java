@@ -18,7 +18,7 @@ import ui.PropertyLoader;
 import ui.UI;
 
 /**
- * Eddie's database manager, he's called Ted, I think?
+ *
  * @author Dominic M. Wood
  *
  */
@@ -35,9 +35,18 @@ public class DatabaseManager {
 	private BioSQL biosql;
 	private BioSQLExtended biosqlext;
 	private int biodatabase_id =-1;
-	private static int databaseversion =2;
+	private static double databaseversion =2.3;
 	private boolean isOpen;
-	private Statement st;
+	/*
+	 * Only one statement, thus only one query at a time
+	 * Not sure if this is wise, but as this DatabaseManager object
+	 * currently only works with one db at a time, I think it should be 
+	 * fine to run in serial. And if other dbs are needed, a separate dbmanager 
+	 * can be created.
+	 * 
+	 */
+	private Statement st; 
+	
 	
 	public DatabaseManager(UI ui){
 		this.ui = ui;
@@ -192,7 +201,7 @@ public class DatabaseManager {
 		return biodatabase_id;
 	}
 
-	public static int getDatabaseversion() {
+	public static double getDatabaseversion() {
 		return databaseversion;
 	}
 	
