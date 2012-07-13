@@ -37,16 +37,6 @@ public class DatabaseManager {
 	private int biodatabase_id =-1;
 	private static double databaseversion =2.3;
 	private boolean isOpen;
-	/*
-	 * Only one statement, thus only one query at a time
-	 * Not sure if this is wise, but as this DatabaseManager object
-	 * currently only works with one db at a time, I think it should be 
-	 * fine to run in serial. And if other dbs are needed, a separate dbmanager 
-	 * can be created.
-	 * 
-	 */
-	private Statement st; 
-	
 	
 	public DatabaseManager(UI ui){
 		this.ui = ui;
@@ -117,10 +107,11 @@ public class DatabaseManager {
 		openDefaultConnection(true);
 	}
 	
-	public void createAndOpen(){
+	public boolean createAndOpen(){
 		String[] mydb = loader.getDBSettings();
 		createNewDatabase(mydb[3]);
-		openDefaultConnection(mydb, true);
+		this.con = openDefaultConnection(mydb, true);
+		return (con != null);
 	}
 	
 	public Connection getCon(){
@@ -134,7 +125,9 @@ public class DatabaseManager {
 		openDefaultConnection(false);
 		try {
 			if(this.dbtype.equals("mysql")){
-				this.getStatement().executeUpdate("CREATE DATABASE IF NOT EXISTS " + dbname);
+				Statement st = con.createStatement();
+				st.executeUpdate("CREATE DATABASE IF NOT EXISTS " + dbname);
+				st.close();
 			}
 			//st.executeUpdate("CREATE GOD IF NOT EXISTS " + dbname);
 			return true;
@@ -147,7 +140,6 @@ public class DatabaseManager {
 	
 	public boolean close(){
 		try{
-			this.st.close();
 			this.con.close();
 			return true;
 		}
@@ -235,20 +227,5 @@ public class DatabaseManager {
 		this.ui = ui;
 	}
 
-	public Statement getStatement() {
-		if(st == null){
-			try {
-				st=con.createStatement();
-			} 
-			catch (SQLException e) {
-				logger.error("Error, failed to create statement", e);
-			}
-		}
-		return st;
-	}
-
-	public void setStatement(Statement st) {
-		this.st = st;
-	}
 	
 }

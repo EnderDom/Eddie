@@ -25,10 +25,10 @@ public class Contig2ContigMap {
 	private int[] read_ids;
 	private int[] contig_ids;
 	private int eddiedbid =-1;
-	private String division2; 
 	private int[] uniqs;
 	private int[] sizes;
 	private boolean built;
+	private int run_id;
 	
 	private Logger logger = Logger.getRootLogger();
 	
@@ -38,11 +38,8 @@ public class Contig2ContigMap {
 	 * @param div2 (The 6 letter division id of the assembly you wish to match
 	 * this contig to)
 	 */
-	public Contig2ContigMap(String div2){
-		this.division2=div2;
-		if(div2.length() > 6){
-			logger.warn("division should be of length <7, This will fail if SQL is needed");
-		}
+	public Contig2ContigMap(int run_id){
+	
 	}
 	
 	/**
@@ -66,7 +63,7 @@ public class Contig2ContigMap {
 		this.contig_ids = new int[read_ids.length];
 		if(read_ids.length > 0){
 			for(int i =0 ; i < read_ids.length ; i++){
-				contig_ids[i] = manager.getBioSQLXT().getContigFromRead(manager, read_ids[i], division2);
+				contig_ids[i] = manager.getBioSQLXT().getContigFromRead(manager, read_ids[i], run_id);
 			}
 			
 			/*

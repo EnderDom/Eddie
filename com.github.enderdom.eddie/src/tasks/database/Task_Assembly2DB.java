@@ -2,8 +2,6 @@ package tasks.database;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.LinkedHashMap;
 
 import org.apache.commons.cli.CommandLine;
@@ -18,10 +16,12 @@ import bio.fasta.FastaParser;
 
 import databases.bioSQL.interfaces.BioSQL;
 import databases.bioSQL.interfaces.BioSQLExtended;
+import databases.bioSQL.psuedoORM.BioSequence;
 import databases.manager.DatabaseManager;
 
 import tasks.TaskXTwIO;
 import tools.Tools_System;
+import tools.bio.Tools_Assembly;
 
 /**
  * The idea here is to upload an entire ACE fileset of data  
@@ -43,11 +43,12 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	private boolean mapcontigs;
 	private boolean unpad;
 	private String identifier;
-	private String division;
-	private String programid;
+	private String programname;
+	private int runid;
 	
 	public Task_Assembly2DB(){
 		setHelpHeader("--This is the Help Message for the Assemby2DB Task--");
+		runid =-1;
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
@@ -57,14 +58,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		if(cmd.hasOption("remaploc"))remaplocations=true;
 		if(cmd.hasOption("mapcontigs"))mapcontigs=true;
 		if(cmd.hasOption("identifier"))this.identifier=cmd.getOptionValue("identifier");
-		if(cmd.hasOption("division"))this.division=cmd.getOptionValue("division");
-		if(cmd.hasOption("programid"))this.programid=cmd.getOptionValue("programid");
+		if(cmd.hasOption("programname"))this.programname=cmd.getOptionValue("programid");
 		if(cmd.hasOption("unpad"))this.unpad = true;
-		if(this.division == null)this.division = "EDDSEQ";
-		if(this.division.length() > 6){
-			this.division = this.division.substring(0,6);
-		}
-		
 	}
 	
 	public void buildOptions(){
@@ -76,8 +71,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		options.addOption(new Option("id","identifier", true, "Uses this as the base identifier for contigs, such as CLCbio_Contig_"));
 		//options.addOption(new Option("species", false, "Drags out the default Species")); //TODO
 		//options.addOption(new Option("taxon_id", false, "Set the taxon_id"));
-		options.addOption(new Option("division", true, "Set 6 letter division ie DIGEST or NEURAL or CLCBIO or NEWBLE, used as unique identifier for Assemblers"));
-		options.addOption(new Option("pid","programid", true, "Set Assembly program namer"));
+		options.addOption(new Option("pid","programname", true, "Set Assembly program namer"));
+		options.addOption(new Option("runid", true, "Preset the run id (id column from db), this bypasses questioning if multiple assemblies with same assembler program"));
 	}
 	
 	public Options getOptions(){
@@ -134,8 +129,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 						
 						for(String s : sequences.keySet()){
 							String seq = sequences.get(s);
-							if(unpad)seq.replaceAll("\\*", "");
-							if(!bs.addSequence(manager.getCon(), biodatabase_id, null, s, s, this.identifier+count, division, null, 0, seq, BioSQL.alphabet_DNA))break;
+							if(!bs.addSequence(manager.getCon(), biodatabase_id, null, s, s, this.identifier+count, "READ", null, 0, seq, BioSQL.alphabet_DNA))break;
 							count++;
 							System.out.print("\r"+(count) + " of " +size + "       ");
 							checklist.update(s);
@@ -170,16 +164,10 @@ public class Task_Assembly2DB extends TaskXTwIO{
 							return;
 						}
 						else logger.debug("Biodatabase id: "+biodatabase_id);
-						int pid = bs.getTerm(manager.getCon(), this.programid, this.programid);
-						if(pid < 0){
-							manager.getBioSQLXT().addAssemblerTerm(manager, programid, division);
-							pid = bs.getTerm(manager.getCon(), this.programid, this.programid);
+						if(runid == -1){
+							runid = Tools_Assembly.getSingleRunId(manager, programname, BioSQLExtended.assembly);
+							logger.debug("Run id for " + this.programname+ " returned as " + runid);
 						}
-						if(pid < 0){
-							logger.error("Failed to setup program id");
-							return;
-						}
-						else logger.debug("PID term for " + this.programid+ " returned as " + pid);
 						try{
 							ACEFileParser parser = new ACEFileParser(file);
 							ACERecord record = null;
@@ -201,9 +189,9 @@ public class Task_Assembly2DB extends TaskXTwIO{
 											
 											String seq = record.getConsensusAsString();
 											if(unpad)seq.replaceAll("-", "");
-											if(!bs.addSequence(manager.getCon(), biodatabase_id, null, name, this.identifier+count, this.identifier+count, division, record.getContigName(), 0, seq, BioSQL.alphabet_DNA))break;
+											if(!bs.addSequence(manager.getCon(), biodatabase_id, null, name, this.identifier+count, this.identifier+count, "CONTIG", record.getContigName(), 0, seq, BioSQL.alphabet_DNA))break;
 											if(mapcontigs && mapping){
-												mapping = mapReads(record, manager, this.identifier+count, biodatabase_id, pid);
+												mapping = mapReads(record, manager, this.identifier+count, biodatabase_id, runid);
 												if(!mapping){
 													int j =ui.requiresUserYNI("Mapping failed for some reason, Continue uploading contigs without mapping to reads?", "Mapping Failure Message");
 													if(j != 0)return;
@@ -213,34 +201,6 @@ public class Task_Assembly2DB extends TaskXTwIO{
 										else{
 											System.out.print("\r"+"Skipped Contig, already exists...                ");
 										}
-									}
-									else{
-										//REMAPPING LOCATIONS
-										int term_id = manager.getBioSQLXT().getDefaultAssemblyTerm(manager);
-										for(int i =0 ; i < record.getNoOfReads(); i++){
-											int read_id  = bs.getBioEntry(manager.getCon(), record.getReadName(i), record.getReadName(i), biodatabase_id);
-											int seqfeature_id = bs.getSeqFeature(manager.getCon(), read_id, term_id, pid, 0);
-											int start = record.getReadOffset(i);
-											int end = start+record.getRead(i).getLength();
-											int loc = bs.getLocation(manager.getCon(), seqfeature_id, 0);
-											if(loc < 0){
-												bs.addLocation(manager.getCon(), seqfeature_id, null, term_id,start, end, 0,0);
-											}
-											else{
-												String sql = new String("UPDATE location SET start_pos="+start+", end_pos="+end+" WHERE seqfeature_id="+seqfeature_id);
-												try{
-													System.out.print("\r"+(count) +" : Remapping...             ");
-													Statement st = manager.getCon().createStatement();
-													st.execute(sql);
-													st.close();
-												}
-												catch(SQLException sq){
-													logger.error(sq);
-												}
-											}
-										}
-										count++;
-										System.out.print("\r"+(count) + " : " + name + "          ");
 									}
 								}
 								else{
@@ -276,7 +236,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	    setComplete(finished);
 	}
 	
-	public boolean mapReads(ACERecord record, DatabaseManager manager, String identifier, int biodatabase_id, int pid){
+	public boolean mapReads(ACERecord record, DatabaseManager manager, String identifier, int biodatabase_id, int runid){
 		BioSQL bs = manager.getBioSQL();
 		BioSQLExtended bsxt = manager.getBioSQLXT();
 		int bioentry_id = bs.getBioEntry(manager.getCon(), identifier, null, biodatabase_id);
@@ -292,13 +252,16 @@ public class Task_Assembly2DB extends TaskXTwIO{
 				int start = offset;
 				int end = offset+record.getRead(i).getLength();
 				char c = record.getReadCompliment(i);
+				@SuppressWarnings("unused")
 				int comp = 0;
 				if(c == 'C'){
 					comp = 1;
 					//TODO add better strand info
 				}
 				System.out.print("\r"+"Mapping "+identifier+"... Read No."+i+"             ");
-				if(!bsxt.mapRead2Contig(manager, bioentry_id, read_id, pid, start, end, comp)){
+				int read_version = readVersioning(record, manager, read_id, i);
+				//As ace isn't normally trimmed, assumes not trimmed
+				if(!bsxt.mapRead2Contig(manager, bioentry_id, read_id, read_version, runid, start, end, false)){
 					logger.error("Read mapping has failed");
 					return false;
 				}
@@ -307,7 +270,26 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		return true;
 	}
 
-
+	public int readVersioning(ACERecord record, DatabaseManager manager, int read_id, int read_numb){
+		BioSequence[] biosequences = manager.getBioSQLXT().getBioSequences(manager, read_id);
+		int v_high = -1;
+		for(BioSequence s : biosequences){
+			try{
+				if(s.rawDNACompare(record.getRead(read_numb))){
+					return s.getVersion();
+				}
+			}
+			catch(Exception e){
+				logger.error("Problem with the reads, they day they're not actually DNA/RNA");
+			}
+			if(s.getVersion() > v_high){
+				v_high = s.getVersion();
+			}
+		}
+		v_high++;
+		manager.getBioSQL().addBiosequence(manager.getCon(), v_high, record.getRead(read_numb).getLength(), BioSQL.alphabet_DNA, record.getReadAsString(read_numb), read_id);
+		return v_high;
+	}
 
 }
 

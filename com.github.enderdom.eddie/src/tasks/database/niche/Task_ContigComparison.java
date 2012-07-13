@@ -24,7 +24,9 @@ import tasks.MapManager;
 import tasks.Task;
 import tools.Tools_Array;
 import tools.Tools_File;
+import tools.Tools_String;
 import tools.Tools_System;
+import tools.bio.Tools_Assembly;
 
 import ui.UI;
 
@@ -34,8 +36,6 @@ public class Task_ContigComparison extends Task{
 	Logger logger= Logger.getRootLogger();
 	private HashMap<String, String> contig2file1;
 	private HashMap<String, String> contig2file2;
-	private String division1;
-	private String division2;
 	private String blastfolder1;
 	private String blastfolder2;
 	private String output;
@@ -45,21 +45,37 @@ public class Task_ContigComparison extends Task{
 	private String[] contignames;
 	private BioSQLExtended bsxt; 
 	private BioSQL bs;
+	private int run_id1;
+	private int run_id2;
+	private String prg1;
+	private String prg2;
+	
 	private static double contigcutoff = 0.0;
+	
 	
 	public Task_ContigComparison(){
 		setHelpHeader("--This is the Help Message for the ContigComparison Task--");
 		outformat = "PDF";
+		run_id1 = -1;
+		run_id2 = -1;
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
 		//if(cmd.hasOption("f"))outformat=cmd.getOptionValue("f");
 		if(cmd.hasOption("o"))output = cmd.getOptionValue("o");
-		if(cmd.hasOption("d1"))division1 = cmd.getOptionValue("d1");
-		if(cmd.hasOption("d2"))division2 = cmd.getOptionValue("d2");
 		if(cmd.hasOption("b1"))blastfolder1 = cmd.getOptionValue("b1");
 		if(cmd.hasOption("b2"))blastfolder2 = cmd.getOptionValue("b2");
+		if(cmd.hasOption("p1"))prg1 = cmd.getOptionValue("p1");
+		if(cmd.hasOption("p2"))prg2 = cmd.getOptionValue("p2");
+		if(cmd.hasOption("r1")){
+			Integer rr1 = Tools_String.parseString2Int(cmd.getOptionValue("r1"));
+			run_id1 = (rr1 != null) ? rr1 : -1;
+		}
+		if(cmd.hasOption("r2")){
+			Integer rr2 = Tools_String.parseString2Int(cmd.getOptionValue("r1"));
+			run_id2 = (rr2 != null) ? rr2 : -1;
+		}
 		if(cmd.hasOption("i")){
 			contignames = Tools_File.quickRead(new File(cmd.getOptionValue("i"))).split(Tools_System.getNewline());
 		}
@@ -81,13 +97,16 @@ public class Task_ContigComparison extends Task{
 		super.buildOptions();
 		//options.addOption(new Option("f","outformat", true, "Options currently are HTML"));
 		options.addOption(new Option("o","output", true, "Output file"));
-		options.addOption(new Option("d1","division1", true, "First 6-letter division ie CLCBIO"));
+		
 		options.addOption(new Option("i","input", true, "List of contigs to report (Assumed division 1)," +
 				" as is in ACE file, separated by newline"));
 		options.addOption(new Option("c","contig", true, "Name of contig as is in ace file, alternative to input"));
-		options.addOption(new Option("d2","division2", true, "Second 6-letter division ie NEWBLE"));
 		options.addOption(new Option("b1","blast1", true, "Blast folder for the first input"));
 		options.addOption(new Option("b2","blast2", true, "Blast folder for the second input"));
+		options.addOption(new Option("r1","run_id1", true, "Force Run Id if know, else will be asked if there are multiple runs with program"));
+		options.addOption(new Option("r2","run_id2", true, "Force Run Id if know, else will be asked if there are multiple runs with program"));
+		options.addOption(new Option("p1","prog1", true, "Program used for assembly 1"));
+		options.addOption(new Option("p2","prog2", true, "Program used for assembly 2"));
 	}
 	
 	public Options getOptions(){
@@ -120,10 +139,6 @@ public class Task_ContigComparison extends Task{
 			runTest();
 			return;
 		}
-		if(division1 == null || division2 == null){
-			logger.error("Failed Due to no division stated");
-			return;
-		}
 		if(contignames == null || contignames.length == 0){
 			logger.error("No contig(s) specified");
 			return;
@@ -150,29 +165,36 @@ public class Task_ContigComparison extends Task{
 		bsxt = manager.getBioSQLXT();
 		bs = manager.getBioSQL();
 		
+		if(run_id1 == -1 || run_id2 == -1){
+			run_id1 = Tools_Assembly.getSingleRunId(manager, prg1, BioSQLExtended.assembly);
+			run_id2 = Tools_Assembly.getSingleRunId(manager, prg2,BioSQLExtended.assembly);
+		}
+		
+		String assembler1 = bsxt.getRun(manager, run_id1).getProgram();
+		String assembler2 = bsxt.getRun(manager, run_id2).getProgram();
+		
 		logger.debug("Database ID: " + this.database_id);
 		logger.info("Starting Mapping Sequences to blasts");
 		logger.debug("Checking for previous map");
 
 		//Holds the actual name as is in file (ACE) record
-		HashMap<String, String> name2id1 = bsxt.getContigNameNIdentifier(manager, division1);
-		HashMap<String, String> name2id2 = bsxt.getContigNameNIdentifier(manager, division2);
+		HashMap<String, String> name2id1 = bsxt.getContigNameNIdentifier(manager, run_id1);
+		HashMap<String, String> name2id2 = bsxt.getContigNameNIdentifier(manager, run_id2);
 		
 		//Holds the Contig id 2 blast file for division 1
-		contig2file1 = mapFiles(name2id1, b1, blastfolder1, division1);
+		contig2file1 = mapFiles(name2id1, b1, blastfolder1, run_id1, assembler1);
 		if(contig2file1 == null){
-			logger.error("Failed to map files for " + division1);
+			logger.error("Failed to map files for run id " + assembler1);
 			return;
 		}
 		//Holds the Contig id 2 blast file for division 2
-		contig2file2 = mapFiles(name2id2, b2, blastfolder2, division2);
+		contig2file2 = mapFiles(name2id2, b2, blastfolder2, run_id2, assembler2);
 		if(contig2file2 == null){
-			logger.error("Failed to map files for " + division2);
+			logger.error("Failed to map files for run id " + assembler2);
 			return;
 		}
 	
-		String assembler1 = bsxt.getNamesFromTerm(manager, division1)[0];
-		String assembler2 = bsxt.getNamesFromTerm(manager, division2)[0];
+		
 		Report report = new Report();
 		int mcount =0;
 		Blast2BlastMap blastmap = null;
@@ -189,7 +211,7 @@ public class Task_ContigComparison extends Task{
 						mcount++;
 						logger.debug("Developing Contig " + contignames[i]);
 						
-						contigmap = new Contig2ContigMap(division2);
+						contigmap = new Contig2ContigMap(run_id2);
 						//Drawing Header
 						report.addHeader(contignames[i] +" - "+ assembler1);
 						//Building Map
@@ -208,7 +230,7 @@ public class Task_ContigComparison extends Task{
 						String[] othercontignames = new String[3];
 						if(otherid != -1){
 							logger.debug("Building Other Contig");
-							othercontig = new Contig2ContigMap(division1);
+							othercontig = new Contig2ContigMap(run_id1);
 							othercontignames = bs.getBioEntryNames(manager.getCon(), otherid);
 							othercontig.setContigName(othercontignames[0]);
 							logger.debug("Top Match is "+ othercontignames[0]);
@@ -311,12 +333,12 @@ public class Task_ContigComparison extends Task{
 	}
 	
 	
-	public HashMap<String, String> mapFiles(HashMap<String, String> contig2file, File b, String bf, String division){
+	public HashMap<String, String> mapFiles(HashMap<String, String> contig2file, File b, String bf, int run_id, String assembler){
 		boolean gotmap = false;
-		if(mapman.hasMap(division, b.getPath())){
+		if(mapman.hasMap(run_id+"", b.getPath())){
 			logger.debug("Has previous map, Loading...");
 			try{
-				contig2file =mapman.getMap(division, b.getPath());
+				contig2file =mapman.getMap(run_id+"", b.getPath());
 				gotmap = true;
 			}
 			catch(IOException io){
@@ -327,11 +349,11 @@ public class Task_ContigComparison extends Task{
 		}
 		if(!gotmap){
 			if(contig2file.size() == 0){ 
-				logger.error("No sequences with division "+ division);
+				logger.error("No sequences with division "+ run_id);
 				return null;
 			}
 			else{
-				logger.debug("Found some "+ contig2file.size() + " for records for "+division);
+				logger.debug("Found some "+ contig2file.size() + " for records for "+run_id);
 				@SuppressWarnings("unchecked")
 				HashMap<String, String> map =Tools_File.mapFiles((HashMap<String, String>)contig2file.clone(), b);
 				HashMap<String, String> finalmap = new HashMap<String, String> ();
@@ -342,7 +364,7 @@ public class Task_ContigComparison extends Task{
 						}
 					}
 				}
-				mapman.addMap(division, b.getPath(), finalmap);
+				mapman.addMap(run_id+"", b.getPath(), finalmap);
 				map = null;
 				return finalmap;
 			}
@@ -359,6 +381,5 @@ public class Task_ContigComparison extends Task{
 	public void addUI(UI ui){
 		this.ui = ui;
 	}
-	
 	
 }

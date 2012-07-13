@@ -252,7 +252,7 @@ public class MySQL_BioSQL implements BioSQL{
 	/*																   */
 	/*																   */
 	/*******************************************************************/
-
+	
 	public String[] getBioEntryNames(Connection con, int bioentry_id){
 		try{
 			String[] names = new String[3];
@@ -492,7 +492,7 @@ public class MySQL_BioSQL implements BioSQL{
 				}
 			}
 			System.out.println();
-			logger.debug("Returned " + i + " value for " + sarr.length + " queries");
+			logger.debug( sarr.length + " queries run, " + i + " issues ");
 			return true;
 		}
 		catch(SQLException sexe){

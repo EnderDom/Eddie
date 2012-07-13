@@ -405,5 +405,13 @@ public class FourBitSequence implements CharSequence{
 		return this.dna;
 	}
 
+	public  boolean compareBasic(FourBitSequence comparison){
+		long[] p = comparison.dna;
+		for(int i = 0; i < this.dna.length ; i++){
+			if(dna[i] != p[i]) return false;
+		}
+		return true;
+	}
+	
 }
 

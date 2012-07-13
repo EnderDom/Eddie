@@ -61,17 +61,20 @@ public class Task_BioSQLDB extends Task{
 		if(table != null || setup){
 			DatabaseManager manager = this.ui.getDatabaseManager(password);
 			if(!manager.open()){
-				logger.error("Failed to open Database manager");
-				return;
+				logger.warn("Failed to open database, this could be because it doesn't exist, attempting to create...");
+				if(!manager.createAndOpen()){
+					logger.error("Failed to create Database...Terminating.");
+					return;
+				}	
 			}
-			int biodatabase_id = manager.getEddieDBID();
-			if(biodatabase_id > -1){
-				if(setup){
-					logger.debug("Setting up database...");
-					setup(manager);
-					logger.info("Done setting Up");
-				}
-				else if(table != null){
+			if(setup){
+				logger.debug("Setting up database...");
+				setup(manager);
+				logger.info("Done setting Up");
+			}
+			else if(table != null){
+				int biodatabase_id = manager.getEddieDBID();
+				if(biodatabase_id > -1){
 					logger.debug("Identifying table...");
 					if(createDefaultTable(manager, table)){
 						logger.info("Successfully setup table or at least listed tables to be setup.");
@@ -80,14 +83,15 @@ public class Task_BioSQLDB extends Task{
 						logger.info("Failed to setup table");
 					}
 				}
-				//Other tasks here
 				else{
-					logger.warn("No option set");
+					logger.error("Failed to get the database_id for Eddie :(");
 				}
 			}
+			//Other tasks here
 			else{
-				logger.error("Failed to get the database_id for Eddie :(");
+				logger.warn("No option set");
 			}
+			
 			manager.close();
 		}
 		else{
@@ -143,7 +147,8 @@ public class Task_BioSQLDB extends Task{
 			bsxt.addLegacyVersionTable(manager,new String(PropertyLoader.getFullVersion()+""), new String(DatabaseManager.getDatabaseversion()+""));
 			//bsxt.addBioEntrySynonymTable(manager);
 			bsxt.addBioentryDbxrefCols(manager);
-			return bsxt.setupAssembly(manager);
+			bsxt.addRunTable(manager);
+			return bsxt.addAssemblyTable(manager);
 		}
 		else return false;
 	}
@@ -166,7 +171,7 @@ public class Task_BioSQLDB extends Task{
 		}
 		else if(table.contentEquals("assembly")){
 			if(manager.isOpen()){
-				return manager.getBioSQLXT().setupAssembly(manager);
+				return manager.getBioSQLXT().addAssemblyTable(manager);
 			}
 		}
 		else if(table.contentEquals("run")){

@@ -2,6 +2,8 @@ package databases.bioSQL.interfaces;
 
 import java.util.HashMap;
 
+import databases.bioSQL.psuedoORM.BioSequence;
+import databases.bioSQL.psuedoORM.Run;
 import databases.manager.DatabaseManager;
 
 public interface BioSQLExtended {
@@ -11,6 +13,10 @@ public interface BioSQLExtended {
 	public static String description = "Eddie Biology Software was created by Dominic Matthew Wood." +
 	" This software manipulates biological data and frequently holds data within databases." +
 	" In an attempt to maintain some level of inter-operability the main database framework used is BioSQL.";
+	
+	//Runtypes of run table
+	public static String assembly = "assembly";
+	
 
 	public boolean addEddie2Database(DatabaseManager dbman);
 
@@ -37,7 +43,7 @@ public interface BioSQLExtended {
 	
 	public boolean addLegacyVersionTable(DatabaseManager dbman, String version, String dbversion);
 	
-	public HashMap<String, String>getContigNameNIdentifier(DatabaseManager dbman, String division);
+	public HashMap<String, String>getContigNameNIdentifier(DatabaseManager dbman, int run_id);
 	
 	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, int read_id, int read_version, int runid, int start, int stop, boolean trimmed);
 	
@@ -48,11 +54,12 @@ public interface BioSQLExtended {
 	 * @return int array, will return array of length 0 if no contigs attached
 	 * to the contig id or a null object if there was an SQLException
 	 */
+	
+	public Run getRun(DatabaseManager manager, int run_id);
+	
 	public int[] getReads(DatabaseManager manager, int bioentry_id);
 	
-	public int getContigFromRead(DatabaseManager manager, int bioentry_id, String division);
-	
-	public String[] getNamesFromTerm(DatabaseManager manager, String identifier);
+	public int getContigFromRead(DatabaseManager manager, int bioentry_id, int run_id);
 
 	public int getBioEntryId(DatabaseManager manager, String name, boolean fuzzy, int biodatabase_id);
 	
@@ -60,4 +67,8 @@ public interface BioSQLExtended {
 			Integer dbxref_endpos,Integer dbxref_frame, Integer bioentry_startpos,Integer bioentry_endpos,Integer bioentry_frame);
 	
 	public boolean existsDbxRefId(DatabaseManager manager, int bioentry_id, int dbxref_id, int rank);
+	
+	public int[] getRunId(DatabaseManager manager, String programname, String runtype);
+	
+	public BioSequence[] getBioSequences(DatabaseManager manager, int bioentry_id);
 }
