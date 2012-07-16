@@ -1,5 +1,6 @@
 package databases.bioSQL.interfaces;
 
+import java.sql.Date;
 import java.util.HashMap;
 
 import databases.bioSQL.psuedoORM.BioSequence;
@@ -71,4 +72,8 @@ public interface BioSQLExtended {
 	public int[] getRunId(DatabaseManager manager, String programname, String runtype);
 	
 	public BioSequence[] getBioSequences(DatabaseManager manager, int bioentry_id);
+	
+	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String dbname, String params, String comment);
+	
+	
 }

@@ -89,6 +89,8 @@ public class ModuleManager implements Module{
 	
 	String modulename = this.getClass().getName();
 	
+	private Logger logger = Logger.getRootLogger();
+	
 	public ModuleManager(String modulefolder){
 		modulecount=0;
 		this.modulefolder = modulefolder;
@@ -130,20 +132,20 @@ public class ModuleManager implements Module{
 				return true;
 			}
 			catch(IOException exe){
-				Logger.getRootLogger().error("Failed to Load Modules", exe);
+				logger.error("Failed to Load Modules", exe);
 				return false;
 			}
 			catch(SAXException exe){
-				Logger.getRootLogger().error("Failed to Load Modules", exe);
+				logger.error("Failed to Load Modules", exe);
 				return false;
 			}
 			catch(ParserConfigurationException exe){
-				Logger.getRootLogger().error("Failed to Load Modules", exe);
+				logger.error("Failed to Load Modules", exe);
 				return false;
 			}
 		}
 		else{
-			Logger.getRootLogger().warn("No Module Xml file!!");
+			logger.warn("No Module Xml file!!");
 			return false;
 		}
 	}
@@ -176,23 +178,29 @@ public class ModuleManager implements Module{
 							module_classpath.put(modname, classpath);
 						}
 						else{
-							Logger.getRootLogger().error("Module XML file is corrupt");
+							logger.error("Module XML file is corrupt");
 						}
 					}
 				}
 			}
 		}
-		else Logger.getRootLogger().error("Module XML not loaded. Why is this still being called???");
+		else logger.error("Module XML not loaded. Why is this still being called???");
 	}
 	
 	public void pullTaskAndActions(Module temp, String key){
 		String[] actions = temp.getActions();
 		if(actions != null){
-			for(String act : actions)addAction(act, getModule(key));
+			for(String act : actions){
+				addAction(act, getModule(key));
+				logger.trace("Action: " + act + " added " + getModule(key));
+			}
 		}
 		String[] tasks = temp.getTasks();
 		if(tasks != null){
-			for(String task : tasks)addTask(task, getModule(key));
+			for(String task : tasks){
+				addTask(task, getModule(key));
+				logger.trace("Task: " + task + " added " + getModule(key));
+			}
 		}
 	}
 	
@@ -222,19 +230,19 @@ public class ModuleManager implements Module{
 						temp = null;
 					}
 				} catch (IllegalArgumentException e) {
-					Logger.getRootLogger().error("Cannot create class for module "+key,e);
+					logger.error("Cannot create class for module "+key,e);
 				} catch (SecurityException e) {
-					Logger.getRootLogger().error("Cannot create class for module "+key,e);
+					logger.error("Cannot create class for module "+key,e);
 				} catch (InstantiationException e) {
-					Logger.getRootLogger().error("Cannot create class for module "+key,e);
+					logger.error("Cannot create class for module "+key,e);
 				} catch (IllegalAccessException e) {
-					Logger.getRootLogger().error("Cannot create class for module "+key,e);
+					logger.error("Cannot create class for module "+key,e);
 				} catch (InvocationTargetException e) {
-					Logger.getRootLogger().error("Cannot create class for module "+key,e);
+					logger.error("Cannot create class for module "+key,e);
 				} catch (NoSuchMethodException e) {
-					Logger.getRootLogger().error("Cannot create class for module "+key,e);
+					logger.error("Cannot create class for module "+key,e);
 				} catch (ClassNotFoundException e) {
-					Logger.getRootLogger().error("Cannot create class for module "+key,e);
+					logger.error("Cannot create class for module "+key,e);
 				}
 			}
 		}
@@ -254,19 +262,19 @@ public class ModuleManager implements Module{
 						temp = null;
 					}
 				} catch (IllegalArgumentException e) {
-					Logger.getRootLogger().error("Cannot create class for module "+key,e);
+					logger.error("Cannot create class for module "+key,e);
 				} catch (SecurityException e) {
-					Logger.getRootLogger().error("Cannot create class for module "+key,e);
+					logger.error("Cannot create class for module "+key,e);
 				} catch (InstantiationException e) {
-					Logger.getRootLogger().error("Cannot create class for module "+key,e);
+					logger.error("Cannot create class for module "+key,e);
 				} catch (IllegalAccessException e) {
-					Logger.getRootLogger().error("Cannot create class for module "+key,e);
+					logger.error("Cannot create class for module "+key,e);
 				} catch (InvocationTargetException e) {
-					Logger.getRootLogger().error("Cannot create class for module "+key,e);
+					logger.error("Cannot create class for module "+key,e);
 				} catch (NoSuchMethodException e) {
-					Logger.getRootLogger().error("Cannot create class for module "+key,e);
+					logger.error("Cannot create class for module "+key,e);
 				} catch (ClassNotFoundException e) {
-					Logger.getRootLogger().error("Cannot create class for module "+key,e);
+					logger.error("Cannot create class for module "+key,e);
 				}
 			}
 		}
@@ -274,22 +282,22 @@ public class ModuleManager implements Module{
 	
 	
 	public void addAction(String action, String classpath){
-		Logger.getRootLogger().trace("Adding action "+ action  + " to class or object " + classpath);
+		logger.trace("Adding action "+ action  + " to class or object " + classpath);
 		this.module_actions.put(action, classpath);
 	}
 	
 	public void addTask(String taskName, String taskclasspath){
-		Logger.getRootLogger().trace("Adding task "+ taskName  + " to class or object " + taskclasspath);
+		logger.trace("Adding task "+ taskName  + " to class or object " + taskclasspath);
 		this.module_tasks.put(taskName, taskclasspath);
 	}
 	
 	public void addModule(String modulename, String moduleclasspath){
-		Logger.getRootLogger().trace("Adding ModuleName "+ modulename  + " with path / object name " + moduleclasspath);
+		logger.trace("Adding ModuleName "+ modulename  + " with path / object name " + moduleclasspath);
 		this.module_classpath.put(modulename, moduleclasspath);
 	}
 	
 	public void addPrebuiltModule(String key, Module mod, UI ui){
-		Logger.getRootLogger().debug("Loading Module "+ key);
+		logger.debug("Loading Module "+ key);
 		String modname = persistkeyword+modulecount;
 		modulecount++;
 		mod.resetModuleName(modname);/*<- Important to set, else any downstream 
@@ -318,7 +326,7 @@ public class ModuleManager implements Module{
 	public void runAction(EddieGUI gui, String action){
 		try {
 			String actionclass = this.module_actions.get(action);
-			Logger.getRootLogger().debug("Responding to action "+ action + " class : " + actionclass);
+			logger.debug("Responding to action "+ action + " class : " + actionclass);
 			if(!actionclass.startsWith(persistkeyword)){
 				Module temp =(Module)Class.forName(actionclass).getConstructor().newInstance();
 				temp.actOnAction(action, gui);
@@ -329,23 +337,23 @@ public class ModuleManager implements Module{
 					modules[index].actOnAction(action, gui);
 				}
 				else{
-					Logger.getRootLogger().error("An error occured attempting to retrieve persistant object"+ actionclass);
+					logger.error("An error occured attempting to retrieve persistant object"+ actionclass);
 				}
 			}			
 		} catch (IllegalArgumentException e) {
-			Logger.getRootLogger().error("An error running action "+action, e);
+			logger.error("An error running action "+action, e);
 		} catch (SecurityException e) {
-			Logger.getRootLogger().error("An error running action "+action, e);
+			logger.error("An error running action "+action, e);
 		} catch (InstantiationException e) {
-			Logger.getRootLogger().error("An error running action "+action, e);
+			logger.error("An error running action "+action, e);
 		} catch (IllegalAccessException e) {
-			Logger.getRootLogger().error("An error running action "+action, e);
+			logger.error("An error running action "+action, e);
 		} catch (InvocationTargetException e) {
-			Logger.getRootLogger().error("An error running action "+action, e);
+			logger.error("An error running action "+action, e);
 		} catch (NoSuchMethodException e) {
-			Logger.getRootLogger().error("An error running action "+action, e);
+			logger.error("An error running action "+action, e);
 		} catch (ClassNotFoundException e) {
-			Logger.getRootLogger().error("An error running action "+action, e);
+			logger.error("An error running action "+action, e);
 		}
 	}
 	
@@ -362,23 +370,23 @@ public class ModuleManager implements Module{
 					modules[index].actOnTask(task, ui);
 				}
 				else{
-					Logger.getRootLogger().error("An error occured attempting to retrieve persistant object"+ taskclass);
+					logger.error("An error occured attempting to retrieve persistant object"+ taskclass);
 				}
 			}			
 		} catch (IllegalArgumentException e) {
-			Logger.getRootLogger().error("An error running task "+task, e);
+			logger.error("An error running task "+task, e);
 		} catch (SecurityException e) {
-			Logger.getRootLogger().error("An error running task "+task, e);
+			logger.error("An error running task "+task, e);
 		} catch (InstantiationException e) {
-			Logger.getRootLogger().error("An error running task "+task, e);
+			logger.error("An error running task "+task, e);
 		} catch (IllegalAccessException e) {
-			Logger.getRootLogger().error("An error running task "+task, e);
+			logger.error("An error running task "+task, e);
 		} catch (InvocationTargetException e) {
-			Logger.getRootLogger().error("An error running task "+task, e);
+			logger.error("An error running task "+task, e);
 		} catch (NoSuchMethodException e) {
-			Logger.getRootLogger().error("An error running task "+task, e);
+			logger.error("An error running task "+task, e);
 		} catch (ClassNotFoundException e) {
-			Logger.getRootLogger().error("An error running task "+task, e);
+			logger.error("An error running task "+task, e);
 		}		
 	}
 	
@@ -397,19 +405,19 @@ public class ModuleManager implements Module{
 					}
 				}
 			} catch (IllegalArgumentException e) {
-				Logger.getRootLogger().error("Error printing tasks for key "+key, e);
+				logger.error("Error printing tasks for key "+key, e);
 			} catch (SecurityException e) {
-				Logger.getRootLogger().error("Error printing tasks for key "+key, e);
+				logger.error("Error printing tasks for key "+key, e);
 			} catch (InstantiationException e) {
-				Logger.getRootLogger().error("Error printing tasks for key "+key, e);
+				logger.error("Error printing tasks for key "+key, e);
 			} catch (IllegalAccessException e) {
-				Logger.getRootLogger().error("Error printing tasks for key "+key, e);
+				logger.error("Error printing tasks for key "+key, e);
 			} catch (InvocationTargetException e) {
-				Logger.getRootLogger().error("Error printing tasks for key "+key, e);
+				logger.error("Error printing tasks for key "+key, e);
 			} catch (NoSuchMethodException e) {
-				Logger.getRootLogger().error("Error printing tasks for key "+key, e);
+				logger.error("Error printing tasks for key "+key, e);
 			} catch (ClassNotFoundException e) {
-				Logger.getRootLogger().error("Error printing tasks for key "+key, e);
+				logger.error("Error printing tasks for key "+key, e);
 			}
 		}
 	}

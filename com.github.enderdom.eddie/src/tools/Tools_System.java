@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.commons.lang3.SystemUtils;
+
 public abstract class Tools_System{
 
     public static final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
@@ -34,16 +36,13 @@ public abstract class Tools_System{
 		}
     	
     }
+
     
     public static boolean isWindows(){
-    	String osName = System.getProperty("os.name" );
-    	if(osName.indexOf("Windows") != -1){
-    		return true;
-    	}
-    	else{
-    		return false;
-    	}
+    	return SystemUtils.IS_OS_WINDOWS;
     }
+    
+    
     
     /**
      * Because I can never remeber what the System key is

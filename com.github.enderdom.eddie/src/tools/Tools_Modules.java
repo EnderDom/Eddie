@@ -11,6 +11,7 @@ public class Tools_Modules {
 
 	public static String menudivider = ">";
 	
+	//TODO sort out an ordering mechanism
 	public static JMenuBar add2JMenuBar(JMenuBar bar, JMenuItem item, String location, boolean first){
 		String[] split = location.split(menudivider);
 		JMenu menu = null;

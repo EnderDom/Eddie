@@ -1,9 +1,13 @@
 package databases.bioSQL.psuedoORM;
 
-import java.sql.Timestamp;
+import java.sql.Date;
+
+import databases.manager.DatabaseManager;
 
 public class Run {
 /*
+ * Table create here:
+ * 
 	String table = "CREATE TABLE IF NOT EXISTS run (" +
 	"run_id INT(10) UNSIGNED NOT NULL auto_increment, " +
 	"run_date date NOT NULL, " +
@@ -12,21 +16,19 @@ public class Run {
   	"dbname VARCHAR(40) BINARY, " +
   	"params TEXT, " +
   	"comment TEXT, " +
-	"PRIMARY KEY (bioentry_id), " +
- 	"UNIQUE (run_id)" +
 */
 	
 	private int run_id;
-	private Timestamp datetime;
+	private Date date;
 	private String runtype;
 	private String program;
 	private String dbname;
 	private String params;
 	private String comment;
 	
-	public Run(int r, Timestamp t,String rt, String p, String d, String a, String c){
+	public Run(int r, Date t,String rt, String p, String d, String a, String c){
 		run_id = r;
-		datetime = t;
+		date = t;
 		runtype = rt;
 		program =p;
 		dbname = d;
@@ -44,11 +46,11 @@ public class Run {
 	public void setRun_id(int run_id) {
 		this.run_id = run_id;
 	}
-	public Timestamp getDatetime() {
-		return datetime;
+	public Date getDate() {
+		return date;
 	}
-	public void setDatetime(Timestamp datetime) {
-		this.datetime = datetime;
+	public void setDate(Date datetime) {
+		this.date = datetime;
 	}
 	public String getRuntype() {
 		return runtype;
@@ -81,7 +83,16 @@ public class Run {
 		this.comment = comment;
 	}
 	
-//	public boolean uploadRun(){
-//		return false;
-//	}
+	public boolean uploadRun(DatabaseManager manager){
+		if(manager.getBioSQLXT().setRun(manager, getDate(), 
+				getRuntype(), getProgram(), getDbname(), getParams(), getComment())){
+			this.run_id = manager.getLastInsert();
+			return (this.run_id != -1);
+		}
+		else{
+			return false;
+		}
+	}
+	
+	
 }

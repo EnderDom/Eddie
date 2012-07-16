@@ -2,7 +2,7 @@ package ui;
 
 import gui.EddieGUI;
 import gui.FileViewerModel;
-import gui.utilities.SpringUtilities;
+import gui.utilities.PropertyFrame;
 
 import java.awt.Container;
 import java.awt.event.ActionEvent;
@@ -14,16 +14,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JInternalFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+
 import javax.swing.KeyStroke;
-import javax.swing.SpringLayout;
 
 import cli.EddieCLI;
 import cli.LazyPosixParser;
@@ -42,7 +37,6 @@ import org.apache.log4j.PropertyConfigurator;
 import databases.manager.DatabaseManager;
 
 import tools.Tools_Modules;
-import tools.Tools_UI;
 import tools.Tools_Array;
 import tools.Tools_File;
 import tools.Tools_String;
@@ -61,13 +55,12 @@ public class PropertyLoader implements Module{
      * though this one has been written from scratch
      */
     public static int engineversion = 4;
-    public static double guiversion = 0.25;
+    public static double guiversion = 0.26;
     public static String edition = "Development";
     Level level;
     public static Logger logger;
     public String[] actions;
-    JInternalFrame propsframe;
-	JTextField[] fields;
+    private PropertyFrame propsframe;
 	public static String defaultlnf =  "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
 	public String[] args;
 	public String modulename;
@@ -84,9 +77,20 @@ public class PropertyLoader implements Module{
 	//Database subproperty
 	
 
-	//DO NOT CHANGE POSITIONS!  //TODO move database stuff to a separate DBPrefs file like TestPrefs
-	public static String[] defaultKeys = new String[]{"DBHOST", "DBNAME", "DBUSER", "AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR", "ESTSCAN_BIN", "FILES_XML"};
-	public static String[] defaultKeysUN = new String[]{"PREFLNF","MODULES", "VERSION","DBTYPE","DBDRIVER", "TESTDATADIR"};
+	
+	
+	//This is a bit of a mess now :( sorry
+	public static String DBHOST = "DBHOST";
+	public static String DBNAME = "DBNAME";
+	public static String DBUSER = "DBUSER";
+	public static String DBTYPE = "DBTYPE";
+	public static String DBDRIVER = "DBDRIVER";
+	
+	public static String[] defaultKeys = new String[]{"AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR", "ESTSCAN_BIN", "FILES_XML"};
+	public static String[] defaultKeysUN = new String[]{DBHOST, "DBNAME", "DBUSER", "PREFLNF","MODULES", "VERSION","DBTYPE","DBDRIVER", "TESTDATADIR"};
+	//These should be the index to defaultKeysUN
+	
+	
 	
 	public PropertyLoader() {
 		rootfolder = getEnvirons();
@@ -503,8 +507,8 @@ public class PropertyLoader implements Module{
 	public String[][] getChangableStats(){
 		//These need to all be the same length
 		String[] stats = defaultKeys;
-		String[] stats_val = new String[]{"Localhost", DatabaseManager.default_database, System.getProperty("user.name"),  "5", "1", "/usr/bin/", this.rootfolder+"blas_db"+Tools_System.getFilepathSeparator(),"/usr/bin/ESTscan", rootfolder+FileViewerModel.filename};
-		String[] tool_tips = new String[]{"Host Database IP/Name", "Database Name", "Database Username","Max number of auxiliary threads","Max number of primary threads", "Directory that contains blast executables", 
+		String[] stats_val = new String[]{"5", "1", "/usr/bin/", this.rootfolder+"blas_db"+Tools_System.getFilepathSeparator(),"/usr/bin/ESTscan", rootfolder+FileViewerModel.filename};
+		String[] tool_tips = new String[]{"Max number of auxiliary threads","Max number of primary threads", "Directory that contains blast executables", 
 				"XML file which list current files in project", "Location of the ESTScan executable", "File XML list location"};
 		String[][] ret = new String[3][stats.length];
 		ret[0] = stats;
@@ -515,7 +519,7 @@ public class PropertyLoader implements Module{
 	
 	public String[][] getUnchangableStats(){
 		String[] stats = defaultKeysUN;
-		String[] stats_val = new String[]{defaultlnf, rootfolder+"Modules"+Tools_System.getFilepathSeparator(), guiversion+"","mysql","com.mysql.jdbc.Driver", "/home/user/eddie4/test/"};
+		String[] stats_val = new String[]{"Localhost", DatabaseManager.default_database, System.getProperty("user.name"),defaultlnf, rootfolder+"Modules"+Tools_System.getFilepathSeparator(), guiversion+"","mysql","com.mysql.jdbc.Driver", "/home/user/eddie4/test/"};
 		String[][] ret = new String[2][stats.length];
 		ret[0] = stats;
 		ret[1] = stats_val;
@@ -573,12 +577,28 @@ public class PropertyLoader implements Module{
 	
 	public String[] getDBSettings(){
 		String[] s = new String[5];
-		s[0]=this.getProp("DBTYPE");
-		s[1] =this.getProp("DBDRIVER");
-		s[2] =this.getProp("DBHOST");
-		s[3] =this.getProp("DBNAME");
-		s[4] =this.getProp("DBUSER");
+		s[0]=this.getProp(DBTYPE);
+		s[1] =this.getProp(DBDRIVER);
+		s[2] =this.getProp(DBHOST);
+		s[3] =this.getProp(DBNAME);
+		s[4] =this.getProp(DBUSER);
 		return s;
+	}
+	
+	public String[][] getFullDBsettings(){
+		String[][] db = new String[3][5];
+		String[] d = new String[]{DBTYPE, DBDRIVER, DBHOST,DBNAME,DBUSER};
+		String[] s = new String[]{"Type of database, currently only mysql supported"
+				,"Database driver, this is unlikely to change"
+				,"Name or ip of computer that hosts database, if local, localhost or 129.0.0.1"
+				,"Name of database to store data",
+				"Your mysql username"};
+		for(int i =0 ; i < 5 ; i++){
+			db[0][i] = d[i];
+			db[1][i] = this.getProp(d[i]);
+			db[2][i] = s[i];
+		}
+		return db;
 	}
 	
 	/****************************************************************************/
@@ -597,65 +617,26 @@ public class PropertyLoader implements Module{
 		Logger.getRootLogger().debug("PropertyLoader acting upon command "+s);
 		if(s.contentEquals(this.modulename)){
 			Logger.getRootLogger().debug("Building General Properties Frame");
-			propsframe = Tools_UI.getGenericPropertiesMenu();
-			propsframe.setTitle("General Properties");
-			int  num = 0;
-			JPanel p = new JPanel(new SpringLayout());
-			String[][] labels = getChangableStats();
-			fields = new JTextField[labels[0].length];
-			for(int i= 0 ; i< labels[0].length; i++){
-				JLabel l = new JLabel(labels[0][i], JLabel.TRAILING);
-	            p.add(l);
-	            JTextField textField = new JTextField(10);
-	            textField.setText(getPropOrSet(labels[0][i], labels[1][i]));
-	            textField.setToolTipText(labels[2][i]);
-	            l.setLabelFor(textField);
-	            p.add(textField);
-	            fields[i] = textField;
-	            Logger.getRootLogger().trace("Added Properties " + labels[0][i] + " to Panel as No. " + num);
-	            num++;
-			}
-			JButton button1 = new JButton("Save");
-			JButton button2 = new JButton("Cancel");
-			//TODO fix issue
-			button1.setActionCommand(modulename+"_PROPS_SAVE");
-			gui.addAction(modulename+"_PROPS_SAVE",modulename);
-			gui.addAction(modulename+"_PROPS_CLOSE",modulename);
-			button2.setActionCommand(modulename+"_PROPS_CLOSE");
-			actions = Tools_Array.mergeStrings(actions, new String[]{modulename+"_PROPS_SAVE",modulename+"_PROPS_CLOSE" });
-			button1.addActionListener(gui);
-			button2.addActionListener(gui);
-			
-			p.add(button1);
-			p.add(button2);
-			num++;
-			//Lay out the panel.
-			
-			SpringUtilities.makeCompactGrid(p,
-					num, 2, //rows, cols
-					6, 6,        //initX, initY
-		            6, 6);       //xPad, yPad
-			p.setOpaque(true);
-			propsframe.setContentPane(p);
-			propsframe.pack();
+			propsframe = new PropertyFrame();
+			String[][] labels = this.getChangableStats();
+			for(int i =0;i < labels[0].length; i++)labels[1][i]=this.getPropOrSet(labels[0][i], labels[1][i]);
+			actions = Tools_Array.mergeStrings(actions, propsframe.build(this.modulename, gui, labels));
 			propsframe.setVisible(true);
 			gui.add2Desktop(propsframe);
 		}
 		else if(s.contentEquals(modulename+"_PROPS_CLOSE")){
 			Logger.getRootLogger().debug("Closing General Properties Without Saving");
 			this.propsframe.dispose();
-			fields = null;
 			actions = new String[]{actions[0]};
 		}
 		else if(s.contentEquals(modulename+"_PROPS_SAVE")){
 			Logger.getRootLogger().debug("Closing General Properties and Saving");
 			String[][] states = getChangableStats();
 			for(int i =0; i< states[0].length;i++){
-				Logger.getRootLogger().trace("Setting Property "+states[0][i]+" to " + fields[i].getText());
-				this.props.setProperty(states[0][i], fields[i].getText());
+				Logger.getRootLogger().trace("Setting Property "+states[0][i]+" to " + propsframe.getInput(i));
+				setPropertyValue(states[0][i], propsframe.getInput(i));
 			}
 			this.propsframe.dispose();
-			fields = null;
 			actions = new String[]{actions[0]};
 		} 	
 	}

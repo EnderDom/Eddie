@@ -16,9 +16,11 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -260,16 +262,25 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	}
 
 	public String requiresUserInput(String message, String title) {
-		return JOptionPane.showInternalInputDialog(this, message, title, JOptionPane.QUESTION_MESSAGE);
+		return JOptionPane.showInternalInputDialog(this.desktop, message, title, JOptionPane.QUESTION_MESSAGE);
 	}
 	
-	//TODO make password box
 	public String requiresUserPassword(String message, String title) {
-		return JOptionPane.showInternalInputDialog(this, message, title, JOptionPane.QUESTION_MESSAGE);
+		JPasswordField pwd = new JPasswordField(50);
+		if(!SystemUtils.IS_OS_WINDOWS && !SystemUtils.IS_OS_MAC){
+			//Workaround for bug 6801620
+			pwd.enableInputMethods(true);
+		}
+		return (JOptionPane.showConfirmDialog(this, pwd, title, JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) ?
+		new String(pwd.getPassword()) : null;
 	}
 	
 	public int requiresUserYNI(String message, String title) {
-		return JOptionPane.showInternalConfirmDialog(this, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
+		return JOptionPane.showInternalConfirmDialog(this.desktop, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	public DatabaseManager getDatabaseManager(){
+		return this.dbmanager;
 	}
 	
 	//Returns the default DatabaseManager

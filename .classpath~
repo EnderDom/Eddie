@@ -6,6 +6,7 @@
 			<attribute name="javadoc_location" value="jar:file:com.github.enderdom.eddie/lib/commons-cli-1.2/commons-cli-1.2-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/commons-lang/commons-lang3-3.1.jar" sourcepath="com.github.enderdom.eddie/lib/commons-lang/commons-lang3-3.1-sources.jar" />
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/apache-log4j-1.2.16/log4j-1.2.16.jar" sourcepath="com.github.enderdom.eddie/lib/apache-log4j-1.2.16/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/picard/picard-1.65.jar"/>
@@ -23,8 +24,9 @@
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/iprscan/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/iprscan/IPRScan_AxisM.jar"/>
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/biojava3/biojava3-ws-3.0.3.jar" sourcepath="com.github.enderdom.eddie/lib/biojava3/biojava3-ws-3.0.3-sources.jar"/>
-	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/biojava1.8/blast-1.8.1.jar" sourcepath="com.github.enderdom.eddie/lib/biojava1.8/blast-1.8.1-sources.jar"/>
-	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/biojava1.8/core-1.8.1.jar" sourcepath="com.github.enderdom.eddie/lib/biojava1.8/core-1.8.1-sources.jar"/>
+	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/biojava1.8/blast-1.8.2.jar" sourcepath="com.github.enderdom.eddie/lib/biojava1.8/blast-1.8.2-sources.jar"/>
+	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/biojava1.8/core-1.8.2.jar" sourcepath="com.github.enderdom.eddie/lib/biojava1.8/core-1.8.2-sources.jar"/>
+	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/biojava1.8/biosql-1.8.2.jar" sourcepath="com.github.enderdom.eddie/lib/biojava1.8/biosql-1.8.2-sources.jar"/>
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/SQL/mysql-connector-java-5.1.6.jar"/>
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/pdfbox/pdfbox-1.6.0.jar" sourcepath="com.github.enderdom.eddie/lib/pdfbox/pdfbox-1.6.0-src.zip"/>
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/pdfbox/fontbox-1.6.0.jar"/>

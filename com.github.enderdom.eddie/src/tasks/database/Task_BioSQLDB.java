@@ -109,24 +109,24 @@ public class Task_BioSQLDB extends Task{
 		this.ui = ui;
 	}
 	
-	public boolean canProceedwithSetup(DatabaseManager manager){
+	public static boolean canProceedwithSetup(DatabaseManager manager){
 		manager.createAndOpen();
 		int j = manager.getTableCount();
-		logger.debug("Database contains " + j + " tables");
+		Logger.getRootLogger().debug("Database contains " + j + " tables");
 		if(j > 0){
 			double d = manager.getBioSQLXT().getDatabaseVersion(manager);
 			if(d < 0){
 				if(manager.getBioSQLXT().getEddieFromDatabase(manager) > 0){
-					logger.warn("Eddie uses this database, but has not added a the  info table ??? >:S");
+					Logger.getRootLogger().warn("Eddie uses this database, but has not added a the  info table ??? >:S");
 					return true;
 				}
 				else{
-					logger.error("This database has not been used by Eddie, run an integration script if they've been written yet?");
+					Logger.getRootLogger().error("This database has not been used by Eddie, run an integration script if they've been written yet?");
 					return false;
 				}
 			}
 			else if(d < DatabaseManager.getDatabaseversion()){
-				logger.error("Database version is too old v"+d+", run update to v"+DatabaseManager.getDatabaseversion()+" if available or manually remove database");
+				Logger.getRootLogger().error("Database version is too old v"+d+", run update to v"+DatabaseManager.getDatabaseversion()+" if available or manually remove database");
 				return false;
 			}
 			else{
@@ -134,15 +134,15 @@ public class Task_BioSQLDB extends Task{
 			}
 		}
 		else{
-			logger.debug("0 Tables found, building database");
+			Logger.getRootLogger().debug("0 Tables found, building database");
 			manager.getBioSQL().buildDatabase(manager.getCon());
 			return true;
 		}
 	}
 	
-	public boolean setup(DatabaseManager manager){
+	public static boolean setup(DatabaseManager manager){
 		if(canProceedwithSetup(manager)){
-			logger.debug("Setting up database");
+			Logger.getRootLogger().debug("Setting up database...");
 			BioSQLExtended bsxt = manager.getBioSQLXT();
 			bsxt.addLegacyVersionTable(manager,new String(PropertyLoader.getFullVersion()+""), new String(DatabaseManager.getDatabaseversion()+""));
 			//bsxt.addBioEntrySynonymTable(manager);

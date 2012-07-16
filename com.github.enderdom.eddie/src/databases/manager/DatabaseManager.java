@@ -2,6 +2,7 @@ package databases.manager;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -98,7 +99,7 @@ public class DatabaseManager {
 	}
 	
 	private Connection openDefaultConnection(String[] mydb, boolean db){
-		if(password == null)password = ui.requiresUserPassword("Password for access to "+mydb[2] + " database for user " + mydb[4], "Please enter the database password");
+		if(password == null)password = ui.requiresUserPassword("Password for access to "+mydb[2] + " database for user " + mydb[4], "Password Request");
 		return this.openConnection(mydb[0], mydb[1], mydb[2], mydb[3], mydb[4], password, db);
 	}
 	
@@ -129,7 +130,6 @@ public class DatabaseManager {
 				st.executeUpdate("CREATE DATABASE IF NOT EXISTS " + dbname);
 				st.close();
 			}
-			//st.executeUpdate("CREATE GOD IF NOT EXISTS " + dbname);
 			return true;
 		}
 		catch (SQLException e) {
@@ -156,6 +156,7 @@ public class DatabaseManager {
 			}
 			else if(this.biosql.equals("postgresql")){
 				//this.biosql = new PgSQL_BioSQL();
+				logger.warn("Not yet supported :( , sorry");
 			}
 			else{
 				logger.warn("Database type not set or not recognised");
@@ -202,11 +203,26 @@ public class DatabaseManager {
 			return Tools_SQL_MySQL.getTableCount(getCon());
 		}
 		else if(this.dbtype.equals("banana")){
-			logger.error("That's not a type of database that's a fruit?");
+			logger.error("Fruit in database error.");
 			return -1;
 		}
 		else{
 			logger.error("Unimplemented Procedure");
+			return -1;
+		}
+	}
+	
+	public int getLastInsert(){
+		try{
+			Statement st = con.createStatement();
+			ResultSet set = st.executeQuery("SELECT LAST_INSERT_ID()");
+			while(set.next()){
+				return set.getInt(1);
+			}
+			return -1;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to get last insert, you sure you inserted stuff");
 			return -1;
 		}
 	}

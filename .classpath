@@ -6,6 +6,7 @@
 			<attribute name="javadoc_location" value="jar:file:com.github.enderdom.eddie/lib/commons-cli-1.2/commons-cli-1.2-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/commons-lang/commons-lang3-3.1.jar" sourcepath="com.github.enderdom.eddie/lib/commons-lang/commons-lang3-3.1-sources.jar" />
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/apache-log4j-1.2.16/log4j-1.2.16.jar" sourcepath="com.github.enderdom.eddie/lib/apache-log4j-1.2.16/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="com.github.enderdom.eddie/lib/picard/picard-1.65.jar"/>

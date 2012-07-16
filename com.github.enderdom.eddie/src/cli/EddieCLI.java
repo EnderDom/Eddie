@@ -196,7 +196,7 @@ public class EddieCLI implements UI {
 	}
 	
 	public String requiresUserPassword(String message, String title) {
-		return Tools_CLI.showInternalPasswordDialog(message, title);
+		return Tools_CLI.showInternalPasswordDialog(message,title);
 	}
 
 	public int requiresUserYNI(String message, String title) {

@@ -1,6 +1,7 @@
 package databases.bioSQL.mysql;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,16 +34,17 @@ public class MySQL_Extended implements BioSQLExtended{
 	ResultSet set;
 	
 	//GETS
-	PreparedStatement DbxrefGET;
-	PreparedStatement ReadFromContigGET;
-	PreparedStatement ContigFromReadGET;
-	PreparedStatement BioSequenceGET;
+	PreparedStatement dbxrefGET;
+	PreparedStatement readFromContigGET;
+	PreparedStatement contigFromReadGET;
+	PreparedStatement bioSequenceGET;
 	
 	//SETS
-	PreparedStatement AssemblySET;
+	PreparedStatement assemblySET;
+	PreparedStatement runSET;
 	
 	//EXISTS
-	PreparedStatement DbxrefEXIST;
+	PreparedStatement dbxrefEXIST;
 	
 	/******************************************************************/
 	/* 
@@ -243,11 +245,11 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 
 	
-	/******************************************************************/
-	/* 
+	/* ***************************************************************
+	 * 
 	 * METHOD EXTENSIONS HERE 
-	 */ 
-	 /******************************************************************/
+	 * 
+	 ******************************************************************/
 	
 	
 	public double getDatabaseVersion(DatabaseManager manager) {
@@ -333,9 +335,9 @@ public class MySQL_Extended implements BioSQLExtended{
 		String sql = new String("SELECT read_bioentry_id FROM assembly WHERE contig_bioentry_id=?");
 		LinkedList<Integer> values = new LinkedList<Integer>();
 		try{
-			ReadFromContigGET = MySQL_BioSQL.init(manager.getCon(), ReadFromContigGET, sql);
-			ReadFromContigGET.setInt(1,bioentry_id);
-			set = ReadFromContigGET.executeQuery();
+			readFromContigGET = MySQL_BioSQL.init(manager.getCon(), readFromContigGET, sql);
+			readFromContigGET.setInt(1,bioentry_id);
+			set = readFromContigGET.executeQuery();
 			while(set.next()){
 				values.add(set.getInt(1));
 			}
@@ -351,10 +353,10 @@ public class MySQL_Extended implements BioSQLExtended{
 	public int getContigFromRead(DatabaseManager manager, int bioentry_id, int run_id){
 		String sql = new String("SELECT contig_bioentry_id FROM assembly WHERE read_bioentry_id=? AND run_id=?");
 		try{
-			ContigFromReadGET = MySQL_BioSQL.init(manager.getCon(), ContigFromReadGET, sql);
-			ContigFromReadGET.setInt(1,bioentry_id);
-			ContigFromReadGET.setInt(2,run_id);
-			set = ContigFromReadGET.executeQuery();
+			contigFromReadGET = MySQL_BioSQL.init(manager.getCon(), contigFromReadGET, sql);
+			contigFromReadGET.setInt(1,bioentry_id);
+			contigFromReadGET.setInt(2,run_id);
+			set = contigFromReadGET.executeQuery();
 			while(set.next()){
 				return set.getInt(1);
 			}
@@ -398,6 +400,131 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 	
 	
+
+	
+	public boolean existsDbxRefId(DatabaseManager manager, int bioentry_id, int dbxref_id, int rank){
+		
+		String sql = "SELECT COUNT(1) AS bool FROM bioentry_dbxref WHERE bioentry_id=? AND dbxref_id=? AND rank=?";
+		try {
+			dbxrefEXIST = MySQL_BioSQL.init(manager.getCon(), dbxrefEXIST, sql);
+			dbxrefEXIST.setInt(1, bioentry_id);
+			dbxrefEXIST.setInt(2, dbxref_id);
+			dbxrefEXIST.setInt(3, rank);
+			set = dbxrefEXIST.executeQuery();
+			while(set.next()){
+				return (set.getInt(1) > 0);
+			}
+		} 
+		catch (SQLException e) {
+			logger.error("Failed to add bioentry_dbxref entry", e);
+		}
+		return false;
+	}
+	
+	/** INDEV function
+	 * 
+	 * 
+	 * @param manager database manager
+	 * @param contig_id to map to read, this should be a bioentry_id previously identified
+	 * @param read_id to map to contig, this should be a bioentry_id previously identified
+	 * @param runid
+	 * @param offset, where the read  
+	 * @param start of read alignment to contig relative to read, ie 4 = offset+4 for alignment
+	 * @param stop where the read stops alignment
+	 * @param trimmed whether or not the read was trimmed
+	 * 
+	 * @return successful or not
+	 */
+	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, int read_id, int read_version, int runid, int start, int stop, boolean trimmed){
+		String sql = "INSERT INTO assembly (contig_bioentry_id, read_bioentry_id, read_version, run_id, trimmed, range_start, range_end) VALUES (?,?,?,?,?,?,?)";
+		try {
+			assemblySET = MySQL_BioSQL.init(manager.getCon(), assemblySET, sql);
+			assemblySET.setInt(1, contig_id);
+			assemblySET.setInt(2, read_id);
+			assemblySET.setInt(3, read_version);
+			assemblySET.setInt(4, runid);
+			if(trimmed) assemblySET.setInt(5, 1); 
+			else assemblySET.setInt(5, 0);
+			assemblySET.setInt(6, start);
+			assemblySET.setInt(7, stop);
+			return assemblySET.execute();
+		} 
+		catch(SQLException e){
+			logger.error("Failed to insert assembly data into database", e);
+			return false;
+		}
+	}
+	
+	
+	
+	/* *****************************************************************************************
+	 * 
+	 * 
+	 *										GETS (SELECTS)
+	 * 
+	 * 
+	 *******************************************************************************************/
+
+	public int[] getRunId(DatabaseManager manager, String programname, String runtype){
+		String sql = new String("SELECT run_id FROM run WHERE program LIKE '"+programname+"' AND runtype='"+runtype+"'");
+		LinkedList<Integer> ins = new LinkedList<Integer>();
+		try{
+			Statement st = manager.getCon().createStatement();
+			set = st.executeQuery(sql);
+			while(set.next()){
+				ins.add(set.getInt(1));
+			}
+			st.close();
+			return Tools_Array.ListInt2int(ins);
+		}
+		catch(SQLException sq){
+			logger.error("Failed to get run id." , sq);
+			return new int[]{-1};
+		}
+	}
+
+	public Run getRun(DatabaseManager manager, int run_id){
+		String sql = new String("SELECT run_date, runtype, program, dbname,params, comment FROM run WHERE run_id="+run_id);
+		try{
+			Statement st = manager.getCon().createStatement();
+			set = st.executeQuery(sql);
+			while(set.next()){
+				return new Run(run_id, set.getDate(1),set.getString(2), set.getString(3), set.getString(4), set.getString(5),set.getString(6));
+			}
+			return null;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to get run id." , sq);
+			return null;
+		}
+	}
+	
+	public BioSequence[] getBioSequences(DatabaseManager manager, int bioentry_id){
+		String sql = "SELECT version, length, alphabet, seq FROM biosequence WHERE bioentry_id=?";
+		LinkedList<BioSequence> biosequences = new LinkedList<BioSequence>();
+		try {
+			bioSequenceGET = MySQL_BioSQL.init(manager.getCon(), bioSequenceGET, sql);
+			bioSequenceGET.setInt(1, bioentry_id);
+			set = bioSequenceGET.executeQuery();
+			while(set.next()){
+				biosequences.add(new BioSequence(bioentry_id, set.getInt(1), set.getInt(2), set.getString(3), set.getString(4)));
+			}
+			return biosequences.toArray(new BioSequence[0]);
+		} 
+		catch(SQLException e){
+			logger.error("Failed to insert assembly data into database", e);
+			return null;
+		}
+	}
+	
+	/* *****************************************************************************************
+	 * 
+	 * 
+	 *										INSERTS
+	 * 
+	 * 
+	 *******************************************************************************************/
+	
 	/**
 	 * @see #addBioentryDbxrefCols(Connection)
 	 * 	 
@@ -424,139 +551,53 @@ public class MySQL_Extended implements BioSQLExtended{
 		String sql = "INSERT INTO bioentry_dbxref (bioentry_id, dbxref_id, rank, evalue,score, dbxref_startpos,"+
 			"dbxref_endpos, dbxref_frame, bioentry_startpos, bioentry_endpos, bioentry_frame) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
 		try {
-			DbxrefGET = MySQL_BioSQL.init(manager.getCon(), DbxrefGET, sql);
-			DbxrefGET.setInt(1, bioentry_id);
-			DbxrefGET.setInt(2, dbxref_id);
-			DbxrefGET.setInt(3, rank);
-			if(evalue != null) DbxrefGET.setDouble(4, evalue);
-			else DbxrefGET.setNull(4, Types.DOUBLE);
-			if(score != null) DbxrefGET.setInt(5, score);
-			else DbxrefGET.setNull(5, Types.INTEGER);
-			if(dbxref_startpos != null) DbxrefGET.setInt(6, dbxref_startpos);
-			else DbxrefGET.setNull(6, Types.INTEGER);
-			if(dbxref_endpos != null) DbxrefGET.setInt(7, dbxref_endpos);
-			else DbxrefGET.setNull(7, Types.INTEGER);
-			if(dbxref_frame != null) DbxrefGET.setInt(8, dbxref_frame);
-			else DbxrefGET.setNull(8, Types.INTEGER);
-			if(bioentry_startpos != null) DbxrefGET.setInt(9, bioentry_startpos);
-			else DbxrefGET.setNull(9, Types.INTEGER);
-			if(bioentry_endpos != null) DbxrefGET.setInt(10, bioentry_endpos);
-			else DbxrefGET.setNull(10, Types.INTEGER);
-			if(bioentry_frame != null) DbxrefGET.setInt(11, bioentry_frame);
-			else DbxrefGET.setNull(11, Types.INTEGER);
-			return DbxrefGET.execute();
+			dbxrefGET = MySQL_BioSQL.init(manager.getCon(), dbxrefGET, sql);
+			dbxrefGET.setInt(1, bioentry_id);
+			dbxrefGET.setInt(2, dbxref_id);
+			dbxrefGET.setInt(3, rank);
+			if(evalue != null) dbxrefGET.setDouble(4, evalue);
+			else dbxrefGET.setNull(4, Types.DOUBLE);
+			if(score != null) dbxrefGET.setInt(5, score);
+			else dbxrefGET.setNull(5, Types.INTEGER);
+			if(dbxref_startpos != null) dbxrefGET.setInt(6, dbxref_startpos);
+			else dbxrefGET.setNull(6, Types.INTEGER);
+			if(dbxref_endpos != null) dbxrefGET.setInt(7, dbxref_endpos);
+			else dbxrefGET.setNull(7, Types.INTEGER);
+			if(dbxref_frame != null) dbxrefGET.setInt(8, dbxref_frame);
+			else dbxrefGET.setNull(8, Types.INTEGER);
+			if(bioentry_startpos != null) dbxrefGET.setInt(9, bioentry_startpos);
+			else dbxrefGET.setNull(9, Types.INTEGER);
+			if(bioentry_endpos != null) dbxrefGET.setInt(10, bioentry_endpos);
+			else dbxrefGET.setNull(10, Types.INTEGER);
+			if(bioentry_frame != null) dbxrefGET.setInt(11, bioentry_frame);
+			else dbxrefGET.setNull(11, Types.INTEGER);
+			return dbxrefGET.execute();
 		} 
 		catch (SQLException e) {
 			logger.error("Failed to add bioentry_dbxref entry", e);
 			return false;
 		}
 	}
-	
-	public boolean existsDbxRefId(DatabaseManager manager, int bioentry_id, int dbxref_id, int rank){
-		
-		String sql = "SELECT COUNT(1) AS bool FROM bioentry_dbxref WHERE bioentry_id=? AND dbxref_id=? AND rank=?";
-		try {
-			DbxrefEXIST = MySQL_BioSQL.init(manager.getCon(), DbxrefEXIST, sql);
-			DbxrefEXIST.setInt(1, bioentry_id);
-			DbxrefEXIST.setInt(2, dbxref_id);
-			DbxrefEXIST.setInt(3, rank);
-			set = DbxrefEXIST.executeQuery();
-			while(set.next()){
-				return (set.getInt(1) > 0);
-			}
-		} 
-		catch (SQLException e) {
-			logger.error("Failed to add bioentry_dbxref entry", e);
-		}
-		return false;
-	}
-	
-	/** INDEV function
-	 * 
-	 * 
-	 * @param manager database manager
-	 * @param contig_id to map to read, this should be a bioentry_id previously identified
-	 * @param read_id to map to contig, this should be a bioentry_id previously identified
-	 * @param runid
-	 * @param offset, where the read  
-	 * @param start of read alignment to contig relative to read, ie 4 = offset+4 for alignment
-	 * @param stop where the read stops alignment
-	 * @param trimmed whether or not the read was trimmed
-	 * 
-	 * @return successful or not
-	 */
 
-	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, int read_id, int read_version, int runid, int start, int stop, boolean trimmed){
-		String sql = "INSERT INTO assembly (contig_bioentry_id, read_bioentry_id, read_version, run_id, trimmed, range_start, range_end) VALUES (?,?,?,?,?,?,?)";
-		try {
-			AssemblySET = MySQL_BioSQL.init(manager.getCon(), AssemblySET, sql);
-			AssemblySET.setInt(1, contig_id);
-			AssemblySET.setInt(2, read_id);
-			AssemblySET.setInt(3, read_version);
-			AssemblySET.setInt(4, runid);
-			if(trimmed) AssemblySET.setInt(5, 1); 
-			else AssemblySET.setInt(5, 0);
-			AssemblySET.setInt(6, start);
-			AssemblySET.setInt(7, stop);
-			return AssemblySET.execute();
-		} 
-		catch(SQLException e){
-			logger.error("Failed to insert assembly data into database", e);
+	
+	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String dbname, String params, String comment){
+		String sql = "INSERT INTO run (run_date, runtype, program, dbname, params, comment) VALUES (?,?,?,?,?,?);";
+		try{
+			runSET = MySQL_BioSQL.init(manager.getCon(), runSET, sql);
+			runSET.setDate(1, date);
+			runSET.setString(2, runtype);
+			runSET.setString(3, program);
+			if(dbname == null)runSET.setNull(4, Types.VARCHAR);
+			else runSET.setString(4, dbname);
+			if(params == null)runSET.setNull(5, Types.VARCHAR);
+			else runSET.setString(5, params);
+			if(comment == null)runSET.setNull(6, Types.VARCHAR);
+			else runSET.setString(6, comment);
+			return runSET.execute();
+		}
+		catch(SQLException sq){
+			logger.error("Failed to insert run");
 			return false;
 		}
 	}
-	
-	public int[] getRunId(DatabaseManager manager, String programname, String runtype){
-		String sql = new String("SELECT run_id FROM run WHERE program LIKE '"+programname+"' AND runtype='"+runtype+"'");
-		LinkedList<Integer> ins = new LinkedList<Integer>();
-		try{
-			Statement st = manager.getCon().createStatement();
-			set = st.executeQuery(sql);
-			while(set.next()){
-				ins.add(set.getInt(1));
-			}
-			st.close();
-			return Tools_Array.ListInt2int(ins);
-		}
-		catch(SQLException sq){
-			logger.error("Failed to get run id." , sq);
-			return new int[]{-1};
-		}
-	}
-
-	public Run getRun(DatabaseManager manager, int run_id){
-		String sql = new String("SELECT run_date, runtype, program, dbname,params, comment FROM run WHERE run_id="+run_id);
-		try{
-			Statement st = manager.getCon().createStatement();
-			set = st.executeQuery(sql);
-			while(set.next()){
-				return new Run(run_id, set.getTimestamp(1),set.getString(2), set.getString(3), set.getString(4), set.getString(5),set.getString(6));
-			}
-			return null;
-		}
-		catch(SQLException sq){
-			logger.error("Failed to get run id." , sq);
-			return null;
-		}
-	}
-	
-	public BioSequence[] getBioSequences(DatabaseManager manager, int bioentry_id){
-		String sql = "SELECT version, length, alphabet, seq FROM biosequence WHERE bioentry_id=?";
-		LinkedList<BioSequence> biosequences = new LinkedList<BioSequence>();
-		try {
-			BioSequenceGET = MySQL_BioSQL.init(manager.getCon(), BioSequenceGET, sql);
-			BioSequenceGET.setInt(1, bioentry_id);
-			set = BioSequenceGET.executeQuery();
-			while(set.next()){
-				biosequences.add(new BioSequence(bioentry_id, set.getInt(1), set.getInt(2), set.getString(3), set.getString(4)));
-			}
-			return biosequences.toArray(new BioSequence[0]);
-		} 
-		catch(SQLException e){
-			logger.error("Failed to insert assembly data into database", e);
-			return null;
-		}
-	}
-	
-	
 }
