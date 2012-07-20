@@ -17,7 +17,7 @@ public interface BioSQLExtended {
 	
 	//Runtypes of run table
 	public static String assembly = "assembly";
-	
+	public static String runtable = "run";
 
 	public boolean addEddie2Database(DatabaseManager dbman);
 
@@ -48,13 +48,7 @@ public interface BioSQLExtended {
 	
 	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, int read_id, int read_version, int runid, int start, int stop, boolean trimmed);
 	
-	/**
-	 * 
-	 * @param con
-	 * @param bioentry_id
-	 * @return int array, will return array of length 0 if no contigs attached
-	 * to the contig id or a null object if there was an SQLException
-	 */
+	public String[][] getUniqueStringFields(DatabaseManager manager, String[] fields, String table);
 	
 	public Run getRun(DatabaseManager manager, int run_id);
 	
@@ -73,7 +67,7 @@ public interface BioSQLExtended {
 	
 	public BioSequence[] getBioSequences(DatabaseManager manager, int bioentry_id);
 	
-	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String dbname, String params, String comment);
+	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String version, String dbname, String params, String comment);
 	
 	
 }

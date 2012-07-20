@@ -118,12 +118,13 @@ public class MySQL_Extended implements BioSQLExtended{
 	 */
 	public boolean addRunTable(DatabaseManager manager) {
 		//Should be run after bioentry_dbxref mods
-		logger.debug("Creating run table...");
-		String table = "CREATE TABLE IF NOT EXISTS run (" +
+		logger.debug("Creating "+runtable+" table...");
+		String table = "CREATE TABLE IF NOT EXISTS "+runtable+" (" +
 				"run_id INT(10) UNSIGNED NOT NULL auto_increment, " +
 				"run_date date NOT NULL, " +
 				"runtype VARCHAR(20) BINARY NOT NULL, " +
 			  	"program VARCHAR(40) BINARY NOT NULL, " +
+			  	"version VARCHAR(40) BINARY, " +
 			  	"dbname VARCHAR(40) BINARY, " +
 			  	"params TEXT, " +
 			  	"comment TEXT, " +
@@ -134,13 +135,13 @@ public class MySQL_Extended implements BioSQLExtended{
 			st.executeUpdate(table);
 			//Note, this will fail if addBioentryDbxrefsCols() has not been called previously
 			String key1 = "ALTER TABLE bioentry_dbxref ADD CONSTRAINT FKbioentry_dbxref_run "+
-			"FOREIGN KEY (run_id) REFERENCES run(run_id) ON DELETE CASCADE;";
+			"FOREIGN KEY (run_id) REFERENCES "+runtable+"(run_id) ON DELETE CASCADE;";
 			st.executeUpdate(key1);
 			st.close();
 			return true;
 		}
 		catch(SQLException se){
-			logger.error("Failed to create run table", se);
+			logger.error("Failed to create "+runtable+" table", se);
 			return false;
 		}
 	}
@@ -250,7 +251,43 @@ public class MySQL_Extended implements BioSQLExtended{
 	 * METHOD EXTENSIONS HERE 
 	 * 
 	 ******************************************************************/
+
+	public String[][] getUniqueStringFields(DatabaseManager manager, String[] fields, String table){
+		String[][] ret = new String[fields.length][0];
+		try{
+		Statement st = manager.getCon().createStatement();
+			for(int i =0; i < fields.length; i++){
+				LinkedList<String> results = new LinkedList<String>();
+				String sql = "SELECT DISTINCT("+fields[i]+") FROM " + table;
+				set = st.executeQuery(sql);
+				while(set.next()){
+					results.add(set.getString(fields[i]));
+				}
+				if(results.size() > ret[i].length){
+					String[][] str = new String[fields.length][results.size()];
+					for(int j = 0; j < i; j++){
+						for(int k =0; k < ret[i].length;k++){
+							str[j][k] = ret[j][k];
+						}
+					}
+					ret = str;
+				}
+				for(int j =0;j < results.size(); j++){
+					ret[i][j]=results.get(j);
+				}
+			}
+		}
+		catch(SQLException sq){
+			logger.error("Failed to run getUniqueFields query");
+		}
+		return ret;
+	}
 	
+	public String[][] getStringFields(DatabaseManager manager, String[] fields, String table){
+		
+		logger.warn("Incomplete method");//TODO
+		return null;
+	}
 	
 	public double getDatabaseVersion(DatabaseManager manager) {
 		String g = "SELECT DatabaseVersion FROM info WHERE NUMB=1";
@@ -580,19 +617,21 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 
 	
-	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String dbname, String params, String comment){
+	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String version, String dbname, String params, String comment){
 		String sql = "INSERT INTO run (run_date, runtype, program, dbname, params, comment) VALUES (?,?,?,?,?,?);";
 		try{
 			runSET = MySQL_BioSQL.init(manager.getCon(), runSET, sql);
 			runSET.setDate(1, date);
 			runSET.setString(2, runtype);
 			runSET.setString(3, program);
-			if(dbname == null)runSET.setNull(4, Types.VARCHAR);
-			else runSET.setString(4, dbname);
-			if(params == null)runSET.setNull(5, Types.VARCHAR);
-			else runSET.setString(5, params);
-			if(comment == null)runSET.setNull(6, Types.VARCHAR);
-			else runSET.setString(6, comment);
+			if(version == null)runSET.setNull(4, Types.VARCHAR);
+			else runSET.setString(4, version);
+			if(dbname == null)runSET.setNull(5, Types.VARCHAR);
+			else runSET.setString(5, dbname);
+			if(params == null)runSET.setNull(6, Types.VARCHAR);
+			else runSET.setString(6, params);
+			if(comment == null)runSET.setNull(7, Types.VARCHAR);
+			else runSET.setString(7, comment);
 			return runSET.execute();
 		}
 		catch(SQLException sq){

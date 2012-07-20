@@ -10,6 +10,7 @@ import gui.EddieGUI;
 import gui.utilities.PropertyFrame;
 
 
+import tasks.database.Task_AddRunData;
 import tasks.database.Task_Assembly2DB;
 import tasks.database.Task_BioSQLDB;
 import tasks.database.Task_Blast;
@@ -24,12 +25,13 @@ public class Module_DB extends Module_Basic {
 
 	// Change to Options ...?
 	protected String[] tasks = new String[] { "sqladmin", "sqluploader",
-			"uploadblast", "dbtools" };
+			"uploadblast", "dbtools", "uploadrun"};
 	protected String[] taskinfo = new String[] {
 			"Builds/Modifies the Default bioSQL Database for Eddie",
 			"Upload Stuff to the Database",
 			"Upload blast hit data to database",
-			"	Tools for pulling various data from database" };
+			"	Tools for pulling various data from database", 
+			"Manually add a program run reference to database" };
 
 	public String menustring = "Database";
 	private static String[] dbactions = new String[] { "Add Program Run...",
@@ -41,7 +43,7 @@ public class Module_DB extends Module_Basic {
 	 */
 	protected String[] classes = new String[] { Task_BioSQLDB.class.getName(),
 			Task_Assembly2DB.class.getName(), Task_Blast.class.getName(),
-			Task_dbTools.class.getName() };
+			Task_dbTools.class.getName(), Task_AddRunData.class.getName()};
 
 	protected String[] actions;
 	

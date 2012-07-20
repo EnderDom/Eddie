@@ -17,6 +17,14 @@ public abstract class Tools_System{
         return sdf.format(cal.getTime());
     }
     
+    public static final String getDate(String format, Date d){
+    	return new SimpleDateFormat(format).format(d);
+    }
+    
+    public static final Date getDateFromString(String date, String format) throws ParseException{
+    	return new SimpleDateFormat(format).parse(date);
+    }
+    
     public static final String getDateNow(String format){
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat(format);
