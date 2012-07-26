@@ -44,7 +44,7 @@ public abstract class Module_Basic implements Module{
 					}
 				} 					
 				catch (Exception e) {
-					Logger.getRootLogger().fatal("Task class does not exist, please report this bug:", e);
+					Logger.getRootLogger().fatal("Task class failed, please report this bug:", e);
 				}
 			}
 		}

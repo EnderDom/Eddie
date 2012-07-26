@@ -283,12 +283,6 @@ public class MySQL_Extended implements BioSQLExtended{
 		return ret;
 	}
 	
-	public String[][] getStringFields(DatabaseManager manager, String[] fields, String table){
-		
-		logger.warn("Incomplete method");//TODO
-		return null;
-	}
-	
 	public double getDatabaseVersion(DatabaseManager manager) {
 		String g = "SELECT DatabaseVersion FROM info WHERE NUMB=1";
 		try{
@@ -436,17 +430,15 @@ public class MySQL_Extended implements BioSQLExtended{
 		return entry;
 	}
 	
-	
-
-	
-	public boolean existsDbxRefId(DatabaseManager manager, int bioentry_id, int dbxref_id, int rank){
+	public boolean existsDbxRefId(DatabaseManager manager, int bioentry_id, int dbxref_id, int run_id, int rank){
 		
-		String sql = "SELECT COUNT(1) AS bool FROM bioentry_dbxref WHERE bioentry_id=? AND dbxref_id=? AND rank=?";
+		String sql = "SELECT COUNT(1) AS bool FROM bioentry_dbxref WHERE bioentry_id=? AND dbxref_id=? AND run_id=? AND rank=?";
 		try {
 			dbxrefEXIST = MySQL_BioSQL.init(manager.getCon(), dbxrefEXIST, sql);
 			dbxrefEXIST.setInt(1, bioentry_id);
 			dbxrefEXIST.setInt(2, dbxref_id);
-			dbxrefEXIST.setInt(3, rank);
+			dbxrefEXIST.setInt(3, run_id);
+			dbxrefEXIST.setInt(4, rank);
 			set = dbxrefEXIST.executeQuery();
 			while(set.next()){
 				return (set.getInt(1) > 0);
@@ -521,12 +513,12 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 
 	public Run getRun(DatabaseManager manager, int run_id){
-		String sql = new String("SELECT run_date, runtype, program, dbname,params, comment FROM run WHERE run_id="+run_id);
+		String sql = new String("SELECT run_date, runtype, program, version, dbname,params, comment FROM run WHERE run_id="+run_id);
 		try{
 			Statement st = manager.getCon().createStatement();
 			set = st.executeQuery(sql);
 			while(set.next()){
-				return new Run(run_id, set.getDate(1),set.getString(2), set.getString(3), set.getString(4), set.getString(5),set.getString(6));
+				return new Run(run_id, set.getDate(1),set.getString(2), set.getString(3), set.getString(4), set.getString(5), set.getString(6),set.getString(7));
 			}
 			return null;
 		}
@@ -583,31 +575,33 @@ public class MySQL_Extended implements BioSQLExtended{
 	 * @param bioentry_frame
 	 * @return boolean , false if execute failed or sql exception thrown 
 	 */
-	public boolean setDbxref(DatabaseManager manager, int bioentry_id, int dbxref_id, int rank, Double evalue, Integer score, Integer dbxref_startpos,
+	public boolean setDbxref(DatabaseManager manager, int bioentry_id, int run_id, int dbxref_id, int rank, Double evalue, Integer score, Integer dbxref_startpos,
 		Integer dbxref_endpos,Integer dbxref_frame, Integer bioentry_startpos,Integer bioentry_endpos,Integer bioentry_frame){
-		String sql = "INSERT INTO bioentry_dbxref (bioentry_id, dbxref_id, rank, evalue,score, dbxref_startpos,"+
-			"dbxref_endpos, dbxref_frame, bioentry_startpos, bioentry_endpos, bioentry_frame) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+		String sql = "INSERT INTO bioentry_dbxref (bioentry_id, dbxref_id, run_id, rank, evalue,score, dbxref_startpos,"+
+			"dbxref_endpos, dbxref_frame, bioentry_startpos, bioentry_endpos, bioentry_frame) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 		try {
 			dbxrefGET = MySQL_BioSQL.init(manager.getCon(), dbxrefGET, sql);
 			dbxrefGET.setInt(1, bioentry_id);
 			dbxrefGET.setInt(2, dbxref_id);
-			dbxrefGET.setInt(3, rank);
-			if(evalue != null) dbxrefGET.setDouble(4, evalue);
-			else dbxrefGET.setNull(4, Types.DOUBLE);
-			if(score != null) dbxrefGET.setInt(5, score);
-			else dbxrefGET.setNull(5, Types.INTEGER);
-			if(dbxref_startpos != null) dbxrefGET.setInt(6, dbxref_startpos);
+			dbxrefGET.setInt(3, run_id);
+			dbxrefGET.setInt(4, rank);
+			
+			if(evalue != null) dbxrefGET.setDouble(5, evalue);
+			else dbxrefGET.setNull(5, Types.DOUBLE);
+			if(score != null) dbxrefGET.setInt(6, score);
 			else dbxrefGET.setNull(6, Types.INTEGER);
-			if(dbxref_endpos != null) dbxrefGET.setInt(7, dbxref_endpos);
+			if(dbxref_startpos != null) dbxrefGET.setInt(7, dbxref_startpos);
 			else dbxrefGET.setNull(7, Types.INTEGER);
-			if(dbxref_frame != null) dbxrefGET.setInt(8, dbxref_frame);
+			if(dbxref_endpos != null) dbxrefGET.setInt(8, dbxref_endpos);
 			else dbxrefGET.setNull(8, Types.INTEGER);
-			if(bioentry_startpos != null) dbxrefGET.setInt(9, bioentry_startpos);
+			if(dbxref_frame != null) dbxrefGET.setInt(9, dbxref_frame);
 			else dbxrefGET.setNull(9, Types.INTEGER);
-			if(bioentry_endpos != null) dbxrefGET.setInt(10, bioentry_endpos);
+			if(bioentry_startpos != null) dbxrefGET.setInt(10, bioentry_startpos);
 			else dbxrefGET.setNull(10, Types.INTEGER);
-			if(bioentry_frame != null) dbxrefGET.setInt(11, bioentry_frame);
+			if(bioentry_endpos != null) dbxrefGET.setInt(11, bioentry_endpos);
 			else dbxrefGET.setNull(11, Types.INTEGER);
+			if(bioentry_frame != null) dbxrefGET.setInt(12, bioentry_frame);
+			else dbxrefGET.setNull(12, Types.INTEGER);
 			return dbxrefGET.execute();
 		} 
 		catch (SQLException e) {
@@ -618,7 +612,7 @@ public class MySQL_Extended implements BioSQLExtended{
 
 	
 	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String version, String dbname, String params, String comment){
-		String sql = "INSERT INTO run (run_date, runtype, program, dbname, params, comment) VALUES (?,?,?,?,?,?);";
+		String sql = "INSERT INTO run (run_date, runtype, program, version, dbname, params, comment) VALUES (?,?,?,?,?,?,?);";
 		try{
 			runSET = MySQL_BioSQL.init(manager.getCon(), runSET, sql);
 			runSET.setDate(1, date);
@@ -635,7 +629,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			return runSET.execute();
 		}
 		catch(SQLException sq){
-			logger.error("Failed to insert run");
+			logger.error("Failed to insert run", sq);
 			return false;
 		}
 	}

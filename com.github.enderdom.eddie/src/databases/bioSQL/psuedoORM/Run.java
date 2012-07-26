@@ -1,6 +1,6 @@
 package databases.bioSQL.psuedoORM;
 
-import java.sql.Date;
+import java.util.Date;
 import java.text.ParseException;
 
 import org.apache.log4j.Logger;
@@ -25,11 +25,22 @@ public class Run {
 	private String version;
 	private String[] validationErrors = {"","",""};
 	
-	public Run(int r, Date t,String rt, String p, String d, String a, String c){
+	public Run(int r, Date t,String rt, String p, String v, String d, String a, String c){
 		run_id = r;
 		date = t;
 		runtype = rt;
 		program =p;
+		version = v;
+		dbname = d;
+		params = a;
+		comment =c;
+	}
+	
+	public Run(Date t,String rt, String p, String v, String d, String a, String c){
+		date = t;
+		runtype = rt;
+		program =p;
+		version = v;
 		dbname = d;
 		params = a;
 		comment =c;
@@ -51,7 +62,7 @@ public class Run {
 	
 	public boolean setDateValue(String date, String expectedformat){
 		try{
-			this.date = (Date)Tools_System.getDateFromString(date, expectedformat);
+			this.date = Tools_System.getDateFromString(date, expectedformat);
 			return true;
 		}
 		catch(ParseException p ){
@@ -105,15 +116,16 @@ public class Run {
 	public String getVersion() {
 		return version;
 	}
-	
-	public boolean uploadRun(DatabaseManager manager){
-		if(manager.getBioSQLXT().setRun(manager, getDate(), 
+
+	//Note, converts util.Date to sql.Date, see http://stackoverflow.com/questions/530012/how-to-convert-java-util-date-to-java-sql-date
+	public int uploadRun(DatabaseManager manager){
+		if(manager.getBioSQLXT().setRun(manager, new java.sql.Date(getDate().getTime()),
 				getRuntype(), getProgram(), getVersion(), getDbname(), getParams(), getComment())){
-			this.run_id = manager.getLastInsert();
-			return (this.run_id != -1);
+			this.run_id = manager.getLastInsert(); //This could get me into trouble.... :(
+			return run_id;
 		}
 		else{
-			return false;
+			return run_id;
 		}
 	}
 

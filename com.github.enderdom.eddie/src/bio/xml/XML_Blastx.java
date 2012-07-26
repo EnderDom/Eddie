@@ -31,6 +31,7 @@ public class XML_Blastx{
 	Hashtable<String, String> blastcache;
 	int[] hits;
 	Logger logger = Logger.getRootLogger();
+	private boolean dropDOM = true;
 	
 	public  XML_Blastx(String filepath) throws Exception{
 		this(new File(filepath));
@@ -39,10 +40,11 @@ public class XML_Blastx{
 	public  XML_Blastx(File file) throws Exception{
 		this.filepath = file.getPath();
 		blastDoc = XMLHelper.loadXML(filepath);
-		parse2Cache(true);
+		parse2Cache();
 	}
 	
-	private void parse2Cache(boolean dropDOM){
+	
+	private void parse2Cache(){
 		if(blastcache == null){
 			blastcache = new Hashtable<String, String>();
 		}
@@ -72,6 +74,9 @@ public class XML_Blastx{
 		for(int i=0; i < list.getLength(); i++){
 			if(list.item(i).getNodeName().equalsIgnoreCase(breakontag)){
 				parseLayerTop(list.item(i).getChildNodes());
+			}
+			else if(list.item(i).getNodeName().contains("Parameters_")){
+				this.blastcache.put(list.item(i).getNodeName(), list.item(i).getTextContent());
 			}
 			else{
 				if(list.item(i).getNodeName().equalsIgnoreCase("Iteration_iter-num")){
@@ -238,12 +243,17 @@ public class XML_Blastx{
 	 * Never tested or used, may melt computer
 	 */
 	public void changeValue(String tag, String value, boolean all){
-		NodeList list = this.blastDoc.getElementsByTagName(tag);
-		for(int i =0; i < list.getLength(); i++){
-			logger.debug("Changing " + list.item(i).getTextContent() + " to " + value);
-			list.item(i).setTextContent(value);
-			logger.debug("Value now: " + list.item(i).getTextContent());
-			if(!all) break;
+		if(!dropDOM){
+			NodeList list = this.blastDoc.getElementsByTagName(tag);
+			for(int i =0; i < list.getLength(); i++){
+				logger.debug("Changing " + list.item(i).getTextContent() + " to " + value);
+				list.item(i).setTextContent(value);
+				logger.debug("Value now: " + list.item(i).getTextContent());
+				if(!all) break;
+			}
+		}
+		else{
+			logger.error("Object set to strip specific values and drop the DOM element, cannot change any values once parsed");
 		}
 	}
 	

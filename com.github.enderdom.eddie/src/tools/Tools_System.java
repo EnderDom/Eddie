@@ -10,6 +10,8 @@ import org.apache.commons.lang3.SystemUtils;
 public abstract class Tools_System{
 
     public static final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
+    public static final String SQL_DATE_FORMAT = "dd-MM-yyyy";
+    
 	
     public static final String getDateNow(){
         Calendar cal = Calendar.getInstance();
@@ -42,7 +44,6 @@ public abstract class Tools_System{
 			e.printStackTrace();
 			return 0;
 		}
-    	
     }
 
     
@@ -50,18 +51,16 @@ public abstract class Tools_System{
     	return SystemUtils.IS_OS_WINDOWS;
     }
     
-    
-    
     /**
      * Because I can never remeber what the System key is
      * @return the filepath separator character
      */
     public static String getFilepathSeparator(){
-    	return System.getProperty("file.separator");
+    	return SystemUtils.FILE_SEPARATOR;
     }
     
     public static String getNewline(){
-    	return System.getProperty("line.separator");
+    	return SystemUtils.LINE_SEPARATOR;
     }
     
 }

@@ -280,6 +280,9 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	}
 	
 	public DatabaseManager getDatabaseManager(){
+		if(this.dbmanager == null){
+			this.dbmanager = new DatabaseManager(this);
+		}
 		return this.dbmanager;
 	}
 	

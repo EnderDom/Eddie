@@ -58,10 +58,10 @@ public interface BioSQLExtended {
 
 	public int getBioEntryId(DatabaseManager manager, String name, boolean fuzzy, int biodatabase_id);
 	
-	public boolean setDbxref(DatabaseManager manager, int bioentry_id, int dbxref_id, int rank, Double evalue, Integer score, Integer dbxref_startpos,
+	public boolean setDbxref(DatabaseManager manager, int bioentry_id, int run_id, int dbxref_id, int rank, Double evalue, Integer score, Integer dbxref_startpos,
 			Integer dbxref_endpos,Integer dbxref_frame, Integer bioentry_startpos,Integer bioentry_endpos,Integer bioentry_frame);
 	
-	public boolean existsDbxRefId(DatabaseManager manager, int bioentry_id, int dbxref_id, int rank);
+	public boolean existsDbxRefId(DatabaseManager manager, int bioentry_id, int dbxref_id, int run_id, int rank);
 	
 	public int[] getRunId(DatabaseManager manager, String programname, String runtype);
 	

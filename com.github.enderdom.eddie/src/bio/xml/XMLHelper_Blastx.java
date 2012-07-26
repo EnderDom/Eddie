@@ -4,9 +4,11 @@ import java.io.File;
 
 import org.apache.log4j.Logger;
 
+import databases.bioSQL.psuedoORM.Run;
 import databases.manager.DatabaseManager;
 
 import tools.Tools_String;
+import tools.Tools_System;
 
 /**
  * 
@@ -23,7 +25,18 @@ public class XMLHelper_Blastx {
 	public XML_Blastx blastx;
 	public DatabaseManager manager;
 	private int contig_id;
-	Logger logger = Logger.getRootLogger(); 
+	Logger logger = Logger.getRootLogger();
+	private int run_id;
+	private String date = "00-00-0000";
+
+	/*
+	 * This value specifies the range the run must fall within to
+	 * use a run id within this range. ie if the blast was conducted 
+	 * within x days of blast already in the database and this 
+	 * blast run had the same settings, lump these together,
+	 * alternatively -1 (settable by Task)    
+	 */
+	public int date_range = 14; 
 	
 	public XMLHelper_Blastx(File file) throws Exception{
 		new XML_Blastx(file);
@@ -43,8 +56,12 @@ public class XMLHelper_Blastx {
 		return blastx.getBlastTagContents("BlastOutput_program");
 	}
 	
+	public String getBlastVersion(){
+		return blastx.getBlastTagContents("BlastOutput_version");
+	}
+	
 	public String getBlastDatabase(){
-			return blastx.getBlastTagContents("BlastOutput_db");
+			return new File(blastx.getBlastTagContents("BlastOutput_db")).getName();
 	}
 	
 	public String getHitAccession(int index) throws Exception{
@@ -97,6 +114,40 @@ public class XMLHelper_Blastx {
 		this.contig_id = contig_id;
 	}
 	
+	public void setDate(String date){
+		this.date = date;
+	}
+	
+	public String getDate(){
+		return this.date;
+	}
+	
+	public void setRun_id(int run_id){
+		if(run_id != -1){
+			this.date_range =-1;
+		}
+		this.run_id = run_id;
+	}
+	
+	public void getRun_id(int run_id){
+		this.run_id = run_id;
+	}
+	
+	
+	public String getParametersAsString(){
+		StringBuffer buffer = new StringBuffer();
+		int k =0;
+		for(String key : blastx.blastcache.keySet()){
+			if((k = key.indexOf("Parameters_")) != -1){
+				buffer.append('-');
+				buffer.append(key.substring(k, key.length()));
+				buffer.append(' ');
+				buffer.append(blastx.blastcache.get(key));
+			}
+		}
+		return buffer.toString();
+	}
+	
 	/**
 	 * Runs a method to relevant Blast XML data into
 	 * the BioSQL database.
@@ -114,6 +165,30 @@ public class XMLHelper_Blastx {
 	 * no errors
 	 */
 	public boolean upload2BioSQL(DatabaseManager manager, boolean fuzzy, String dbname){
+		
+		if(run_id == -1){
+			Run run = new Run();
+			run.setRuntype("blast");
+			run.setProgram(this.getBlastProgram());
+			run.setVersion(this.getBlastVersion());
+			run.setDbname(this.getBlastDatabase());
+			run.setParams(this.getParametersAsString());
+			run.setDateValue(this.date, Tools_System.SQL_DATE_FORMAT);
+			if(run.validate()){
+				this.run_id = run.uploadRun(manager);
+			}
+			else{
+				logger.error("Run failed to validate?");
+				for(String s : run.getValidationErrors()){
+					if(s.length() > 0)logger.error(s);
+				}
+				return false;
+			}
+		}
+		if(run_id == -1){
+			logger.error("Run id was not correctly set");
+			return false;
+		}
 		if(contig_id == -1){
 			String nom = blastx.getBlastTagContents("BlastOutput_query-ID");
 			contig_id =  manager.getBioSQLXT().getBioEntryId(manager, nom, fuzzy, manager.getEddieDBID());
@@ -138,9 +213,9 @@ public class XMLHelper_Blastx {
 						return false;
 					}
 					for(int j=1 ; j < blastx.getNoOfHsps(i); j++){
-						if(!manager.getBioSQLXT().existsDbxRefId(manager, contig_id, dbx_ref, j)){
+						if(!manager.getBioSQLXT().existsDbxRefId(manager, contig_id, dbx_ref, run_id, j)){
 							int[] pos = this.getStartsStopsFrames(i, j);
-							manager.getBioSQLXT().setDbxref(manager, contig_id, dbx_ref, j, this.getHspEvalue(i, j), this.getHspScore(i, j), pos[0], pos[1], pos[2],
+							manager.getBioSQLXT().setDbxref(manager, contig_id, dbx_ref, run_id, j, this.getHspEvalue(i, j), this.getHspScore(i, j), pos[0], pos[1], pos[2],
 									pos[3], pos[4], pos[5]);
 						}
 					}

@@ -215,6 +215,13 @@ public class EddieCLI implements UI {
 		return this.dbmanager;
 	}
 	
+	public DatabaseManager getDatabaseManager(){
+		if(this.dbmanager == null){
+			this.dbmanager = new DatabaseManager(this);
+		}
+		return this.dbmanager;
+	}
+	
 	public void setDatabaseManager(DatabaseManager dbmanager){
 		if(this.dbmanager != null){
 			logger.warn("This UI already has a manager, you know jsut warning you");

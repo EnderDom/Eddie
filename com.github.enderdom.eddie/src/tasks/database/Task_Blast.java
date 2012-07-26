@@ -12,6 +12,7 @@ import bio.xml.XMLHelper_Blastx;
 import bio.xml.XML_Blastx;
 
 import tasks.TaskXT;
+import tools.Tools_String;
 import tools.Tools_System;
 
 public class Task_Blast extends TaskXT{
@@ -23,9 +24,12 @@ public class Task_Blast extends TaskXT{
 	private boolean[] ignore;
 	DatabaseManager manager;
 	private String dbname;
+	private String date;
+	private int run_id;
 	
 	public Task_Blast(){
 		setHelpHeader("--This is the Help Message for the the blast Task--");
+		run_id =-1;
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
@@ -33,10 +37,19 @@ public class Task_Blast extends TaskXT{
 		if(cmd.hasOption("db"))dbname=cmd.getOptionValue("db");
 		if(cmd.hasOption("i"))input=cmd.getOptionValue("i");
 		if(cmd.hasOption("f"))fuzzynames = true;
+		if(cmd.hasOption("run_id")){
+			Integer g = Tools_String.parseString2Int(cmd.getOptionValue("run_id"));
+			if(g !=  null)run_id =g;
+			else logger.error("Run id should be integer only, crap in, crap out");
+		}
+		if(cmd.hasOption("date"))date=cmd.getOptionValue("date");
 	}
 	
 	public void buildOptions(){
 		super.buildOptions();
+		
+		options.addOption(new Option("r","run_id", true, "Force set run id"));
+		options.addOption(new Option("date", true, "Set date when blast was run, use format"+Tools_System.SQL_DATE_FORMAT+", [RECOMMENDED]"));
 		options.addOption(new Option("u","upload", false, "Perform default setup"));
 		options.addOption(new Option("i","input", true, "Input folder or file"));
 		options.addOption(new Option("db","dbname", true, "Default database name, such as genbank, uniprot etc..."));
@@ -71,7 +84,7 @@ public class Task_Blast extends TaskXT{
 				for(;i < files.length; i++){
 					if(!ignore[i]){
 						try{
-							uploadBlastFile(manager, files[i], this.fuzzynames, this.dbname);
+							uploadBlastFile(manager, files[i], this.fuzzynames, this.dbname, run_id, date);
 						}
 						catch(Exception e){
 							logger.error("Failed to parse file " + files[i].getName(),e);
@@ -86,7 +99,7 @@ public class Task_Blast extends TaskXT{
 			}
 			else{
 				try{
-					uploadBlastFile(manager, in, this.fuzzynames, this.dbname);
+					uploadBlastFile(manager, in, this.fuzzynames, this.dbname, run_id, date);
 				}
 				catch(Exception e){
 					logger.error("Failed to parse file " + in.getName(),e);
@@ -98,8 +111,10 @@ public class Task_Blast extends TaskXT{
 	    setComplete(finished);
 	}
 	
-	public static void uploadBlastFile(DatabaseManager manager, File file, boolean fuzzynames, String dbname) throws Exception{
+	public static void uploadBlastFile(DatabaseManager manager, File file, boolean fuzzynames, String dbname, int run_id, String date) throws Exception{
 		XMLHelper_Blastx helper = new XMLHelper_Blastx(new XML_Blastx(file));
+		helper.setRun_id(run_id);
+		helper.setDate(date);
 		helper.upload2BioSQL(manager, fuzzynames, dbname);
 	}
 	

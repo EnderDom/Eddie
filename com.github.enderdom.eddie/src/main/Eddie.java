@@ -4,7 +4,6 @@
 package main;
 
 import cli.EddieCLI;
-import cli.EddieLite;
 import tools.Tools_Fun;
 import ui.PropertyLoader;
 import gui.EddieGUI;
@@ -34,10 +33,6 @@ public class Eddie {
 			else if(retvalue == 4){
 				 @SuppressWarnings("unused")
 				EddieGUI desk = new EddieGUI(loader);
-			}
-			else if(retvalue == 5){
-				@SuppressWarnings("unused")
-				EddieLite lite = new EddieLite(loader);
 			}
 			else if(retvalue == 6){
 				Tools_Fun.printAbout();
