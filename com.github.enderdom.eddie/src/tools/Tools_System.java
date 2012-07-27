@@ -63,4 +63,30 @@ public abstract class Tools_System{
     	return SystemUtils.LINE_SEPARATOR;
     }
     
+    /**
+     * 
+     * As both SQL date and util date can be 
+     * initialised with a long representing time
+     * from epoch. This should technically work and
+     * long is signed so in theory there should be no 
+     * issues about dates before 1970 (though I can't imagine
+     * there being much biology data from that period)
+     * 
+     * 
+     * @param d SQL Date object
+     * @return java.util.Date object
+     */
+    public static java.util.Date sql2util(java.sql.Date d){
+    	return new java.util.Date(d.getTime());
+    }
+    
+    /**
+     * @see util2sql
+     * @param d
+     * @return
+     */
+    public static java.sql.Date util2sql(java.util.Date d){
+    	return new java.sql.Date(d.getTime());
+    }
+    
 }

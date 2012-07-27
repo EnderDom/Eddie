@@ -1,4 +1,4 @@
-##################      Biodesktop License       ##################
+##################      Eddie License       ##################
 
  Copyright (C) 2011  Dominic Wood
 
@@ -17,14 +17,8 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
   Dominic Wood, hereby disclaims all copyright interest in the
-  libraries 'log4j' (An Apache Logging Library Under the Apache v2.0 license) and
-  'commons-cli' (An Apache Command Line Interface Library Under the Apache v2.0 license)
-  
-  Copyright 2001-2011 The Apache Software Foundation
-  	- Apache v2.0 License is included alongside this @ Apache2_License.txt
-  	- Apache v2.0 License can also be found at 
-  		http://www.apache.org/licenses/LICENSE-2.0.html (As of Nov, 2011)
-  
+  packaged libraries included with this program entity. Please see
+  individual licenses for these libraries.  
 
   Dominic Wood,
   dominicwood1988@googlemail.com
@@ -41,5 +35,12 @@
 
 log4j-1.2.15
 commons-cli-1.2.jar
+commons-lang3-3.1.jar
+commons-discovery-0.2.jar
+commons-logging-1.0.4.jar
+pdfbox-1.6.0.jar
+fontbox-1.6.0.jar
 
 #Libraries under LGPL
+jfreechar-1.0.14.jar
+

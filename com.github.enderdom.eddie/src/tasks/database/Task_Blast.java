@@ -84,6 +84,7 @@ public class Task_Blast extends TaskXT{
 				for(;i < files.length; i++){
 					if(!ignore[i]){
 						try{
+							logger.debug("Running blast upload method");
 							uploadBlastFile(manager, files[i], this.fuzzynames, this.dbname, run_id, date);
 						}
 						catch(Exception e){

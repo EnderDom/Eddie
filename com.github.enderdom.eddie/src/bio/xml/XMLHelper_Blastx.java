@@ -165,7 +165,6 @@ public class XMLHelper_Blastx {
 	 * no errors
 	 */
 	public boolean upload2BioSQL(DatabaseManager manager, boolean fuzzy, String dbname){
-		
 		if(run_id == -1){
 			Run run = new Run();
 			run.setRuntype("blast");
@@ -175,7 +174,21 @@ public class XMLHelper_Blastx {
 			run.setParams(this.getParametersAsString());
 			run.setDateValue(this.date, Tools_System.SQL_DATE_FORMAT);
 			if(run.validate()){
-				this.run_id = run.uploadRun(manager);
+				this.run_id = run.getSimilarRun(manager, this.date_range);
+				if(this.run_id != -1){
+					logger.debug("Similar Run was found and ID retrieved");
+				}
+				else{
+					logger.debug("No similar run, uploaded as new run");
+					this.run_id = run.uploadRun(manager);
+					if(this.run_id != -1){
+						logger.debug("Run was uploaded and ID retrieved");	
+					}
+					else{
+						logger.error("Failed to retrieve a run id, cannot upload");
+						return false;
+					}
+				}
 			}
 			else{
 				logger.error("Run failed to validate?");

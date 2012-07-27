@@ -243,5 +243,8 @@ public class DatabaseManager {
 		this.ui = ui;
 	}
 
+	public ResultSet runSQLQuery(String arg0) throws SQLException{
+		return this.con.createStatement().executeQuery(arg0);
+	}
 	
 }
