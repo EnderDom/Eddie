@@ -233,5 +233,15 @@ public class EddieCLI implements UI {
 		logger.debug("Foo");
 	}
 		
+	public void throwError(String message, Throwable t){
+		logger.error(message,t);
+	}
 	
+	public void error(String message, Throwable t){
+		throwError(message, t);
+	}
+	
+	public void error(String message){
+		throwError(message, null);
+	}
 }

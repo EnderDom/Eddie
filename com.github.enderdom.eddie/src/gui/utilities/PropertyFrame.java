@@ -21,6 +21,7 @@ public class PropertyFrame extends JInternalFrame{
 	private JTextField[]fields;
 	public static String props_save = "_PROPS_SAVE";
 	public static String props_close = "_PROPS_CLOSE";
+	public static int fieldswidth = 30;
 	
 	public PropertyFrame(){super("General Properties", true, true, true, true);}
 	
@@ -32,7 +33,7 @@ public class PropertyFrame extends JInternalFrame{
 		for(int i= 0 ; i< labels[0].length; i++){
 			JLabel l = new JLabel(labels[0][i], JLabel.TRAILING);
             p.add(l);
-            JTextField textField = new JTextField(10);
+            JTextField textField = new JTextField(fieldswidth);
             textField.setText(labels[1][i]);
             textField.setToolTipText(labels[2][i]);
             l.setLabelFor(textField);

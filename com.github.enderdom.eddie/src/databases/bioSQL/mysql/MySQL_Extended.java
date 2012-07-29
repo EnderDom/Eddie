@@ -611,10 +611,9 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 
 	
-	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String version, String dbname, String params, String comment){
-		String sql = "INSERT INTO run (run_date, runtype, program, version, dbname, params, comment) VALUES (?,?,?,?,?,?,?);";
+	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String version, String dbname, String params, String comment){		
 		try{
-			runSET = MySQL_BioSQL.init(manager.getCon(), runSET, sql);
+			runSET = MySQL_BioSQL.init(manager.getCon(), runSET, getRunInsert());
 			runSET.setDate(1, date);
 			runSET.setString(2, runtype);
 			runSET.setString(3, program);
@@ -632,5 +631,9 @@ public class MySQL_Extended implements BioSQLExtended{
 			logger.error("Failed to insert run", sq);
 			return false;
 		}
+	}
+	
+	public String getRunInsert(){
+		return "INSERT INTO run (run_date, runtype, program, version, dbname, params, comment) VALUES (?,?,?,?,?,?,?);";
 	}
 }

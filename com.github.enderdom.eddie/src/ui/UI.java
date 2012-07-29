@@ -59,7 +59,18 @@ public interface UI{
 	public void setDatabaseManager(DatabaseManager manager);
 	
 	public void fireUIEvent(UIEvent evt);
-	
 
+	
+	/**
+	 * This is primarily for the GUI, to alert the user of an 
+	 * error as they may not see the logs
+	 * @param message
+	 * @param t
+	 */
+	public void throwError(String message, Throwable t);
+	
+	public void error(String message, Throwable t);
+	
+	public void error(String message);
 	
 }

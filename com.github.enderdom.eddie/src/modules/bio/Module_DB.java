@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import gui.EddieGUI;
 import gui.utilities.PropertyFrame;
+import gui.utilities.TableInsertFrame;
 
 
 import tasks.database.Task_AddRunData;
@@ -23,6 +24,8 @@ import modules.Module_Basic;
 
 public class Module_DB extends Module_Basic {
 
+	
+	private Logger logger = Logger.getRootLogger();
 	// Change to Options ...?
 	protected String[] tasks = new String[] { "sqladmin", "sqluploader",
 			"uploadblast", "dbtools", "uploadrun"};
@@ -49,8 +52,12 @@ public class Module_DB extends Module_Basic {
 	
 	protected boolean persistance = false;
 	
-	private PropertyFrame propsframe;
-
+	public static int ADD_PROGRAM = 0;
+	public static int SETUP_DATABASE = 1;
+	public static int DATABASE_PROPS = 2;
+	public static String[] autopop = {"runtype", "program", "version", "dbname"};
+	
+	
 	public Module_DB() {
 		modulename = Module_DB.class.getName();
 		setActions(new String[]{modulename+PropertyFrame.props_close, modulename+PropertyFrame.props_save} );
@@ -60,62 +67,76 @@ public class Module_DB extends Module_Basic {
 	public void actOnAction(String s, EddieGUI gui) {
 		boolean cont = true;
 		
-		if(s.contentEquals(getModuleName() + 0)){
-			
+		if(s.contentEquals(getModuleName() + ADD_PROGRAM)){
+			logger.debug("Action not hooked in");
+			DatabaseManager manager = gui.getDatabaseManager();
+			if(!manager.isOpen())manager.open();
+			if(manager.isOpen()){
+				TableInsertFrame frame = new TableInsertFrame("Insert Program Run Data", 
+						gui, gui.getDatabaseManager().getBioSQLXT().getRunInsert(), autopop);
+				gui.setTableInsertFrame(frame);
+			}
+			else{
+				logger.error("Cannot connect to database");
+			}
 		}
-		else if(s.contentEquals(getModuleName() + 1)){
+		else if(s.contentEquals(getModuleName() + SETUP_DATABASE)){
 			if(gui.getDatabaseManager() == null){
 				String p = gui.requiresUserPassword("Please enter the password for the database.", "Database Password");
 				if(p != null && p.length() > 0){
 					cont = (gui.getDatabaseManager(p).getCon() != null);
-				
 				}
 				else {
 					cont = false;
 					gui.sendAlert("Failed to establish connection to database, this may be due to incorrect password, check logs");
 				}
-
 			}
 			if(cont){
 				DatabaseManager dbman= gui.getDatabaseManager();
-				double version = dbman.getBioSQLXT().getDatabaseVersion(dbman);
-				//TODO better diagnostic mechanism, check if all expected tables are there
-				if(version == -1){
-					Task_BioSQLDB.setup(gui.getDatabaseManager());
-				}
-				else if(version != DatabaseManager.getDatabaseversion()){
-					gui.sendAlert("Database is not correct version, but as yet there is no update mechanism," +
-							" so revert to an older version of Eddie or DROP/CREATE a new database");
-					//TODO update
-				}
-				else{
-					int y = gui.requiresUserYNI("The database appears to already be setup, do you want to try anyway?", "User Action required");
-					if(y == JOptionPane.YES_OPTION){
+				if(!dbman.isOpen())dbman.open();
+				if(dbman.isOpen()){
+					double version = dbman.getBioSQLXT().getDatabaseVersion(dbman);
+					//TODO better diagnostic mechanism, check if all expected tables are there
+					if(version == -1){
 						Task_BioSQLDB.setup(gui.getDatabaseManager());
+					}
+					else if(version != DatabaseManager.getDatabaseversion()){
+						gui.sendAlert("Database is not correct version, but as yet there is no update mechanism," +
+								" so revert to an older version of Eddie or DROP/CREATE a new database");
+						//TODO update
+					}
+					else{
+						int y = gui.requiresUserYNI("The database appears to already be setup, do you want to try anyway?", "User Action required");
+						if(y == JOptionPane.YES_OPTION){
+							Task_BioSQLDB.setup(gui.getDatabaseManager());
+						}
 					}
 				}
 			}
 		}
-		else if(s.contentEquals(getModuleName() + 2)){//Database Setup
-			if(gui.getDatabaseManager() == null){
-				propsframe = new PropertyFrame();
+		else if(s.contentEquals(getModuleName() + DATABASE_PROPS)){
+			logger.debug("About to generate properties box");
+			if(gui.getDatabaseManager() != null){
+				PropertyFrame propsframe = new PropertyFrame();
 				propsframe.build(this.modulename, gui, gui.getPropertyLoader().getFullDBsettings());
-				propsframe.setVisible(true);
-				gui.add2Desktop(propsframe);
+				gui.setPropertyFrame(propsframe);
+			}
+			else{
+				
 			}
 		}//TODO issue, with propsframe being lost when this module is killed (not persistant)
 		else if(s.contentEquals(modulename+PropertyFrame.props_close)){
 			Logger.getRootLogger().debug("Closing General Properties Without Saving");
-			if(this.propsframe != null)this.propsframe.dispose();
+			if(gui.getPropertyFrame() != null)gui.getPropertyFrame().dispose();
 		}
 		else if(s.contentEquals(modulename+PropertyFrame.props_save)){
 			Logger.getRootLogger().debug("Closing General Properties and Saving");
 			String[][] states = gui.getPropertyLoader().getFullDBsettings();
 			for(int i =0; i< states[0].length;i++){
-				Logger.getRootLogger().trace("Setting Property "+states[0][i]+" to " + propsframe.getInput(i));
-				gui.getPropertyLoader().setPropertyValue(states[0][i], propsframe.getInput(i));
+				logger.debug("Setting Property "+states[0][i]+" to " + gui.getPropertyFrame().getInput(i));
+				gui.getPropertyLoader().setPropertyValue(states[0][i], gui.getPropertyFrame().getInput(i));
 			}
-			if(this.propsframe != null)this.propsframe.dispose();
+			if(gui.getPropertyFrame() != null)gui.getPropertyFrame().dispose();
 		}
 		else{
 			Logger.getRootLogger().debug("Unattached action " + s);

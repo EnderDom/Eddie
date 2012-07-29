@@ -2,8 +2,6 @@ package ui;
 
 import java.util.concurrent.*;
 
-import org.apache.log4j.Logger;
-
 /**
  * Workaround to catch Exceptions thrown within 
  * run() of Task see Java BUG discussion 6459119
@@ -15,9 +13,9 @@ import org.apache.log4j.Logger;
 
 public class ExtendedExecutor extends ScheduledThreadPoolExecutor {
 	
-	Logger logger = Logger.getRootLogger();
+	private UI ui;
 	
-	public ExtendedExecutor(int i) {
+	public ExtendedExecutor(int i, UI ui) {
 		super(i);
 	}
 
@@ -28,15 +26,15 @@ public class ExtendedExecutor extends ScheduledThreadPoolExecutor {
 				Object result = ((Future<?>) r).get();
 		    } 
 		    catch (InterruptedException ie) { 
-		    	logger.error("Task was interrupted",ie);
+		    	ui.error("Task was interrupted",ie);
 		    }
 		    catch (ExecutionException ee) {
 		    	Throwable realThrowable = ee.getCause();
-		    	logger.error("Scheduler threw an exception",realThrowable);
+		    	ui.error("Scheduler threw an exception",realThrowable);
 		    	
 		    }
 		    catch (CancellationException ce) {
-		    	logger.error("Task was cancelled",ce);
+		    	ui.error("Task was cancelled",ce);
 		    }
 		}
     }

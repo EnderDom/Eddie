@@ -74,23 +74,27 @@ public class DatabaseManager {
 			logger.debug("About to run: " + mys);
 			this.con = DriverManager.getConnection(mys, dbuser, dbpass);
 		}
-		catch (SQLException e) {
-			logger.error("Params{ DBTYPE:"+dbtype+" DBDRIVER:"+driver+" DBHOST:"+dbhost+" DBNAME:"+dbname+" DBUSER:" + dbuser +"}",e);
-			this.con = null;
-		} 
 		catch (InstantiationException e) {
-			logger.error("Could not create driver "+driver+" sql class instance ",e);
+			ui.error("Could not create driver "+driver+" sql class instance ",e);
 			this.con = null;
 		} 
 		catch (IllegalAccessException e) {
-			logger.error("Could not access sql class",e);
+			ui.error("Could not access sql class",e);
 			this.con = null;
 		} 
 		catch (ClassNotFoundException e) {
-			logger.error("Could not create sql class",e);
+			ui.error("Could not create sql class",e);
 			this.con = null;
 		}
+		catch (SQLException e) {
+			ui.error("Params{ DBTYPE:"+dbtype+" DBDRIVER:"+driver+" DBHOST:"+dbhost+" DBNAME:"+dbname+" DBUSER:" + dbuser +"}",e);
+			this.con = null;
+		} 
 		if(this.con !=null)isOpen=true;
+		else {
+			isOpen = false;
+			this.password = null;//Flush pass, as most of the time this is the problem
+		}
 		return this.con;
 	}
 
@@ -133,7 +137,7 @@ public class DatabaseManager {
 			return true;
 		}
 		catch (SQLException e) {
-			logger.error("Failed to create new database "+dbname, e);
+			ui.error("Failed to create new database "+dbname, e);
 			return false;
 		}
 	}
@@ -144,7 +148,7 @@ public class DatabaseManager {
 			return true;
 		}
 		catch(SQLException sqle){
-			logger.error("Failed to close Connection: ",sqle);
+			ui.error("Failed to close Connection: ",sqle);
 			return false;
 		}
 	}
@@ -154,7 +158,7 @@ public class DatabaseManager {
 			if(this.dbtype.equals("mysql")){
 				this.biosql = new MySQL_BioSQL();
 			}
-			else if(this.biosql.equals("postgresql")){
+			else if(this.dbtype.equals("postgresql")){
 				//this.biosql = new PgSQL_BioSQL();
 				logger.warn("Not yet supported :( , sorry");
 			}
@@ -170,7 +174,7 @@ public class DatabaseManager {
 			if(this.dbtype.equals("mysql")){
 				this.biosqlext = new MySQL_Extended();
 			}
-			else if(this.biosql.equals("postgresql")){
+			else if(this.dbtype.equals("postgresql")){
 				//this.biosqlext = new PgSQL_Extended();
 			}
 			else{
@@ -203,11 +207,11 @@ public class DatabaseManager {
 			return Tools_SQL_MySQL.getTableCount(getCon());
 		}
 		else if(this.dbtype.equals("banana")){
-			logger.error("Fruit in database error.");
+			ui.error("Fruit in database error.");
 			return -1;
 		}
 		else{
-			logger.error("Unimplemented Procedure");
+			ui.error("Unimplemented Procedure");
 			return -1;
 		}
 	}
@@ -222,7 +226,7 @@ public class DatabaseManager {
 			return -1;
 		}
 		catch(SQLException sq){
-			logger.error("Failed to get last insert, you sure you inserted stuff");
+			ui.error("Failed to get last insert, you sure you inserted stuff");
 			return -1;
 		}
 	}
@@ -247,4 +251,7 @@ public class DatabaseManager {
 		return this.con.createStatement().executeQuery(arg0);
 	}
 	
+	public String getDBTYPE(){
+		return this.dbtype;
+	}
 }

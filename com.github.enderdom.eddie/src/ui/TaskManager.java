@@ -122,8 +122,8 @@ public class TaskManager extends Thread{
 		logger.debug("Task Manager has been started");
 		coretasklist = new Task[corepoollimit];
 		auxiltasklist = new Task[auxilpoollimit];
-		Core = new ExtendedExecutor(corepoollimit);
-		Auxil = new ExtendedExecutor(auxilpoollimit);
+		Core = new ExtendedExecutor(corepoollimit, top);
+		Auxil = new ExtendedExecutor(auxilpoollimit, top);
 		
 		while(AuxilTasks.size() > 0 || CoreTasks.size() > 0){
 			int newsubmit = 0;

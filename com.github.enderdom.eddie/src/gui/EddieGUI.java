@@ -1,5 +1,9 @@
 package gui;
 
+import gui.utilities.ErrorFrame;
+import gui.utilities.PropertyFrame;
+import gui.utilities.TableInsertFrame;
+
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -51,6 +55,8 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
     public DatabaseManager dbmanager;
     public static String iconpath = "eddie.png";
     public static String quizicon = "eddie_question.png";
+    private PropertyFrame propsframe;
+    private TableInsertFrame insertframe;
     
     
 	public EddieGUI(PropertyLoader loader){
@@ -104,9 +110,6 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		modmanager.addPrebuiltModule("PROPERTYLOADER", load, this);
 		modmanager.addPrebuiltModule("MYSELF", modmanager, this);
 		
-		
-		
-
 		Logger.getRootLogger().debug("Set EddieGUI to Visible");
 		//Finish
 		pack();
@@ -299,5 +302,38 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 			logger.warn("This UI already has a manager, you know jsut warning you");
 		}
 		this.dbmanager = dbmanager;
+	}
+	
+	public void setPropertyFrame(PropertyFrame frame){
+		this.propsframe = frame;
+		this.add2Desktop(this.propsframe);
+	}
+	
+	public PropertyFrame getPropertyFrame(){
+		return this.propsframe;
+	}
+	
+	public void setTableInsertFrame(TableInsertFrame frame){
+		this.insertframe=frame;
+		this.add2Desktop(this.insertframe);
+	}
+	
+	public TableInsertFrame getTableInsertFrame(){
+		return this.insertframe;
+	}
+	
+	public void throwError(String message, Throwable t){
+		logger.error(message,t);
+		ErrorFrame frame = new ErrorFrame(message, t);
+		this.add2Desktop(frame);
+		logger.debug("Frame Opened");
+	}
+	
+	public void error(String message, Throwable t){
+		throwError(message, t);
+	}
+	
+	public void error(String message){
+		throwError(message, null);
 	}
 }

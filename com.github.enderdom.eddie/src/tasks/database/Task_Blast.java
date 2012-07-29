@@ -40,7 +40,7 @@ public class Task_Blast extends TaskXT{
 		if(cmd.hasOption("run_id")){
 			Integer g = Tools_String.parseString2Int(cmd.getOptionValue("run_id"));
 			if(g !=  null)run_id =g;
-			else logger.error("Run id should be integer only, crap in, crap out");
+			else ui.error("Run id should be integer only, crap in, crap out");
 		}
 		if(cmd.hasOption("date"))date=cmd.getOptionValue("date");
 	}
@@ -68,7 +68,7 @@ public class Task_Blast extends TaskXT{
 		if(input !=null)in = new File(input);
 		openChecklist();
 		if(in == null || !in.exists()){
-			logger.error("File "+input+" does not exists");
+			ui.error("File "+input+" does not exists");
 			return;
 		}
 		if(upload){
@@ -88,7 +88,7 @@ public class Task_Blast extends TaskXT{
 							uploadBlastFile(manager, files[i], this.fuzzynames, this.dbname, run_id, date);
 						}
 						catch(Exception e){
-							logger.error("Failed to parse file " + files[i].getName(),e);
+							ui.error("Failed to parse file " + files[i].getName(),e);
 						}
 						checklist.update(files[i].getName());
 						c++;
@@ -103,7 +103,7 @@ public class Task_Blast extends TaskXT{
 					uploadBlastFile(manager, in, this.fuzzynames, this.dbname, run_id, date);
 				}
 				catch(Exception e){
-					logger.error("Failed to parse file " + in.getName(),e);
+					ui.error("Failed to parse file " + in.getName(),e);
 				}
 			}
 			checklist.complete();
