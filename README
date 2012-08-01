@@ -1,0 +1,10 @@
+Eddie v4.27
+
+Fourth Total rewrite of the Dominic's Database & Script Manager for Biology 
+
+Currently requires
+
+Java 1.6
+Connection to MySQL database
+
+See https://github.com/EnderDom/Eddie for more details
