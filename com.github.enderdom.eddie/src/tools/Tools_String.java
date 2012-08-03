@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.Logger;
 
 
@@ -142,11 +143,21 @@ public abstract class Tools_String {
 		return strs.toArray(new String[0]);
 	}
 	
+	/**
+	 * 
+	 * @param String to search
+	 * @param Character to look for 
+	 * @return number of times character appears in string, case sensitive
+	 */
 	public static int count(String s, char c){
 		int count = 0;
 		for(int i=0; i < s.length(); i++){
 			if(s.charAt(i) == c)count++;
 		}
 		return count;
+	}
+	
+	public static String capitalize(String s){
+		return WordUtils.capitalize(s);
 	}
 }
