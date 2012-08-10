@@ -283,6 +283,7 @@ public class ModuleManager implements Module{
 	
 	public void addAction(String action, String classpath){
 		logger.trace("Adding action "+ action  + " to class or object " + classpath);
+		
 		this.module_actions.put(action, classpath);
 	}
 	

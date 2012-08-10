@@ -11,6 +11,8 @@ import javax.swing.SpringLayout;
 
 import org.apache.log4j.Logger;
 
+import tools.Tools_String;
+
 public class PropertyFrame extends JInternalFrame{
 	
 	/**
@@ -18,20 +20,32 @@ public class PropertyFrame extends JInternalFrame{
 	 */
 	private static final long serialVersionUID = -6366855734337595394L;
 	private static String title;
-	private JTextField[]fields;
+	private JTextField[] fields;
 	public static String props_save = "_PROPS_SAVE";
 	public static String props_close = "_PROPS_CLOSE";
-	public static int fieldswidth = 30;
+	public static int fieldswidth = 50;
 	
+	/**
+	 * 
+	 */
 	public PropertyFrame(){super("General Properties", true, true, true, true);}
 	
+	/**
+	 * 
+	 * 
+	 * @param modulename Action command name for indentification of actions
+	 * @param gui EddieGUI 
+	 * @param labels a 3*X matrix, with [0][x] holding label, [1][x] holding the intial
+	 * test to go in the JTextField and [2][x] the tooltip
+	 * @return a array of 2 strings the first is the action command for saving, the second for closing
+	 */
 	public String[] build(String modulename, EddieGUI gui, String[][] labels){
 		this.setTitle(title);
 		int num = 0;
 		JPanel p = new JPanel(new SpringLayout());
 		fields = new JTextField[labels[0].length];
 		for(int i= 0 ; i< labels[0].length; i++){
-			JLabel l = new JLabel(labels[0][i], JLabel.TRAILING);
+			JLabel l = new JLabel(Tools_String.capitalize(labels[0][i]), JLabel.TRAILING);
             p.add(l);
             JTextField textField = new JTextField(fieldswidth);
             textField.setText(labels[1][i]);
@@ -69,4 +83,5 @@ public class PropertyFrame extends JInternalFrame{
 	public String getInput(int i){
 		return this.fields[i].getText();
 	}
+
 }

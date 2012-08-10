@@ -8,8 +8,6 @@ import org.apache.log4j.Logger;
 
 import gui.EddieGUI;
 import gui.utilities.PropertyFrame;
-import gui.utilities.TableInsertFrame;
-
 
 import tasks.database.Task_AddRunData;
 import tasks.database.Task_Assembly2DB;
@@ -18,6 +16,7 @@ import tasks.database.Task_Blast;
 import tasks.database.Task_dbTools;
 import tools.Tools_Array;
 import tools.Tools_Modules;
+import tools.Tools_SQL;
 import cli.EddieCLI;
 import databases.manager.DatabaseManager;
 import modules.Module_Basic;
@@ -55,12 +54,13 @@ public class Module_DB extends Module_Basic {
 	public static int ADD_PROGRAM = 0;
 	public static int SETUP_DATABASE = 1;
 	public static int DATABASE_PROPS = 2;
-	public static String[] autopop = {"runtype", "program", "version", "dbname"};
 	
+	public static String tableinsert = "_SQLTABLEINSERT";
 	
 	public Module_DB() {
 		modulename = Module_DB.class.getName();
 		setActions(new String[]{modulename+PropertyFrame.props_close, modulename+PropertyFrame.props_save} );
+		setActions(new String[]{modulename+tableinsert+PropertyFrame.props_close, tableinsert+PropertyFrame.props_save} );
 	}
 
 	//Remember, not persistant, so none of the classes variables are initialised
@@ -72,9 +72,8 @@ public class Module_DB extends Module_Basic {
 			DatabaseManager manager = gui.getDatabaseManager();
 			if(!manager.isOpen())manager.open();
 			if(manager.isOpen()){
-				TableInsertFrame frame = new TableInsertFrame("Insert Program Run Data", 
-						gui, gui.getDatabaseManager().getBioSQLXT().getRunInsert(), autopop);
-				gui.setTableInsertFrame(frame);
+				tableInsert(gui, gui.getDatabaseManager().getBioSQLXT().getRunInsert(),
+						gui.getDatabaseManager().getBioSQLXT().getRunInsertTips());
 			}
 			else{
 				logger.error("Cannot connect to database");
@@ -138,8 +137,14 @@ public class Module_DB extends Module_Basic {
 			}
 			if(gui.getPropertyFrame() != null)gui.getPropertyFrame().dispose();
 		}
+		else if(s.contentEquals(tableinsert+PropertyFrame.props_save)){
+			logger.warn("Incomplete method");
+		}
+		else if(s.contentEquals(tableinsert+PropertyFrame.props_close)){
+			logger.warn("Incomplete method");
+		}
 		else{
-			Logger.getRootLogger().debug("Unattached action " + s);
+			logger.debug("Unattached action " + s);
 		}
 	}
 
@@ -218,6 +223,24 @@ public class Module_DB extends Module_Basic {
 	public void setActions(String[] actions1) {
 		if(actions == null)this.actions = actions1;
 		else this.actions = Tools_Array.mergeStrings(this.actions, actions1);
+	}
+	
+	public void tableInsert(EddieGUI gui, String query, String[] tooltips){
+		gui.sendAlert("This GUI interface not yet available");
+		DatabaseManager manager = gui.getDatabaseManager();
+		//int count = Tools_String.count(preparedQuery, '?');
+		String[] fs = Tools_SQL.stripInsertFields(query, manager.getDBTYPE());
+		String table = Tools_SQL.stripTableName(query,manager.getDBTYPE());
+		String[][] fields = new String[3][fs.length];
+		for(int i =0; i < fs.length; i++){
+			fields[0][i] = fs[i];
+			fields[1][i] = "";//TODO add preknown
+			if(tooltips.length > i)fields[2][i] = tooltips[i];
+		}
+		PropertyFrame frame = new PropertyFrame();
+		frame.setTitle("GUI insert for database table: " + table);
+		frame.build(modulename+tableinsert, gui, fields);
+		gui.setPropertyFrame(frame);
 	}
 
 }

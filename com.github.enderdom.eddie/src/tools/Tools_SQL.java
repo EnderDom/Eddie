@@ -8,14 +8,16 @@ public class Tools_SQL {
 		if(dbtype.equals("mysql") || dbtype.equals("postgresql")){
 			int start = -1;
 			int end = -1;
-			if((start=sql.indexOf("INSERT")) != -1){
+			if((start=sql.indexOf("INTO")) != -1){
 				if((end = sql.indexOf("VALUES")) != -1){
-					start = start+6;
+					start = sql.indexOf('(', start) + 1; 
 					String sub = sql.substring(start, end);
-					String[] fields = sub.split("'");
+					String[] fields = sub.split(",");
 					for(int i =0; i < fields.length; i++){
 						fields[i] = fields[i].replaceAll("\\(", "");
 						fields[i] = fields[i].replaceAll("\\)", "");
+						fields[i] = fields[i].replaceAll("'", "");
+						fields[i] = fields[i].replaceAll("\"", "");
 						fields[i]=fields[i].trim();
 					}
 					return fields;

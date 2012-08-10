@@ -636,4 +636,8 @@ public class MySQL_Extended implements BioSQLExtended{
 	public String getRunInsert(){
 		return "INSERT INTO run (run_date, runtype, program, version, dbname, params, comment) VALUES (?,?,?,?,?,?,?);";
 	}
+	
+	public String[] getRunInsertTips(){
+		return new String[]{"","","","","","",""};
+	}
 }

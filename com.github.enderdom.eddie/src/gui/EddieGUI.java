@@ -2,7 +2,6 @@ package gui;
 
 import gui.utilities.ErrorFrame;
 import gui.utilities.PropertyFrame;
-import gui.utilities.TableInsertFrame;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -56,7 +55,6 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
     public static String iconpath = "eddie.png";
     public static String quizicon = "eddie_question.png";
     private PropertyFrame propsframe;
-    private TableInsertFrame insertframe;
     
     
 	public EddieGUI(PropertyLoader loader){
@@ -305,21 +303,17 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	}
 	
 	public void setPropertyFrame(PropertyFrame frame){
+		if(this.propsframe != null){
+			if(!this.propsframe.isClosed()){
+				this.propsframe.dispose();
+			}
+		}
 		this.propsframe = frame;
 		this.add2Desktop(this.propsframe);
 	}
 	
 	public PropertyFrame getPropertyFrame(){
 		return this.propsframe;
-	}
-	
-	public void setTableInsertFrame(TableInsertFrame frame){
-		this.insertframe=frame;
-		this.add2Desktop(this.insertframe);
-	}
-	
-	public TableInsertFrame getTableInsertFrame(){
-		return this.insertframe;
 	}
 	
 	public void throwError(String message, Throwable t){

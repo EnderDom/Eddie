@@ -71,4 +71,6 @@ public interface BioSQLExtended {
 	
 	public String getRunInsert();
 	
+	public String[] getRunInsertTips();
+	
 }
