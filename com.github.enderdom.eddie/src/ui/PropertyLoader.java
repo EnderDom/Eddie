@@ -1,8 +1,8 @@
 package ui;
 
 import gui.EddieGUI;
-import gui.FileViewerModel;
 import gui.utilities.PropertyFrame;
+import gui.viewers.file.FileViewerModel;
 
 import java.awt.Container;
 import java.awt.event.ActionEvent;
@@ -55,7 +55,7 @@ public class PropertyLoader implements Module{
      * though this one has been written from scratch
      */
     public static int engineversion = 4;
-    public static double guiversion = 0.27;
+    public static double guiversion = 0.28;
     public static String edition = "Development";
     Level level;
     public static Logger logger;
@@ -620,7 +620,7 @@ public class PropertyLoader implements Module{
 			propsframe = new PropertyFrame();
 			String[][] labels = this.getChangableStats();
 			for(int i =0;i < labels[0].length; i++)labels[1][i]=this.getPropOrSet(labels[0][i], labels[1][i]);
-			actions = Tools_Array.mergeStrings(actions, propsframe.build(this.modulename, gui, labels));
+			actions = Tools_Array.mergeStrings(actions, propsframe.build(this.modulename,"", gui, labels));
 			propsframe.setVisible(true);
 			gui.add2Desktop(propsframe);
 		}

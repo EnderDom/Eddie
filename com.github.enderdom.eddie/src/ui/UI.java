@@ -68,9 +68,11 @@ public interface UI{
 	 * @param t
 	 */
 	public void throwError(String message, Throwable t);
+
+	public void throwError(String message, String[] details);
 	
 	public void error(String message, Throwable t);
-	
+
 	public void error(String message);
 	
 }

@@ -69,8 +69,4 @@ public interface BioSQLExtended {
 	
 	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String version, String dbname, String params, String comment);
 	
-	public String getRunInsert();
-	
-	public String[] getRunInsertTips();
-	
 }

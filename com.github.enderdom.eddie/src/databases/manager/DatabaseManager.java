@@ -104,7 +104,10 @@ public class DatabaseManager {
 	
 	private Connection openDefaultConnection(String[] mydb, boolean db){
 		if(password == null)password = ui.requiresUserPassword("Password for access to "+mydb[2] + " database for user " + mydb[4], "Password Request");
-		return this.openConnection(mydb[0], mydb[1], mydb[2], mydb[3], mydb[4], password, db);
+		if(password != null && password.length() > 0){
+			return this.openConnection(mydb[0], mydb[1], mydb[2], mydb[3], mydb[4], password, db);
+		}
+		else return null;
 	}
 	
 	public void setDatabase(String s){

@@ -1,5 +1,7 @@
 package gui;
 
+import gui.viewers.file.FileViewer;
+
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,15 +56,12 @@ public class FileOptions implements ActionListener{
 		JMenuItem item1 = new JMenuItem("Open");
 		//JMenuItem item2 = new JMenuItem("Convert to...");
 		JMenuItem item3 = new JMenuItem("Remove");
-		JMenuItem item4 = new JMenuItem("Delete File");
 		item1.addActionListener(this);
 		//item2.addActionListener(this);
 		item3.addActionListener(this);
-		item4.addActionListener(this);
 		menu.add(item1);
 		//menu.add(item2);
 		menu.add(item3);
-		menu.add(item4);
 		menu.addSeparator();
 	}
 	
@@ -92,7 +91,13 @@ public class FileOptions implements ActionListener{
 	}
 
 	public void actionPerformed(ActionEvent actionevent) {
-		logger.trace("Action: " + actionevent.getActionCommand());		
+		logger.trace("Action: " + actionevent.getActionCommand());
+		if(actionevent.getActionCommand().equals("Remove")){
+			viewer.removeFile();
+		}
+		else{
+			logger.warn("Action not recognised");
+		}
 	}
 	
 	public void registerClasses(String[] menus, String[] types, Module cla){

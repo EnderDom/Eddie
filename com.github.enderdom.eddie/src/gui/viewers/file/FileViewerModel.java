@@ -1,4 +1,7 @@
-package gui;
+package gui.viewers.file;
+
+import gui.EddieGUI;
+import gui.viewers.ViewerModel;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -6,7 +9,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 
-import javax.swing.table.AbstractTableModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -22,7 +24,7 @@ import tools.Tools_System;
 import tools.Tools_XML;
 
 
-public class FileViewerModel extends AbstractTableModel{
+public class FileViewerModel extends ViewerModel{
 
 	/**
 	 * 
@@ -34,29 +36,21 @@ public class FileViewerModel extends AbstractTableModel{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	String[] tableheadings;
-	String[] actualheadings;
-	private boolean[] shown;
 	private static String whitespace = "___";
 	Document data;
 	private String workspace;
 	public static String filename = "file_list.xml";
-	EddieGUI gui;
-	int colcount=0;
-	int rowcount=0;
-	String[][] cols;
 	
 	public FileViewerModel(EddieGUI gui, FileViewer view){
+		super(gui, view);
 		tableheadings = new String[]{"Name", "File"+whitespace+"Location", "Information", "File"+whitespace+"Type","Date"+whitespace+"Added", "ID"};
 		actualheadings = tableheadings;
-		this.gui = gui;
-		this.workspace = this.gui.load.getWorkspace();
+		this.workspace = gui.load.getWorkspace();
 		if(this.workspace == null)Logger.getRootLogger().error("Error, null workspace");
 		load();
-		view.repaint();
 	}
 	
-	private void load(){
+	protected void load(){
 		File file = getFile();
 		if(file.exists()){
 			loadFile(file);
@@ -65,6 +59,7 @@ public class FileViewerModel extends AbstractTableModel{
 			createDefaultFile(file);
 			loadFile(file);
 		}
+		view.repaint();
 	}
 	
 	private File getFile(){
@@ -87,7 +82,6 @@ public class FileViewerModel extends AbstractTableModel{
 				Element e = data.createElementNS(null, "FILE");
 				e = buildElement(filedata,e);
 				files.appendChild(e);
-				saveFile(getFile());
 				addRow(filedata);
 			}
 		}
@@ -121,7 +115,7 @@ public class FileViewerModel extends AbstractTableModel{
 			for(int i =0 ; i < tableheadings.length ; i++){
 			// Child i.
 				  e = data.createElementNS(null, "HEADING");
-				  if(!tableheadings[i].equals("ID")){
+				  if(!tableheadings[i].equals("ID") && !tableheadings[i].equals("Information")){
 					  e.setAttributeNS(null, "SHOWN", "TRUE");
 				  }
 				  else{
@@ -229,6 +223,10 @@ public class FileViewerModel extends AbstractTableModel{
 		return array;
 	}
 	
+	public void saveFile(){
+		saveFile(this.getFile());
+	}
+	
 	public void saveFile(File file){
 		Logger.getRootLogger().debug("Saving Default File XML");
 		Tools_XML.Xml2File(this.data, file);
@@ -237,57 +235,8 @@ public class FileViewerModel extends AbstractTableModel{
 	public void saveFile(String workspace){
 		this.workspace = workspace;
 	}
-	
-	public int getColumnCount() {
-		if(cols == null){
-			return 0;
-		}
-		else{
-			return cols.length;
-		}
-	}
 
-	public int getRowCount() {
-		if(cols == null){
-			return 0;
-		}
-		else{
-			return cols[0].length;
-		}
-	}
-	
-	public void addRow(String[] data){
-		String[][] data2 = new String[cols.length][cols[0].length+1];
-		for(int i =0; i < cols.length; i++){
-			for(int j = 0 ; j < cols[0].length; j++){
-				data2[i][j] = cols[i][j];
-			}
-		}
-		for(int i =0; i < cols.length; i++){
-			data2[i][cols[0].length] = data[i];
-		}
-		this.cols = data2;
-	}
-
-	public Object getValueAt(int row, int col) {
-		if(cols == null){
-			return "PLACE HOLDER";
-		}
-		else{
-			return cols[col][row];
-		}
-	}
-	
-
-	public String getColumnName(int column){
-		return actualheadings[column];
-	}
-	
-	public boolean isCellEditable(int row, int col){ 
-		 return false; 
-	}
-
-	public void buildAndAddFile(String string) {
+	public void build(String string) {
 		File file = new File(string);
 		Logger.getRootLogger().debug("Building file  "+ string);
 		if(file.exists()){
@@ -318,14 +267,26 @@ public class FileViewerModel extends AbstractTableModel{
 			}
 			else{
 				Logger.getRootLogger().error("Filesystem supports more than just file or folder???");
-			}
-			
+			}		
 		}
 		else{
 			Logger.getRootLogger().error("File added is not a file!");
 		}
-		
-		
+	}
+	
+	public void removeRows(int[] k){
+		NodeList nodes = this.data.getElementsByTagName("FILE");
+		for(int i =k.length-1; i> -1; i--){
+			for (int j = nodes.getLength()-1; j >-1 ;j--) {
+				  Element e = (Element)nodes.item(j);
+				  if (k[i] == j) {
+					  e.getParentNode().removeChild(e);
+					  break;
+				  }
+			}
+			removeRow(k[i]);
+		}
+		this.saveFile();
 	}
 	
 	public String getFileTypeAt(int row){
@@ -336,4 +297,5 @@ public class FileViewerModel extends AbstractTableModel{
 	private Node getRootNode(){
 		return (this.data.getChildNodes().getLength() > 0) ? this.data.getChildNodes().item(0) : null;
 	}
+	
 }

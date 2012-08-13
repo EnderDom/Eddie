@@ -26,6 +26,7 @@ public class Run {
 	private String comment;
 	private String version;
 	private String[] validationErrors = {"","",""};
+	public static String[] runfields = new String[]{"run_date", "runtype", "program", "version", "dbname", "params", "comment"};
 	
 	public Run(int r, Date t,String rt, String p, String v, String d, String a, String c){
 		run_id = r;
@@ -127,13 +128,13 @@ public class Run {
 			return run_id;
 		}
 		else{
-			return run_id;
+			return -1;
 		}
 	}
 
 	public boolean validate() {
 		if(this.getDate() == null){
-			validationErrors[0] = "Date is not set";
+			validationErrors[0] = "Date is not set, String inputs should be in format " + Tools_System.SQL_DATE_FORMAT;
 			return false;
 		}
 		if(this.getProgram() == null){
@@ -190,6 +191,37 @@ public class Run {
 		catch(SQLException sq){
 			logger.error("Failed to conduct SQL for similar runs", sq);
 			return -1;
+		}
+	}
+	
+	public static String[] getRunInsertTips(){
+		return new String[]{"Date when run was started FORMAT MUST BE: DD-MM-YYYY","Runtype, ie assembly or blast",
+				"Name of the program run ie Blastx","Version","Database name ie nr (Can be left blank)","Parameters used, ie -word_size 10"," Any comments you want to add"};
+	}
+
+	
+	/**
+	 * Assumes input is the same length and corresponds to
+	 * the getRunFields method;
+	 * 
+	 * @param inputs
+	 * @return bool as to whether the Run can be uploaded
+	 */
+	public boolean parseRun(String inputs[]){
+		try{
+			//"run_date", "runtype", "program", "version", "dbname", "params", "comment"
+			this.setDateValue(inputs[0],Tools_System.SQL_DATE_FORMAT);
+			this.setRuntype(inputs[1]);
+			this.setProgram(inputs[2]);
+			this.setVersion(inputs[3]);
+			this.setDbname(inputs[4]);
+			this.setParams(inputs[5]);
+			this.setComment(inputs[6]);
+			return this.validate();
+		}
+		catch(Exception  e){
+			logger.error("Failed to parse Run inputs from User", e);
+			return false;
 		}
 	}
 	

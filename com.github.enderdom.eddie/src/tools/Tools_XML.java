@@ -72,7 +72,7 @@ public class Tools_XML {
 		return complete;
  	}
  
- 	public static void Xml2File(Document document, File file){
+ 	public static boolean Xml2File(Document document, File file){
         Source src = new DOMSource(document);
         try{
         	FileOutputStream outStream = new FileOutputStream(file);
@@ -84,22 +84,23 @@ public class Tools_XML {
         	xformer.setOutputProperty(OutputKeys.INDENT, "yes");
         	xformer.transform(src, result);
         	outStream.close();
+        	return true;
         }
         catch (TransformerConfigurationException e) {
-        	//TODO Auto-generated catch block
         	e.printStackTrace();
+        	return false;
         }
         catch (IOException e) {
-        	//TODO Auto-generated catch block
         	e.printStackTrace();
+        	return false;
         }
         catch (TransformerFactoryConfigurationError e) {
-        	//	TODO Auto-generated catch block
         	e.printStackTrace();
+        	return false;
         }
         catch (TransformerException e) {
-        	//TODO Auto-generated catch block
         	e.printStackTrace();
+        	return false;
         }
  	}
  	 	

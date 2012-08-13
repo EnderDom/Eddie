@@ -17,6 +17,7 @@ public class ErrorFrame extends JInternalFrame {
 	 */
 	private static final long serialVersionUID = -1287884461722430565L;
 	private Throwable t;
+	private String[] altDetails;
 	private String message;
 	private JTextArea textArea;
 	private JLabel mess;
@@ -26,6 +27,19 @@ public class ErrorFrame extends JInternalFrame {
 		super("An Error has occured", true, true, true, true);
 		this.message = message;
 		this.t = t;
+		build();
+	}
+	
+	public ErrorFrame(String message, String[] details){
+		super("An Error has occured", true, true, true, true);
+		this.message = message;
+		this.altDetails = details;
+		build();
+	}
+	
+	public ErrorFrame(String message){
+		super("An Error has occured", true, true, true, true);
+		this.message = message;
 		build();
 	}
 	
@@ -57,6 +71,13 @@ public class ErrorFrame extends JInternalFrame {
 			textArea.setText("----ERROR OUTPUT----"+s+s);
 			textArea.append(t.getClass().getName()+ ": " + t.getMessage() + s + s);
 			for(StackTraceElement e : t.getStackTrace()){
+				textArea.append(e.toString() + s);
+			}
+		}
+		else if(altDetails != null){
+			String s= Tools_System.getNewline();
+			textArea.setText("----ERROR INFORMATION----"+s+s);
+			for(String e : altDetails){
 				textArea.append(e.toString() + s);
 			}
 		}

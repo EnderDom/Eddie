@@ -39,7 +39,7 @@ public class PropertyFrame extends JInternalFrame{
 	 * test to go in the JTextField and [2][x] the tooltip
 	 * @return a array of 2 strings the first is the action command for saving, the second for closing
 	 */
-	public String[] build(String modulename, EddieGUI gui, String[][] labels){
+	public String[] build(String modulename, String subaction, EddieGUI gui, String[][] labels){
 		this.setTitle(title);
 		int num = 0;
 		JPanel p = new JPanel(new SpringLayout());
@@ -58,10 +58,10 @@ public class PropertyFrame extends JInternalFrame{
 		}
 		JButton button1 = new JButton("Save");
 		JButton button2 = new JButton("Cancel");
-		button1.setActionCommand(modulename+props_save);
-		gui.addAction(modulename+props_save,modulename);
-		gui.addAction(modulename+props_close,modulename);
-		button2.setActionCommand(modulename+props_close);
+		button1.setActionCommand(modulename+subaction+props_save);
+		gui.addAction(modulename+subaction+props_save,modulename);
+		gui.addAction(modulename+subaction+props_close,modulename);
+		button2.setActionCommand(modulename+subaction+props_close);
 		button1.addActionListener(gui);
 		button2.addActionListener(gui);
 		
@@ -77,11 +77,21 @@ public class PropertyFrame extends JInternalFrame{
 		p.setOpaque(true);
 		this.setContentPane(p);
 		this.pack();
-		return new String[]{modulename+props_save,modulename+props_close};
+		return new String[]{modulename+subaction+props_save,modulename+subaction+props_close};
 	}
 	
 	public String getInput(int i){
 		return this.fields[i].getText();
 	}
 
+	public int getInputRowSize(){
+		return this.fields.length;
+	}
+	
+	public String[] getInputs(){
+		String[] s = new String[this.fields.length];
+		for(int i =0;i < fields.length; i++)s[i]=fields[i].getText();
+		return s;
+	}
+	
 }

@@ -2,6 +2,7 @@ package gui;
 
 import gui.utilities.ErrorFrame;
 import gui.utilities.PropertyFrame;
+import gui.viewers.file.FileViewer;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -50,7 +51,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
     public static boolean testmode = true;
     public double version;
     private DesktopPane desktop;
-    FileViewer view;
+    private FileViewer view;
     public DatabaseManager dbmanager;
     public static String iconpath = "eddie.png";
     public static String quizicon = "eddie_question.png";
@@ -119,7 +120,6 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		if(i !=1){
 			
 			PropertyLoader.save((new StringBuilder(String.valueOf(load.rootfolder))).append(PropertyLoader.propertyfilename).toString(), load.getProps());
-			view.saveFile(load.getWorkspace());
 	        Logger.getRootLogger().info((new StringBuilder("Closing Eddie @ ")).append(Tools_System.getDateNow()).toString());
 	        LogManager.shutdown();
 	        setVisible(false);
@@ -254,6 +254,10 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		JOptionPane.showMessageDialog(this, str);
 	}
 	
+	public void alert(String str){
+		this.sendAlert(str);
+	}
+	
 	public void sendFiles(String[] files){
 		Logger.getRootLogger().warn("This is method is called when fileadderer is not parented by a module");
 	}
@@ -323,11 +327,25 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		logger.debug("Frame Opened");
 	}
 	
+	public void throwError(String message, String[] details){
+		logger.error(message);
+		ErrorFrame frame = new ErrorFrame(message, details);
+		this.add2Desktop(frame);
+		logger.debug("Frame Opened");
+	}
+	
 	public void error(String message, Throwable t){
 		throwError(message, t);
 	}
 	
 	public void error(String message){
-		throwError(message, null);
+		logger.error(message);
+		ErrorFrame frame = new ErrorFrame(message);
+		this.add2Desktop(frame);
+		logger.debug("Frame Opened");
+	}
+	
+	public void refreshDesktop(){
+		this.desktop.resetBackground();
 	}
 }

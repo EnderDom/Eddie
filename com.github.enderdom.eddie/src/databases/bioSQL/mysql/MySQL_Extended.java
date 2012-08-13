@@ -613,7 +613,7 @@ public class MySQL_Extended implements BioSQLExtended{
 	
 	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String version, String dbname, String params, String comment){		
 		try{
-			runSET = MySQL_BioSQL.init(manager.getCon(), runSET, getRunInsert());
+			runSET = MySQL_BioSQL.init(manager.getCon(), runSET, "INSERT INTO run (run_date, runtype, program, version, dbname, params, comment) VALUES (?,?,?,?,?,?,?);");
 			runSET.setDate(1, date);
 			runSET.setString(2, runtype);
 			runSET.setString(3, program);
@@ -625,19 +625,15 @@ public class MySQL_Extended implements BioSQLExtended{
 			else runSET.setString(6, params);
 			if(comment == null)runSET.setNull(7, Types.VARCHAR);
 			else runSET.setString(7, comment);
-			return runSET.execute();
+			
+			logger.trace("Attempting to execute " + runSET.toString());
+			runSET.execute();
+			return true;
 		}
 		catch(SQLException sq){
 			logger.error("Failed to insert run", sq);
 			return false;
 		}
 	}
-	
-	public String getRunInsert(){
-		return "INSERT INTO run (run_date, runtype, program, version, dbname, params, comment) VALUES (?,?,?,?,?,?,?);";
-	}
-	
-	public String[] getRunInsertTips(){
-		return new String[]{"","","","","","",""};
-	}
+
 }

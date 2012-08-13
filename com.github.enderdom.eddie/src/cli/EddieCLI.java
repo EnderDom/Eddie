@@ -242,6 +242,11 @@ public class EddieCLI implements UI {
 	}
 	
 	public void error(String message){
-		throwError(message, null);
+		logger.error(message);
+	}
+
+	public void throwError(String message, String[] details) {
+		logger.error(message);
+		for(String s : details)System.out.println(s);
 	}
 }

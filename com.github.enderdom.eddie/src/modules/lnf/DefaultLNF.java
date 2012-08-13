@@ -77,6 +77,7 @@ public class DefaultLNF implements Module{
 	protected void changeAppear(int numb, EddieGUI gui){
 		if(numb > -1 && numb < uis.length){
     		boolean returna = Tools_UI.changeLnF(uis[numb], gui);
+    		gui.refreshDesktop();
     		if(returna){
     			changeAppearanceRadio(gui, numb);
     			Logger.getRootLogger().debug("Changed look and feel to " + uis[numb]);

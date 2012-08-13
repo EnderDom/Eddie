@@ -16,8 +16,8 @@ import tasks.database.Task_Blast;
 import tasks.database.Task_dbTools;
 import tools.Tools_Array;
 import tools.Tools_Modules;
-import tools.Tools_SQL;
 import cli.EddieCLI;
+import databases.bioSQL.psuedoORM.Run;
 import databases.manager.DatabaseManager;
 import modules.Module_Basic;
 
@@ -55,6 +55,12 @@ public class Module_DB extends Module_Basic {
 	public static int SETUP_DATABASE = 1;
 	public static int DATABASE_PROPS = 2;
 	
+	/*
+	 *IMPORTANT HAX, Needed to differentiate the
+	 * DatabaseProperties return values from the table insert 
+	 * 
+	 * Yeah, I know :(
+	 */
 	public static String tableinsert = "_SQLTABLEINSERT";
 	
 	public Module_DB() {
@@ -72,8 +78,7 @@ public class Module_DB extends Module_Basic {
 			DatabaseManager manager = gui.getDatabaseManager();
 			if(!manager.isOpen())manager.open();
 			if(manager.isOpen()){
-				tableInsert(gui, gui.getDatabaseManager().getBioSQLXT().getRunInsert(),
-						gui.getDatabaseManager().getBioSQLXT().getRunInsertTips());
+				tableInsert(gui,Run.runfields,Run.getRunInsertTips(), "run", modulename);
 			}
 			else{
 				logger.error("Cannot connect to database");
@@ -95,7 +100,7 @@ public class Module_DB extends Module_Basic {
 				if(!dbman.isOpen())dbman.open();
 				if(dbman.isOpen()){
 					double version = dbman.getBioSQLXT().getDatabaseVersion(dbman);
-					//TODO better diagnostic mechanism, check if all expected tables are there
+					//TODO better diagnostic mechanism, check if all expected table7s are there
 					if(version == -1){
 						Task_BioSQLDB.setup(gui.getDatabaseManager());
 					}
@@ -117,18 +122,18 @@ public class Module_DB extends Module_Basic {
 			logger.debug("About to generate properties box");
 			if(gui.getDatabaseManager() != null){
 				PropertyFrame propsframe = new PropertyFrame();
-				propsframe.build(this.modulename, gui, gui.getPropertyLoader().getFullDBsettings());
+				propsframe.build(this.modulename,"", gui, gui.getPropertyLoader().getFullDBsettings());
 				gui.setPropertyFrame(propsframe);
 			}
 			else{
-				
+				gui.sendAlert("If you're seeing this message, it is due to the DatabaseManager not existing. Which is a problem.");
 			}
 		}//TODO issue, with propsframe being lost when this module is killed (not persistant)
-		else if(s.contentEquals(modulename+PropertyFrame.props_close)){
+		else if(s.contentEquals(getModuleName()+PropertyFrame.props_close)){
 			Logger.getRootLogger().debug("Closing General Properties Without Saving");
 			if(gui.getPropertyFrame() != null)gui.getPropertyFrame().dispose();
 		}
-		else if(s.contentEquals(modulename+PropertyFrame.props_save)){
+		else if(s.contentEquals(getModuleName()+PropertyFrame.props_save)){
 			Logger.getRootLogger().debug("Closing General Properties and Saving");
 			String[][] states = gui.getPropertyLoader().getFullDBsettings();
 			for(int i =0; i< states[0].length;i++){
@@ -137,11 +142,25 @@ public class Module_DB extends Module_Basic {
 			}
 			if(gui.getPropertyFrame() != null)gui.getPropertyFrame().dispose();
 		}
-		else if(s.contentEquals(tableinsert+PropertyFrame.props_save)){
-			logger.warn("Incomplete method");
+		else if(s.contentEquals(getModuleName()+tableinsert+PropertyFrame.props_save)){
+			Run run = new Run();
+			if(run.parseRun(gui.getPropertyFrame().getInputs())){
+				if(run.uploadRun(gui.getDatabaseManager()) != -1){
+					if(gui.getPropertyFrame() != null)gui.getPropertyFrame().dispose();
+					gui.alert("Successfully uploaded run details to database.");
+				}
+				else{
+					if(gui.getPropertyFrame() != null)gui.getPropertyFrame().dispose();
+					gui.error("Failed to upload Run details, consult logs");
+				}
+			}
+			else{
+				if(gui.getPropertyFrame() != null)gui.getPropertyFrame().dispose();
+				gui.throwError("Failed to validate Run due to following errors:", run.getValidationErrors());
+			}
 		}
-		else if(s.contentEquals(tableinsert+PropertyFrame.props_close)){
-			logger.warn("Incomplete method");
+		else if(s.contentEquals(getModuleName()+tableinsert+PropertyFrame.props_close)){
+			if(gui.getPropertyFrame() != null)gui.getPropertyFrame().dispose();
 		}
 		else{
 			logger.debug("Unattached action " + s);
@@ -211,12 +230,9 @@ public class Module_DB extends Module_Basic {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
-	public void spawnAddRunFrame() {
-		
-	}
 	
 	public String[] getActions(){
+		logger.trace("A List of actions have been requested by " + this.getModuleName());
 		return this.actions;
 	}
 	
@@ -225,21 +241,16 @@ public class Module_DB extends Module_Basic {
 		else this.actions = Tools_Array.mergeStrings(this.actions, actions1);
 	}
 	
-	public void tableInsert(EddieGUI gui, String query, String[] tooltips){
-		gui.sendAlert("This GUI interface not yet available");
-		DatabaseManager manager = gui.getDatabaseManager();
-		//int count = Tools_String.count(preparedQuery, '?');
-		String[] fs = Tools_SQL.stripInsertFields(query, manager.getDBTYPE());
-		String table = Tools_SQL.stripTableName(query,manager.getDBTYPE());
-		String[][] fields = new String[3][fs.length];
-		for(int i =0; i < fs.length; i++){
-			fields[0][i] = fs[i];
+	public static void tableInsert(EddieGUI gui, String[] querys, String[] tooltips, String table, String modulename){
+		String[][] fields = new String[3][querys.length];
+		for(int i =0; i < querys.length; i++){
+			fields[0][i] = querys[i];
 			fields[1][i] = "";//TODO add preknown
 			if(tooltips.length > i)fields[2][i] = tooltips[i];
 		}
 		PropertyFrame frame = new PropertyFrame();
 		frame.setTitle("GUI insert for database table: " + table);
-		frame.build(modulename+tableinsert, gui, fields);
+		frame.build(modulename,tableinsert, gui, fields);
 		gui.setPropertyFrame(frame);
 	}
 
