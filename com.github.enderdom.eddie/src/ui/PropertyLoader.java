@@ -233,6 +233,7 @@ public class PropertyLoader implements Module{
              * Set root folder to environment
              */
             rootfolder = getEnvirons();
+            System.out.println("[PRE-LOG] Environment identified as " + rootfolder);
             loadDefaultProperties();
             propsbeenloaded = true;
         }
@@ -439,8 +440,8 @@ public class PropertyLoader implements Module{
 		return Tools_File.quickWrite("VERS:" + guiversion, file, false);
 	}
 
-	public static String getEnvirons() {
-		return ClassLoader.getSystemClassLoader().getResource(".").getPath();
+	public String getEnvirons() {
+		return new File(getClass().getProtectionDomain().getCodeSource().getLocation().getFile()).getParent()+slash;
 	}
 
 	public String getWorkspace() {
