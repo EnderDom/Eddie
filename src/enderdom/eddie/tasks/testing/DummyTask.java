@@ -1,0 +1,21 @@
+package enderdom.eddie.tasks.testing;
+
+import enderdom.eddie.tasks.Task;
+
+public class DummyTask extends Task {
+
+	//Class for testing purposes
+	
+	public DummyTask(){
+		complete = -1;
+	}
+	
+	public void run(){
+		complete = 0;
+		System.out.println("Hello World " + getID());
+		complete = 1;
+	}
+	
+
+	
+}
