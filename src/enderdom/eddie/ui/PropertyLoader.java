@@ -393,7 +393,7 @@ public class PropertyLoader implements Module{
 		}
 		return success;
 	}
-
+	
 	private boolean setWorkspacePath(String path) {
 		preLog("Setting workspace location to " + path);
 		setWorkspace(path);
