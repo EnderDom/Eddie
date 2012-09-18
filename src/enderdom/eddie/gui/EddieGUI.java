@@ -59,8 +59,9 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
     
     
 	public EddieGUI(PropertyLoader loader){
-		super("Eddie v"+PropertyLoader.guiversion + " " + PropertyLoader.edition + " Edition");
-		this.version= PropertyLoader.guiversion;
+		super("Eddie v"+loader.getValue("GUIVERSION") + " " + loader.getValue("EDITION") + " Edition");
+		Double dx = Tools_String.parseString2Double(loader.getValue("GUIVERSION"));
+		if(dx != null)this.version=dx; 
 		System.out.println("Eddie v" + version + " by (S.C.Corp.)");
 		
 		//View Size
@@ -75,8 +76,8 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		
 		//Load Properties
 		load = loader;
-		load.loadPropertiesGUI(this);
-		Tools_UI.changeLnF(load.getLastLNF(), this);
+		//load.loadPropertiesGUI(this);
+		Tools_UI.changeLnF(load.getValue("PREFLNF"), this);
 		this.setIconImage(new ImageIcon(getClass().getResource(iconpath)).getImage());
 		
 		/*
@@ -87,7 +88,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		
 		
 		//Module Build
-		modmanager = new ModuleManager(load.getModuleFolder());
+		modmanager = new ModuleManager(load.getValue("MODFOLDER"));
      
 		//Options
 		addWindowListener(this);
@@ -106,7 +107,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		
 		modmanager.addPrebuiltModule("FILEVIEWER", view, this);
 		
-		modmanager.addPrebuiltModule("PROPERTYLOADER", load, this);
+		//modmanager.addPrebuiltModule("PROPERTYLOADER", load, this);
 		modmanager.addPrebuiltModule("MYSELF", modmanager, this);
 		
 		Logger.getRootLogger().debug("Set EddieGUI to Visible");
@@ -116,10 +117,10 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	}
 
 	public void exit(){
-		int i = JOptionPane.showConfirmDialog(this, "Exit Eddie v"+(PropertyLoader.engineversion+PropertyLoader.guiversion)+"?", "Exit?", JOptionPane.YES_NO_OPTION);
+		int i = JOptionPane.showConfirmDialog(this, "Exit Eddie v"+(load.getValue("ENGINEVERSION")+load.getValue("GUIVERSION"))+"?", "Exit?", JOptionPane.YES_NO_OPTION);
 		if(i !=1){
 			
-			PropertyLoader.save((new StringBuilder(String.valueOf(load.rootfolder))).append(PropertyLoader.propertyfilename).toString(), load.getProps());
+			load.savePropertyFile((new StringBuilder(String.valueOf(load.getValue("ROOTFOLDER")))).append(load.getValue("PROPERTYFILENAME")).toString(), load.getPropertyObject());
 	        Logger.getRootLogger().info((new StringBuilder("Closing Eddie @ ")).append(Tools_System.getDateNow()).toString());
 	        LogManager.shutdown();
 	        setVisible(false);
@@ -173,7 +174,7 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 		}
 		//TODO
 		if(task.wantsUI())task.addUI(this);
-		task.parseOpts(this.load.getProps());
+		task.parseOpts(this.load.getPropertyObject());
 		this.manager.addTask(task);
 		if(!this.manager.isStarted()){
 			this.manager.run();
@@ -211,8 +212,8 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	}
 
 	public void buildTaskManager() {
-		Integer core = Tools_String.parseString2Int(load.getCore());
-		Integer auxil = Tools_String.parseString2Int(load.getAuxil());
+		Integer core = Tools_String.parseString2Int(load.getValueOrSet("CORETHREAD", "1"));
+		Integer auxil = Tools_String.parseString2Int(load.getValueOrSet("AUXILTHREAD","5"));
 		if(core == null){
 			core = 1;
 			logger.error("Something has gone horribly wrong");
@@ -243,6 +244,10 @@ public class EddieGUI extends JFrame implements ActionListener, WindowListener, 
 	}
 	
 	public PropertyLoader getPropertyLoader(){
+		return this.load;
+	}
+	
+	public PropertyLoader getPropertyLoaderXT(){
 		return this.load;
 	}
 

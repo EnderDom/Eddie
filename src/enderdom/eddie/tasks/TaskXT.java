@@ -19,7 +19,7 @@ public class TaskXT extends Task{
 	}
 	
 	public void openChecklist(){
-		checklist = new Checklist(ui.getPropertyLoader().getWorkspace(), this.getClass().getName());
+		checklist = new Checklist(ui.getPropertyLoader().getValue("WORKSPACE"), this.getClass().getName());
 		if(checklist.check()){
 			logger.trace("Moved to recovering past Task");
 			int userinput = ui.requiresUserYNI("There is an unfinished task, Details: "+checklist.getLast()+" Would you like to recover it (yes), delete it (no) or ignore it (cancel)?","Recovered Unfinished Task...");

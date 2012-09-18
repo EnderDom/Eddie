@@ -5,7 +5,7 @@ package enderdom.eddie.main;
 
 import enderdom.eddie.cli.EddieCLI;
 import enderdom.eddie.tools.Tools_Fun;
-import enderdom.eddie.ui.PropertyLoader;
+import enderdom.eddie.ui.PropertyLoaderXT;
 import enderdom.eddie.gui.EddieGUI;
 
 /**
@@ -20,7 +20,7 @@ public class Eddie {
 	 */
 	public static void main(String[] args) {
 			int retvalue = 4;
-			PropertyLoader loader = new PropertyLoader();
+			PropertyLoaderXT loader = new PropertyLoaderXT();
 			retvalue = loader.loadBasicArguments(args);
 			if(retvalue == 2){
 				@SuppressWarnings("unused")

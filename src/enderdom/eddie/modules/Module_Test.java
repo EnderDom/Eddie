@@ -13,6 +13,7 @@ import enderdom.eddie.tasks.testing.Task_Test_Report;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.ui.PropertyLoader;
+import enderdom.eddie.ui.PropertyLoaderXT;
 import enderdom.eddie.ui.UI;
 
 /*
@@ -55,11 +56,11 @@ public class Module_Test extends Module_Basic{
 	}
 	
 	public static Properties getProperties(UI ui){
-		Properties testprops = ui.getPropertyLoader().getSubProperty(PropertyLoader.TestPrefs);
+		Properties testprops = ((PropertyLoaderXT) ui.getPropertyLoader()).getSubProperty(PropertyLoaderXT.TestPrefs);
 		if(testprops == null){
-			ui.getPropertyLoader().initilaseSubProperty(PropertyLoader.TestPrefs);
+			((PropertyLoaderXT) ui.getPropertyLoader()).initilaseSubProperty(PropertyLoaderXT.TestPrefs);
 			initTestProperties(ui.getPropertyLoader(), testprops);
-			testprops = ui.getPropertyLoader().getSubProperty(PropertyLoader.TestPrefs);
+			testprops = ((PropertyLoaderXT) ui.getPropertyLoader()).getSubProperty(PropertyLoaderXT.TestPrefs);
 		}
 		if(!validateFiles(testprops)){
 			Logger.getRootLogger().warn("Property file validation failed, reinitialising...");
@@ -70,14 +71,14 @@ public class Module_Test extends Module_Basic{
 	}
 		
 	public static void initTestProperties(PropertyLoader load, Properties test){
-		if(Tools_File.createFolderIfNotExists(new File(load.getWorkspace()+Tools_System.getFilepathSeparator()+"test"))){
-			test.setProperty("TestRootFolder",load.getWorkspace()+Tools_System.getFilepathSeparator()+"test"+Tools_System.getFilepathSeparator());
+		if(Tools_File.createFolderIfNotExists(new File(load.getValue("WORKSPACE")+Tools_System.getFilepathSeparator()+"test"))){
+			test.setProperty("TestRootFolder",load.getValue("WORKSPACE")+Tools_System.getFilepathSeparator()+"test"+Tools_System.getFilepathSeparator());
 		}
-		if(Tools_File.createFolderIfNotExists(new File(load.getWorkspace()+Tools_System.getFilepathSeparator()+"test"+Tools_System.getFilepathSeparator()+"data"))){
-			test.setProperty("TestRootFolder",load.getWorkspace()+Tools_System.getFilepathSeparator()+"test"+Tools_System.getFilepathSeparator()+"data"+Tools_System.getFilepathSeparator());
+		if(Tools_File.createFolderIfNotExists(new File(load.getValue("WORKSPACE")+Tools_System.getFilepathSeparator()+"test"+Tools_System.getFilepathSeparator()+"data"))){
+			test.setProperty("TestRootFolder",load.getValue("WORKSPACE")+Tools_System.getFilepathSeparator()+"test"+Tools_System.getFilepathSeparator()+"data"+Tools_System.getFilepathSeparator());
 		}
-		if(Tools_File.createFolderIfNotExists(new File(load.getWorkspace()+Tools_System.getFilepathSeparator()+"test"+Tools_System.getFilepathSeparator()+"out"))){
-			test.setProperty("TestRootFolder",load.getWorkspace()+Tools_System.getFilepathSeparator()+"test"+Tools_System.getFilepathSeparator()+"out"+Tools_System.getFilepathSeparator());
+		if(Tools_File.createFolderIfNotExists(new File(load.getValue("WORKSPACE")+Tools_System.getFilepathSeparator()+"test"+Tools_System.getFilepathSeparator()+"out"))){
+			test.setProperty("TestRootFolder",load.getValue("WORKSPACE")+Tools_System.getFilepathSeparator()+"test"+Tools_System.getFilepathSeparator()+"out"+Tools_System.getFilepathSeparator());
 		}
 	}
 	

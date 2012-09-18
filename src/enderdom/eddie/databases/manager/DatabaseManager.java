@@ -98,8 +98,18 @@ public class DatabaseManager {
 		return this.con;
 	}
 
+	public static String[] getDatabaseSettings(PropertyLoader loader){
+		String[] defaultsets = new String[5];
+		defaultsets[0]=loader.getValue("DBTYPE");
+		defaultsets[1] =loader.getValue("DBDRIVER");
+		defaultsets[2] =loader.getValue("DBHOST");
+		defaultsets[3] =loader.getValue("DBNAME");
+		defaultsets[4] =loader.getValue("DBUSER");
+		return defaultsets;
+	}
+	
 	public Connection openDefaultConnection(boolean db){
-		return openDefaultConnection(loader.getDBSettings(), db);
+		return openDefaultConnection(getDatabaseSettings(this.loader), db);
 	}
 	
 	private Connection openDefaultConnection(String[] mydb, boolean db){
@@ -116,7 +126,7 @@ public class DatabaseManager {
 	}
 	
 	public boolean createAndOpen(){
-		String[] mydb = loader.getDBSettings();
+		String[] mydb = getDatabaseSettings(this.loader);
 		createNewDatabase(mydb[3]);
 		this.con = openDefaultConnection(mydb, true);
 		return (con != null);

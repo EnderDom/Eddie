@@ -52,7 +52,7 @@ public class MapManager{
 	
 	
 	public MapManager(PropertyLoader load){
-		mapfoldere = new File(load.getWorkspace()+Tools_System.getFilepathSeparator()+mapfoldername+Tools_System.getFilepathSeparator());
+		mapfoldere = new File(load.getValue("WORKSPACE")+Tools_System.getFilepathSeparator()+mapfoldername+Tools_System.getFilepathSeparator());
 		if(!mapfoldere.isDirectory()){
 			if(!mapfoldere.isFile()){
 				logger.debug("Creating Map Directory");

@@ -19,21 +19,22 @@ import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_UI;
 import enderdom.eddie.ui.ModuleManager;
 import enderdom.eddie.ui.PropertyLoader;
+import enderdom.eddie.ui.PropertyLoaderXT;
 import enderdom.eddie.ui.TaskManager;
 import enderdom.eddie.ui.UI;
 import enderdom.eddie.ui.UIEvent;
 
 public class EddieCLI implements UI {
 
-	private PropertyLoader load;
+	private PropertyLoaderXT load;
 	private ModuleManager modmanager;
 	private TaskManager manager;
 	private DatabaseManager dbmanager;
 	private String[] args;
 	private Options options;
 	
-	public EddieCLI(PropertyLoader loader, boolean persist){
-		System.out.println("Eddie v" + (PropertyLoader.engineversion+PropertyLoader.guiversion) + " by (S.C.Corp.)");
+	public EddieCLI(PropertyLoaderXT loader, boolean persist){
+		System.out.println("Eddie v" + load.getValue("FULLVERSION") + " by (S.C.Corp.)");
 		load = loader;
 		load.loadPropertiesCLI();
 		/*
@@ -141,7 +142,7 @@ public class EddieCLI implements UI {
 		}
 		if(task.wantsUI())task.addUI(this);
 		if(getArgs() != null)task.parseArgs(getArgs());
-		task.parseOpts(this.load.getProps());
+		task.parseOpts(this.load.getPropertyObject());
 		this.manager.addTask(task);
 	}
 

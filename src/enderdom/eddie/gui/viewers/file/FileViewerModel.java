@@ -45,7 +45,7 @@ public class FileViewerModel extends ViewerModel{
 		super(gui, view);
 		tableheadings = new String[]{"Name", "File"+whitespace+"Location", "Information", "File"+whitespace+"Type","Date"+whitespace+"Added", "ID"};
 		actualheadings = tableheadings;
-		this.workspace = gui.load.getWorkspace();
+		this.workspace = gui.load.getValue("WORKSPACE");
 		if(this.workspace == null)Logger.getRootLogger().error("Error, null workspace");
 		load();
 	}

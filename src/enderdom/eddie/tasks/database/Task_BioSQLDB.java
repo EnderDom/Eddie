@@ -10,7 +10,7 @@ import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.tasks.Task;
 import enderdom.eddie.tools.Tools_System;
-import enderdom.eddie.ui.PropertyLoader;
+import enderdom.eddie.ui.PropertyLoaderXT;
 import enderdom.eddie.ui.UI;
 
 public class Task_BioSQLDB extends Task{
@@ -144,7 +144,7 @@ public class Task_BioSQLDB extends Task{
 		if(canProceedwithSetup(manager)){
 			Logger.getRootLogger().debug("Setting up database...");
 			BioSQLExtended bsxt = manager.getBioSQLXT();
-			bsxt.addLegacyVersionTable(manager,new String(PropertyLoader.getFullVersion()+""), new String(DatabaseManager.getDatabaseversion()+""));
+			bsxt.addLegacyVersionTable(manager,new String(PropertyLoaderXT.getFullVersion()+""), new String(DatabaseManager.getDatabaseversion()+""));
 			//bsxt.addBioEntrySynonymTable(manager);
 			bsxt.addBioentryDbxrefCols(manager);
 			bsxt.addRunTable(manager);
@@ -156,7 +156,7 @@ public class Task_BioSQLDB extends Task{
 	public boolean createDefaultTable(DatabaseManager manager, String table){
 		if(table.contentEquals("legacy")){
 			if(manager.isOpen()){
-				return manager.getBioSQLXT().addLegacyVersionTable(manager,new String(PropertyLoader.getFullVersion()+""), new String(DatabaseManager.getDatabaseversion()+""));
+				return manager.getBioSQLXT().addLegacyVersionTable(manager,new String(PropertyLoaderXT.getFullVersion()+""), new String(DatabaseManager.getDatabaseversion()+""));
 			}
 		}
 //		else if(table.contentEquals("synonym")){

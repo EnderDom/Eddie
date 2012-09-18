@@ -141,7 +141,7 @@ public class FileAdderer extends JInternalFrame implements ActionListener{
 			addRow(normalLabel);
 		}
 		else if(arg0.getActionCommand().indexOf("FILE_") != -1){
-			JFileChooser chooser =new JFileChooser(parent.load.getWorkspace());
+			JFileChooser chooser =new JFileChooser(parent.load.getValue("WORKSPACE"));
 			chooser.setMultiSelectionEnabled(false);//TODO support this
 			if(filter != null){
 				chooser.setFileFilter(filter);
@@ -238,7 +238,7 @@ public class FileAdderer extends JInternalFrame implements ActionListener{
 	
 	public JTextField getNewTextField(){
 		JTextField field = new JTextField(30);
-		field.setText(parent.load.getWorkspace());
+		field.setText(parent.load.getValue("WORKSPACE"));
 		inputs.add(field);
 		this.row++;
 		return field;

@@ -85,7 +85,7 @@ public class DefaultLNF implements Module{
     		else{
     			Logger.getRootLogger().debug("Failed to change look and feel to " + uis[numb]);
     		}
-    		gui.load.changeDefaultLNF(uis[numb]);
+    		gui.load.setValue("PREFLNF", "uis[numb]");
     	}
 	}
 	
