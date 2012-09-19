@@ -10,7 +10,6 @@ import enderdom.eddie.modules.Module;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -18,6 +17,7 @@ import org.apache.log4j.Logger;
 
 import enderdom.eddie.cli.LazyPosixParser;
 
+import enderdom.eddie.tools.Tools_CLI;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
 import enderdom.eddie.ui.TaskManager;
@@ -126,13 +126,7 @@ public abstract class Task implements Runnable, Future<Object> {
 	}
 	
 	public void printHelpMessage(){
-		System.out.println("");
-		System.out.println("");
-		System.out.println(getHelpHeader());
-		HelpFormatter help = new HelpFormatter();
-		help.printHelp("ls", "-- Task Help Menu --", options, "-- Share And Enjoy! --");
-		System.out.println("");
-		System.out.println("");
+		Tools_CLI.printHelpMessage(getHelpHeader(), "-- Share And Enjoy! --", this.options);
 	}
 	
 	public String getHelpHeader(){

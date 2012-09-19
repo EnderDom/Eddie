@@ -16,7 +16,7 @@ import enderdom.eddie.tasks.database.Task_Blast;
 import enderdom.eddie.tasks.database.Task_dbTools;
 import enderdom.eddie.tools.Tools_Array;
 import enderdom.eddie.tools.Tools_Modules;
-import enderdom.eddie.ui.PropertyLoaderXT;
+import enderdom.eddie.ui.EddiePropertyLoader;
 import enderdom.eddie.cli.EddieCLI;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
 import enderdom.eddie.databases.manager.DatabaseManager;
@@ -124,7 +124,7 @@ public class Module_DB extends Module_Basic {
 			if(gui.getDatabaseManager() != null){
 				PropertyFrame propsframe = new PropertyFrame();
 				
-				propsframe.build(this.modulename,"", gui, PropertyLoaderXT.getFullDBsettings(gui.getPropertyLoader()));
+				propsframe.build(this.modulename,"", gui, EddiePropertyLoader.getFullDBsettings(gui.getPropertyLoader()));
 				gui.setPropertyFrame(propsframe);
 			}
 			else{
@@ -137,7 +137,7 @@ public class Module_DB extends Module_Basic {
 		}
 		else if(s.contentEquals(getModuleName()+PropertyFrame.props_save)){
 			Logger.getRootLogger().debug("Closing General Properties and Saving");
-			String[][] states = PropertyLoaderXT.getFullDBsettings(gui.getPropertyLoader());
+			String[][] states = EddiePropertyLoader.getFullDBsettings(gui.getPropertyLoader());
 			for(int i =0; i< states[0].length;i++){
 				logger.debug("Setting Property "+states[0][i]+" to " + gui.getPropertyFrame().getInput(i));
 				gui.getPropertyLoader().setValue(states[0][i], gui.getPropertyFrame().getInput(i));

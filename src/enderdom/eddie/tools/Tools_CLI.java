@@ -3,6 +3,8 @@ package enderdom.eddie.tools;
 import java.io.Console;
 import java.util.Scanner;
 
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 
 public class Tools_CLI {
@@ -57,6 +59,16 @@ public class Tools_CLI {
 		System.out.println();
 		Console c = System.console();
 		return new String(c.readPassword(message+": "));
+	}
+	
+	public static void printHelpMessage(String header, String footer, Options options){
+		System.out.println("");
+		System.out.println("");
+		System.out.println(header);
+		HelpFormatter help = new HelpFormatter();
+		help.printHelp("ls", "-- Help Menu --", options, footer);
+		System.out.println("");
+		System.out.println("");
 	}
 	
 }

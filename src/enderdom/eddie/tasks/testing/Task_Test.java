@@ -30,7 +30,7 @@ import enderdom.eddie.tools.Tools_Fun;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.Tools_Task;
-import enderdom.eddie.ui.PropertyLoaderXT;
+import enderdom.eddie.ui.EddiePropertyLoader;
 //import net.sf.samtools.SAMFileHeader;
 //import net.sf.samtools.SAMProgramRecord;
 //import net.sf.samtools.SAMReadGroupRecord;
@@ -266,7 +266,7 @@ public class Task_Test extends Task_Test_Basic{
 		String l1="@SQ	SN:chr1	LN:101";
 		SAMReadGroupRecord contig1 = new SAMReadGroupRecord(l1);
 		header.addReadGroup(contig1);
-		String prog = "@PG	ID:Eddie"+PropertyLoaderXT.getFullVersion()+"	PN:Eddie	VN:"+PropertyLoaderXT.getFullVersion()+"	CL:"+cmd.toString();
+		String prog = "@PG	ID:Eddie"+EddiePropertyLoader.getFullVersion()+"	PN:Eddie	VN:"+EddiePropertyLoader.getFullVersion()+"	CL:"+cmd.toString();
 		SAMProgramRecord record = new SAMProgramRecord(prog);
 		header.addProgramRecord(record);
 		SAMRecord test = new SAMRecord(header);

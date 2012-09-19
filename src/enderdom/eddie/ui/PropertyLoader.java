@@ -6,7 +6,6 @@ import java.util.Properties;
 public interface PropertyLoader {
 	
 	//NOTE current used keys
-	
 	//FULLVERSION, VERSION, GUIVERSION
 
 	public String getValue(String key);
@@ -26,4 +25,8 @@ public interface PropertyLoader {
 	public boolean savePropertyFile(File filename, Properties props);
 	
 	public boolean savePropertyFile(String filename, Properties props);
+	
+	public int parseArgs(String[] args);
+
+	public boolean isLogging();
 }

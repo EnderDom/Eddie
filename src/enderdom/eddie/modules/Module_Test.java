@@ -13,7 +13,7 @@ import enderdom.eddie.tasks.testing.Task_Test_Report;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.ui.PropertyLoader;
-import enderdom.eddie.ui.PropertyLoaderXT;
+import enderdom.eddie.ui.EddiePropertyLoader;
 import enderdom.eddie.ui.UI;
 
 /*
@@ -56,11 +56,11 @@ public class Module_Test extends Module_Basic{
 	}
 	
 	public static Properties getProperties(UI ui){
-		Properties testprops = ((PropertyLoaderXT) ui.getPropertyLoader()).getSubProperty(PropertyLoaderXT.TestPrefs);
+		Properties testprops = ((EddiePropertyLoader) ui.getPropertyLoader()).getSubProperty(EddiePropertyLoader.TestPrefs);
 		if(testprops == null){
-			((PropertyLoaderXT) ui.getPropertyLoader()).initilaseSubProperty(PropertyLoaderXT.TestPrefs);
+			((EddiePropertyLoader) ui.getPropertyLoader()).initilaseSubProperty(EddiePropertyLoader.TestPrefs);
 			initTestProperties(ui.getPropertyLoader(), testprops);
-			testprops = ((PropertyLoaderXT) ui.getPropertyLoader()).getSubProperty(PropertyLoaderXT.TestPrefs);
+			testprops = ((EddiePropertyLoader) ui.getPropertyLoader()).getSubProperty(EddiePropertyLoader.TestPrefs);
 		}
 		if(!validateFiles(testprops)){
 			Logger.getRootLogger().warn("Property file validation failed, reinitialising...");

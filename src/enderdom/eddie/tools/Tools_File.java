@@ -191,4 +191,8 @@ public abstract class Tools_File {
 		else return false;
 	}
 	
+	public static String getEnvirons(Object a){
+		return new File(a.getClass().getProtectionDomain().getCodeSource().getLocation().getFile()).getParent()+Tools_System.getFilepathSeparator();
+	}
+	
 }
