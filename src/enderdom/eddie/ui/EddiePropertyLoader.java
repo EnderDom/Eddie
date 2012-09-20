@@ -52,7 +52,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
     public static String edition = "Development";
     public String[] actions;
     private PropertyFrame propsframe;
-	public static String defaultlnf =  "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
+	
 	public String[] args;
 	public String modulename;
 	private String slash;
@@ -217,7 +217,6 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
         	 * Alert user that there is properties file 
         	 */
             JOptionPane.showMessageDialog(pane, "Properties File is not found. Creating properties.");
-            
             /*
              * Set root folder to environment
              */

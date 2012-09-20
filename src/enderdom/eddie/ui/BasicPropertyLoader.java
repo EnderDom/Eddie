@@ -19,6 +19,7 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 	public static Logger logger;
 	protected Properties props;
 	protected Level level;
+	public static String defaultlnf =  "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
 	
 	public void setValue(String prop, String value){
 		props.setProperty(prop, value);
@@ -132,7 +133,6 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 		System.out.println("[PRE-LOG] "+str);
 	}
 	
-	
 	protected static Properties getDefaultLogProperties(String logfilepath){
 		Properties defaults = new Properties();
 		//Set Log File Properties
@@ -190,3 +190,4 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
         }
 	}
 }
+
