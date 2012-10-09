@@ -15,10 +15,10 @@ import enderdom.eddie.tools.Tools_System;
 
 public abstract class BasicPropertyLoader implements PropertyLoader {
 
-	protected boolean isLogging;
+	protected boolean isLogging = false;
 	public static Logger logger;
 	protected Properties props;
-	protected Level level;
+	protected Level level = Level.WARN;
 	public static String defaultlnf =  "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
 	
 	public void setValue(String prop, String value){
@@ -98,18 +98,18 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 		}
 		if (success) {
 			if(isLogging()){
-				System.out.println("[PRE-LOG] Saved Properties @ "+filepath);
+				logger.info("Saved Properties @ "+filepath);
 			}
 			else{
-				logger.info("Saved Properties @ "+filepath);
+				System.out.println("[PRE-LOG] Saved Properties @ "+filepath);
 			}
 		}
 		if (!success) {
 			if(isLogging()){
-				preLog("[ERROR] failed to Saved Properties @ "+filepath);
+				logger.error("Saved Properties @ "+filepath);
 			}
 			else{
-				logger.error("Saved Properties @ "+filepath);
+				preLog("[ERROR] failed to Saved Properties @ "+filepath);
 			}
 		}
 		return success;
@@ -127,6 +127,10 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 	
 	public boolean isLogging(){
 		return this.isLogging;
+	}
+	
+	protected void setLogging(boolean logging){
+		this.isLogging = logging;
 	}
 	
 	protected static void preLog(String str){
@@ -152,7 +156,7 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 	}    
 
     
-	protected void startLog() {
+	protected boolean startLog() {
 		String slash = Tools_System.getFilepathSeparator();
 		File logfolder = new File(getValue("WORKSPACE")+ slash + "logs");
 		preLog("Initialising Log...");
@@ -166,6 +170,7 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 		if (!logfolder.exists()) {
 			boolean done = logfolder.mkdir();
 			if(!done)System.out.println("Could not make a log folder @ " + logfolder.getPath());
+			else return false;
 		}
 		if(logfolder.isDirectory()){
             File log_properties = new File(logfolder.getPath()+slash+"log4j.properties");
@@ -178,15 +183,21 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
                 savePropertyFile(log_properties.getPath(), defaults);
                 logger = Logger.getLogger(logfolder.getPath()+slash+"log4j.properties");
                 PropertyConfigurator.configure(defaults);
-                
             }
-            Logger.getRootLogger().setLevel(level);
-            Logger.getRootLogger().info("Logger Initialised LVL: "+level.toString()+" @ "+Tools_System.getDateNow());
-            isLogging = true;
-        } 
+            if(logger != null){
+            	setLogging(true);
+            	Logger.getRootLogger().setLevel(level);
+            	Logger.getRootLogger().info("Logger Initialised LVL: "+level.toString()+" @ "+Tools_System.getDateNow());
+            	return true;
+            }
+            else{
+            	preLog("Failed to start logger, please submit as bug to software download page");
+            	return false;
+            }
+        }
 		else{
-            preLog("Logging has failed. Can Not Continue.");
-            preLog("This is a major issue, that will lead to downstream problems");
+            preLog("Path at "+  logfolder.getPath() + " is supposed to be a directory but it's not");
+            return false;
         }
 	}
 }
