@@ -25,6 +25,7 @@ public abstract class Tools_String {
 	}
 	
 	public static Double parseString2Double(String sun){
+		if(sun == null || sun.length() < 1)return null;
 		try{
 			return Double.parseDouble(sun.trim());
 		}

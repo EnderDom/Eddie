@@ -28,6 +28,7 @@ import enderdom.eddie.tasks.Task;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.Tools_UI;
+import enderdom.eddie.ui.EddiePropertyLoader;
 import enderdom.eddie.ui.PropertyLoader;
 import enderdom.eddie.ui.TaskManager;
 import enderdom.eddie.ui.UI;
@@ -48,8 +49,8 @@ public abstract class GenericGUI extends JFrame implements ActionListener, Windo
 		super(programname+" v"+loader.getValue("GUIVERSION") + " " + loader.getValue("EDITION") + " Edition");
 		this.load = loader;
 		this.programname = programname;
-		Double dx = Tools_String.parseString2Double(loader.getValue("GUIVERSION"));
-		if(dx != null)this.version=dx; 
+		Double dx = Tools_String.parseString2Double(loader.getValueOrSet("GUIVERSION", ""+EddiePropertyLoader.guiversion));
+		if(dx != null)this.version=dx;
 		System.out.println(programname+" v" + version + " by (S.C.Corp.)");
 		Dimension d =Toolkit.getDefaultToolkit().getScreenSize();
 		//-20 as screen size includes menu bars etc..
@@ -84,7 +85,7 @@ public abstract class GenericGUI extends JFrame implements ActionListener, Windo
 	}
 	
 	public void exit(){
-		int i = JOptionPane.showConfirmDialog(this, "Exit "+programname+" v"+(load.getValue("ENGINEVERSION")+load.getValue("GUIVERSION"))+"?", "Exit?", JOptionPane.YES_NO_OPTION);
+		int i = JOptionPane.showConfirmDialog(this, "Exit "+programname+" v"+load.getValue("GUIVERSION")+"?", "Exit?", JOptionPane.YES_NO_OPTION);
 		if(i !=1){
 			load.savePropertyFile((new StringBuilder(String.valueOf(load.getValue("ROOTFOLDER")))).append(load.getValue("PROPERTYFILENAME")).toString(), load.getPropertyObject());
 	        Logger.getRootLogger().info((new StringBuilder("Closing "+programname+" @ ")).append(Tools_System.getDateNow()).toString());

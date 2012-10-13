@@ -40,7 +40,6 @@ public class Task_dbTools extends TaskXT{
 		options.addOption(new Option("o","output", true, "Output file"));
 	}
 	
-
 	public void run(){
 		setComplete(started);
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());

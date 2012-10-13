@@ -36,7 +36,6 @@ public class EddieCLI implements UI {
 	public EddieCLI(EddiePropertyLoader loader, boolean persist){
 		System.out.println("Eddie v" + load.getValue("FULLVERSION") + " by (S.C.Corp.)");
 		load = loader;
-		load.loadPropertiesCLI();
 		/*
 		 * Builds basic options, primarily grabbing "-task"
 		 * Needs to be done before parseFurther is run
@@ -45,7 +44,7 @@ public class EddieCLI implements UI {
 		buildOptions();
 		
 		//Module Build
-		modmanager = new ModuleManager(load.getModuleFolder());
+		modmanager = new ModuleManager(null);
 		modmanager.init();
 		modmanager.setupCLI(this);
 		modmanager.addPrebuiltModule("PROPERTYLOADER", load, this);
@@ -147,8 +146,8 @@ public class EddieCLI implements UI {
 	}
 
 	public void buildTaskManager() {
-		Integer core = Tools_String.parseString2Int(load.getCore());
-		Integer auxil = Tools_String.parseString2Int(load.getAuxil());
+		Integer core = Tools_String.parseString2Int(load.getValueOrSet("CORETHREAD", "1"));
+		Integer auxil = Tools_String.parseString2Int(load.getValueOrSet("AUXILTHREAD", "5"));
 		if(core == null){
 			core = 1;
 			logger.error("Something has gone horribly wrong");

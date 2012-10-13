@@ -15,7 +15,6 @@ import java.io.InputStream;
 import javax.imageio.ImageIO;
 
 import enderdom.eddie.tools.Tools_System;
-import enderdom.eddie.ui.EddiePropertyLoader;
 
 public class Tools_Image {
 
@@ -129,7 +128,7 @@ public class Tools_Image {
 		g2.fillRect(50, 50, 100, 100);
 		g2.setColor(Color.black);
 		g2.setFont(new Font("Times New Roman", Font.PLAIN, 12));
-		g2.drawString("TEST IMAGE BY Eddie v" + EddiePropertyLoader.getFullVersion(), 75, 75);
+		g2.drawString("TEST IMAGE BY Eddie", 75, 75);
 		g2.drawString(Tools_System.getDateNow(), 75, 85);
 		g2.drawString(System.getProperty("os.name")+" " + System.getProperty("os.arch"), 75, 95);
 		return image;

@@ -2,29 +2,28 @@ package enderdom.eddie.ui;
 
 import enderdom.eddie.gui.EddieGUI;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+//import java.io.File;
+//import java.io.FileInputStream;
+//import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
-import javax.xml.parsers.ParserConfigurationException;
+//import javax.xml.parsers.ParserConfigurationException;
 
 import enderdom.eddie.modules.Module;
-import enderdom.eddie.modules.Module_Test;
 import enderdom.eddie.modules.bio.Module_Bio;
 import enderdom.eddie.modules.bio.Module_DB;
 import enderdom.eddie.modules.bio.niche.Module_Niche;
 import enderdom.eddie.modules.lnf.DefaultLNF;
 
 import org.apache.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
+//import org.w3c.dom.Document;
+//import org.w3c.dom.NodeList;
+//import org.xml.sax.SAXException;
 
 import enderdom.eddie.cli.EddieCLI;
 
-import enderdom.eddie.tools.Tools_XML;
+//import enderdom.eddie.tools.Tools_XML;
 
 /**
  * 
@@ -46,9 +45,9 @@ public class ModuleManager implements Module{
 	 * 
 	 * 
 	 */
-	Document xmlModuleList;
-	private String modulefolder;
-	private boolean loaded;
+	//Document xmlModuleList;
+	//private String modulefolder;
+	//private boolean loaded;
 	/*
 	* Key is the module name, holds either the classpath
 	* or a id to the object if the object is persistant
@@ -91,7 +90,7 @@ public class ModuleManager implements Module{
 	
 	public ModuleManager(String modulefolder){
 		modulecount=0;
-		this.modulefolder = modulefolder;
+		//this.modulefolder = modulefolder;
 		module_classpath = new HashMap<String, String>();
 		module_actions = new HashMap<String, String>();
 		module_tasks = new HashMap<String, String>();
@@ -115,75 +114,74 @@ public class ModuleManager implements Module{
 		addModule("BIO", Module_Bio.class.getName());
 		addModule("DB", Module_DB.class.getName());
 		addModule("BIONICHE", Module_Niche.class.getName());
-		addModule("TEST", Module_Test.class.getName());
 	}
 	
-	public boolean loadXML(){
-		File in = new File(modulefolder+"modules.xml");/*
-			This file should contain any additional modules
-			this is mainly hypothetical
-		*/
-		if(in.isFile()){
-			try{
-				xmlModuleList = Tools_XML.inputStreamToDocument(new FileInputStream(in));
-				loaded = true;
-				return true;
-			}
-			catch(IOException exe){
-				logger.error("Failed to Load Modules", exe);
-				return false;
-			}
-			catch(SAXException exe){
-				logger.error("Failed to Load Modules", exe);
-				return false;
-			}
-			catch(ParserConfigurationException exe){
-				logger.error("Failed to Load Modules", exe);
-				return false;
-			}
-		}
-		else{
-			logger.warn("No Module Xml file!!");
-			return false;
-		}
-	}
+//	public boolean loadXML(){
+//		File in = new File(modulefolder+"modules.xml");/*
+//			This file should contain any additional modules
+//			this is mainly hypothetical
+//		*/
+//		if(in.isFile()){
+//			try{
+//				xmlModuleList = Tools_XML.inputStreamToDocument(new FileInputStream(in));
+//				loaded = true;
+//				return true;
+//			}
+//			catch(IOException exe){
+//				logger.error("Failed to Load Modules", exe);
+//				return false;
+//			}
+//			catch(SAXException exe){
+//				logger.error("Failed to Load Modules", exe);
+//				return false;
+//			}
+//			catch(ParserConfigurationException exe){
+//				logger.error("Failed to Load Modules", exe);
+//				return false;
+//			}
+//		}
+//		else{
+//			logger.warn("No Module Xml file!!");
+//			return false;
+//		}
+//	}
 	
 	//TODO incomplete implementation
 	//Go through xml and pulls out all the classes
-	public void loadModules(){
-		//TODO
-		/*
-		 * Load all default modules here
-		 */
-		
-		//Load additional modules here
-		if(loaded){
-			NodeList modules = xmlModuleList.getElementsByTagName("MOD");
-			
-			for(int i =0;i < modules.getLength(); i++){
-				NodeList module_info = modules.item(i).getChildNodes();
-				String modname = new String("");
-				for(int j =0;j < module_info.getLength(); j++){
-					if(module_info.item(i).getNodeName().contentEquals("MOD_NAME")){
-						modname = module_info.item(i).getTextContent();
-						if(module_classpath.containsKey(modname)){
-							modname = modname + "X";
-						}
-					}
-					else if(module_info.item(i).getNodeName().contentEquals("MOD_CLASSPATH")){
-						String classpath = module_info.item(i).getTextContent();
-						if(modname.length() > 0 && classpath.length() > 0){
-							module_classpath.put(modname, classpath);
-						}
-						else{
-							logger.error("Module XML file is corrupt");
-						}
-					}
-				}
-			}
-		}
-		else logger.error("Module XML not loaded. Why is this still being called???");
-	}
+//	public void loadModules(){
+//		//TODO
+//		/*
+//		 * Load all default modules here
+//		 */
+//		
+//		//Load additional modules here
+//		if(loaded){
+//			NodeList modules = xmlModuleList.getElementsByTagName("MOD");
+//			
+//			for(int i =0;i < modules.getLength(); i++){
+//				NodeList module_info = modules.item(i).getChildNodes();
+//				String modname = new String("");
+//				for(int j =0;j < module_info.getLength(); j++){
+//					if(module_info.item(i).getNodeName().contentEquals("MOD_NAME")){
+//						modname = module_info.item(i).getTextContent();
+//						if(module_classpath.containsKey(modname)){
+//							modname = modname + "X";
+//						}
+//					}
+//					else if(module_info.item(i).getNodeName().contentEquals("MOD_CLASSPATH")){
+//						String classpath = module_info.item(i).getTextContent();
+//						if(modname.length() > 0 && classpath.length() > 0){
+//							module_classpath.put(modname, classpath);
+//						}
+//						else{
+//							logger.error("Module XML file is corrupt");
+//						}
+//					}
+//				}
+//			}
+//		}
+//		else logger.error("Module XML not loaded. Why is this still being called???");
+//	}
 	
 	public void pullTaskAndActions(Module temp, String key){
 		String[] actions = temp.getActions();

@@ -19,9 +19,9 @@ public class Eddie {
 	 * @param args input arguments
 	 */
 	public static void main(String[] args) {
-			int retvalue = 4;
-			EddiePropertyLoader loader = new EddiePropertyLoader();
-			retvalue = loader.parseArgs(args);
+			int retvalue = -1;
+			EddiePropertyLoader loader = new EddiePropertyLoader(args);
+			retvalue = loader.mode;
 			if(retvalue == 2){
 				@SuppressWarnings("unused")
 				EddieCLI cli = new EddieCLI(loader, false);

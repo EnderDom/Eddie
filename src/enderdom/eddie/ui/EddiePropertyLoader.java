@@ -4,15 +4,13 @@ import enderdom.eddie.gui.EddieGUI;
 import enderdom.eddie.gui.utilities.PropertyFrame;
 import enderdom.eddie.gui.viewers.file.FileViewerModel;
 
-import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
-import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 
 import javax.swing.KeyStroke;
 
@@ -34,7 +32,6 @@ import enderdom.eddie.databases.manager.DatabaseManager;
 import enderdom.eddie.tools.Tools_Modules;
 import enderdom.eddie.tools.Tools_Array;
 import enderdom.eddie.tools.Tools_File;
-import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 
 public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
@@ -43,7 +40,8 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
     public static String propertyfilename = new String("eddie.properties");
     public static String infoFile = new String("eddie.info");
     public String rootfolder;
-    Options options;
+    private File propfile;
+    private Options options;
     /* This is actually the 4th iteration of Eddie, 
      * though this one has been written from scratch
      */
@@ -55,63 +53,48 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 	
 	public String[] args;
 	public String modulename;
-	private String slash;
+	public int mode;
 	
-	/*
-	 * Current Subproperties, others can be added
-	 * this just for ease 
-	 */
-	//Test subproperty file
-	public static String TestPrefs = "test";
-	public static String DB = "db";
-	//Database subproperty	
+	private String[] defaultkeys;
+	private String[] defaultvalues;
 	
-	//This is a bit of a mess now :( sorry
-	public static String DBHOST = "DBHOST";
-	public static String DBNAME = "DBNAME";
-	public static String DBUSER = "DBUSER";
-	public static String DBTYPE = "DBTYPE";
-	public static String DBDRIVER = "DBDRIVER";
-	
-	public static String[] defaultKeys = new String[]{"AUXILTHREAD","CORETHREAD", "BLAST_BIN_DIR", "BLAST_DB_DIR", "ESTSCAN_BIN", "FILES_XML"};
-	public static String[] defaultKeysUN = new String[]{DBHOST, "DBNAME", "DBUSER", "PREFLNF","MODULES", "VERSION","DBTYPE","DBDRIVER", "TESTDATADIR"};
 	//These should be the index to defaultKeysUN	
 	
-	public EddiePropertyLoader() {
-		rootfolder = getEnvirons();
-		level = Level.WARN;
-        props = new Properties();
-        props.put("VERSION", engineversion);
-        props.put("ENGINEVERSION", engineversion);
-        props.put("GUIVERSION", guiversion);
-        props.put("FULLVERSION", engineversion+guiversion);
-        modulename = this.getClass().getName();
-        slash = Tools_System.getFilepathSeparator();
+	public EddiePropertyLoader(String[] args) {
+		this.props = new Properties();
+		/*
+		 * Load properties and then set default properties if property doesn't exist,
+		 * this way any new or missing properties are auto added
+		 */
+		if(loadProperties()){
+			setDefaultProperties();
+			savePropertyFile(propfile, props);
+			parseArgs(args);
+			if(!startLog()){
+				mode = -1;
+			}
+		}
 	}
 	
-	public int parseArgs(String[] args){
-		int retvalue = 0;
+	public void parseArgs(String[] args){
 		buildOptions();
 		CommandLineParser parser = new LazyPosixParser();
 		try {
 			CommandLine cmd = parser.parse(options, args);
 			if(cmd.hasOption("h")){
-				retvalue = 1;
+				mode = 1;
 			}
 			else if(cmd.hasOption("about")){
-				retvalue = 6;
-			}
-			else if(cmd.hasOption("lite")){
-				retvalue = 5;
+				mode = 6;
 			}
 			else{
 				if(cmd.hasOption("g")){ 
 					/* GUI */
-					retvalue = 4;					
+					mode = 4;					
 				}
 				else{
 					/*If Command Line iNterface*/
-					retvalue = 2;
+					mode = 2;
 					/*
 					 * Store arguments for further parsing by CLI
 					 */
@@ -125,9 +108,8 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 		} catch (ParseException e) {
 			System.out.println("Failed To Parse Input Options");
 			e.printStackTrace();
-			retvalue = -1;
+			mode = -1;
 		}
-		return retvalue;
 	}
 	
 	private void buildOptions(){
@@ -152,290 +134,123 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 		System.out.println("Use -task taskname -opts for that task's helpmenu");
 	}
 
-	private boolean loadPropertiesInit(){
-		/*
-    	 * Create properties file in current folder
-    	 */
-        File prop = new File(getEnvirons()+propertyfilename);
-               
-        /*
-         * Check to see if it exists, if it does, set rootfolder to current folder
-         */
-        if(prop.exists()){
-        	rootfolder = getEnvirons();
-        	/*
-        	 * File exists, so try and load it
-        	 */
-        	this.props = loadPropertyFile( prop,props);
-        	return (this.props != null);
-        }
-        /*
-         * If not, then see if file exists in the default user home directory
-         * If it does, set rootfolder as user home
-         */
-        else if(new File(System.getProperty("user.home")+slash+propertyfilename).exists()){
-        	rootfolder = System.getProperty("user.home")+slash;
-        	this.props = loadPropertyFile(new File(System.getProperty("user.home")+slash+propertyfilename), props);
-           	return (this.props != null);
-        }
-        else{
-        	return false;
-        }
-	}
-	
-	public void loadPropertiesCLI(){
-    	boolean propsbeenloaded = loadPropertiesInit();
-        if(!propsbeenloaded){
-        	/*
-        	 * Alert user that there is properties file 
-        	 */
-            preLog("Properties File is not found. Creating properties.");
-            
-            /*
-             * Set root folder to environment
-             */
-            rootfolder = getEnvirons();
-            loadDefaultProperties();
-            propsbeenloaded = savePropertyFile(rootfolder+propertyfilename, props);
-        }
-        if(propsbeenloaded){
-        	//Get Workspace if not set
-	        if(!props.containsKey("WORKSPACE")){
-	        	setWorkspacePath(rootfolder);
-	        }
-	        startLog();
-	        Logger.getRootLogger().info("Workspace set as root folder " + rootfolder +" to change this change "+ propertyfilename);
-        }
-	}
-	
-    public void loadPropertiesGUI(Container pane){
-    	
-    	boolean propsbeenloaded = loadPropertiesInit();
-
-        if(!propsbeenloaded){
-        	/*
-        	 * Alert user that there is properties file 
-        	 */
-            JOptionPane.showMessageDialog(pane, "Properties File is not found. Creating properties.");
-            /*
-             * Set root folder to environment
-             */
-            rootfolder = getEnvirons();
-            System.out.println("[PRE-LOG] Environment identified as " + rootfolder);
-            loadDefaultProperties();
-            propsbeenloaded = true;
-        }
-        if(propsbeenloaded){
-        	//Get Workspace if not set
-	        if(!props.containsKey("WORKSPACE")){
-	           	String defaulthome = System.getProperty("user.home")+slash+"eddie";
-	            Object input = JOptionPane.showInputDialog(pane, "Create EddieGUI Workspace folder at default location: ?", "Default EddieGUI Workspace Folder", 1, null, new Object[] {
-	                defaulthome, "Choose Another Location"}, "OK");
-	            if(input != null){
-	                if(input.toString().contentEquals("Choose Another Location")){
-	                    JFileChooser choose = new JFileChooser();
-	                    choose.setFileSelectionMode(1);
-	                    choose.setDialogTitle("Please Choose Folder to Create EddieGUI Workspace in:");
-	                    int opt = choose.showOpenDialog(pane);
-	                    if(opt != 1){
-	                        if(choose.getSelectedFile() != null){
-	                            String path = choose.getSelectedFile().getPath();
-	                            setWorkspacePath(path);
-	                        }
-	                    }
-	                    else{
-	                    	System.out.println("[FATAL] Failed to set workspace");
-	                        System.exit(0);
-	                    }
-	                } 
-	                else{
-	                    setWorkspacePath(defaulthome);
-	                }
-	            }
-	        }
-	        //Start Log if Workspace now exists
-	        if(props.containsKey("WORKSPACE")){
-	           	startLog();
-	           	//Resave to add new workspace
-	           	boolean saved = savePropertyFile(rootfolder+propertyfilename, props);
-	           	if(!saved){
-	           		JOptionPane.showMessageDialog(pane, "Cannot save properties file, do you have permissions for workspace location " +this.getWorkspace() + "?");
-	           	}
-	        }
-	        else{
-	        	JOptionPane.showMessageDialog(pane, "An Error has occured, Log could not be started as workspace no set.");
-	        }
-        }
-        else{
-        	JOptionPane.showMessageDialog(pane, "An Error has occured, properties for this session could not be saved, check folder permissions and restart.");
-        }
-    }
-
-
-	public String getModuleFolder(){
-		return getValueOrSet("MODULES", rootfolder+"Modules"+slash);
-	}
-
-
-	private boolean setWorkspacePath(String path) {
-		preLog("Setting workspace location to " + path);
-		setWorkspace(path);
-		File workspace = new File(path);
-		boolean ret = false;
-		if (workspace.exists()) {
-			ret = true;
-			File eddie = new File(path	+ slash + infoFile);
-			String in = new String("");
-			if (eddie.isFile()) {
-				in = Tools_File.quickRead(eddie);
-				if (in.length() > 0) {
-					int start = 0;
-					if ((start = in.indexOf("VERS:")) != -1) {
-						Double oldvers = Tools_String.parseString2Double(in
-								.substring(start+5, in.length()));
-						if(oldvers != null && oldvers != guiversion){
-							//TODO Compatibilaty
-						}
-					}
-				}
-			} else {
-				saveInfoFile(eddie);
-			}
-		} else {
-			ret = workspace.mkdir();
-			if (ret) {
-				saveInfoFile(new File(path
-						+ System.getProperty("file.separator")
-						+ infoFile));
-			}
-		}
-		savePropertyFile(rootfolder+propertyfilename, props);
-		return ret;
-	}
-
-	private boolean saveInfoFile(File file) {
-		return Tools_File.quickWrite("VERS:" + guiversion, file, false);
-	}
-
-	public String getEnvirons() {
-		return new File(getClass().getProtectionDomain().getCodeSource().getLocation().getFile()).getParent()+slash;
-	}
-
-	public String getWorkspace() {
-		return props.getProperty("WORKSPACE");
-	}
-
-	public void setWorkspace(String set){
-		props.setProperty("WORKSPACE", set);
-	}
-
-	public void loadDefaultProperties() {
-		String[][] ret = getChangableStats();
-		for(int i =0; i< ret[0].length; i++){
-			props.put(ret[0][i], ret[1][i]);
-		}
-		ret = getUnchangableStats();
-		for(int i =0; i< ret[0].length; i++){
-			props.put(ret[0][i], ret[1][i]);
-		}
-	}
-	
-	public boolean initilaseSubProperty(String name){
-		if(this.props.containsKey(name) && new File(this.getValue(name)).exists()){
-			logger.warn("This property name ["+name+"] already exists!");
-			return true;
-		}
-		else{
-			String path =  this.getWorkspace()+"prefs"+Tools_System.getFilepathSeparator()+name+".properties";
-			File folder = new File(this.getWorkspace()+"prefs");
-			if(!Tools_File.createFolderIfNotExists(folder)){
-				return false;
-			}
-			else{
-				if(savePropertyFile(path, new Properties())){
-					setValue(name,path);
-					return true;
-				}
-				else{
-					logger.error("Failed to initialise new subproperties ");
-					return false;
-				}
-			}
-		}
-	}
-	
-	public Properties getSubProperty(String property){
-		if(this.props.containsKey(property)){
-			return this.loadPropertyFile(new File(this.getValue(property)));
-		}
-		else{
-			logger.error("Failed to retrieve subproperty file for " + property);
-			return null;
-		}
-	}
-	
-	public String[][] getChangableStats(){
-		//These need to all be the same length
-		String[] stats = defaultKeys;
-		String[] stats_val = new String[]{"5", "1", "/usr/bin/", this.rootfolder+"blas_db"+Tools_System.getFilepathSeparator(),"/usr/bin/ESTscan", rootfolder+FileViewerModel.filename};
-		String[] tool_tips = new String[]{"Max number of auxiliary threads","Max number of primary threads", "Directory that contains blast executables", 
-				"XML file which list current files in project", "Location of the ESTScan executable", "File XML list location"};
-		String[][] ret = new String[3][stats.length];
-		ret[0] = stats;
-		ret[1] = stats_val;
-		ret[2] = tool_tips;
-		return ret;
-	}
-	
-	public String[][] getUnchangableStats(){
-		String[] stats = defaultKeysUN;
-		String[] stats_val = new String[]{"Localhost", DatabaseManager.default_database, System.getProperty("user.name"),defaultlnf, rootfolder+"Modules"+Tools_System.getFilepathSeparator(), guiversion+"","mysql","com.mysql.jdbc.Driver", "/home/user/eddie4/test/"};
-		String[][] ret = new String[2][stats.length];
-		ret[0] = stats;
-		ret[1] = stats_val;
-		return ret;
-	}
-
-	
 	public int getPropertiesCount(){
 		return props.size();
 	}
-
-	public String getLastLNF() {
-		return getValueOrSet("PREFLNF",defaultlnf);
-	}
-
-	public void changeDefaultLNF(String lnf) {
-		props.setProperty("PREFLNF", lnf);
-	}
-
-	public String getAuxil() {
-		return getValueOrSet("AUXILTHREAD", "5");
-	}
-
-	public String getCore() {
-		return getValueOrSet("CORETHREAD", "1");
+	
+	public boolean loadProperties(){
+		//Look first in the surrounding file
+		String slash = Tools_System.getFilepathSeparator();
+		System.out.println(Tools_File.getEnvirons(this)+propertyfilename);
+		System.out.println(System.getProperty("user.home")+slash+".tina"+slash+"tina.properties");
+		if(loadPropertiesFromFile(Tools_File.getEnvirons(this)+propertyfilename))return true;
+		//Then in the home directory
+		if(loadPropertiesFromFile(System.getProperty("user.home")+slash+".tina"+slash+"tina.properties"))return true;
+		
+		preLog("ERROR: don't have permission to save settings in either local folder of user home directory");
+		return false;
 	}
 	
+	public boolean loadPropertiesFromFile(String path){
+		return loadPropertiesFromFile(new File(path));
+	}
+	
+	public boolean loadPropertiesFromFile(File propsfile){
+		preLog("Attempting to load file from "+ propsfile.getPath()+"...");
+		if(propsfile.isFile() && propsfile.canWrite()){
+			preLog("File exists, loading...");
+			this.loadPropertyFile(propsfile, this.props);
+			propfile = propsfile;
+			return true;
+		}
+		else if(propsfile.isFile() && !propsfile.canWrite()){
+			preLog("File exists, but it cannot be written to.");
+			return false;
+		}
+		else if(!propsfile.exists()){
+			try{
+				preLog("File doesn't exist, creating...");
+				propsfile.getParentFile().mkdirs();
+				if(propsfile.createNewFile()){
+					propfile = propsfile;
+					return true;
+				}
+				else return false;
+			}
+			catch(IOException io){
+				preLog("Error thrown, can't create file at "+propsfile.getPath());
+				io.printStackTrace();
+				return false;
+			}
+		}
+		else return false;
+	}
+	
+	public void setDefaultProperties(){
+		String slash = Tools_System.getFilepathSeparator();
+		//Properties to add if not already available
+		defaultkeys = new String[]{
+				"WORKSPACE","AUXILTHREAD","CORETHREAD", 
+				"BLAST_BIN_DIR","BLAST_DB_DIR", "ESTSCAN_BIN", 
+				"FILES_XML","PREFLNF","TESTDATADIR",
+				"DBTYPE","DBDRIVER","DBHOST", 
+				"DBNAME", "DBUSER", 
+				 };
+		defaultvalues = new String[]{
+				propfile.getParent(), "5", "1", 
+				"/usr/bin/", "/home/dominic/bioapps/blast/db/", "/usr/bin/",
+				propfile.getParent()+slash+FileViewerModel.filename, defaultlnf, propfile.getParent()+slash+"test", 
+				"mysql","com.mysql.jdbc.Driver", "Localhost", 
+				DatabaseManager.default_database, "user"
+				};
+		
+		if(defaultkeys.length != defaultvalues.length)System.out.println("You're being derp Dominic :(");
+		
+		for(int i =0; i < defaultkeys.length; i++){
+			if(!this.props.containsKey(defaultkeys)){
+				this.props.put(defaultkeys[i], defaultvalues[i]);
+			}
+		}
+		
+		//Forced Overwrite properties
+		String[] tempkeys = new String[]{"GUIVERSION", "VERSION", 
+				"FULLVERSION", "EDITION"};
+		String[] tempvalues = new String[]{EddiePropertyLoader.guiversion+"",EddiePropertyLoader.engineversion+"",
+				(EddiePropertyLoader.guiversion+EddiePropertyLoader.engineversion)+"", edition};
+		if(tempkeys.length != tempvalues.length)System.out.println("You're being derp Dominic :(");
+		for(int i =0; i < tempkeys.length; i++){
+				this.props.put(tempkeys[i], tempvalues[i]);
+		}
+	}
 
-	public static double getFullVersion(){
-		return guiversion+engineversion;
+	public String[][] getChangableStats(){
+		String[][] stats = new String[3][defaultkeys.length];
+		stats[0]=defaultkeys;
+		stats[1]=defaultvalues;
+		for(int i =0 ;i < defaultvalues.length; i++){
+			stats[2][i]="No tooltip yet available";//TODO
+		}
+		return stats;
 	}
 	
 	public static String[][] getFullDBsettings(PropertyLoader load){
 		String[][] db = new String[3][5];
-		String[] d = new String[]{DBTYPE, DBDRIVER, DBHOST,DBNAME,DBUSER};
+		String[] d = new String[]{"DBTYPE", "DBDRIVER", "DBHOST","DBNAME","DBUSER"};
 		String[] s = new String[]{"Type of database, currently only mysql supported"
-				,"Database driver, this is unlikely to change"
-				,"Name or ip of computer that hosts database, if local, localhost or 129.0.0.1"
-				,"Name of database to store data",
-				"Your mysql username"};
+		,"Database driver, this is unlikely to change"
+		,"Name or ip of computer that hosts database, if local, localhost or 129.0.0.1"
+		,"Name of database to store data",
+		"Your mysql username"};
 		for(int i =0 ; i < 5 ; i++){
 			db[0][i] = d[i];
 			db[1][i] = load.getValue(d[i]);
 			db[2][i] = s[i];
 		}
 		return db;
+	}
+	
+	public static double getFullVersion(){
+		return engineversion+guiversion;
 	}
 	
 	/****************************************************************************/
