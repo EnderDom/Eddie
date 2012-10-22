@@ -46,7 +46,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
      * though this one has been written from scratch
      */
     public static int engineversion = 4;
-    public static double guiversion = 0.33;
+    public static double subversion = 0.34;
     public static String edition = "Development";
     public String[] actions;
     private PropertyFrame propsframe;
@@ -128,7 +128,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 			buildOptions();
 		}
 		HelpFormatter help = new HelpFormatter();
-		help.printHelp("ls", "-- Eddie v"+guiversion+" Help Menu --", options, "-- Share And Enjoy! --");
+		help.printHelp("ls", "-- Eddie v"+subversion+" Help Menu --", options, "-- Share And Enjoy! --");
 		System.out.println();
 		System.out.println("Use -task for list of command line tasks");
 		System.out.println("Use -task taskname -opts for that task's helpmenu");
@@ -141,8 +141,8 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 	public boolean loadProperties(){
 		//Look first in the surrounding file
 		String slash = Tools_System.getFilepathSeparator();
-		System.out.println(Tools_File.getEnvirons(this)+propertyfilename);
-		System.out.println(System.getProperty("user.home")+slash+".tina"+slash+"tina.properties");
+		//System.out.println(Tools_File.getEnvirons(this)+propertyfilename);
+		//System.out.println(System.getProperty("user.home")+slash+".tina"+slash+"tina.properties");
 		if(loadPropertiesFromFile(Tools_File.getEnvirons(this)+propertyfilename))return true;
 		//Then in the home directory
 		if(loadPropertiesFromFile(System.getProperty("user.home")+slash+".tina"+slash+"tina.properties"))return true;
@@ -213,10 +213,10 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 		}
 		
 		//Forced Overwrite properties
-		String[] tempkeys = new String[]{"GUIVERSION", "VERSION", 
+		String[] tempkeys = new String[]{"subversion", "VERSION", 
 				"FULLVERSION", "EDITION"};
-		String[] tempvalues = new String[]{EddiePropertyLoader.guiversion+"",EddiePropertyLoader.engineversion+"",
-				(EddiePropertyLoader.guiversion+EddiePropertyLoader.engineversion)+"", edition};
+		String[] tempvalues = new String[]{EddiePropertyLoader.subversion+"",EddiePropertyLoader.engineversion+"",
+				(EddiePropertyLoader.subversion+EddiePropertyLoader.engineversion)+"", edition};
 		if(tempkeys.length != tempvalues.length)System.out.println("You're being derp Dominic :(");
 		for(int i =0; i < tempkeys.length; i++){
 				this.props.put(tempkeys[i], tempvalues[i]);
@@ -250,7 +250,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 	}
 	
 	public static double getFullVersion(){
-		return engineversion+guiversion;
+		return engineversion+subversion;
 	}
 	
 	/****************************************************************************/

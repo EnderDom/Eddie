@@ -49,7 +49,7 @@ public abstract class GenericGUI extends JFrame implements ActionListener, Windo
 		super(programname+" v"+loader.getValue("GUIVERSION") + " " + loader.getValue("EDITION") + " Edition");
 		this.load = loader;
 		this.programname = programname;
-		Double dx = Tools_String.parseString2Double(loader.getValueOrSet("GUIVERSION", ""+EddiePropertyLoader.guiversion));
+		Double dx = Tools_String.parseString2Double(loader.getValueOrSet("GUIVERSION", ""+EddiePropertyLoader.subversion));
 		if(dx != null)this.version=dx;
 		System.out.println(programname+" v" + version + " by (S.C.Corp.)");
 		Dimension d =Toolkit.getDefaultToolkit().getScreenSize();

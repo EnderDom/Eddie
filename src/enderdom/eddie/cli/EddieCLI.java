@@ -13,11 +13,11 @@ import org.apache.log4j.Logger;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.tasks.Task;
+import enderdom.eddie.tasks.TaskList;
 import enderdom.eddie.tools.Tools_CLI;
 import enderdom.eddie.tools.Tools_Fun;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_UI;
-import enderdom.eddie.ui.ModuleManager;
 import enderdom.eddie.ui.PropertyLoader;
 import enderdom.eddie.ui.EddiePropertyLoader;
 import enderdom.eddie.ui.TaskManager;
@@ -27,33 +27,25 @@ import enderdom.eddie.ui.UIEvent;
 public class EddieCLI implements UI {
 
 	private EddiePropertyLoader load;
-	private ModuleManager modmanager;
 	private TaskManager manager;
 	private DatabaseManager dbmanager;
 	private String[] args;
 	private Options options;
 	
 	public EddieCLI(EddiePropertyLoader loader, boolean persist){
-		System.out.println("Eddie v" + load.getValue("FULLVERSION") + " by (S.C.Corp.)");
+		System.out.println("Eddie v" + (EddiePropertyLoader.engineversion+EddiePropertyLoader.subversion) + " by (S.C.Corp.)");
 		load = loader;
+		setArgs(loader.args);
 		/*
 		 * Builds basic options, primarily grabbing "-task"
 		 * Needs to be done before parseFurther is run
 		 */
-		options = new Options();
+		options = new Options();		
 		buildOptions();
-		
-		//Module Build
-		modmanager = new ModuleManager(null);
-		modmanager.init();
-		modmanager.setupCLI(this);
-		modmanager.addPrebuiltModule("PROPERTYLOADER", load, this);
-		modmanager.addPrebuiltModule("MYSELF", modmanager, this);
 
-        /*
+       /*
          * Adds relevant stuff to the Object
          */
-        
         parseFurther(args);
         
         if(persist){
@@ -95,8 +87,8 @@ public class EddieCLI implements UI {
 				String task = cmd.getOptionValue("task");
 				if(task != null && task.length() > 0){
 					logger.trace("Retrieved Task Class "+ task);
-					if(modmanager.isTask(task)){
-						modmanager.runTask(this,task);
+					if(TaskList.isTask(task)){
+						TaskList.actOnTask(task, this);
 					}
 					else if(task.contentEquals("test")){
 						printTaskList(true);
@@ -164,17 +156,8 @@ public class EddieCLI implements UI {
 	}
 
 	public void printTaskList(boolean test){
-		if(!test)System.out.println("List of tasks available:");
-		else System.out.println("List of Test Tasks available:");
+		TaskList.printAllTasks();
 		System.out.println();
-		System.out.println();
-		modmanager.printAllTasks(test);
-		System.out.println();
-		System.out.println();
-		System.out.println("include after -task");
-		System.out.println("Example: -task taskname -arg1 one -arg2 two");
-		System.out.println();
-		System.out.println("Also: For a list of tests available add -task test");
 	}
 
 	public void update(Task task) {

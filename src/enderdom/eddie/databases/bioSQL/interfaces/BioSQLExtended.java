@@ -38,6 +38,8 @@ public interface BioSQLExtended {
 	
 	public boolean addBioentryDbxrefCols(DatabaseManager dbman);
 	
+	//public boolean addBiosequenceRunID(DatabaseManager dbman);
+	
 	public boolean addRunTable(DatabaseManager dbman);
 	
 	public boolean addAssemblyTable(DatabaseManager manager);

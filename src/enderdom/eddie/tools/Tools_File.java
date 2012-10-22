@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
@@ -193,6 +194,24 @@ public abstract class Tools_File {
 	
 	public static String getEnvirons(Object a){
 		return new File(a.getClass().getProtectionDomain().getCodeSource().getLocation().getFile()).getParent()+Tools_System.getFilepathSeparator();
+	}
+	
+	public static void stream2File(InputStream stream, String output){
+		try{
+			InputStreamReader in = new InputStreamReader(stream, "UTF-8");
+			BufferedReader reader = new BufferedReader(in);
+			FileWriter fstream = new FileWriter(output);
+			BufferedWriter out = new BufferedWriter(fstream);
+			String line = "";
+			while((line=reader.readLine()) != null){
+				out.write(line);
+				out.flush();
+			}
+			out.close();
+		}
+		catch(IOException io){
+			io.printStackTrace();
+		}
 	}
 	
 }

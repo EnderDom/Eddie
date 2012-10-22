@@ -6,8 +6,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import enderdom.eddie.modules.Module;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Option;
@@ -41,7 +39,6 @@ public abstract class Task implements Runnable, Future<Object> {
 	protected String helpheader = "--This is the Help Message of the Default Task--";
 	protected String password =null;
 	Logger logger = Logger.getRootLogger();
-	protected Module parent;
 	
 	/*
 	 * complete note:
@@ -250,11 +247,4 @@ public abstract class Task implements Runnable, Future<Object> {
 		return Tools_Bio_File.detectFileType(filename);
 	}
 
-	public void addParent(Module mod){
-		this.parent = mod;
-	}
-	
-	public Module getParent(){
-		return this.parent;
-	}
 }

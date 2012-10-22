@@ -161,4 +161,20 @@ public abstract class Tools_String {
 	public static String capitalize(String s){
 		return WordUtils.capitalize(s);
 	}
+	
+
+	public static String padString(String m, int len, boolean trim){
+		if(m.length() > len && trim){
+			return m.substring(0, len);
+		}
+		else{
+			StringBuffer sb = new StringBuffer(len);
+			sb.append(m);
+			for (int i = m.length(); i < len; ++i){
+				sb.append(' ');
+			}
+			return sb.toString();
+		}
+	}
+	
 }

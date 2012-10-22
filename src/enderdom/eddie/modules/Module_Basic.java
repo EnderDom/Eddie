@@ -19,7 +19,6 @@ import enderdom.eddie.cli.EddieCLI;
  * It is paramount that modulename be equal to
  * a modulename in ModuleLoader elsewise it won't be loaded at all.
  */
-
 public abstract class Module_Basic implements Module{
 	public String menustring = "Window"+Tools_Modules.menudivider+"Tools";
 	public String menuItemName = "Basic";
@@ -39,7 +38,6 @@ public abstract class Module_Basic implements Module{
 					Task t = (Task) Class.forName(getClasses()[i]).getConstructor().newInstance();
 					if(t != null){
 						if(t.wantsUI())t.addUI(cli);
-						t.addParent(this);
 						cli.addTask(t);
 					}
 				} 					
