@@ -9,6 +9,7 @@ import javax.swing.JInternalFrame;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.ui.TaskManager;
+import enderdom.eddie.ui.UI;
 
 public abstract class Tools_UI {
 	
@@ -70,11 +71,11 @@ public abstract class Tools_UI {
 		return frame;
 	}
 	
-	public static TaskManager buildTaskManager(int core, int auxil){
+	public static TaskManager buildTaskManager(UI ui, int core, int auxil){
 		Logger.getRootLogger().debug("Building Task Manager");
 		if(core < 0)core = 1;
 		if(auxil < 5)auxil = 5;
-		return new TaskManager(core, auxil);
+		return new TaskManager(ui, core, auxil);
 	}
 	
 	

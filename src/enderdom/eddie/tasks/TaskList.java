@@ -9,6 +9,7 @@ import enderdom.eddie.tasks.bio.Task_BlastLocal;
 import enderdom.eddie.tasks.bio.Task_ChimeraAnalysis;
 import enderdom.eddie.tasks.bio.Task_Convert;
 import enderdom.eddie.tasks.bio.Task_Fasta_Tools;
+import enderdom.eddie.tasks.bio.Task_UniVec;
 import enderdom.eddie.tasks.bio.Task_WebInterPro;
 import enderdom.eddie.tasks.database.Task_AddRunData;
 import enderdom.eddie.tasks.database.Task_Assembly2DB;
@@ -118,6 +119,11 @@ public class TaskList {
 			tasks[0][13] = Task_ContigComparison.class.getName();
 			tasks[1][13] = "contigcompare";
 			tasks[2][13] = "contig comparison analysis [WIP]";
+			
+			//Contig Comparison
+			tasks[0][14] = Task_UniVec.class.getName();
+			tasks[1][14] = "univec";
+			tasks[2][14] = "Run UniVec screen on dataset";
 			
 			return tasks;
 		}

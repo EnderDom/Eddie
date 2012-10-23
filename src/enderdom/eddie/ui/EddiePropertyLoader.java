@@ -194,14 +194,14 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 				"BLAST_BIN_DIR","BLAST_DB_DIR", "ESTSCAN_BIN", 
 				"FILES_XML","PREFLNF","TESTDATADIR",
 				"DBTYPE","DBDRIVER","DBHOST", 
-				"DBNAME", "DBUSER", 
+				"DBNAME", "DBUSER","UNI_VEC_DB", "UNIVEC_URL"
 				 };
 		defaultvalues = new String[]{
 				propfile.getParent(), "5", "1", 
 				"/usr/bin/", "/home/dominic/bioapps/blast/db/", "/usr/bin/",
 				propfile.getParent()+slash+FileViewerModel.filename, defaultlnf, propfile.getParent()+slash+"test", 
 				"mysql","com.mysql.jdbc.Driver", "Localhost", 
-				DatabaseManager.default_database, "user"
+				DatabaseManager.default_database, "user", "","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec"
 				};
 		
 		if(defaultkeys.length != defaultvalues.length)System.out.println("You're being derp Dominic :(");
@@ -213,7 +213,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 		}
 		
 		//Forced Overwrite properties
-		String[] tempkeys = new String[]{"subversion", "VERSION", 
+		String[] tempkeys = new String[]{"SUBVERSION", "VERSION", 
 				"FULLVERSION", "EDITION"};
 		String[] tempvalues = new String[]{EddiePropertyLoader.subversion+"",EddiePropertyLoader.engineversion+"",
 				(EddiePropertyLoader.subversion+EddiePropertyLoader.engineversion)+"", edition};

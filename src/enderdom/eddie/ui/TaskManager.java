@@ -31,12 +31,13 @@ public class TaskManager extends Thread{
 	int taskcounter;
 	UI top;
 	
-	public TaskManager(int i, int j){
+	public TaskManager(UI ui, int i, int j){
 		this.corepoollimit = i;
 		this.auxilpoollimit =j;
 		taskcounter = 0;
 		CoreTasks = new Stack<Task>();
 		AuxilTasks = new Stack<Task>();
+		this.top = ui;
 	}
 	
 	public void addTask(Task task) {

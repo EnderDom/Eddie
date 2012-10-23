@@ -148,7 +148,7 @@ public class EddieCLI implements UI {
 			auxil =5;
 			logger.error("Something has gone horribly wrong");
 		}
-		this.manager = Tools_UI.buildTaskManager(core, auxil);
+		this.manager = Tools_UI.buildTaskManager(this, core, auxil);
 	}
 	
 	public void buildOptions(){

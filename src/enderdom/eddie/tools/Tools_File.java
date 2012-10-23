@@ -196,7 +196,7 @@ public abstract class Tools_File {
 		return new File(a.getClass().getProtectionDomain().getCodeSource().getLocation().getFile()).getParent()+Tools_System.getFilepathSeparator();
 	}
 	
-	public static void stream2File(InputStream stream, String output){
+	public static boolean stream2File(InputStream stream, String output){
 		try{
 			InputStreamReader in = new InputStreamReader(stream, "UTF-8");
 			BufferedReader reader = new BufferedReader(in);
@@ -204,13 +204,15 @@ public abstract class Tools_File {
 			BufferedWriter out = new BufferedWriter(fstream);
 			String line = "";
 			while((line=reader.readLine()) != null){
-				out.write(line);
+				out.write(line+Tools_System.getNewline());
 				out.flush();
 			}
 			out.close();
+			return true;
 		}
 		catch(IOException io){
 			io.printStackTrace();
+			return false;
 		}
 	}
 	

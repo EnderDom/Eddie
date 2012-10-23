@@ -2,6 +2,8 @@ package enderdom.eddie.ui;
 
 import java.util.concurrent.*;
 
+import org.apache.log4j.Logger;
+
 /**
  * Workaround to catch Exceptions thrown within 
  * run() of Task see Java BUG discussion 6459119
@@ -12,8 +14,6 @@ import java.util.concurrent.*;
  */
 
 public class ExtendedExecutor extends ScheduledThreadPoolExecutor {
-	
-	private UI ui;
 	
 	public ExtendedExecutor(int i, UI ui) {
 		super(i);
@@ -26,15 +26,14 @@ public class ExtendedExecutor extends ScheduledThreadPoolExecutor {
 				Object result = ((Future<?>) r).get();
 		    } 
 		    catch (InterruptedException ie) { 
-		    	ui.error("Task was interrupted",ie);
+		    	Logger.getRootLogger().error("Task was interrupted",ie);
 		    }
 		    catch (ExecutionException ee) {
 		    	Throwable realThrowable = ee.getCause();
-		    	ui.error("Scheduler threw an exception",realThrowable);
-		    	
+		    	Logger.getRootLogger().error("Scheduler threw an exception", realThrowable);
 		    }
 		    catch (CancellationException ce) {
-		    	ui.error("Task was cancelled",ce);
+		    	Logger.getRootLogger().error("Task was cancelled",ce);
 		    }
 		}
     }

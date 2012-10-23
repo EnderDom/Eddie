@@ -5,8 +5,13 @@ import org.apache.log4j.Logger;
 import enderdom.eddie.tasks.StreamGobbler;
 
 public abstract class Tools_Task {
-	/*
-	 * Laziness next to godliness
+	
+	/**
+	 * 
+	 * @param coms String containing a command line command
+	 * @param cache boolean denote whether or not to store data returned
+	 * @return StringBuffer array containing Sys err and out if cache is true
+	 * else is empty
 	 */
 	public static StringBuffer[] runProcess(String coms, boolean cache){
 		return runProcess(new String[]{coms}, cache);
@@ -22,9 +27,10 @@ public abstract class Tools_Task {
 	 * Set to false returned value Array will be empty. In reality I'm not sure why you wouldn't
 	 * cache everything so I may get rid of this in the future. 
 	 * 
-	 * @param coms
-	 * @param cache
-	 * @return
+	 * @param coms String array containing command lines
+	 * @param cache boolean denote whether or not to store data returned
+	 * @return StringBuffer array containing Sys err and out if cache is true
+	 * else is empty
 	 */
 	public static StringBuffer[] runProcess(String[] coms, boolean cache){
 		StringBuffer[] output = null;

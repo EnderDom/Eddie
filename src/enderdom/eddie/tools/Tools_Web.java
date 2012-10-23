@@ -3,9 +3,12 @@ package enderdom.eddie.tools;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.regex.Pattern;
 
@@ -88,5 +91,24 @@ public class Tools_Web {
 			Logger.getRootLogger().error("IO Issue: " + url, iox);
 		}
 		return img;
+	}
+	
+	public static boolean basicFTP2File(String urlstring, String file){
+		try {
+			URL url = new URL(urlstring);
+			Logger.getRootLogger().debug("About to open connection: " + urlstring+"...");
+			URLConnection conn = url.openConnection();  
+			Logger.getRootLogger().debug("Downloading...");
+			InputStream is = conn.getInputStream();
+			Logger.getRootLogger().debug("Saving download to "+ file);
+			return Tools_File.stream2File(is, file);
+		}
+		catch (MalformedURLException e) {
+			Logger.getRootLogger().error("Failed to access FTP ("+urlstring+")", e);
+		} 
+		catch (IOException e) {
+			Logger.getRootLogger().error("Failed to download file ("+file+") from FTP ("+urlstring+")", e);
+		}  
+		return false;
 	}
 }
