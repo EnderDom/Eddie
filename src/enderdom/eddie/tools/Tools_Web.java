@@ -93,12 +93,20 @@ public class Tools_Web {
 		return img;
 	}
 	
+	/**
+	 * Very basic FTP file download, only works if file is 
+	 * at urlstring and the server supports this download method
+	 * 
+	 * @param urlstring
+	 * @param file
+	 * @return
+	 */
 	public static boolean basicFTP2File(String urlstring, String file){
 		try {
 			URL url = new URL(urlstring);
 			Logger.getRootLogger().debug("About to open connection: " + urlstring+"...");
 			URLConnection conn = url.openConnection();  
-			Logger.getRootLogger().debug("Downloading...");
+			Logger.getRootLogger().info("Downloading files from FTP, this may take some time...");
 			InputStream is = conn.getInputStream();
 			Logger.getRootLogger().debug("Saving download to "+ file);
 			return Tools_File.stream2File(is, file);

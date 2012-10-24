@@ -29,25 +29,12 @@ public class Task_UniVec extends TaskXT{
 	public void run(){
 		setComplete(started);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
-		if(uni_db != null && create){
-			createUniVecDb(uni_db);
-		}
-		else if(create){
-			createUniVecDb(this.workspace+Tools_System.getFilepathSeparator()+"data"+Tools_System.getFilepathSeparator()+"UniVec");
-		}
-		else if(ui.getPropertyLoader().getValue(key) != null && ui.getPropertyLoader().getValue(key).length() > 0){
-			uni_db = ui.getPropertyLoader().getValue(key);
-		}
-		else{
-			logger.warn("No uni-vec set, nor create is set.");
-			int value = ui.requiresUserYNI("Do you want to automatically create UniVec data?", "Create Univec Database?");
-			if(value == UI.YES){
-				createUniVecDb(this.workspace+Tools_System.getFilepathSeparator()+"data"+Tools_System.getFilepathSeparator()+"UniVec");
-			}
-			else{
-				logger.info("User chose not to create UniVec database");
-			}
-		}
+		
+		if(!checkUniDB())return;
+		
+		
+		//
+		
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
 	}
@@ -72,6 +59,62 @@ public class Task_UniVec extends TaskXT{
 		if(cmd.hasOption("u"))uni_db=cmd.getOptionValue("u");
 		if(cmd.hasOption("bbb"))blast_bin=cmd.getOptionValue("bbb");
 		if(cmd.hasOption("c"))create=true;
+	}
+	
+	/**
+	 * Admiteddly a bit of a mess, but hopefully checks
+	 * all eventualities.
+	 * 
+	 * @return true if uni_db is set and exists
+	 */
+	private boolean checkUniDB(){
+		if(uni_db != null && create){
+			return createUniVecDb(uni_db);
+		}
+		else if(create){
+			if(createUniVecDb(this.workspace+Tools_System.getFilepathSeparator()+"data"+Tools_System.getFilepathSeparator()+"UniVec")){
+				uni_db = this.workspace+Tools_System.getFilepathSeparator()+"data"+Tools_System.getFilepathSeparator()+"UniVec";
+				return true;
+			}
+			else{
+				logger.error("Failed to create univec database, create manually and add location to props");
+				return false;
+			}
+		}
+		else if(uni_db != null){
+			File f = new File(uni_db);
+			if(f.isFile()){
+				ui.getPropertyLoader().setValue("key", uni_db);
+				return true;
+			}
+			else{
+				logger.error("UniVec database set as " + uni_db + " is not a file, closing");
+				return false;
+			}
+		}
+		else if(ui.getPropertyLoader().getValue(key) != null && ui.getPropertyLoader().getValue(key).length() > 0){
+			uni_db = ui.getPropertyLoader().getValue(key);
+			if(new File(uni_db).isFile()) return true;
+			else return false;
+		}
+		else{
+			logger.warn("No uni-vec set, nor create is set.");
+			int value = ui.requiresUserYNI("Do you want to automatically create UniVec data?", "Create Univec Database?");
+			if(value == UI.YES){
+				if(createUniVecDb(this.workspace+Tools_System.getFilepathSeparator()+"data"+Tools_System.getFilepathSeparator()+"UniVec")){
+					uni_db = this.workspace+Tools_System.getFilepathSeparator()+"data"+Tools_System.getFilepathSeparator()+"UniVec";
+					return true;
+				}
+				else{
+					logger.error("Failed to create univec database, create manually and add location to props");
+					return false;
+				}
+			}
+			else{
+				logger.info("User chose not to create UniVec database");
+				return false;
+			}
+		}
 	}
 	
 	public boolean createUniVecDb(String filepath){

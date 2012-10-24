@@ -196,6 +196,12 @@ public abstract class Tools_File {
 		return new File(a.getClass().getProtectionDomain().getCodeSource().getLocation().getFile()).getParent()+Tools_System.getFilepathSeparator();
 	}
 	
+	/**
+	 * 
+	 * @param stream Inputstream from file or web
+	 * @param output Filepath to save to, note: no check is done to see if this is valid
+	 * @return returns true if continued to completion, false if error
+	 */
 	public static boolean stream2File(InputStream stream, String output){
 		try{
 			InputStreamReader in = new InputStreamReader(stream, "UTF-8");
@@ -208,6 +214,7 @@ public abstract class Tools_File {
 				out.flush();
 			}
 			out.close();
+			System.out.print(Tools_System.getNewline());
 			return true;
 		}
 		catch(IOException io){

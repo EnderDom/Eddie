@@ -18,7 +18,8 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 	protected boolean isLogging = false;
 	public static Logger logger;
 	protected Properties props;
-	protected Level level = Level.WARN;
+	//Default logger level, if not set by user, this level will be used for logging
+	protected Level level = Level.INFO;
 	public static String defaultlnf =  "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
 	
 	public void setValue(String prop, String value){
