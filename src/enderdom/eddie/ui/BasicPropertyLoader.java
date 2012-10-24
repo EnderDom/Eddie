@@ -18,6 +18,7 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 	protected boolean isLogging = false;
 	public static Logger logger;
 	protected Properties props;
+    protected File propfile;
 	//Default logger level, if not set by user, this level will be used for logging
 	protected Level level = Level.INFO;
 	public static String defaultlnf =  "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
@@ -83,7 +84,8 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
         	 return null;
          }
     }
-	public boolean savePropertyFile(File file, Properties props1){
+    
+    public boolean savePropertyFile(File file, Properties props1){
 		return this.savePropertyFile(file.getPath(), props1);
 	}
 	

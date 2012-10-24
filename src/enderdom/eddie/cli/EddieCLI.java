@@ -232,4 +232,9 @@ public class EddieCLI implements UI {
 		logger.error(message);
 		for(String s : details)System.out.println(s);
 	}
+	
+	protected void finalize() throws Throwable {
+		super.finalize();
+		load.savePropertyFile(load.getPropertyFilePath(), load.getPropertyObject());
+	}
 }

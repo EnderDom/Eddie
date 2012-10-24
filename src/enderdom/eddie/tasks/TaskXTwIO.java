@@ -80,5 +80,18 @@ public class TaskXTwIO extends TaskXT{
 		options.addOption(new Option("w", "overwrite", false, "Overwrite output if it exists"));
 		options.addOption(new Option("filetype", true, "Force specific filetype for Input"));
 	}
-
+	
+	public boolean wantsUI(){
+		return true;
+	}
+	
+	public void addUI(UI ui){
+		logger.debug("UI "+ui.getClass().getName()+" was given to me " + this.getClass().getName());
+		this.ui = ui;
+	}
+	
+	public boolean isKeepArgs(){
+		return true;
+	}
+	
 }

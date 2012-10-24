@@ -55,6 +55,7 @@ public class TaskXT extends Task{
 	}
 	
 	public void addUI(UI ui){
+		logger.debug("UI "+ui.getClass().getName()+" was given to me " + this.getClass().getName());
 		this.ui = ui;
 	}
 	

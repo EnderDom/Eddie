@@ -214,7 +214,6 @@ public abstract class Tools_File {
 				out.flush();
 			}
 			out.close();
-			System.out.print(Tools_System.getNewline());
 			return true;
 		}
 		catch(IOException io){

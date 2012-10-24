@@ -26,6 +26,8 @@ public interface PropertyLoader {
 	
 	public boolean savePropertyFile(String filename, Properties props);
 	
+	public String getPropertyFilePath();
+	
 	public void parseArgs(String[] args);
 
 	public boolean isLogging();

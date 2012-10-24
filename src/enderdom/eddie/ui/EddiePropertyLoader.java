@@ -40,7 +40,6 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
     public static String propertyfilename = new String("eddie.properties");
     public static String infoFile = new String("eddie.info");
     public String rootfolder;
-    private File propfile;
     private Options options;
     /* This is actually the 4th iteration of Eddie, 
      * though this one has been written from scratch
@@ -201,7 +200,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 				"/usr/bin/", "/home/dominic/bioapps/blast/db/", "/usr/bin/",
 				propfile.getParent()+slash+FileViewerModel.filename, defaultlnf, propfile.getParent()+slash+"test", 
 				"mysql","com.mysql.jdbc.Driver", "Localhost", 
-				DatabaseManager.default_database, "user", "","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec"
+				DatabaseManager.default_database, "user", "hmm","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec"
 				};
 		
 		if(defaultkeys.length != defaultvalues.length)System.out.println("You're being derp Dominic :(");
@@ -251,6 +250,10 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 	
 	public static double getFullVersion(){
 		return engineversion+subversion;
+	}
+	
+	public String getPropertyFilePath(){
+		return this.propfile.getPath();
 	}
 	
 	/****************************************************************************/

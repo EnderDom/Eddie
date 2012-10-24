@@ -163,7 +163,6 @@ public class TaskList {
 				try {
 					Task t = (Task) Class.forName(tasks[0][i]).getConstructor().newInstance();
 					if(t != null){
-						if(t.wantsUI())t.addUI(cli);
 						cli.addTask(t);
 						return true;
 					}
