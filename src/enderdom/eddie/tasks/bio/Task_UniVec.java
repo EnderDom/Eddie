@@ -62,7 +62,7 @@ public class Task_UniVec extends TaskXT{
 	}
 	
 	/**
-	 * Admiteddly a bit of a mess, but hopefully checks
+	 * Admittedly a bit of a mess, but hopefully checks
 	 * all eventualities.
 	 * 
 	 * @return true if uni_db is set and exists

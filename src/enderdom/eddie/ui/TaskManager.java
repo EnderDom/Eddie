@@ -9,7 +9,13 @@ import enderdom.eddie.databases.legacy.DBInterface;
 import enderdom.eddie.tasks.Task;
 import enderdom.eddie.tools.Tools_Fun;
 
-
+/**
+ * black box class, just add a task
+ * and forget about it for now
+ * originally it was meant to allow
+ * multiple tasks to be run simoultaneously
+ * but that is as yet untested
+ */
 public class TaskManager extends Thread{
 
 	Logger logger = Logger.getRootLogger();

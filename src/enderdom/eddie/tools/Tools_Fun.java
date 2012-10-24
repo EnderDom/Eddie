@@ -13,7 +13,7 @@ public abstract class Tools_Fun {
 				"Eddie protects the USER",
 				"User intelligence test enabled, press computer power button to continue",
 				"Row row row your boat, gently down the stream. Merrily merrily merrily merrily. Life is but a dream",
-				"Warp 5 Mr.Pilot. Engage!",
+				"Warp 5 Lieutenant. Engage!",
 				"This application is sponsored by Soylent Green, No artificial colors or preservatives. Made entirely from vegetables *who couldn't fight back*",
 				"EnderDom is currently unavailable, as he remains mostly dead, in order to avoid paying taxes"
 		};
@@ -51,4 +51,6 @@ public abstract class Tools_Fun {
 		s=s.toLowerCase();
 		return s;
 	}
+
 }
+
