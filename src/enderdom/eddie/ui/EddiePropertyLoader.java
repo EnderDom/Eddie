@@ -200,13 +200,13 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 				"/usr/bin/", "/home/dominic/bioapps/blast/db/", "/usr/bin/",
 				propfile.getParent()+slash+FileViewerModel.filename, defaultlnf, propfile.getParent()+slash+"test", 
 				"mysql","com.mysql.jdbc.Driver", "Localhost", 
-				DatabaseManager.default_database, "user", "hmm","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec"
+				DatabaseManager.default_database, "user", "","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec"
 				};
 		
 		if(defaultkeys.length != defaultvalues.length)System.out.println("You're being derp Dominic :(");
 		
 		for(int i =0; i < defaultkeys.length; i++){
-			if(!this.props.containsKey(defaultkeys)){
+			if(!this.props.containsKey(defaultkeys[i])){
 				this.props.put(defaultkeys[i], defaultvalues[i]);
 			}
 		}

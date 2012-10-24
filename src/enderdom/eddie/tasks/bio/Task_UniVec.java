@@ -30,8 +30,11 @@ public class Task_UniVec extends TaskXTwIO{
 	public void run(){
 		setComplete(started);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
-		if(this.ui == null) logger.error("Why don't I have a UI!?!?!");
-		if(!checkUniDB())return;
+		if(this.ui == null)
+		if(!checkUniDB()){
+			logger.error("Failed to establish UniVec database");
+			return;
+		}
 		if(input == null){
 			logger.error("No input file specified");
 			return;
@@ -42,9 +45,12 @@ public class Task_UniVec extends TaskXTwIO{
 			return;
 		}
 		if(filetype == null)filetype = this.detectFileType(file.getName());
+		if(output == null){
+			output = workspace + Tools_System.getFilepathSeparator()+"out" + Tools_System.getFilepathSeparator();
+		}
 		File dir = new File(output);
 		if(!dir.isDirectory()){
-			output = workspace + Tools_System.getFilepathSeparator()+"out" + Tools_System.getFilepathSeparator();
+			
 			dir = new File(output);
 			logger.warn("Output file is not a folder, will save to default out folder " +output);
 		}
@@ -94,7 +100,6 @@ public class Task_UniVec extends TaskXTwIO{
 	 * @return true if uni_db is set and exists
 	 */
 	private boolean checkUniDB(){
-		System.out.println(ui.getPropertyLoader().getValue("FULLVERSION"));
 		if(uni_db != null && create){
 			return createUniVecDb(uni_db);
 		}
@@ -121,7 +126,7 @@ public class Task_UniVec extends TaskXTwIO{
 		}
 		else if(ui.getPropertyLoader().getValue(key) != null && ui.getPropertyLoader().getValue(key).length() > 0){
 			uni_db = ui.getPropertyLoader().getValue(key);
-			if(new File(uni_db).isFile()) return true;
+			if(new File(uni_db).isFile() || new File(uni_db + ".nin").exists() || new File(uni_db+".nhr").exists()) return true;
 			else return false;
 		}
 		else{
