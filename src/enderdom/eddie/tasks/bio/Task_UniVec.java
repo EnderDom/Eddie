@@ -7,6 +7,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
 import enderdom.eddie.tasks.TaskXTwIO;
+import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.Tools_Task;
 import enderdom.eddie.tools.Tools_Web;
@@ -30,11 +31,19 @@ public class Task_UniVec extends TaskXTwIO{
 	public void run(){
 		setComplete(started);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
-		if(this.ui == null)
+		/* 
+		 * Check UI is being set, which sometimes happens if
+		 * I have extended the super class and not overwritten the 
+		 * setUI functions. Must do better.
+		 */
+		if(this.ui == null)logger.error("UI has not been set for this class, code bug");
 		if(!checkUniDB()){
 			logger.error("Failed to establish UniVec database");
 			return;
 		}
+		/*
+		 * Check Input 
+		 */
 		if(input == null){
 			logger.error("No input file specified");
 			return;
@@ -45,23 +54,44 @@ public class Task_UniVec extends TaskXTwIO{
 			return;
 		}
 		if(filetype == null)filetype = this.detectFileType(file.getName());
+		
+		/*
+		 * Check Output 
+		 */
 		if(output == null){
 			output = workspace + Tools_System.getFilepathSeparator()+"out" + Tools_System.getFilepathSeparator();
 		}
 		File dir = new File(output);
-		if(!dir.isDirectory()){
-			
+		if(dir.isFile()){
+			logger.warn("File named out present in folder ...ugh...");
+			Tools_File.justMoveFileSomewhere(dir);
 			dir = new File(output);
-			logger.warn("Output file is not a folder, will save to default out folder " +output);
 		}
+		dir.mkdirs();
+		
 		String outname = file.getName();
 		int e =-1;
 		if((e=outname.lastIndexOf(".")) != -1)outname = outname.substring(0, e);
 		e=0;
 		File out;
-		while((out=new File(outname+e+".xml")).exists())e++;
-		//See http://www.ncbi.nlm.nih.gov/VecScreen/VecScreen_docs.html for specs on vecscreen
-		Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-q -5 -G 3 -E 3 -F \"m D\" -e 700 -Y 1.75e12 ", out);
+		while((out=new File(dir.getPath()+Tools_System.getFilepathSeparator()+outname+e+".xml")).exists())e++;
+		
+		
+		/*Actually run the blast program
+		 *
+		 * See http://www.ncbi.nlm.nih.gov/VecScreen/VecScreen_docs.html for specs on vecscreen
+		 * The web options are:
+		 * -q -5 -G 3 -E 3 -F \"m D\" -e 700 -Y 1.75e12
+		 * Annoyingly the blastn tags are not the same
+		 * -penalty -5 -gapopen 3 -gapextend 3 -filtering_db "m D" -expect
+		 */
+		StringBuffer[] arr = Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-q -5 -G 3 -E 3 -F \"m D\" -e 700 -Y 1.75e12 ", out);
+		if(arr[0].length() > 0){
+			logger.info("blastn output:"+Tools_System.getNewline()+arr[0].toString().trim());
+		}
+		if(arr[1].length() > 0){
+			logger.info("blastn output:"+Tools_System.getNewline()+arr[0].toString().trim());
+		}
 		
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
@@ -149,6 +179,18 @@ public class Task_UniVec extends TaskXTwIO{
 		}
 	}
 	
+	/**
+	 * Method requires external execution of 'makeblastdb'
+	 * program which should be available at blast_bin
+	 * 
+	 * @param filepath path which data is downloaded to. 
+	 * Note: file may not actually appear at this location,
+	 * data is downloaded to filepath + ".fasta" and 
+	 * database generated should be ".nhr"/".nin" though
+	 * this may change depending on size. 
+	 * @return true if database is both downloaded and makeblastdb is
+	 * run and the resulting files output are detected.
+	 */
 	public boolean createUniVecDb(String filepath){
 		logger.debug("About to create UniVec database at " + filepath);
 		File file = new File(filepath);

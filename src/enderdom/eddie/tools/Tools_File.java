@@ -222,4 +222,18 @@ public abstract class Tools_File {
 		}
 	}
 	
+	/**
+	 * As I'm shit scared of deleting files
+	 * this basically justs moves the file to some other place
+	 * then deletes it
+	 * 
+	 * @param f File to be moved
+	 * @return true if file was successfully moved
+	 */
+	public static boolean justMoveFileSomewhere(File f){
+		File mov;
+		for(int i =0;(mov=new File(f.getPath()+i)).exists();i++);
+		return f.renameTo(mov);
+	}
+	
 }

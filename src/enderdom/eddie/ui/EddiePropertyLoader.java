@@ -144,7 +144,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 		//System.out.println(System.getProperty("user.home")+slash+".tina"+slash+"tina.properties");
 		if(loadPropertiesFromFile(Tools_File.getEnvirons(this)+propertyfilename))return true;
 		//Then in the home directory
-		if(loadPropertiesFromFile(System.getProperty("user.home")+slash+".tina"+slash+"tina.properties"))return true;
+		if(loadPropertiesFromFile(System.getProperty("user.home")+slash+".eddie"+slash+propertyfilename))return true;
 		
 		preLog("ERROR: don't have permission to save settings in either local folder of user home directory");
 		return false;
