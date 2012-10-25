@@ -80,10 +80,7 @@ public class Task_UniVec extends TaskXTwIO{
 		/*Actually run the blast program
 		 *
 		 * See http://www.ncbi.nlm.nih.gov/VecScreen/VecScreen_docs.html for specs on vecscreen
-		 * The web options are:
-		 * -q -5 -G 3 -E 3 -F \"m D\" -e 700 -Y 1.75e12
-		 * Annoyingly the blastn tags are not the same
-		 * -penalty -5 -gapopen 3 -gapextend 3 -filtering_db "m D" -expect
+		 * 
 		 */
 		StringBuffer[] arr = Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-q -5 -G 3 -E 3 -F \"m D\" -e 700 -Y 1.75e12 ", out);
 		if(arr[0].length() > 0){
