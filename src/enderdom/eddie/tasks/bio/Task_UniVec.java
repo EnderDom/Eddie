@@ -1,6 +1,7 @@
 package enderdom.eddie.tasks.bio;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -22,6 +23,8 @@ public class Task_UniVec extends TaskXTwIO{
 	private boolean create;
 	private static String univecsite = "ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec";
 	private static String univeccom = "makeblastdb -title UniVec -dbtype nucl ";
+	private static String strategyfolder = "resources";	
+	private static String strategyfile = "univec_strategy";
 	private static String key = "UNI_VEC_DB";
 	private String filetype;
 	
@@ -76,13 +79,30 @@ public class Task_UniVec extends TaskXTwIO{
 		File out;
 		while((out=new File(dir.getPath()+Tools_System.getFilepathSeparator()+outname+e+".xml")).exists())e++;
 		
+		/*
+		 * Build univec strategy file
+		 */
+		
+		String resource = this.getClass().getPackage().getName();
+		resource=resource.replaceAll("\\.", "/");
+		resource = "/"+resource+"/"+strategyfolder+"/"+strategyfile;
+		logger.debug("Creating resource from internal file at "+resource);
+		InputStream str = this.getClass().getResourceAsStream(resource);
+		if(str == null){
+			logger.error("Failed to create strategy file resource, please send bug to maintainer");
+			return;
+		}
+		File tmpfolder = new File(this.workspace + Tools_System.getFilepathSeparator()+strategyfolder);
+		if(!tmpfolder.exists())tmpfolder.mkdirs();
+		String strat = tmpfolder.getPath() + Tools_System.getFilepathSeparator() + strategyfile +".asn";
+		if(Tools_File.stream2File(str, strat))logger.error("Failed to create search strategy file at " + strat);
 		
 		/*Actually run the blast program
 		 *
 		 * See http://www.ncbi.nlm.nih.gov/VecScreen/VecScreen_docs.html for specs on vecscreen
 		 * 
 		 */
-		StringBuffer[] arr = Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-q -5 -G 3 -E 3 -F \"m D\" -e 700 -Y 1.75e12 ", out);
+		StringBuffer[] arr = Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-import_search_strategy "+strat+" -outfmt 5 ", out);
 		if(arr[0].length() > 0){
 			logger.info("blastn output:"+Tools_System.getNewline()+arr[0].toString().trim());
 		}
