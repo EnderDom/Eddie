@@ -1,7 +1,13 @@
 package enderdom.eddie.bio.assembly;
 
+import java.io.File;
+
 import org.apache.log4j.Logger;
 
+import enderdom.eddie.bio.interfaces.Contig;
+import enderdom.eddie.bio.interfaces.SequenceObject;
+import enderdom.eddie.bio.interfaces.UnsupportedTypeException;
+import enderdom.eddie.bio.sequence.FourBitNuclear;
 import enderdom.eddie.bio.sequence.FourBitSequence;
 
 /**
@@ -22,7 +28,7 @@ import enderdom.eddie.bio.sequence.FourBitSequence;
  * have a new Construcion there.
  * 
  */
-public class ACERecord implements Cloneable {
+public class ACERecord implements Cloneable, Contig{
 
 	private StringBuilder current;
 	private String contigname;
@@ -40,6 +46,7 @@ public class ACERecord implements Cloneable {
 	private int regioncount;
 	private char[] compliments;
 	//TODO sort out adding RD with quality data from a qual/fastq file
+	private int iteratorcount = 0;
 	
 	/**
 	 * Constructor
@@ -250,7 +257,7 @@ public class ACERecord implements Cloneable {
 	 * @return consensus as a FourBitSequence
 	 * object
 	 */
-	public FourBitSequence getConsensus(){
+	public FourBitSequence getConsensusAs4(){
 		return this.seqs[0];
 	}
 	
@@ -258,8 +265,11 @@ public class ACERecord implements Cloneable {
 	 * 
 	 * @return Consensus sequence as a String
 	 */
-	public String getConsensusAsString(){
-		return this.seqs[0].getAsString();
+	public SequenceObject getConsensus(){
+		FourBitNuclear n = (FourBitNuclear)this.seqs[0];
+		n.setName(this.contigname);
+		n.setQuality(this.consensusqual);
+		return n;
 	}
 	
 	/**
@@ -383,7 +393,7 @@ public class ACERecord implements Cloneable {
 	 */
 	public int[] getDepthMap(){
 		int[] arr = new int[this.getConsensus().getActualLength()];
-		String seq = this.getConsensusAsString();
+		FourBitNuclear seq = (FourBitNuclear) this.getConsensus();
 		int actuallength = 0;
 		int depth=0;
 		for(int i =0; i < seq.length(); i++){
@@ -425,4 +435,91 @@ public class ACERecord implements Cloneable {
 	public char getReadCompliment(int read){
 		return this.compliments[read];
 	}
+
+	//Not all the relevant for ACErecord but
+	public int getN50() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public int[] getListOfLens() {
+		int[] lens = new int[this.readcount];
+		for(int i =0;i < lens.length; i++){
+			lens[i] = seqs[i+1].getLength();
+		}
+		return lens;
+	}
+	
+
+	public int[] getListOfActualLens() {
+		int[] lens = new int[this.readcount];
+		for(int i =0;i < lens.length; i++){
+			lens[i] = seqs[i+1].getActualLength();
+		}
+		return lens;
+	}
+
+	public int getNoOfMolecules() {
+		int t = 0;
+		for(int i =0; i < this.readcount; i++){
+			t=seqs[i+1].getActualLength();
+		}
+		return t;
+	}
+
+	public int getNoOfSequences() {
+		return this.readcount;
+	}
+
+	public SequenceObject getSequence(int i) {
+		FourBitNuclear n = (FourBitNuclear)getRead(i);
+		n.setName(this.getReadName(i));
+		return n;
+	}
+
+	public SequenceObject getSequence(String s) {
+		FourBitNuclear n = (FourBitNuclear)getRead(s);
+		n.setName(s);
+		return n;
+	}
+		
+	public boolean saveFile(File file, int filetype) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public void loadFile(File file, int filetype) throws Exception,
+			UnsupportedTypeException {
+		// TODO Auto-generated method stub 
+	}
+
+	public boolean hasNext() {
+		return iteratorcount+1 < this.seqs.length;
+	}
+
+	public SequenceObject next() {
+		iteratorcount++;
+		return this.getSequence(iteratorcount);
+	}
+
+	public void remove() {
+		
+	}
+
+	public int trimLeftAllContig() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public int trimRightAllContig() {
+		// TODO Auto-generated method stub
+		return 0; 
+	}
+
+	public Contig[] removeSectionAllContig(int opts) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
 }

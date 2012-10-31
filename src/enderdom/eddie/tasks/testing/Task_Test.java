@@ -278,7 +278,7 @@ public class Task_Test extends Task_Test_Basic{
 			ACEFileParser parser = new ACEFileParser(stream);
 			LinkedList<ACERecord> records = new LinkedList<ACERecord>();
 			while(parser.hasNext()){
-				records.add(parser.next());
+				records.add((ACERecord)parser.next());
 				System.out.print("\r"+records.getLast().getContigName()+"      ");
 				//ACERecord record = parser.next();
 				//System.out.print("\r"+record.getContigName()+"      ");

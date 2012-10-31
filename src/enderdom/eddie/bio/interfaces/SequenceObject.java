@@ -1,6 +1,6 @@
 package enderdom.eddie.bio.interfaces;
 
-public interface Sequence {
+public interface SequenceObject {
 
 	public static int DNA = 0;
 	public static int RNA = 1;
@@ -19,6 +19,11 @@ public interface Sequence {
 	 */
 	public String getSequence();
 	
+	/**
+	 * 
+	 * @return string containing quality if available
+	 */
+	public String getQuality();
 	
 	/**
 	 * 
@@ -79,7 +84,7 @@ public interface Sequence {
 	 * there names will be the original sequence name plus an additional 
 	 * identifier ie Seq1 -> Seq1_A, Seq1_B 
 	 */
-	public Sequence[] removeSection(int start, int end);
+	public SequenceObject[] removeSection(int start, int end);
 	
 	
 	

@@ -13,6 +13,7 @@ import org.biojava.bio.seq.Feature;
 import org.biojava.bio.seq.Feature.Template;
 import org.biojava.bio.seq.FeatureFilter;
 import org.biojava.bio.seq.FeatureHolder;
+import org.biojava.bio.seq.RNATools;
 import org.biojava.bio.seq.Sequence;
 import org.biojava.bio.symbol.Alphabet;
 import org.biojava.bio.symbol.Edit;
@@ -23,13 +24,20 @@ import org.biojava.utils.ChangeListener;
 import org.biojava.utils.ChangeType;
 import org.biojava.utils.ChangeVetoException;
 
+import enderdom.eddie.bio.interfaces.SequenceObject;
+
 
 /**
  * 
  * @author dominic
  *
+ * Partial Implementation of the biojava Sequence,
+ * god knows why really, I'm am trying to 
+ * intergrate better into biojava, use there
+ * stuff, honest.... :(
+ *
  */
-public class FourBitDNA extends FourBitSequence implements Sequence, Iterator<Symbol>{
+public class FourBitNuclear extends FourBitSequence implements SequenceObject, Sequence, Iterator<Symbol>{
 	
 	int iter_pos;
 	
@@ -40,6 +48,8 @@ public class FourBitDNA extends FourBitSequence implements Sequence, Iterator<Sy
 	private ChangeListener[] listeners;
 	
 	LinkedList<Feature> features;
+	
+	private String quality;
 	
 	//Major issues with 0-based to 1-based
 	
@@ -67,11 +77,11 @@ public class FourBitDNA extends FourBitSequence implements Sequence, Iterator<Sy
 		~0xFFFFFFFFFFFFF12FL,~0xFFFFFFFFFFFFF844L,~0xFFFFFFFFFFFFF81AL,~0xFFFFFFFFFFFFF48FL,~0xFFFFFFFFFFFFF815L,
 		~0xFFFFFFFFFFFFF851L};
 	
-	public FourBitDNA(int nlength){
+	public FourBitNuclear(int nlength){
 		super(nlength);
 	}
 	
-	public FourBitDNA(String s){
+	public FourBitNuclear(String s){
 		super(s);
 	}
 	
@@ -234,6 +244,7 @@ public class FourBitDNA extends FourBitSequence implements Sequence, Iterator<Sy
 			}
 			if(dna2.getActualLength()+start > this.getActualLength()){
 				//TODO complete
+				Logger.getRootLogger().error("Unimplemented Fuuu!");
 			}
 		}
 		else{
@@ -243,16 +254,18 @@ public class FourBitDNA extends FourBitSequence implements Sequence, Iterator<Sy
 
 	
 	public Alphabet getAlphabet() {
-		return DNATools.getDNA();
+		if(this.isRNA) return RNATools.getRNA();
+		else return DNATools.getDNA();
 	}
 
+	//TODO check is RNA the same except for the u....????
 	public Symbol symbolAt(int index) throws IndexOutOfBoundsException {
 		long charvalue = this.getLong(index);
 		if(forward){
 				 if(charvalue==0x0000000000000001L) return DNATools.a();
 			else if(charvalue==0x0000000000000002L) return DNATools.c();
 			else if(charvalue==0x0000000000000004L) return DNATools.g();
-			else if(charvalue==0x0000000000000008L) return DNATools.t();
+			else if(charvalue==0x0000000000000008L) return isRNA ? RNATools.u() : DNATools.t();
 			
 			else if(charvalue==0x0000000000000005L) return DNATools.r();
 			else if(charvalue==0x000000000000000aL) return DNATools.y();
@@ -270,7 +283,7 @@ public class FourBitDNA extends FourBitSequence implements Sequence, Iterator<Sy
 			else return DNATools.n(); //Compatibility issues, look into gappedsequence
 		}
 		else{
-				 if(charvalue==0x0000000000000001L) return DNATools.t();
+				 if(charvalue==0x0000000000000001L) return isRNA ? RNATools.u() : DNATools.t();
 			else if(charvalue==0x0000000000000002L) return DNATools.g();
 			else if(charvalue==0x0000000000000004L) return DNATools.c();
 			else if(charvalue==0x0000000000000008L) return DNATools.a();
@@ -437,5 +450,37 @@ public class FourBitDNA extends FourBitSequence implements Sequence, Iterator<Sy
 	public void remove() {
 		//More difficult
 	}
+
+	public String getSequence() {
+		return this.getAsString();
+	}
+
+	public int getSequenceType() {
+		if(this.isRNA)return SequenceObject.RNA;
+		else return SequenceObject.DNA;
+	}
+
+	public int leftTrim(int i) {
+		// TODO Auto-generated method stub
+		Logger.getRootLogger().error("Unimplemented method");
+		return -1;
+	}
+
+	public int rightTrim(int i) {
+		Logger.getRootLogger().error("Unimplemented method");
+		return -1;
+	}
+
+	public SequenceObject[] removeSection(int start, int end) {
+		Logger.getRootLogger().error("Unimplemented method");
+		return null;
+	}
+
+	public String getQuality() {
+		return this.quality;
+	}
 	
+	public void setQuality(String q){
+		this.quality = q;
+	}
 }

@@ -56,7 +56,7 @@ public class FourBitSequence implements CharSequence{
 	protected static long lmask = 0xF000000000000000L;
 	protected static long rmask = 0x000000000000000FL;  
 	
-
+	boolean isRNA = false;
 	
 	public FourBitSequence(){
 		init(16);
@@ -126,7 +126,7 @@ public class FourBitSequence implements CharSequence{
 	}
 	
 	public char get(int pos){
-		return getAsChar(getLong(pos), this.forward);
+		return getAsChar(getLong(pos), this.forward, isRNA);
 	}
 	
 	/*
@@ -153,6 +153,7 @@ public class FourBitSequence implements CharSequence{
 				case 'C' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000002L; break;
 				case 'G' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000004L; break;
 				case 'T' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000008L; break;
+				case 'U' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000008L; isRNA=true;break;
 				
 				case 'R' : dna[offset] <<= 4; dna[offset] |= 0x0000000000000005L; break;
 				case 'Y' : dna[offset] <<= 4; dna[offset] |= 0x000000000000000aL; break;
@@ -209,7 +210,7 @@ public class FourBitSequence implements CharSequence{
 				long charvalue = 0x0000000000000000L;
 				for(int j = 0; j <64; j+=4){
 					charvalue = (lmask & dna[i])>>>(60-j);
-					array[arraycount] = getAsChar(charvalue, forward);
+					array[arraycount] = getAsChar(charvalue, forward, isRNA);
 					arraycount++;
 					if(arraycount == this.length)break;
 					lmask>>>=4;
@@ -229,7 +230,7 @@ public class FourBitSequence implements CharSequence{
 				for(int j = 0; j <shift; j+=4){
 					charvalue = (rmask & dna[i])>>j+jshift;
 					//System.out.println(Tools_Bit.LongAsBitString(charvalue));
-					array[arraycount] = getAsChar(charvalue, forward);
+					array[arraycount] = getAsChar(charvalue, forward, isRNA);
 					arraycount++;
 					if(arraycount == this.length)break;
 					rmask<<=4;
@@ -239,12 +240,12 @@ public class FourBitSequence implements CharSequence{
 		return array;
 	}
 	
-	protected static char getAsChar(long charvalue, boolean forward){
+	protected static char getAsChar(long charvalue, boolean forward, boolean isRNA){
 		if(forward){
 				 if(charvalue==0x0000000000000001L) return 'A';
 			else if(charvalue==0x0000000000000002L) return 'C';
 			else if(charvalue==0x0000000000000004L) return 'G';
-			else if(charvalue==0x0000000000000008L) return 'T';
+			else if(charvalue==0x0000000000000008L) return isRNA ? 'U': 'T';
 			
 			else if(charvalue==0x0000000000000005L) return 'R';
 			else if(charvalue==0x000000000000000aL) return 'Y';
@@ -262,7 +263,7 @@ public class FourBitSequence implements CharSequence{
 			else return '-';
 		}
 		else{
-				 if(charvalue==0x0000000000000001L) return 'T';
+				 if(charvalue==0x0000000000000001L) return isRNA ? 'U': 'T';
 			else if(charvalue==0x0000000000000002L) return 'G';
 			else if(charvalue==0x0000000000000004L) return 'C';
 			else if(charvalue==0x0000000000000008L) return 'A';

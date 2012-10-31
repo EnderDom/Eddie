@@ -179,15 +179,15 @@ public class Task_Assembly2DB extends TaskXTwIO{
 								logger.debug("Can skip: " + done.length + " files previously done");
 							}
 							while(parser.hasNext()){
-								record = parser.next();
-								String name = record.getContigName();
+								record = (ACERecord) parser.next();
+								String name = record.getConsensus().getName();
 								boolean skip =false;
 								if(checklist.inRecovery())for(int i =0 ; i < done.length ; i ++){if(done[i].equals(name))skip=true;};
 								if(!skip){
 									if(uploadcontigs){
 										if(bs.getBioEntry(manager.getCon(),  this.identifier+count,  this.identifier+count, biodatabase_id) <0){
 											
-											String seq = record.getConsensusAsString();
+											String seq = record.getConsensus().getSequence();
 											if(unpad)seq.replaceAll("-", "");
 											if(!bs.addSequence(manager.getCon(), biodatabase_id, null, name, this.identifier+count, this.identifier+count, "CONTIG", record.getContigName(), 0, seq, BioSQL.alphabet_DNA))break;
 											if(mapcontigs && mapping){

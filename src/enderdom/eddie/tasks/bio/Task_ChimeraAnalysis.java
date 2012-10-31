@@ -72,7 +72,7 @@ public class Task_ChimeraAnalysis extends TaskXTwIO{
 				ACEFileParser parse = new ACEFileParser(new FileInputStream(in));
 				int count=0;
 				while(parse.hasNext()){
-					ACERecord record = parse.next();
+					ACERecord record = (ACERecord) parse.next();
 					this.contig2file.put(record.getContigName(), record.getContigName()+".xml");
 					System.out.print("\r(No."+count+") : " + record.getContigName() + "        ");
 					count++;
@@ -104,12 +104,12 @@ public class Task_ChimeraAnalysis extends TaskXTwIO{
 					parse = new ACEFileParser(new FileInputStream(in));
 					
 					while(parse.hasNext()){
-						ACERecord record = parse.next();
+						ACERecord record = (ACERecord) parse.next();
 						System.out.println("Getting depth Map");
 						int[] depths = record.getDepthMap();
 						System.out.println("Done");
 						File file = new File(contig2file.get(record.getContigName()));
-						String rec = record.getConsensusAsString();
+						String rec = record.getConsensus().getSequence();
 						for(int i =0; i < depths.length; i++){
 							System.out.print(rec.charAt(i)+",");
 						}

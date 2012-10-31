@@ -1,10 +1,10 @@
 package enderdom.eddie.bio.interfaces;
 
-public interface NuclearSequence extends Sequence {
+public interface NuclearSequence extends SequenceObject {
 
 	public double getGC();
 	
-	public Sequence getProtein(int frame, boolean sense);
+	public SequenceObject getProtein(int frame, boolean sense);
 	
 	public boolean isRNA();
 	

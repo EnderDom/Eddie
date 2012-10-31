@@ -3,7 +3,7 @@ package enderdom.eddie.bio.interfaces;
 import java.io.File;
 import java.util.Iterator;
 
-public interface SequenceList extends Iterator<Sequence>{
+public interface SequenceList extends Iterator<SequenceObject>{
 
 	public static int FASTA = 0;
 	public static int QUAL = 1;
@@ -21,9 +21,16 @@ public interface SequenceList extends Iterator<Sequence>{
 	/**
 	 * 
 	 * @return an array of length equal to length of list
-	 * containing the lengths (actual) of each internal sequence
+	 * containing the lengths of each internal sequence
 	 */
 	public int[] getListOfLens();
+	
+	/**
+	 * 
+	 * @return an array of length equal to length of list
+	 * containing the lengths (actual) of each internal sequence
+	 */
+	public int[] getListOfActualLens();
 	
 	/**
 	 * 
@@ -43,14 +50,14 @@ public interface SequenceList extends Iterator<Sequence>{
 	 * @param i index
 	 * @return Sequence object at index i
 	 */
-	public Sequence getSequence(int i);
+	public SequenceObject getSequence(int i);
 	
 	/**
 	 * 
 	 * @param s sequence name
 	 * @return First sequence with name denoted by s
 	 */
-	public Sequence getSequence(String s);
+	public SequenceObject getSequence(String s);
 	
 	/**
 	 * Saves file as stated filetype, if filetype == -1
@@ -63,7 +70,7 @@ public interface SequenceList extends Iterator<Sequence>{
 	 * 
 	 * @return true if save successful
 	 */
-	public boolean saveFile(File file, int filetype) throws Exception;
+	public boolean saveFile(File file, int filetype) throws Exception, UnsupportedTypeException;
 	
 	/**
 	 * 

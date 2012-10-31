@@ -167,8 +167,8 @@ public class Task_BlastLocal extends TaskXTwIO{
 					try {
 						ACEFileParser parser = new ACEFileParser(new FileInputStream(this.input));
 						while(parser.hasNext()){
-							ACERecord record = parser.next();
-							this.sequences.put(record.getContigName(), record.getConsensusAsString());
+							ACERecord record = (ACERecord) parser.next();
+							this.sequences.put(record.getContigName(), record.getConsensus().getSequence());
 						}
 						Logger.getRootLogger().debug("File Parsed");
 						cont = true;

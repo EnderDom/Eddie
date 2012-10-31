@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 public interface ContigList extends Iterator<Contig>{
+	
 	public static int ACE = 0;
 	public static int SAM = 1;
 	public static int BAM = 2; 

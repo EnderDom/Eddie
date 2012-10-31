@@ -6,8 +6,8 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.assembly.ACEFileParser;
-import enderdom.eddie.bio.assembly.ACERecord;
 import enderdom.eddie.bio.fasta.Fasta;
+import enderdom.eddie.bio.interfaces.Contig;
 
 import net.sf.picard.io.IoUtil;
 import net.sf.picard.sam.SamFormatConverter;
@@ -62,11 +62,11 @@ public class Tools_Converters {
 	public static boolean ACE2FNA(File in, File output){
 		try{
 			ACEFileParser parser = new ACEFileParser(in);
-			ACERecord record = null;
+			Contig record = null;
 			Fasta fasta = new Fasta();
 			while(parser.hasNext()){
 				record = parser.next();
-				fasta.addSequence(record.getContigName(), record.getConsensusAsString());
+				fasta.addSequence(record.getConsensus().getName(), record.getConsensus().getSequence());
 			}
 			if(!fasta.save2Fasta(output)){
 				logger.error("File was not successfully saved");
@@ -93,13 +93,13 @@ public class Tools_Converters {
 	public static boolean ACE2FAQ(File in, File output){
 		try{
 			ACEFileParser parser = new ACEFileParser(in);
-			ACERecord record = null;
+			Contig record = null;
 			Fasta fasta = new Fasta();
 			fasta.setFastq(true);
 			while(parser.hasNext()){
 				record = parser.next();
-				fasta.addSequence(record.getContigName(), record.getConsensusAsString());
-				fasta.addQuality(record.getContigName(), record.getConsensusQualityLine());
+				fasta.addSequence(record.getConsensus().getName(), record.getConsensus().getSequence());
+				fasta.addQuality(record.getConsensus().getName(), record.getConsensus().getQuality());
 			}
 			if(!fasta.save2Fastq(output)){
 				logger.error("File was not successfully saved");

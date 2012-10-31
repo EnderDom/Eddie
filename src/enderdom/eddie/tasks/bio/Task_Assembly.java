@@ -74,7 +74,7 @@ public class Task_Assembly extends TaskXTwIO{
 					long totalbp = 0;
 					int[] lengths = new int[parse.getContigSize()];
 					while(parse.hasNext()){
-						ACERecord record = parse.next();
+						ACERecord record = (ACERecord) parse.next();
 						System.out.print("\r(No."+count+") : " + record.getContigName() + "        ");
 						lengths[count] = record.getConsensus().getActualLength();
 						count++;
