@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.sequence.Sequences;
-
 import enderdom.eddie.tools.bio.Tools_Fasta;
 import enderdom.eddie.tools.bio.Tools_Sequences;
 

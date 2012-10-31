@@ -1,0 +1,23 @@
+package enderdom.eddie.bio.interfaces;
+
+/**
+ * 
+ * @author dominic
+ * 
+ * Contig extends SequenceList and its
+ * the getSequence() style methods refer
+ * to the reads
+ *
+ */
+
+public interface Contig extends SequenceList {
+	
+	public Sequence getConsensus(); 
+	
+	public int trimLeftAllContig();
+	
+	public int trimRightAllContig();
+	
+	public Contig[] removeSectionAllContig(int opts);
+	
+}

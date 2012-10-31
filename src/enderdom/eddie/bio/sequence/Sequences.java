@@ -11,5 +11,6 @@ public interface Sequences {
 	public long[] getAllStats();
 	
 	public int getNoOfSequences();
-	
+
 }
+
