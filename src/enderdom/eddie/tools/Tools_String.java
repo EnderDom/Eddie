@@ -164,6 +164,7 @@ public abstract class Tools_String {
 	
 
 	public static String padString(String m, int len, boolean trim){
+		if(m == null)m = "";
 		if(m.length() > len && trim){
 			return m.substring(0, len);
 		}

@@ -6,7 +6,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.LinkedList;
+
+import org.apache.commons.cli.CommandLine;
 
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileHeader.SortOrder;
@@ -18,12 +19,12 @@ import enderdom.eddie.databases.bioSQL.interfaces.BioSQL;
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
-import enderdom.eddie.bio.assembly.ACEFileParser;
-import enderdom.eddie.bio.assembly.ACERecord;
+import enderdom.eddie.bio.assembly.ACERecordList;
 import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
 
 import enderdom.eddie.tasks.Checklist;
+import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_Array;
 import enderdom.eddie.tools.Tools_Bit;
 import enderdom.eddie.tools.Tools_Fun;
@@ -44,11 +45,14 @@ import enderdom.eddie.ui.EddiePropertyLoader;
  * @author dominic
  *
  */
-public class Task_Test extends Task_Test_Basic{
-
+public class Task_Test extends TaskXT{
 	
 	protected Checklist checklist;
-
+	CommandLine cmd;
+	
+	public void run(){
+		runTest();
+	}
 	
 	public void runTest(){
 		/*
@@ -56,14 +60,18 @@ public class Task_Test extends Task_Test_Basic{
 		 */
 		try{
 			System.out.println("Running test");
-			task4bitSequence();
+			testACE();
 		}
 		catch(Exception e){
 			e.printStackTrace();
 		}
 	}
 	
-	
+	public void parseArgsSub(CommandLine cmd){
+		this.cmd = cmd;
+	}
+
+
 	
 	/************************************************************/
 	/*															*/
@@ -274,18 +282,13 @@ public class Task_Test extends Task_Test_Basic{
 	
 	public void testACE(){
 		try{
-			FileInputStream stream = new FileInputStream(new File("/home/dominic/PhD_Data/newbler_projects/Digest_Only_Mk3/DigestMK3/assembly/454Isotigs.ace"));
-			ACEFileParser parser = new ACEFileParser(stream);
-			LinkedList<ACERecord> records = new LinkedList<ACERecord>();
-			while(parser.hasNext()){
-				records.add((ACERecord)parser.next());
-				System.out.print("\r"+records.getLast().getContigName()+"      ");
-				//ACERecord record = parser.next();
-				//System.out.print("\r"+record.getContigName()+"      ");
-			}
+			ACERecordList l = new ACERecordList(new File("/home/dominic/PhD_Data/newbler_projects/Digest_Only_Mk3/DigestMK3/assembly/454Isotigs.ace"));
+			for(int i =0; i < l.size(); i++)System.out.print("\r"+l.getContig(i).getName());
+			
+			System.out.println("");
 		}
 		catch(IOException io){
-			logger.error("Error thrown",io);
+			logger.error("Failed to test ACE parsing",io);
 		}
 		System.out.println();
 	}

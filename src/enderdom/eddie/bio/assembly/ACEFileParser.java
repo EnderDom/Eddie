@@ -3,17 +3,12 @@ package enderdom.eddie.bio.assembly;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.bio.interfaces.Contig;
-import enderdom.eddie.bio.interfaces.ContigList;
-import enderdom.eddie.bio.interfaces.SequenceObject;
 import enderdom.eddie.tools.Tools_String;
 
 /**
@@ -28,7 +23,7 @@ import enderdom.eddie.tools.Tools_String;
  * 
  */
 
-public class ACEFileParser implements ContigList{
+public class ACEFileParser{
 
 	
 	private int contigs;
@@ -60,7 +55,7 @@ public class ACEFileParser implements ContigList{
 	 */
 	public ACEFileParser(File file) throws IOException{
 		this(new FileInputStream(file));
-		f= file;
+		f = file;
 	}
 	
 	/**
@@ -69,10 +64,11 @@ public class ACEFileParser implements ContigList{
 	 * @throws IOException
 	 */
 	public ACEFileParser(InputStream stream) throws IOException{
-        init(stream);
+		init(stream);
 	}
 	
 	private void init(InputStream stream) throws IOException{
+		logger.debug("Initialising stream parsing");
 		InputStreamReader in = new InputStreamReader(stream, "UTF-8");
 		mReader = new BufferedReader(in);
 		currentline=new String();
@@ -111,7 +107,7 @@ public class ACEFileParser implements ContigList{
 	 * @return ACERecord object which holds one
 	 * contig from the Assembly file
 	 */
-	public Contig next() {
+	public ACERecord next() {
 		currentrecord = new ACERecord();
 		parseLine(currentsw, currentline);
 		try{
@@ -267,9 +263,9 @@ public class ACEFileParser implements ContigList{
 		if(s.length >2){
 			logger.info("File claims to contain " + s[s.length-2] + " contigs made of "+s[s.length-1]+" reads");
 			Integer i = Tools_String.parseString2Int(s[s.length-1]);
-			if(i != null)this.contigs = i; 
+			if(i != null)this.reads = i; 
 			i = Tools_String.parseString2Int(s[s.length-2]);
-			if(i != null)this.reads = i;
+			if(i != null)this.contigs = i;
 			
 		}
 		else{
@@ -351,47 +347,6 @@ public class ACEFileParser implements ContigList{
 		return reads;
 	}
 
-	public Contig getContig(String name) {
-		reset();
-		while(!this.next().getConsensus().getName().contentEquals("name") && this.hasNext());
-		return this.currentrecord;
-	}
-
-	public Contig getContig(int i) {
-		while(i !=0)i--;this.next();
-		return this.next();
-	}
-
-	public String[] getContigNames() {
-		String[] s = new String[this.getContigSize()];
-		int i =0;
-		while(this.hasNext()){
-			if(i > this.getContigSize())logger.error("Fail, ACE file reporting different number of contigs to actual, it says: " + this.getContigSize());
-			else s[i] = next().getConsensus().getName();
-		}
-		return s;
-	}
-
-	public LinkedHashMap<String, String> getContigsAsMap() {
-		LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
-		while(this.hasNext()){
-			SequenceObject c = this.next().getConsensus();
-			map.put(c.getName(),c.getSequence());
-		}
-		return map;
-	}
-
-	
-	public void reset(){
-		if(f != null)
-			try {
-				this.init(new FileInputStream(f));
-			} catch (FileNotFoundException e) {
-				logger.error("Failed to reset ACE file, file no longer exists" ,e);
-			} catch (IOException e) {
-				logger.error("Failed to reset ACE file" ,e);
-			}
-	}
 }
 
 

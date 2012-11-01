@@ -15,6 +15,10 @@ public interface ContigList extends Iterator<Contig>{
 	
 	public String[] getContigNames();
 	
-	public LinkedHashMap<String, String> getContigsAsMap();
+	public LinkedHashMap<String, String> getConsensusAsMap();
+	
+	public int size();
+	
+	
 	
 }

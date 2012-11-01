@@ -12,6 +12,8 @@ package enderdom.eddie.bio.interfaces;
 
 public interface Contig extends SequenceList {
 	
+	public String getName();
+	
 	public SequenceObject getConsensus(); 
 	
 	public int trimLeftAllContig();

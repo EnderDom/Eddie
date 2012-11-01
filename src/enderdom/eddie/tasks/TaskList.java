@@ -17,6 +17,7 @@ import enderdom.eddie.tasks.database.Task_BioSQLDB;
 import enderdom.eddie.tasks.database.Task_Blast;
 import enderdom.eddie.tasks.database.Task_dbTools;
 import enderdom.eddie.tasks.database.niche.Task_ContigComparison;
+import enderdom.eddie.tasks.testing.Task_Test;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.ui.UI;
 
@@ -125,6 +126,10 @@ public class TaskList {
 			tasks[1][14] = "univec";
 			tasks[2][14] = "Run UniVec screen on dataset";
 			
+			tasks[0][15] = Task_Test.class.getName();
+			tasks[1][15] = "test";
+			tasks[2][15] = "Run available tests";
+			
 			return tasks;
 		}
 	}
@@ -186,6 +191,7 @@ public class TaskList {
 			build.append(Tools_String.padString("-task "+tasks[1][i] + " [args]", taskpad, false));
 			build.append("    ");
 			build.append(Tools_String.padString(tasks[2][i], descriptionpad, false));
+			
 			System.out.println(build.toString());
 		}
 		System.out.println("Usage Example: -task taskname -arg1 one -arg2 two");

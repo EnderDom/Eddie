@@ -521,5 +521,8 @@ public class ACERecord implements Cloneable, Contig{
 		return null;
 	}
 
+	public String getName(){
+		return contigname;
+	}
 
 }

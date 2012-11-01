@@ -8,6 +8,7 @@ package enderdom.eddie.bio.assembly;
  * for things like coverage and retrieved contig number etc.
  */
 
+@Deprecated
 public interface Assembly {
 
 
