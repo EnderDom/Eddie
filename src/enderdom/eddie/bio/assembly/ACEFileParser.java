@@ -6,10 +6,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.tools.Tools_String;
+import enderdom.eddie.bio.interfaces.Contig;
+
 
 /**
  * 
@@ -23,7 +26,7 @@ import enderdom.eddie.tools.Tools_String;
  * 
  */
 
-public class ACEFileParser{
+public class ACEFileParser implements Iterator<Contig>{
 
 	
 	private int contigs;

@@ -8,7 +8,7 @@ import org.apache.commons.cli.Options;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
-import enderdom.eddie.bio.sequence.FourBitSequence;
+import enderdom.eddie.bio.sequence.FourBitNuclear;
 
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_File;
@@ -24,7 +24,7 @@ public class Task_BioTools extends TaskXT{
 	private String input;
 	private String output;
 	private String contig;
-	private FourBitSequence sequence;
+	private FourBitNuclear sequence;
 	private boolean strip;
 	
 	public Task_BioTools(){
@@ -40,7 +40,7 @@ public class Task_BioTools extends TaskXT{
 		if(cmd.hasOption("c"))contig = cmd.getOptionValue("c");
 		if(cmd.hasOption("f"))fuzzy = true;
 		if(cmd.hasOption("strip"))strip = true;
-		if(cmd.hasOption("s"))sequence = new FourBitSequence(cmd.getOptionValue("s"));
+		if(cmd.hasOption("s"))sequence = new FourBitNuclear(cmd.getOptionValue("s"));
 		if(cmd.hasOption("xindex")){
 			Integer temp = Tools_String.parseString2Int(cmd.getOptionValue("xindex"));
 			if(temp != null)index = temp;
@@ -70,7 +70,7 @@ public class Task_BioTools extends TaskXT{
 		
 		if(sequence != null);
 		else{
-			sequence = Tools_Sequences.getSequenceFromSomewhere(logger, new DatabaseManager(this.ui, this.password), input, contig, index, fuzzy, strip);
+			sequence = (FourBitNuclear) Tools_Sequences.getSequenceFromSomewhere(logger, new DatabaseManager(this.ui, this.password), input, contig, index, fuzzy, strip);
 			if(sequence == null){
 				logger.error("Sequence returned was null, premature terminating");
 				return;

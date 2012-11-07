@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 
 import enderdom.eddie.tools.Tools_String;
 
-public class FastaParser {
+public class FastaParser{
 
 	FastaHandler handler;
 	boolean fastq;

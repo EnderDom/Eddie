@@ -10,7 +10,8 @@ import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
-import enderdom.eddie.bio.sequence.FourBitSequence;
+import enderdom.eddie.bio.interfaces.SequenceObject;
+import enderdom.eddie.bio.sequence.FourBitNuclear;
 
 import enderdom.eddie.tools.Tools_Math;
 
@@ -111,10 +112,10 @@ public class Tools_Sequences {
 	 * @param fuzzy   set this to have a certain to use slight naming
 	 *  variations, this is mainly for my personal convinience
 	 * @param strip  boolean, set to true if you want all the '*'/'-' removed
-	 * @return A FourBitSequence object using the input
+	 * @return A SequenceObject object using the input
 	 */
-	public static FourBitSequence getSequenceFromSomewhere(Logger logger, DatabaseManager manager, String input, String contig, int index, boolean fuzzy, boolean strip){
-		String seq = null;
+	public static SequenceObject getSequenceFromSomewhere(Logger logger, DatabaseManager manager, String input, String contig, int index, boolean fuzzy, boolean strip){
+		SequenceObject seq = null;
 		if(input != null){
 			String file = Tools_Bio_File.detectFileType(input);
 			if(file.contains("FAST")){
@@ -186,7 +187,7 @@ public class Tools_Sequences {
 				logger.debug("Database connection open...");
 				int bioentry = manager.getBioSQLXT().getBioEntryId(manager, contig, fuzzy, manager.getEddieDBID());
 				if(bioentry > 0){
-					seq = manager.getBioSQL().getSequence(manager.getCon(), bioentry);				
+					seq = new FourBitNuclear(manager.getBioSQL().getSequence(manager.getCon(), bioentry));				
 					manager.close();
 				}
 				else if(bioentry < 1 && !fuzzy){
@@ -207,9 +208,7 @@ public class Tools_Sequences {
 			return null;
 		}
 		else{
-			if(strip)seq=(seq=seq.replaceAll("-", "")).replaceAll("\\*", "");
-			else logger.trace("Not stripping -/* from sequence");
-			return new FourBitSequence(seq);
+			return seq;
 		}
 	}
 }

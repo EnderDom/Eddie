@@ -6,23 +6,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.biojava.bio.Annotation;
-import org.biojava.bio.BioException;
 import org.biojava.bio.seq.DNATools;
 import org.biojava.bio.seq.Feature;
-import org.biojava.bio.seq.Feature.Template;
-import org.biojava.bio.seq.FeatureFilter;
-import org.biojava.bio.seq.FeatureHolder;
 import org.biojava.bio.seq.RNATools;
-import org.biojava.bio.seq.Sequence;
 import org.biojava.bio.symbol.Alphabet;
-import org.biojava.bio.symbol.Edit;
-import org.biojava.bio.symbol.IllegalAlphabetException;
 import org.biojava.bio.symbol.Symbol;
 import org.biojava.bio.symbol.SymbolList;
-import org.biojava.utils.ChangeListener;
-import org.biojava.utils.ChangeType;
-import org.biojava.utils.ChangeVetoException;
 
 import enderdom.eddie.bio.interfaces.SequenceObject;
 
@@ -37,15 +26,13 @@ import enderdom.eddie.bio.interfaces.SequenceObject;
  * stuff, honest.... :(
  *
  */
-public class FourBitNuclear extends FourBitSequence implements SequenceObject, Sequence, Iterator<Symbol>{
+public class FourBitNuclear extends FourBitSequence implements SequenceObject, Iterator<Symbol>{
 	
 	int iter_pos;
 	
 	private String name;
 	
 	private String uri;
-	
-	private ChangeListener[] listeners;
 	
 	LinkedList<Feature> features;
 	
@@ -334,95 +321,7 @@ public class FourBitNuclear extends FourBitSequence implements SequenceObject, S
 			throw new IndexOutOfBoundsException("Cannot subdivide this sequence");
 		}
 	}
-
-	public void edit(Edit edit) throws IndexOutOfBoundsException,
-			IllegalAlphabetException, ChangeVetoException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void addChangeListener(ChangeListener cl) {
-		if(listeners == null){
-			listeners = new ChangeListener[1];
-			listeners[0] = cl;
-		}
-		else{
-			ChangeListener[] listeners = new ChangeListener[this.listeners.length+1];
-			for(int i=0; i < listeners.length; i++)listeners[i]=this.listeners[i];
-			listeners[this.listeners.length]=cl;
-			this.listeners=listeners;
-		}
-	}
-
-	public void addChangeListener(ChangeListener cl, ChangeType ct) {
-		// TODO Auto-generated method stub 
-		//?
-	}
-
-	public void removeChangeListener(ChangeListener cl) {
-		int i= 0;
-		for(; i < listeners.length ; i++){
-			if(listeners[i].equals(cl)){
-				listeners[i] = null;
-				break;
-			}
-		}//TODO clean up
-	}
-
-	public void removeChangeListener(ChangeListener cl, ChangeType ct) {
-		// TODO Auto-generated method stub
-		//???
-	}
-
-	public boolean isUnchanging(ChangeType ct) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public int countFeatures() {
-		return this.features.size();
-	}
-
-	public Iterator<Feature> features() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public FeatureHolder filter(FeatureFilter fc, boolean recurse) {
-		return null;
-	}
-
-	public FeatureHolder filter(FeatureFilter filter) {
-		return null;
-	}
-
-	public Feature createFeature(Template ft) throws BioException,
-			ChangeVetoException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void removeFeature(Feature f) throws ChangeVetoException,
-			BioException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public boolean containsFeature(Feature f) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public FeatureFilter getSchema() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public Annotation getAnnotation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	
 	public String getURN() {
 		return this.uri;
 	}
@@ -451,6 +350,11 @@ public class FourBitNuclear extends FourBitSequence implements SequenceObject, S
 		//More difficult
 	}
 
+	public void updateLength(){
+		//TODO
+		Logger.getRootLogger().error("Unimplemented method");
+	}
+	
 	public String getSequence() {
 		return this.getAsString();
 	}
@@ -463,16 +367,19 @@ public class FourBitNuclear extends FourBitSequence implements SequenceObject, S
 	public int leftTrim(int i) {
 		// TODO Auto-generated method stub
 		Logger.getRootLogger().error("Unimplemented method");
+		updateLength();
 		return -1;
 	}
 
 	public int rightTrim(int i) {
 		Logger.getRootLogger().error("Unimplemented method");
+		updateLength();
 		return -1;
 	}
 
 	public SequenceObject[] removeSection(int start, int end) {
 		Logger.getRootLogger().error("Unimplemented method");
+		updateLength();
 		return null;
 	}
 

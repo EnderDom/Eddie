@@ -80,8 +80,8 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	 * @throws Exception 
 	 * @throws UnsupportedTypeException
 	 * 
-	 * @return true if load successful
+	 * @return number of sequences loaded
 	 */
-	public void loadFile(File file, int filetype) throws Exception, UnsupportedTypeException;
+	public int loadFile(File file, int filetype) throws Exception, UnsupportedTypeException;
 	
 }

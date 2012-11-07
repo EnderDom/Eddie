@@ -11,7 +11,11 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.bio.sequence.Sequences;
+import enderdom.eddie.bio.interfaces.SequenceList;
+import enderdom.eddie.bio.interfaces.SequenceObject;
+import enderdom.eddie.bio.interfaces.UnsupportedTypeException;
+import enderdom.eddie.bio.sequence.FourBitNuclear;
+import enderdom.eddie.tools.Tools_Math;
 import enderdom.eddie.tools.bio.Tools_Fasta;
 import enderdom.eddie.tools.bio.Tools_Sequences;
 
@@ -22,24 +26,25 @@ import enderdom.eddie.tools.bio.Tools_Sequences;
  * BioJava,  but I don't have time
  */
 
-public class Fasta implements FastaHandler, Sequences{
+//JUST REALISE THIS BREAKS ON AMINO ACIDS :((((
+public class Fasta implements FastaHandler, SequenceList{
 
-	private LinkedHashMap<String, String> sequences;
+	private LinkedHashMap<String, FourBitNuclear> sequences;
 	private LinkedHashMap<String, String> qualities;
 	private boolean fastq;
-	private int[] list_of_lens; 
 	Logger logger = Logger.getRootLogger();
+	int iteration =0;
 	
 	public Fasta(){
-		sequences = new LinkedHashMap<String, String>();
+		sequences = new LinkedHashMap<String, FourBitNuclear>();
 	}
 	
 	public Fasta(int fastasize){
-		sequences = new LinkedHashMap<String, String>(fastasize);
+		sequences = new LinkedHashMap<String, FourBitNuclear>(fastasize);
 	}
 	
 	public void addSequence(String title, String sequence) {
-		sequences.put(title, sequence);
+		sequences.put(title, new FourBitNuclear(sequence));
 	}
 
 	public void addQuality(String title, String quality) {
@@ -69,11 +74,13 @@ public class Fasta implements FastaHandler, Sequences{
 	}
 
 	public LinkedHashMap<String, String> getSequences() {
-		return sequences;
+		LinkedHashMap<String, String> newstr = new LinkedHashMap<String, String>();
+		for(String key : this.sequences.keySet())newstr.put(key, this.sequences.get(key).getAsString());
+		return newstr;
 	}
 
-	public void setSequences(LinkedHashMap<String, String> sequences) {
-		this.sequences = sequences;
+	public void setSequences(LinkedHashMap<String, String> seqs) {
+		for(String key : seqs.keySet())this.sequences.put(key, new FourBitNuclear(seqs.get(key)));
 	}
 
 	public LinkedHashMap<String, String> getQualities() {
@@ -85,7 +92,7 @@ public class Fasta implements FastaHandler, Sequences{
 	}
 	
 	public String[] getsubFasta(String title){
-		return new String[]{sequences.get(title), qualities.get(title)};
+		return new String[]{sequences.get(title).getAsString(), qualities.get(title)};
 	}
 	
 	/*
@@ -97,7 +104,7 @@ public class Fasta implements FastaHandler, Sequences{
 		String[] ret = null;
 		for(String title : sequences.keySet()){
 			if(i == j){
-				ret = new String[]{sequences.get(title), qualities.get(title)};
+				ret = new String[]{sequences.get(title).getAsString(), qualities.get(title)};
 				break;
 			}
 			j++;
@@ -110,8 +117,8 @@ public class Fasta implements FastaHandler, Sequences{
 		BufferedWriter out = new BufferedWriter(fstream);
 		int count =0;
 		for(String str : sequences.keySet()){
-			if(Tools_Fasta.checkFastq(str, sequences.get(str), qualities.get(str))){
-				Tools_Fasta.saveFastq(str, sequences.get(str), qualities.get(str), out);
+			if(Tools_Fasta.checkFastq(str, sequences.get(str).getAsString(), qualities.get(str))){
+				Tools_Fasta.saveFastq(str, sequences.get(str).getAsString(), qualities.get(str), out);
 			}
 			else{
 				throw new IOException("Fastq failed QC check");
@@ -128,7 +135,7 @@ public class Fasta implements FastaHandler, Sequences{
 		BufferedWriter out = new BufferedWriter(fstream);
 		int count = 0;
 		for(String str : sequences.keySet()){
-			Tools_Fasta.saveFasta(str, sequences.get(str), out);
+			Tools_Fasta.saveFasta(str, sequences.get(str).getAsString(), out);
 			count++;
 		}
 		out.close();fstream.close();
@@ -144,8 +151,8 @@ public class Fasta implements FastaHandler, Sequences{
 		BufferedWriter out2 = new BufferedWriter(fstream2);
 		int count = 0;
 		for(String str : sequences.keySet()){
-			if(Tools_Fasta.checkFastq(str, sequences.get(str), qualities.get(str))){
-				Tools_Fasta.saveFasta(str, sequences.get(str), out);
+			if(Tools_Fasta.checkFastq(str, sequences.get(str).getAsString(), qualities.get(str))){
+				Tools_Fasta.saveFasta(str, sequences.get(str).getAsString(), out);
 				Tools_Fasta.saveFasta(str, Tools_Fasta.Fastq2Qual(qualities.get(str)), out2);
 				count++;
 			}
@@ -167,19 +174,6 @@ public class Fasta implements FastaHandler, Sequences{
 		return l;
 	}
 	
-	public int[] getListOfLens(){
-		if(this.list_of_lens == null){
-			this.list_of_lens = new int[sequences.size()];
-			int c=0;
-			for(String s : sequences.keySet()){
-				String seq = sequences.get(s);
-				list_of_lens[c] = seq.length();
-				c++;
-			}
-		}
-		return this.list_of_lens;
-	}
-	
 	public int getN50(){
 		return Tools_Sequences.n50(getListOfLens());
 	}
@@ -199,7 +193,7 @@ public class Fasta implements FastaHandler, Sequences{
 		return getNoOfSequences();
 	}
 	
-	public String getSequence(int i){
+	public SequenceObject getSequence(int i){
 		for(String s : sequences.keySet()){
 			if(i==0){
 				return sequences.get(s);
@@ -209,16 +203,15 @@ public class Fasta implements FastaHandler, Sequences{
 		return null;
 	}
 	
-	public String getSequence(String key){
+	public SequenceObject getSequence(String key){
 		return this.sequences.get(key);
 	}
-	
 	
 	public int trimSequences(int tr){
 		int trimcount = 0;
 		LinkedList<String> toremove = new LinkedList<String>();
 		for(String s : sequences.keySet()){
-			String seq = sequences.get(s);
+			FourBitNuclear seq = sequences.get(s);
 			if(seq.length() < tr){
 				logger.info("Remove Sequence " + s +" of length " + seq.length());
 				toremove.add(s);
@@ -233,6 +226,7 @@ public class Fasta implements FastaHandler, Sequences{
 		return sequences.containsKey(name);
 	}
 	
+	//TODO utilise FourBitNuclear
 	public int removeSequencesWithNs(int Ns){
 		int i=0;
 		StringBuilder build = new StringBuilder();
@@ -242,7 +236,7 @@ public class Fasta implements FastaHandler, Sequences{
 		Pattern p = Pattern.compile(build.toString());
 		LinkedList<String> toremove = new LinkedList<String>();
 		for(String s : sequences.keySet()){
-			String sequence = sequences.get(s);
+			String sequence = sequences.get(s).getAsString();
 			Matcher m = p.matcher(sequence);
 			if(m.find()){
 				logger.info("Remove Sequence "+s +" due to having to many Ns");
@@ -260,7 +254,7 @@ public class Fasta implements FastaHandler, Sequences{
 		double perc =((double)Perc)/100.0;
 		LinkedList<String> toremove = new LinkedList<String>();
 		for(String s : sequences.keySet()){
-			String sequence = sequences.get(s).toUpperCase();
+			String sequence = sequences.get(s).getAsString();
 			r = (int)((double)sequence.length()*perc);
 			
 			int index =0;
@@ -293,7 +287,7 @@ public class Fasta implements FastaHandler, Sequences{
 	 * will happen if s1 occurs more than once and this is not counted)
 	 */
 	public int replaceNames(String s1, String s2){
-		LinkedHashMap<String, String> seqs2 = new LinkedHashMap<String, String>();
+		LinkedHashMap<String, FourBitNuclear> seqs2 = new LinkedHashMap<String, FourBitNuclear>();
 		LinkedHashMap<String, String> quals2 = new LinkedHashMap<String, String>();
 		int i = 0;
 		for(String s : sequences.keySet()){
@@ -326,7 +320,7 @@ public class Fasta implements FastaHandler, Sequences{
 	 * this should be all of them
 	 */
 	public int renameSeqs(String s1, int start){
-		LinkedHashMap<String, String> seqs2 = new LinkedHashMap<String, String>();
+		LinkedHashMap<String, FourBitNuclear> seqs2 = new LinkedHashMap<String, FourBitNuclear>();
 		LinkedHashMap<String, String> quals2 = new LinkedHashMap<String, String>();
 		int i = start;
 		for(String s : sequences.keySet()){
@@ -370,5 +364,77 @@ public class Fasta implements FastaHandler, Sequences{
 		}
 		return null;
 	}
+	
+	//TODO TODO TODO
+	public void mergeFasta(File file, int filetype){
+		logger.error("This method has not been added yet");
+	}
+
+	public boolean hasNext() {
+		return iteration < this.getNoOfSequences();
+	}
+
+	public SequenceObject next() {
+		iteration++;
+		return this.getSequence(iteration-1);
+	}
+
+	public void remove() {
+		this.remove(this.getSequenceName(iteration));
+	}
+
+	public int[] getListOfActualLens() {
+		int[] li = new int[this.getNoOfSequences()];
+		for(int i =0;i < li.length; i++){
+			li[i] = this.getSequence(i).getActualLength();
+		}
+		return li;
+	}
+	
+
+	public int[] getListOfLens() {
+		int[] li = new int[this.getNoOfSequences()];
+		for(int i =0;i < li.length; i++){
+			li[i] = this.getSequence(i).getActualLength();
+		}
+		return li;
+	}
+
+	public int getNoOfMolecules() {
+		return Tools_Math.sum(this.getListOfActualLens());
+	}
+
+	//TODO improve
+	public boolean saveFile(File file, int filetype) throws UnsupportedTypeException, IOException {
+		if(filetype == SequenceList.FAST_QUAL){
+			return this.save2FastaAndQual(new File(file.getPath()+".fasta"), new File(file.getPath()+".qual"));
+		}
+		else if(filetype == SequenceList.FASTA){
+			return this.save2Fasta(file);
+		}
+		else if(filetype == SequenceList.FASTQ){
+			return this.save2Fastq(file);
+		}
+		else{
+			throw new UnsupportedTypeException("Fasta(q) cannot be saved as this filetype");
+		}
+	}
+
+	public int loadFile(File file, int filetype) throws UnsupportedTypeException, IOException {
+		FastaParser parser = new FastaParser(this);
+		if(filetype == SequenceList.FAST_QUAL){
+			return parser.parseQual(file);
+		}
+		else if(filetype == SequenceList.FASTA){
+			return parser.parseFasta(file);
+		}
+		else if(filetype == SequenceList.FASTQ){
+			return parser.parseFastq(file);
+		}
+		else{
+			throw new UnsupportedTypeException("Cannot load this filetype into fasta object");
+		}
+	}
+
 	
 }

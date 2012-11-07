@@ -488,9 +488,10 @@ public class ACERecord implements Cloneable, Contig{
 		return false;
 	}
 
-	public void loadFile(File file, int filetype) throws Exception,
+	public int loadFile(File file, int filetype) throws Exception,
 			UnsupportedTypeException {
-		// TODO Auto-generated method stub 
+		// TODO Auto-generated method stub
+		return -1;
 	}
 
 	public boolean hasNext() {

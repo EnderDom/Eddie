@@ -28,6 +28,7 @@ public class Task_UniVec extends TaskXTwIO{
 	private static String key = "UNI_VEC_DB";
 	private String filetype;
 	
+	
 	public Task_UniVec(){
 	}
 	
@@ -97,7 +98,8 @@ public class Task_UniVec extends TaskXTwIO{
 		String strat = tmpfolder.getPath() + Tools_System.getFilepathSeparator() + strategyfile +".asn";
 		if(Tools_File.stream2File(str, strat))logger.error("Failed to create search strategy file at " + strat);
 		
-		/*Actually run the blast program
+		/* 
+		 * Actually run the blast program
 		 *
 		 * See http://www.ncbi.nlm.nih.gov/VecScreen/VecScreen_docs.html for specs on vecscreen
 		 * 
@@ -109,6 +111,8 @@ public class Task_UniVec extends TaskXTwIO{
 		if(arr[1].length() > 0){
 			logger.info("blastn output:"+Tools_System.getNewline()+arr[0].toString().trim());
 		}
+		
+		//TODO implement parsing of file 
 		
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
 	    setComplete(finished);

@@ -2,6 +2,10 @@ package enderdom.eddie.bio.interfaces;
 
 public class UnsupportedTypeException extends Exception {
 
+	public UnsupportedTypeException(String string) {
+		super(string);
+	}
+
 	/**
 	 * 
 	 */
