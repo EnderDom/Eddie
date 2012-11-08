@@ -6,10 +6,21 @@ import org.biojava.bio.symbol.Symbol;
 
 import enderdom.eddie.bio.interfaces.SequenceObject;
 
+
+//TODO 
 public class EightBitAmino implements SequenceObject, Iterator<Symbol>{
 
+	String amino;
+	String name;
+	int iteration =0;
+	
+	public EightBitAmino(String name, String amino){
+		this.name = name;
+		this.amino = amino;
+		//TODO use eight bits :)
+	}
+
 	public boolean hasNext() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -45,6 +56,10 @@ public class EightBitAmino implements SequenceObject, Iterator<Symbol>{
 
 	public int getActualLength() {
 		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	public int getLength(){
 		return 0;
 	}
 

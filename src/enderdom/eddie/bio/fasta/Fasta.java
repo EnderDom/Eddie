@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 import enderdom.eddie.bio.interfaces.SequenceList;
 import enderdom.eddie.bio.interfaces.SequenceObject;
 import enderdom.eddie.bio.interfaces.UnsupportedTypeException;
-import enderdom.eddie.bio.sequence.FourBitNuclear;
+import enderdom.eddie.bio.sequence.GenericSequence;
 import enderdom.eddie.tools.Tools_Math;
 import enderdom.eddie.tools.bio.Tools_Fasta;
 import enderdom.eddie.tools.bio.Tools_Sequences;
@@ -29,22 +29,22 @@ import enderdom.eddie.tools.bio.Tools_Sequences;
 //JUST REALISE THIS BREAKS ON AMINO ACIDS :((((
 public class Fasta implements FastaHandler, SequenceList{
 
-	private LinkedHashMap<String, FourBitNuclear> sequences;
+	private LinkedHashMap<String, GenericSequence> sequences;
 	private LinkedHashMap<String, String> qualities;
 	private boolean fastq;
 	Logger logger = Logger.getRootLogger();
 	int iteration =0;
 	
 	public Fasta(){
-		sequences = new LinkedHashMap<String, FourBitNuclear>();
+		sequences = new LinkedHashMap<String, GenericSequence>();
 	}
 	
 	public Fasta(int fastasize){
-		sequences = new LinkedHashMap<String, FourBitNuclear>(fastasize);
+		sequences = new LinkedHashMap<String, GenericSequence>(fastasize);
 	}
 	
 	public void addSequence(String title, String sequence) {
-		sequences.put(title, new FourBitNuclear(sequence));
+		sequences.put(title, new GenericSequence(title, sequence));
 	}
 
 	public void addQuality(String title, String quality) {
@@ -75,12 +75,12 @@ public class Fasta implements FastaHandler, SequenceList{
 
 	public LinkedHashMap<String, String> getSequences() {
 		LinkedHashMap<String, String> newstr = new LinkedHashMap<String, String>();
-		for(String key : this.sequences.keySet())newstr.put(key, this.sequences.get(key).getAsString());
+		for(String key : this.sequences.keySet())newstr.put(key, this.sequences.get(key).getSequence());
 		return newstr;
 	}
 
 	public void setSequences(LinkedHashMap<String, String> seqs) {
-		for(String key : seqs.keySet())this.sequences.put(key, new FourBitNuclear(seqs.get(key)));
+		for(String key : seqs.keySet())this.sequences.put(key, new GenericSequence(key, seqs.get(key)));
 	}
 
 	public LinkedHashMap<String, String> getQualities() {
@@ -92,7 +92,7 @@ public class Fasta implements FastaHandler, SequenceList{
 	}
 	
 	public String[] getsubFasta(String title){
-		return new String[]{sequences.get(title).getAsString(), qualities.get(title)};
+		return new String[]{sequences.get(title).getSequence(), qualities.get(title)};
 	}
 	
 	/*
@@ -104,7 +104,7 @@ public class Fasta implements FastaHandler, SequenceList{
 		String[] ret = null;
 		for(String title : sequences.keySet()){
 			if(i == j){
-				ret = new String[]{sequences.get(title).getAsString(), qualities.get(title)};
+				ret = new String[]{sequences.get(title).getSequence(), qualities.get(title)};
 				break;
 			}
 			j++;
@@ -117,8 +117,8 @@ public class Fasta implements FastaHandler, SequenceList{
 		BufferedWriter out = new BufferedWriter(fstream);
 		int count =0;
 		for(String str : sequences.keySet()){
-			if(Tools_Fasta.checkFastq(str, sequences.get(str).getAsString(), qualities.get(str))){
-				Tools_Fasta.saveFastq(str, sequences.get(str).getAsString(), qualities.get(str), out);
+			if(Tools_Fasta.checkFastq(str, sequences.get(str).getSequence(), qualities.get(str))){
+				Tools_Fasta.saveFastq(str, sequences.get(str).getSequence(), qualities.get(str), out);
 			}
 			else{
 				throw new IOException("Fastq failed QC check");
@@ -135,7 +135,7 @@ public class Fasta implements FastaHandler, SequenceList{
 		BufferedWriter out = new BufferedWriter(fstream);
 		int count = 0;
 		for(String str : sequences.keySet()){
-			Tools_Fasta.saveFasta(str, sequences.get(str).getAsString(), out);
+			Tools_Fasta.saveFasta(str, sequences.get(str).getSequence(), out);
 			count++;
 		}
 		out.close();fstream.close();
@@ -151,8 +151,8 @@ public class Fasta implements FastaHandler, SequenceList{
 		BufferedWriter out2 = new BufferedWriter(fstream2);
 		int count = 0;
 		for(String str : sequences.keySet()){
-			if(Tools_Fasta.checkFastq(str, sequences.get(str).getAsString(), qualities.get(str))){
-				Tools_Fasta.saveFasta(str, sequences.get(str).getAsString(), out);
+			if(Tools_Fasta.checkFastq(str, sequences.get(str).getSequence(), qualities.get(str))){
+				Tools_Fasta.saveFasta(str, sequences.get(str).getSequence(), out);
 				Tools_Fasta.saveFasta(str, Tools_Fasta.Fastq2Qual(qualities.get(str)), out2);
 				count++;
 			}
@@ -164,9 +164,7 @@ public class Fasta implements FastaHandler, SequenceList{
 		if(count == sequences.keySet().size())return true;
 		else return false;
 	}
-	
-
-	
+		
 	public int getNoOfBps(){
 		int l = 0;
 		int[] i = getListOfLens();
@@ -211,9 +209,9 @@ public class Fasta implements FastaHandler, SequenceList{
 		int trimcount = 0;
 		LinkedList<String> toremove = new LinkedList<String>();
 		for(String s : sequences.keySet()){
-			FourBitNuclear seq = sequences.get(s);
-			if(seq.length() < tr){
-				logger.info("Remove Sequence " + s +" of length " + seq.length());
+			GenericSequence seq = sequences.get(s);
+			if(seq.getLength() < tr){
+				logger.info("Remove Sequence " + s +" of length " + seq.getLength());
 				toremove.add(s);
 				trimcount++;
 			}
@@ -226,48 +224,6 @@ public class Fasta implements FastaHandler, SequenceList{
 		return sequences.containsKey(name);
 	}
 	
-	//TODO utilise FourBitNuclear
-	public int removeSequencesWithNs(int Ns){
-		int i=0;
-		StringBuilder build = new StringBuilder();
-		for(int j =0; j < Ns; j++){
-			build.append("N");
-		}
-		Pattern p = Pattern.compile(build.toString());
-		LinkedList<String> toremove = new LinkedList<String>();
-		for(String s : sequences.keySet()){
-			String sequence = sequences.get(s).getAsString();
-			Matcher m = p.matcher(sequence);
-			if(m.find()){
-				logger.info("Remove Sequence "+s +" due to having to many Ns");
-				toremove.add(s);
-				i++;
-			}
-		}
-		for(String s : toremove)remove(s);
-		return i;
-	}
-	
-	public int removeSequencesWithPercNs(int Perc){
-		int i=0;
-		int r = 1;
-		double perc =((double)Perc)/100.0;
-		LinkedList<String> toremove = new LinkedList<String>();
-		for(String s : sequences.keySet()){
-			String sequence = sequences.get(s).getAsString();
-			r = (int)((double)sequence.length()*perc);
-			
-			int index =0;
-			while(r-- > -1 && (index = sequence.indexOf("N", index+1))!=-1);
-			if(r <1){
-				logger.info("Removing "+ s + " due to infringing <"+Perc+"% Ns");
-				toremove.add(s);
-				i++;
-			}
-		}
-		for(String s : toremove)remove(s);
-		return i;
-	}
 	
 	/**
 	 * This replaces string1 with string2 within the names of fastas
@@ -287,7 +243,7 @@ public class Fasta implements FastaHandler, SequenceList{
 	 * will happen if s1 occurs more than once and this is not counted)
 	 */
 	public int replaceNames(String s1, String s2){
-		LinkedHashMap<String, FourBitNuclear> seqs2 = new LinkedHashMap<String, FourBitNuclear>();
+		LinkedHashMap<String, GenericSequence> seqs2 = new LinkedHashMap<String, GenericSequence>();
 		LinkedHashMap<String, String> quals2 = new LinkedHashMap<String, String>();
 		int i = 0;
 		for(String s : sequences.keySet()){
@@ -320,7 +276,7 @@ public class Fasta implements FastaHandler, SequenceList{
 	 * this should be all of them
 	 */
 	public int renameSeqs(String s1, int start){
-		LinkedHashMap<String, FourBitNuclear> seqs2 = new LinkedHashMap<String, FourBitNuclear>();
+		LinkedHashMap<String, GenericSequence> seqs2 = new LinkedHashMap<String, GenericSequence>();
 		LinkedHashMap<String, String> quals2 = new LinkedHashMap<String, String>();
 		int i = start;
 		for(String s : sequences.keySet()){
@@ -436,5 +392,46 @@ public class Fasta implements FastaHandler, SequenceList{
 		}
 	}
 
+	public int removeSequencesWithNs(int Ns){
+		int i=0;
+		StringBuilder build = new StringBuilder();
+		for(int j =0; j < Ns; j++){
+			build.append("N");
+		}
+		Pattern p = Pattern.compile(build.toString());
+		LinkedList<String> toremove = new LinkedList<String>();
+		for(String s : sequences.keySet()){
+			String sequence = sequences.get(s).getSequence();
+			Matcher m = p.matcher(sequence);
+			if(m.find()){
+				logger.info("Remove Sequence "+s +" due to having to many Ns");
+				toremove.add(s);
+				i++;
+			}
+		}
+		for(String s : toremove)remove(s);
+		return i;
+	}
+	
+	public int removeSequencesWithPercNs(int Perc){
+		int i=0;
+		int r = 1;
+		double perc =((double)Perc)/100.0;
+		LinkedList<String> toremove = new LinkedList<String>();
+		for(String s : sequences.keySet()){
+			String sequence = sequences.get(s).getSequence();
+			r = (int)((double)sequence.length()*perc);
+			
+			int index =0;
+			while(r-- > -1 && (index = sequence.indexOf("N", index+1))!=-1);
+			if(r <1){
+				logger.info("Removing "+ s + " due to infringing <"+Perc+"% Ns");
+				toremove.add(s);
+				i++;
+			}
+		}
+		for(String s : toremove)remove(s);
+		return i;
+	}
 	
 }

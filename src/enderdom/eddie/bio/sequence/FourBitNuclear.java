@@ -11,7 +11,6 @@ import org.biojava.bio.seq.Feature;
 import org.biojava.bio.seq.RNATools;
 import org.biojava.bio.symbol.Alphabet;
 import org.biojava.bio.symbol.Symbol;
-import org.biojava.bio.symbol.SymbolList;
 
 import enderdom.eddie.bio.interfaces.SequenceObject;
 
@@ -31,8 +30,6 @@ public class FourBitNuclear extends FourBitSequence implements SequenceObject, I
 	int iter_pos;
 	
 	private String name;
-	
-	private String uri;
 	
 	LinkedList<Feature> features;
 	
@@ -70,6 +67,28 @@ public class FourBitNuclear extends FourBitSequence implements SequenceObject, I
 	
 	public FourBitNuclear(String s){
 		super(s);
+	}
+	
+	/**
+	 * 
+	 * @param name Sequence name
+	 * @param s Sequence string
+	 */
+	public FourBitNuclear(String name, String s){
+		super(s);
+		this.name = name;
+	}
+	
+	/**
+	 * 
+	 * @param name Sequence name
+	 * @param s 
+	 * @param q
+	 */
+	public FourBitNuclear(String name, String s, String q){
+		super(s);
+		this.name =name;
+		this.quality = q;
 	}
 	
 	/**
@@ -299,43 +318,13 @@ public class FourBitNuclear extends FourBitSequence implements SequenceObject, I
 		}
 		return list;
 	}
-
-	public Iterator<Symbol> iterator() {
-		return this;
-	}
-
-	public SymbolList subList(int start, int end)
-			throws IndexOutOfBoundsException {
-		return null;
-	}
-
-	public String seqString() {
-		return this.toString();
-	}
-
-	public String subStr(int start, int end) throws IndexOutOfBoundsException {
-		if(start > -1 && end < this.getActualLength()){
-			return this.subStr(start, end);
-		}
-		else{
-			throw new IndexOutOfBoundsException("Cannot subdivide this sequence");
-		}
-	}
 	
-	public String getURN() {
-		return this.uri;
-	}
-
 	public String getName() {
 		return this.name;
 	}
 	
 	public void setName(String s){
 		this.name = s;
-	}
-	
-	public void setURN(String uri){
-		this.uri = uri;
 	}
 	
 	public boolean hasNext() {

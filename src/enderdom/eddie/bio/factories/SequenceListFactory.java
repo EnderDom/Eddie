@@ -1,13 +1,13 @@
 package enderdom.eddie.bio.factories;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Iterator;
-
-import enderdom.eddie.bio.fasta.Fasta;
-import enderdom.eddie.bio.interfaces.Contig;
-import enderdom.eddie.bio.interfaces.SequenceList;
-import enderdom.eddie.tools.bio.Tools_Bio_File;
+//import java.io.File;
+//import java.io.FileNotFoundException;
+//import java.util.Iterator;
+//
+//import enderdom.eddie.bio.fasta.Fasta;
+//import enderdom.eddie.bio.interfaces.Contig;
+//import enderdom.eddie.bio.interfaces.SequenceList;
+//import enderdom.eddie.tools.bio.Tools_Bio_File;
 
 public class SequenceListFactory {
 

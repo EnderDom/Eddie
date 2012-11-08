@@ -40,6 +40,14 @@ public interface SequenceObject {
 	 */
 	public int getActualLength();
 	
+	
+	/**
+	 * 
+	 * @return the string length of the sequence including gaps 
+	 * that were introduced
+	 */
+	public int getLength();
+	
 	/**
 	 * Trims a section from the left
 	 * side of the sequence removing the number

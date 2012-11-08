@@ -265,7 +265,7 @@ public class ACERecord implements Cloneable, Contig{
 	 * 
 	 * @return Consensus sequence as a String
 	 */
-	public SequenceObject getConsensus(){
+	public FourBitNuclear getConsensus(){
 		FourBitNuclear n = (FourBitNuclear)this.seqs[0];
 		n.setName(this.contigname);
 		n.setQuality(this.consensusqual);
@@ -438,7 +438,7 @@ public class ACERecord implements Cloneable, Contig{
 
 	//Not all the relevant for ACErecord but
 	public int getN50() {
-		// TODO Auto-generated method stub
+		logger.error("Not implemented");
 		return 0;
 	}
 
@@ -474,23 +474,25 @@ public class ACERecord implements Cloneable, Contig{
 	public SequenceObject getSequence(int i) {
 		FourBitNuclear n = (FourBitNuclear)getRead(i);
 		n.setName(this.getReadName(i));
+		n.setQuality(this.consensusqual);
 		return n;
 	}
 
 	public SequenceObject getSequence(String s) {
 		FourBitNuclear n = (FourBitNuclear)getRead(s);
 		n.setName(s);
+		n.setQuality(this.consensusqual);
 		return n;
 	}
 		
 	public boolean saveFile(File file, int filetype) throws Exception {
-		// TODO Auto-generated method stub
+		logger.error("Not implemented");
 		return false;
 	}
 
 	public int loadFile(File file, int filetype) throws Exception,
 			UnsupportedTypeException {
-		// TODO Auto-generated method stub
+		logger.error("Not implemented");
 		return -1;
 	}
 
@@ -504,21 +506,21 @@ public class ACERecord implements Cloneable, Contig{
 	}
 
 	public void remove() {
-		
+		logger.error("Not implemented");
 	}
 
 	public int trimLeftAllContig() {
-		// TODO Auto-generated method stub
+		logger.error("Not implemented");
 		return 0;
 	}
 
 	public int trimRightAllContig() {
-		// TODO Auto-generated method stub
+		logger.error("Not implemented");
 		return 0; 
 	}
 
 	public Contig[] removeSectionAllContig(int opts) {
-		// TODO Auto-generated method stub
+		logger.error("Not implemented");
 		return null;
 	}
 

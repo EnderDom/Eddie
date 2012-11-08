@@ -9,7 +9,6 @@ import enderdom.eddie.tools.Tools_Math;
 import enderdom.eddie.tools.bio.Tools_Sequences;
 
 import enderdom.eddie.bio.fasta.Fasta;
-import enderdom.eddie.bio.sequence.Sequences;
 
 /**
  * @author dominic
@@ -34,7 +33,7 @@ import enderdom.eddie.bio.sequence.Sequences;
  *   ALL values are converted to 0 index/base
  */
 @Deprecated
-public class ACEObject implements ACEHandler, Assembly, Sequences {
+public class ACEObject implements ACEHandler, Assembly{
 
 	HashMap<Integer, String> contignumb;
 	HashMap<String, String> contigs;
