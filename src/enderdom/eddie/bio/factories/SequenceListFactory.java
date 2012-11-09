@@ -1,13 +1,14 @@
 package enderdom.eddie.bio.factories;
 
-//import java.io.File;
-//import java.io.FileNotFoundException;
-//import java.util.Iterator;
-//
-//import enderdom.eddie.bio.fasta.Fasta;
-//import enderdom.eddie.bio.interfaces.Contig;
-//import enderdom.eddie.bio.interfaces.SequenceList;
-//import enderdom.eddie.tools.bio.Tools_Bio_File;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import enderdom.eddie.bio.fasta.Fasta;
+import enderdom.eddie.bio.interfaces.BioFileType;
+import enderdom.eddie.bio.interfaces.SequenceList;
+import enderdom.eddie.bio.interfaces.UnsupportedTypeException;
+import enderdom.eddie.tools.bio.Tools_Bio_File;
 
 public class SequenceListFactory {
 
@@ -15,26 +16,79 @@ public class SequenceListFactory {
 		
 	}
 	
-//	public SequenceList getSequenceList(String input) throws FileNotFoundException{
-//		File i = new File(input);
-//		if(!i.exists()){
-//			throw new FileNotFoundException("File: " + input + " does not exist");
-//		}
-//		else{
-//			String filetype = Tools_Bio_File.detectFileType(i.getName());
-//			if(filetype.contentEquals("UNKNOWN")){
-//				
+	/**
+	 * Task in general is supposed to remove some
+	 * of the cludge in Tasks for creating bio objects
+	 * by moving the cludge here and adding extra layers
+	 * of abstraction so you have no idea whats going on.
+	 * Enjoy :) 
+	 * 
+	 * Dominic
+	 * 
+	 * @param input String path of a file to load
+	 * @return A SequenceList object which you can manipulate
+	 * @throws FileNotFoundException
+	 * @throws UnsupportedTypeException
+	 * @throws IOException
+	 */
+	public static SequenceList getSequenceList(String input) throws FileNotFoundException, UnsupportedTypeException, IOException{
+		File i = new File(input);
+		if(!i.exists()){
+			throw new FileNotFoundException("File: " + input + " does not exist");
+		}
+		else if(i.isDirectory()){
+			throw new FileNotFoundException("File: " + input + " is a directory");//TODO support directory
+		}
+		else{
+			BioFileType filetype = Tools_Bio_File.detectFileType(i.getName());
+			Fasta f;
+			switch(filetype){
+				case FASTA:
+					f = new Fasta();
+					f.loadFile(i, filetype);
+					return f;
+				case FASTQ:
+					f = new Fasta();
+					f.loadFile(i, filetype);
+					return f;
+				case QUAL:
+					f = new Fasta();
+					f.loadFile(i, filetype);
+					return f;
+				default:
+				throw new UnsupportedTypeException("You are trying to get a sequence list from " 
+						+ filetype.toString() + " which is not yet supported");	
+			}
+		}
+	}
+	
+	public static SequenceList getSequenceList(String input, String input2) throws FileNotFoundException, UnsupportedTypeException, IOException{
+		File i = new File(input);
+		File i2 = new File(input2);
+		if(!i.exists() || !i2.exists()){
+			throw new FileNotFoundException("File: " + input + " does not exist");
+		}
+		else if(i.isDirectory() || i2.exists()){
+			throw new FileNotFoundException("File: " + input + " is a directory");
+		}
+		else{
+			BioFileType f1 = Tools_Bio_File.detectFileType(i.getName());
+			BioFileType f2 = Tools_Bio_File.detectFileType(i2.getName());
+			if((f1 == BioFileType.FASTA && f2 == BioFileType.QUAL) || (f1 == BioFileType.QUAL && f2 == BioFileType.FASTA)){
+				Fasta f = new Fasta();
+				f.loadFile(i, f1);
+				f.loadFile(i2, f2);
+				return f;
+			}
+//			else if((f1 == BioFileType.ACE && f2 == BioFileType.FASTA)){
+//				//TODO
 //			}
-//			else{
-//				if(filetype.contentEquals(Tools_Bio_File.FASTA)){
-//					Fasta f = new Fasta();
-//					//return f.loadFile(i, filetype); 
-//				}
-//				else if(filetype.contentEquals(Tools_Bio_File.FASTQ)){
-//				}
-//			}
-//		}
-//	}
+			else{
+				throw new UnsupportedTypeException("Cannot generate Sequence list from " 
+			+ f1.toString() + " and " + f2.toString() + " filetypes");
+			}
+		}
+	}
 	
 
 }

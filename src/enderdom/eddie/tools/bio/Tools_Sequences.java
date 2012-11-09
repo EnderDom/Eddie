@@ -10,6 +10,7 @@ import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
+import enderdom.eddie.bio.interfaces.BioFileType;
 import enderdom.eddie.bio.interfaces.SequenceObject;
 import enderdom.eddie.bio.sequence.FourBitNuclear;
 
@@ -117,15 +118,15 @@ public class Tools_Sequences {
 	public static SequenceObject getSequenceFromSomewhere(Logger logger, DatabaseManager manager, String input, String contig, int index, boolean fuzzy, boolean strip){
 		SequenceObject seq = null;
 		if(input != null){
-			String file = Tools_Bio_File.detectFileType(input);
-			if(file.contains("FAST")){
+			BioFileType type = Tools_Bio_File.detectFileType(input);
+			if(type == BioFileType.FASTA || type == BioFileType.FASTQ){
 				File in = new File(input);
 				if(in.isFile()){
 					Fasta fasta = new Fasta();
 					FastaParser parser = new FastaParser(fasta);
 					try{
 						logger.debug("Parsing fast(a/q) file....");
-						if(file.contentEquals("FASTQ"))parser.parseFastq(in);
+						if(type == BioFileType.FASTA)parser.parseFastq(in);
 						else parser.parseFasta(in);
 						if(fasta.size() == 1)index=0;
 						if(index != -1){

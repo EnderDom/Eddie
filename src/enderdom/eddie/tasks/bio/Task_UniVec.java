@@ -25,9 +25,7 @@ public class Task_UniVec extends TaskXTwIO{
 	private static String univeccom = "makeblastdb -title UniVec -dbtype nucl ";
 	private static String strategyfolder = "resources";	
 	private static String strategyfile = "univec_strategy";
-	private static String key = "UNI_VEC_DB";
-	private String filetype;
-	
+	private static String key = "UNI_VEC_DB";	
 	
 	public Task_UniVec(){
 	}
@@ -57,7 +55,6 @@ public class Task_UniVec extends TaskXTwIO{
 			logger.error("Input file is not a file");
 			return;
 		}
-		if(filetype == null)filetype = this.detectFileType(file.getName());
 		
 		/*
 		 * Check Output 

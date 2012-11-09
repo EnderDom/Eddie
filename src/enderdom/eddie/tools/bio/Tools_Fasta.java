@@ -82,7 +82,6 @@ public class Tools_Fasta {
 		out.flush();
 	}
 	
-
 	public static boolean checkFastq(String description, String sequence, String quality){
 		if(sequence == null || quality == null || description == null){
 			return false;

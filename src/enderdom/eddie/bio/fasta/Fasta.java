@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
+import enderdom.eddie.bio.interfaces.BioFileType;
 import enderdom.eddie.bio.interfaces.SequenceList;
 import enderdom.eddie.bio.interfaces.SequenceObject;
 import enderdom.eddie.bio.interfaces.UnsupportedTypeException;
@@ -320,11 +321,6 @@ public class Fasta implements FastaHandler, SequenceList{
 		}
 		return null;
 	}
-	
-	//TODO TODO TODO
-	public void mergeFasta(File file, int filetype){
-		logger.error("This method has not been added yet");
-	}
 
 	public boolean hasNext() {
 		return iteration < this.getNoOfSequences();
@@ -361,35 +357,31 @@ public class Fasta implements FastaHandler, SequenceList{
 	}
 
 	//TODO improve
-	public boolean saveFile(File file, int filetype) throws UnsupportedTypeException, IOException {
-		if(filetype == SequenceList.FAST_QUAL){
-			return this.save2FastaAndQual(new File(file.getPath()+".fasta"), new File(file.getPath()+".qual"));
-		}
-		else if(filetype == SequenceList.FASTA){
-			return this.save2Fasta(file);
-		}
-		else if(filetype == SequenceList.FASTQ){
-			return this.save2Fastq(file);
-		}
-		else{
-			throw new UnsupportedTypeException("Fasta(q) cannot be saved as this filetype");
+	public boolean saveFile(File file, BioFileType filetype) throws UnsupportedTypeException, IOException {
+		switch(filetype){
+			case FAST_QUAL:
+				return this.save2FastaAndQual(new File(file.getPath()+".fasta"), new File(file.getPath()+".qual"));
+			case FASTA:
+				return this.save2Fasta(file);
+			case FASTQ:
+				return this.save2Fastq(file);
+			default:
+				throw new UnsupportedTypeException("Fasta(q) cannot be saved as this filetype");
 		}
 	}
 
-	public int loadFile(File file, int filetype) throws UnsupportedTypeException, IOException {
+	public int loadFile(File file, BioFileType filetype) throws UnsupportedTypeException, IOException {
 		FastaParser parser = new FastaParser(this);
-		if(filetype == SequenceList.FAST_QUAL){
-			return parser.parseQual(file);
-		}
-		else if(filetype == SequenceList.FASTA){
-			return parser.parseFasta(file);
-		}
-		else if(filetype == SequenceList.FASTQ){
-			return parser.parseFastq(file);
-		}
-		else{
-			throw new UnsupportedTypeException("Cannot load this filetype into fasta object");
-		}
+		switch(filetype){
+			case QUAL:
+				return parser.parseQual(file);
+			case FASTA:
+				return parser.parseFasta(file);
+			case FASTQ:
+				return parser.parseFastq(file);
+			default:
+				throw new UnsupportedTypeException("Cannot load this filetype into fasta object"); 
+		}	
 	}
 
 	public int removeSequencesWithNs(int Ns){

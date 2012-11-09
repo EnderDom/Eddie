@@ -4,13 +4,6 @@ import java.io.File;
 import java.util.Iterator;
 
 public interface SequenceList extends Iterator<SequenceObject>{
-
-	public static int FASTA = 0;
-	public static int QUAL = 1;
-	public static int FAST_QUAL = 2; //Both Fasta and Qual can be loaded into 1 object
-	public static int FASTQ = 3;
-	public static int CLUSTAL = 4;
-	public static int OTHER =5;
 	
 	/**
 	 * 
@@ -70,7 +63,7 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	 * 
 	 * @return true if save successful
 	 */
-	public boolean saveFile(File file, int filetype) throws Exception, UnsupportedTypeException;
+	public boolean saveFile(File file, BioFileType filetype) throws Exception, UnsupportedTypeException;
 	
 	/**
 	 * 
@@ -82,6 +75,6 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	 * 
 	 * @return number of sequences loaded
 	 */
-	public int loadFile(File file, int filetype) throws Exception, UnsupportedTypeException;
+	public int loadFile(File file, BioFileType filetype) throws Exception, UnsupportedTypeException;
 	
 }

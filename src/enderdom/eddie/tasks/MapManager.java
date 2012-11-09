@@ -32,7 +32,7 @@ import enderdom.eddie.ui.PropertyLoader;
  * 
  * Creates maps/ directory in workspace if not exist
  * Creates index_map.xml which holds file map details
- * All maps have the .map file ending, but are plain txt
+ * All maps have the .eddmap file ending, but are plain txt
  * 
  * @author Dominic Wood
  *

@@ -4,6 +4,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
 
+import enderdom.eddie.bio.interfaces.BioFileType;
 import enderdom.eddie.ui.UI;
 
 /*
@@ -16,7 +17,7 @@ public class TaskXTwIO extends TaskXT{
 	protected String output;
 	protected boolean overwrite;
 	protected Logger logger = Logger.getLogger("TaskLogger");
-	protected String filetype;
+	protected BioFileType filetype;
 	protected Checklist checklist;
 	protected UI ui;
 	
@@ -66,10 +67,10 @@ public class TaskXTwIO extends TaskXT{
 	}
 	
 	public void setFileType(String filetype){
-		this.filetype = filetype;
+		this.filetype = BioFileType.valueOf(filetype);
 	}
 	
-	public String getFileType(){
+	public BioFileType getFileType(){
 		return this.filetype;
 	}
 	

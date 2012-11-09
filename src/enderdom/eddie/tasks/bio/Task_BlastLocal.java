@@ -17,6 +17,7 @@ import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.assembly.ACERecord;
 import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
+import enderdom.eddie.bio.interfaces.BioFileType;
 
 import enderdom.eddie.tasks.Checklist;
 import enderdom.eddie.tasks.TaskXTwIO;
@@ -129,16 +130,16 @@ public class Task_BlastLocal extends TaskXTwIO{
 			if(in.isFile() && out.isDirectory() && this.blast_bin !=null && this.blast_db != null && this.blast_prg != null){
 				start = out.listFiles().length;
 				if(filetype == null)filetype = this.detectFileType(in.getName());
-				logger.debug("Filetype is set to " + this.filetype);
-				if(filetype.equals("FASTQ") || filetype.equals("FASTA")){
+				logger.debug("Filetype is set to " + this.filetype.toString());
+				if(filetype == BioFileType.FASTQ || filetype == BioFileType.FASTA){
 					//Load Fasta-->
 					Fasta fasta = new Fasta();
-					if(filetype.equals("FASTQ"))fasta.setFastq(true);
+					if(filetype== BioFileType.FASTQ)fasta.setFastq(true);
 					FastaParser parser = new FastaParser(fasta);
 					boolean cont = false;
 					try {
-						if(filetype.contains("FASTQ"))parser.parseFastq(in);
-						if(filetype.contains("FASTA"))parser.parseFasta(in);
+						if(filetype == BioFileType.FASTQ)parser.parseFastq(in);
+						if(filetype == BioFileType.FASTA)parser.parseFasta(in);
 						Logger.getRootLogger().debug("File Parsed");
 						cont = true;
 					}
@@ -162,7 +163,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 					}
 					checklist.complete();
 				}
-				else if(filetype.equals("ACE")){//TODO test new ACE File More thoroughly
+				else if(filetype == BioFileType.ACE){//TODO test new ACE File More thoroughly
 					boolean cont = false;
 					try {
 						ACEFileParser parser = new ACEFileParser(new FileInputStream(this.input));

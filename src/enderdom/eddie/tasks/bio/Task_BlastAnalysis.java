@@ -78,7 +78,9 @@ public class Task_BlastAnalysis extends TaskXTwIO{
 			File blastfolder = new File(blastfolders);
 			logger.trace("Checking files...");
 			if(in.isFile() && blastfolder.isDirectory()){
-			if(filetype == null)filetype = this.detectFileType(in.getName());
+				if(filetype == null){
+					filetype = this.detectFileType(in.getName());
+				}
 				if(!filetype.equals("FASTA")){
 					logger.error("File does not have expected suffix '.fasta' or '.fna'");
 				}

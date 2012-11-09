@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.apache.log4j.Logger;
 
+import enderdom.eddie.bio.interfaces.BioFileType;
 import enderdom.eddie.bio.interfaces.Contig;
 import enderdom.eddie.bio.interfaces.SequenceObject;
 import enderdom.eddie.bio.interfaces.UnsupportedTypeException;
@@ -28,7 +29,7 @@ import enderdom.eddie.bio.sequence.FourBitSequence;
  * have a new Construcion there.
  * 
  */
-public class ACERecord implements Cloneable, Contig{
+public class ACERecord implements Contig{
 
 	private StringBuilder current;
 	private String contigname;
@@ -485,12 +486,12 @@ public class ACERecord implements Cloneable, Contig{
 		return n;
 	}
 		
-	public boolean saveFile(File file, int filetype) throws Exception {
+	public boolean saveFile(File file, BioFileType filetype) throws Exception {
 		logger.error("Not implemented");
 		return false;
 	}
 
-	public int loadFile(File file, int filetype) throws Exception,
+	public int loadFile(File file, BioFileType filetype) throws Exception,
 			UnsupportedTypeException {
 		logger.error("Not implemented");
 		return -1;

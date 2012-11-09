@@ -13,6 +13,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
+import enderdom.eddie.bio.interfaces.BioFileType;
 import enderdom.eddie.cli.LazyPosixParser;
 
 import enderdom.eddie.tools.Tools_CLI;
@@ -243,7 +244,7 @@ public abstract class Task implements Runnable, Future<Object> {
 	 * Very basic File Type detection
 	 * 
 	 */
-	public String detectFileType(String filename){
+	public BioFileType detectFileType(String filename){
 		return Tools_Bio_File.detectFileType(filename);
 	}
 
