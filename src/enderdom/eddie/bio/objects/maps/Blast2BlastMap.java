@@ -6,13 +6,14 @@ import java.util.LinkedHashMap;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.tools.Tools_String;
-import enderdom.eddie.bio.xml.XML_Blastx;
+import enderdom.eddie.bio.blast.BlastxDocumentParser;
+import enderdom.eddie.bio.objects.BlastObject;
 
 public class Blast2BlastMap {
 
 	
-	private XML_Blastx xml1;
-	private XML_Blastx xml2;
+	private BlastObject xml1;
+	private BlastObject xml2;
 	private int hits = -1;
 	private double evalue= -1;
 	private int hits1;
@@ -21,14 +22,14 @@ public class Blast2BlastMap {
 	private Logger logger = Logger.getRootLogger();
 	LinkedHashMap<String, Integer> map;
 	
-	public Blast2BlastMap(XML_Blastx xml1, XML_Blastx xml2){
+	public Blast2BlastMap(BlastObject xml1, BlastObject xml2){
 		this.xml1 = xml1;
 		this.xml2 = xml2;
 	}
 	
 	public Blast2BlastMap(File xml1, File xml2) throws Exception{
-		this.xml1 = new XML_Blastx(xml1);
-		this.xml2 = new XML_Blastx(xml2);
+		this.xml1 = new BlastxDocumentParser(xml1).getBlastObject();
+		this.xml2 = new BlastxDocumentParser(xml2).getBlastObject();
 	}
 	
 	/**
@@ -155,7 +156,7 @@ public class Blast2BlastMap {
 	 * x for any XML_Blastx object
 	 * @throws Exception when hit tag doesn't exist
 	 */
-	public static String[] getTopXHitDefs(int i, XML_Blastx xml) throws Exception{
+	public static String[] getTopXHitDefs(int i, BlastObject xml) throws Exception{
 		String[] srs = new String[i];
 		int c=1;
 		while(c <= i){

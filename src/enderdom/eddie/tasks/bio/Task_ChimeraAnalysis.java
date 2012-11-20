@@ -11,7 +11,8 @@ import org.apache.commons.cli.Option;
 
 import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.assembly.ACERecord;
-import enderdom.eddie.bio.xml.XML_Blastx;
+import enderdom.eddie.bio.blast.BlastxDocumentParser;
+import enderdom.eddie.bio.objects.BlastObject;
 
 import enderdom.eddie.tasks.MapManager;
 import enderdom.eddie.tasks.TaskXTwIO;
@@ -119,9 +120,9 @@ public class Task_ChimeraAnalysis extends TaskXTwIO{
 						}
 						System.out.println();
 						try{
-							XML_Blastx xml = new XML_Blastx(file);
+							BlastObject xml = new BlastxDocumentParser(file).getBlastObject();
 							for(int i =0; i < xml.getNoOfHits(); i++){
-								
+								//TODO
 							}
 						}
 						catch (Exception e) {

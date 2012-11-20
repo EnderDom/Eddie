@@ -21,11 +21,12 @@ public class Task_UniVec extends TaskXTwIO{
 	private String blast_bin;
 	private String workspace;
 	private boolean create;
+	private boolean xml;
 	private static String univecsite = "ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec";
 	private static String univeccom = "makeblastdb -title UniVec -dbtype nucl ";
 	private static String strategyfolder = "resources";	
 	private static String strategyfile = "univec_strategy";
-	private static String key = "UNI_VEC_DB";	
+	private static String key = "UNI_VEC_DB";
 	
 	public Task_UniVec(){
 	}
@@ -70,45 +71,48 @@ public class Task_UniVec extends TaskXTwIO{
 		}
 		dir.mkdirs();
 		
-		String outname = file.getName();
-		int e =-1;
-		if((e=outname.lastIndexOf(".")) != -1)outname = outname.substring(0, e);
-		e=0;
-		File out;
-		while((out=new File(dir.getPath()+Tools_System.getFilepathSeparator()+outname+e+".xml")).exists())e++;
-		
-		/*
-		 * Build univec strategy file
-		 */
-		
-		String resource = this.getClass().getPackage().getName();
-		resource=resource.replaceAll("\\.", "/");
-		resource = "/"+resource+"/"+strategyfolder+"/"+strategyfile;
-		logger.debug("Creating resource from internal file at "+resource);
-		InputStream str = this.getClass().getResourceAsStream(resource);
-		if(str == null){
-			logger.error("Failed to create strategy file resource, please send bug to maintainer");
-			return;
+		if(!xml){
+			String outname = file.getName();
+			int e =-1;
+			if((e=outname.lastIndexOf(".")) != -1)outname = outname.substring(0, e);
+			e=0;
+			File out;
+			while((out=new File(dir.getPath()+Tools_System.getFilepathSeparator()+outname+e+".xml")).exists())e++;
+			
+			/*
+			 * Build univec strategy file
+			 */
+			String resource = this.getClass().getPackage().getName();
+			resource=resource.replaceAll("\\.", "/");
+			resource = "/"+resource+"/"+strategyfolder+"/"+strategyfile;
+			logger.debug("Creating resource from internal file at "+resource);
+			InputStream str = this.getClass().getResourceAsStream(resource);
+			if(str == null){
+				logger.error("Failed to create strategy file resource, please send bug to maintainer");
+				return;
+			}
+			File tmpfolder = new File(this.workspace + Tools_System.getFilepathSeparator()+strategyfolder);
+			if(!tmpfolder.exists())tmpfolder.mkdirs();
+			String strat = tmpfolder.getPath() + Tools_System.getFilepathSeparator() + strategyfile +".asn";
+			if(Tools_File.stream2File(str, strat))logger.error("Failed to create search strategy file at " + strat);
+			
+			/* 
+			 * Actually run the blast program
+			 *
+			 * See http://www.ncbi.nlm.nih.gov/VecScreen/VecScreen_docs.html for specs on vecscreen
+			 * 
+			 */
+			StringBuffer[] arr = Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-import_search_strategy "+strat+" -outfmt 5 ", out);
+			if(arr[0].length() > 0){
+				logger.info("blastn output:"+Tools_System.getNewline()+arr[0].toString().trim());
+			}
+			if(arr[1].length() > 0){
+				logger.info("blastn output:"+Tools_System.getNewline()+arr[0].toString().trim());
+			}
 		}
-		File tmpfolder = new File(this.workspace + Tools_System.getFilepathSeparator()+strategyfolder);
-		if(!tmpfolder.exists())tmpfolder.mkdirs();
-		String strat = tmpfolder.getPath() + Tools_System.getFilepathSeparator() + strategyfile +".asn";
-		if(Tools_File.stream2File(str, strat))logger.error("Failed to create search strategy file at " + strat);
-		
-		/* 
-		 * Actually run the blast program
-		 *
-		 * See http://www.ncbi.nlm.nih.gov/VecScreen/VecScreen_docs.html for specs on vecscreen
-		 * 
-		 */
-		StringBuffer[] arr = Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-import_search_strategy "+strat+" -outfmt 5 ", out);
-		if(arr[0].length() > 0){
-			logger.info("blastn output:"+Tools_System.getNewline()+arr[0].toString().trim());
+		else{
+			
 		}
-		if(arr[1].length() > 0){
-			logger.info("blastn output:"+Tools_System.getNewline()+arr[0].toString().trim());
-		}
-		
 		//TODO implement parsing of file 
 		
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
@@ -117,12 +121,13 @@ public class Task_UniVec extends TaskXTwIO{
 	
 	public void buildOptions(){
 		super.buildOptions();
-		options.getOption("i").setDescription("Input sequence file Fast(a/q)");
+		options.getOption("i").setDescription("Input sequence file Fast(a/q) or xml if skipping");
 		options.getOption("o").setDescription("Output folder");
 		options.addOption(new Option("u", "uni_db", true, "Set UniVec database location"));
 		options.addOption(new Option("c", "create_db", false, "Downloads and creates the UniVec database with the makeblastdb"));
 		options.addOption(new Option("bbb", "blast_bin", true, "Specify blast bin directory"));
 		options.addOption(new Option("filetype", true, "Specify filetype (rather then guessing from ext)"));
+		options.addOption(new Option("x","xml", false, "Skip running univec search and import previous blast xml"));
 	}
 	
 	public void parseOpts(Properties props){
@@ -139,6 +144,7 @@ public class Task_UniVec extends TaskXTwIO{
 		if(cmd.hasOption("bbb"))blast_bin=cmd.getOptionValue("bbb");
 		if(cmd.hasOption("c"))create=true;
 		if(cmd.hasOption("i"))input=cmd.getOptionValue("i");
+		if(cmd.hasOption("x"))xml=true;
 	}
 	
 	/**

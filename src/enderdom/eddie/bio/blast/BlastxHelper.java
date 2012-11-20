@@ -1,9 +1,10 @@
-package enderdom.eddie.bio.xml;
+package enderdom.eddie.bio.blast;
 
 import java.io.File;
 
 import org.apache.log4j.Logger;
 
+import enderdom.eddie.bio.objects.BlastObject;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
@@ -20,9 +21,9 @@ import enderdom.eddie.tools.Tools_System;
  * writing them.
  *
  */
-public class XMLHelper_Blastx {
+public class BlastxHelper {
 
-	public XML_Blastx blastx;
+	public BlastObject blastx;
 	public DatabaseManager manager;
 	private int contig_id;
 	Logger logger = Logger.getRootLogger();
@@ -38,17 +39,12 @@ public class XMLHelper_Blastx {
 	 */
 	public int date_range = 14; 
 	
-	public XMLHelper_Blastx(File file) throws Exception{
-		new XML_Blastx(file);
+	public BlastxHelper(File file) throws Exception{
+		blastx = new BlastxDocumentParser(file).getBlastObject();
 		this.contig_id = -1;
 	}
 	
-	public XMLHelper_Blastx(XML_Blastx blastx){
-		this.blastx = blastx;
-		this.contig_id = -1;
-	}
-	
-	public XML_Blastx getBlastXML(){
+	public BlastObject getBlastXML(){
 		return this.blastx;
 	}
 
@@ -137,12 +133,12 @@ public class XMLHelper_Blastx {
 	public String getParametersAsString(){
 		StringBuffer buffer = new StringBuffer();
 		int k =0;
-		for(String key : blastx.blastcache.keySet()){
+		for(String key : blastx.keySet()){
 			if((k = key.indexOf("Parameters_")) != -1){
 				buffer.append('-');
 				buffer.append(key.substring(k, key.length()));
 				buffer.append(' ');
-				buffer.append(blastx.blastcache.get(key));
+				buffer.append(blastx.get(key));
 			}
 		}
 		return buffer.toString();

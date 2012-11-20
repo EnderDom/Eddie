@@ -8,9 +8,10 @@ import java.util.Properties;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
+import enderdom.eddie.bio.blast.BlastxDocumentParser;
 import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
-import enderdom.eddie.bio.xml.XML_Blastx;
+import enderdom.eddie.bio.objects.BlastObject;
 
 import enderdom.eddie.tasks.MapManager;
 import enderdom.eddie.tasks.TaskXTwIO;
@@ -127,10 +128,10 @@ public class Task_BlastAnalysis extends TaskXTwIO{
 						int hits =0;
 						int hsps = 0;
 						count=0;
-						XML_Blastx xml = null;
+						BlastObject xml = null;
 						for(String contig : contig2file.keySet()){
 							try{
-								xml = new XML_Blastx(contig2file.get(contig));
+								xml = new BlastxDocumentParser(contig2file.get(contig)).getBlastObject();
 								if(xml.getNoOfHits() > 0){
 									if(xml.getLowestEValue() < this.e){
 										contigswithblasts++;
@@ -175,7 +176,7 @@ public class Task_BlastAnalysis extends TaskXTwIO{
 			}
 		}
 		else if(blastonly){
-			XML_Blastx xml = null;
+			BlastObject xml = null;
 			File blastfolder = new File(blastfolders);
 			int c =0;
 			int c2=0;
@@ -185,7 +186,7 @@ public class Task_BlastAnalysis extends TaskXTwIO{
 				l = files.length;
 				for(File file : files){
 					try{
-						xml = new XML_Blastx(file);
+						xml = new BlastxDocumentParser(file).getBlastObject();
 						double ee = xml.getLowestEValue();
 						if(ee < this.e){
 							c2++;

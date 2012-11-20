@@ -8,8 +8,7 @@ import org.apache.commons.cli.Options;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
-import enderdom.eddie.bio.xml.XMLHelper_Blastx;
-import enderdom.eddie.bio.xml.XML_Blastx;
+import enderdom.eddie.bio.blast.BlastxHelper;
 
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_String;
@@ -113,7 +112,7 @@ public class Task_Blast extends TaskXT{
 	}
 	
 	public static void uploadBlastFile(DatabaseManager manager, File file, boolean fuzzynames, String dbname, int run_id, String date) throws Exception{
-		XMLHelper_Blastx helper = new XMLHelper_Blastx(new XML_Blastx(file));
+		BlastxHelper helper = new BlastxHelper(file);
 		helper.setRun_id(run_id);
 		helper.setDate(date);
 		helper.upload2BioSQL(manager, fuzzynames, dbname);
