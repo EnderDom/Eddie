@@ -83,19 +83,12 @@ public class Task_UniVec extends TaskXTwIO{
 			/*
 			* Build univec strategy file
 			*/
-			String resource = this.getClass().getPackage().getName();
-			resource=resource.replaceAll("\\.", "/");
-			resource = "/"+resource+"/"+strategyfolder+"/"+strategyfile;
-			logger.debug("Creating resource from internal file at "+resource);
-			InputStream str = this.getClass().getResourceAsStream(resource);
-			if(str == null){
-				logger.error("Failed to create strategy file resource, please send bug to maintainer");
-				return;
+			String strat = this.workspace + Tools_System.getFilepathSeparator()
+					+strategyfolder+Tools_System.getFilepathSeparator()+ strategyfile +".asn";
+			if(!new File(strat).exists()){
+				if(!generateStrategyFile(strat))return;
 			}
-			File tmpfolder = new File(this.workspace + Tools_System.getFilepathSeparator()+strategyfolder);
-			if(!tmpfolder.exists())tmpfolder.mkdirs();
-			String strat = tmpfolder.getPath() + Tools_System.getFilepathSeparator() + strategyfile +".asn";
-			if(Tools_File.stream2File(str, strat))logger.error("Failed to create search strategy file at " + strat);
+			
 	
 			/*
 			* Actually run the blast program
@@ -240,6 +233,31 @@ public class Task_UniVec extends TaskXTwIO{
 			else return false;
 		}
 		else return false;
+	}
+	
+	public boolean generateStrategyFile(String strat){
+		String resource = this.getClass().getPackage().getName();
+		resource=resource.replaceAll("\\.", "/");
+		resource = "/"+resource+"/"+strategyfolder+"/"+strategyfile;
+		logger.debug("Creating resource from internal file at "+resource);
+		//Create inputstream from resource
+		InputStream str = this.getClass().getResourceAsStream(resource);
+		//Check if it is null
+		if(str == null){
+			logger.error("Failed to create strategy file resource, please send bug to maintainer");
+			return false;
+		}
+		//Generate folders for the strategy file
+		File tmpfolder = new File(this.workspace + Tools_System.getFilepathSeparator()+strategyfolder);
+		if(!tmpfolder.exists())tmpfolder.mkdirs();
+		//Write to file
+		if(Tools_File.stream2File(str, strat)){
+			logger.error("Failed to create search strategy file at " + strat);
+			return false;
+		}
+		else{
+			return true;
+		}
 	}
 }
 
