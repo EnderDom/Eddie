@@ -56,6 +56,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 	
 	private String[] defaultkeys;
 	private String[] defaultvalues;
+	private String[] defaulttooltips;
 	
 	//These should be the index to defaultKeysUN	
 	
@@ -202,6 +203,14 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 				"mysql","com.mysql.jdbc.Driver", "Localhost", 
 				DatabaseManager.default_database, "user", "","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec"
 				};
+		defaulttooltips = new String[]{
+				"Default Workspace directory", "Number of threads for core tasks (High CPU)", 
+				"Number of auxiliary task threads", "Directory path containing blast binaries (Should be a folder)", 
+				"Directory path containing blast databases", "Path for ESTscan binary", "Path for file to store file locations",
+				"Preferred Look & Feel", "Directory Path for test data", "Database type, ie mysql", "Database driver",
+				"Database host url", "Database name for Eddie", "Database user name", "Location of uni vec database",
+				"Default URL to download the fasta for univec data"
+		};
 		
 		if(defaultkeys.length != defaultvalues.length)System.out.println("You're being derp Dominic :(");
 		
@@ -220,15 +229,15 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 		for(int i =0; i < tempkeys.length; i++){
 				this.props.put(tempkeys[i], tempvalues[i]);
 		}
+		
+
 	}
 
 	public String[][] getChangableStats(){
 		String[][] stats = new String[3][defaultkeys.length];
 		stats[0]=defaultkeys;
 		stats[1]=defaultvalues;
-		for(int i =0 ;i < defaultvalues.length; i++){
-			stats[2][i]="No tooltip yet available";//TODO
-		}
+		stats[2]=defaulttooltips;
 		return stats;
 	}
 	

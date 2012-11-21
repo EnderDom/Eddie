@@ -202,7 +202,7 @@ public class ACERecord implements Contig{
 	 * 
 	 * Assumes QA for read comes after read sequence thus readcount-1
 	 * if it doesn't this will cause errors, as yet
-	 * this errors will go uncaught //TODO
+	 * this errors will go uncaught
 	 * 
 	 * @param i1
 	 * @param i2

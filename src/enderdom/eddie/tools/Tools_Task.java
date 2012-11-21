@@ -49,7 +49,7 @@ public abstract class Tools_Task {
         else{ 
         	cmd[0] = "/bin/sh";
 			cmd[1] = "-c";
-			Logger.getRootLogger().debug("Using process command for Unix (AKA Boss Mode)");
+			Logger.getRootLogger().debug("Using process command for Unix");
         }
         for(int i =0; i < coms.length; i++){
 			cmd[i+2] = coms[i];

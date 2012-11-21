@@ -3,6 +3,8 @@ package enderdom.eddie.bio.sequence;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.interfaces.SequenceObject;
+import enderdom.eddie.tools.Tools_String;
+import enderdom.eddie.tools.bio.Tools_Fasta;
 
 /*
  * I guess just a wrapper for String
@@ -13,7 +15,7 @@ public class GenericSequence implements SequenceObject{
 	
 	private String sequence;
 	private String name;
-	private String quality;
+	private String quality; //QUALITY STORED AS FASTQ 
 	
 	public GenericSequence(String name, String sequence, String quality){
 		this.name = name;
@@ -30,7 +32,10 @@ public class GenericSequence implements SequenceObject{
 	}
 
 	private GenericSequence replicate(){
-		return new GenericSequence(new String(this.name), new String(this.sequence), new String(this.quality));
+		if(this.quality !=null)
+			return new GenericSequence(new String(this.name), new String(this.sequence), new String(this.quality));
+		else 
+			return new GenericSequence(new String(this.name), new String(this.sequence));
 	}
 	
 	public String getName() {
@@ -98,7 +103,46 @@ public class GenericSequence implements SequenceObject{
 		return new FourBitNuclear(this.name, this.sequence, this.quality);
 	}
 	
-//	public EightBitAmino getAsAmino(){
-//		return new EightBitAmino(this.name, this.sequence);
-//	}
+	private String insertString(int pos, String s1, String s2){
+		StringBuilder build = new StringBuilder();
+		build.append(s1.substring(0,pos));
+		build.append(s2);
+		build.append(s1.substring(pos, s1.length()));
+		return build.toString();
+	}
+	
+	public void insert(int pos, SequenceObject s) {
+		this.sequence = insertString(pos, this.sequence, s.getSequence());
+		if(quality != null && quality.length() != 0){
+			String q = s.getQuality();
+			if(s.getQuality() == null){
+				int[] arr = new int[s.getLength()];
+				q= Tools_Fasta.converArray2Phrap(arr);
+			}
+			this.quality = insertString(pos, this.quality, q);
+			if(quality.length() != sequence.length()){
+				Logger.getRootLogger().error("Sequence and quality not same length for "+ this.name);
+			}
+		}
+	}
+
+	public void append(SequenceObject s) {
+		insert(this.sequence.length(), s);
+	}
+
+	public void extendLeft(int i) {
+		this.sequence = Tools_String.stringPadding(sequence, sequence.length()+i, false, '-', false);
+		if(quality != null){
+			this.quality = Tools_String.stringPadding(sequence, sequence.length()+i, false, (char)33 , false);
+		}
+	}
+
+	public void extendRight(int i) {
+		this.sequence = Tools_String.stringPadding(sequence, sequence.length()+i, false, '-', true);
+		if(quality != null){
+			this.quality = Tools_String.stringPadding(sequence, sequence.length()+i, false, (char)33 , true);
+		}
+	}
+	
+
 }

@@ -86,6 +86,8 @@ public interface SequenceObject {
 	 * ----^^^--
 	 * ->
 	 * ATGA and TG are returned
+	 * end-start should equal number of characters to remove
+	 * 
 	 * @param start start to section
 	 * @param end of section
 	 * @return the resulting two sequences produced by removing the region
@@ -93,6 +95,52 @@ public interface SequenceObject {
 	 * identifier ie Seq1 -> Seq1_A, Seq1_B 
 	 */
 	public SequenceObject[] removeSection(int start, int end);
+	
+	/**
+	 * Insert a sequence within the sequence
+	 * 
+	 * If sequenceobject has quality, that is also inserted
+	 * 
+	 * @param pos postion to insert from, so pos =0,
+	 *  would insert before any amino acids
+	 * @param s the sequence to insert, this obviously will need to
+	 * be checked by the subclass for sequence compatability using 
+	 * @see getSequenceType()
+	 * @return 
+	 */
+	public void insert(int pos, SequenceObject s);
+	
+	/**
+	 * 
+	 * Add sequence to end
+	 * 
+	 * If sequenceobject has quality, that is also appended
+	 * 
+	 * @param s
+	 */
+	public void append(SequenceObject s);
+	
+	/**
+	 * If sequenceobject has quality, 
+	 * that is also extend with values of 0
+	 * 
+	 * Extend sequence left with filler symbols,
+	 * ie ---- 
+	 * @param i 
+	 */
+	public void extendLeft(int i);
+	
+	
+	/**
+	 * If sequenceobject has quality, 
+	 * that is also extend with values of 0
+	 * 
+	 * Extend sequence right with filler symbols,
+	 * ie ---- 
+	 * @param i
+	 */
+	public void extendRight(int i);
+	
 	
 	
 	

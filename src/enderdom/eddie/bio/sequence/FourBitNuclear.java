@@ -354,7 +354,7 @@ public class FourBitNuclear extends FourBitSequence implements SequenceObject, I
 	}
 
 	public int leftTrim(int i) {
-		// TODO Auto-generated method stub
+		
 		Logger.getRootLogger().error("Unimplemented method");
 		updateLength();
 		return -1;
@@ -378,5 +378,25 @@ public class FourBitNuclear extends FourBitSequence implements SequenceObject, I
 	
 	public void setQuality(String q){
 		this.quality = q;
+	}
+
+	public void insert(int pos, SequenceObject s) {
+		// TODO Auto-generated method stub
+		Logger.getRootLogger().error("Unimplemented method");
+	}
+
+	public void append(SequenceObject s) {
+		// TODO Auto-generated method stub
+		Logger.getRootLogger().error("Unimplemented method");
+	}
+
+	public void extendLeft(int i) {
+		// TODO Auto-generated method stub
+		Logger.getRootLogger().error("Unimplemented method");
+	}
+
+	public void extendRight(int i) {
+		// TODO Auto-generated method stub
+		Logger.getRootLogger().error("Unimplemented method");
 	}
 }

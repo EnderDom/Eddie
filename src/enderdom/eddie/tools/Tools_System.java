@@ -63,6 +63,10 @@ public abstract class Tools_System{
     	return SystemUtils.LINE_SEPARATOR;
     }
     
+	public static int getCPUs(){
+		return Runtime.getRuntime().availableProcessors();
+	}
+    
     /**
      * 
      * As both SQL date and util date can be 

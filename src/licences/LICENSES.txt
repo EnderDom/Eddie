@@ -1,6 +1,6 @@
 ##################      Eddie License       ##################
 
- Copyright (C) 2011  Dominic Wood
+ Copyright (C) 2011-2012  Dominic Wood
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -42,5 +42,6 @@ pdfbox-1.6.0.jar
 fontbox-1.6.0.jar
 
 #Libraries under LGPL
-jfreechar-1.0.14.jar
+jfreechart-1.0.14.jar
+biojava3-*.jar
 

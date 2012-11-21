@@ -162,17 +162,48 @@ public abstract class Tools_String {
 		return WordUtils.capitalize(s);
 	}
 	
-
+	/**
+	 * Pads the end of the string
+	 * with spaces
+	 * 
+	 * @param m String to use
+	 * @param len trim string to a specified length before padding
+	 * @param trim set to true to trim
+	 * @return the padded string
+	 */
 	public static String padString(String m, int len, boolean trim){
+		return stringPadding(m, len, trim, ' ', true);
+	}
+	
+	/**
+	 * Pads a string to a final length as stipulated by
+	 * the length variable
+	 * 
+	 * @param m The string 
+	 * @param len The final length of the string
+	 * @param trim Trim the string if it is already longer then length 
+	 * @param c Character to use to pad
+	 * @param right Whether to pad from the right, false adds to the start
+	 * @return The padded string
+	 */
+	public static String stringPadding(String m, int len, boolean trim, char c, boolean right){
 		if(m == null)m = "";
 		if(m.length() > len && trim){
 			return m.substring(0, len);
 		}
 		else{
 			StringBuffer sb = new StringBuffer(len);
-			sb.append(m);
-			for (int i = m.length(); i < len; ++i){
-				sb.append(' ');
+			if(right){
+				sb.append(m);
+				for (int i = m.length(); i < len; ++i){
+					sb.append(c);
+				}
+			}
+			else{
+				for (int i = 0; i < len-m.length(); ++i){
+					sb.append(c);
+				}
+				sb.append(m);
 			}
 			return sb.toString();
 		}

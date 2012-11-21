@@ -193,7 +193,6 @@ public class FourBitSequence implements CharSequence{
 	}
 	
 	/*
-	 * TODO
 	 * I have realised it may be better to shift the data
 	 * values rather than the mask, as I have done in the 
 	 * get() method. This also simplifies reverse compliment
@@ -201,7 +200,6 @@ public class FourBitSequence implements CharSequence{
 	 * length-arraycount-1 values so this is to improve
 	 * 
 	 */
-	
 	public char[] getAsCharArray(boolean forward){
 		char[] array = new char[this.length];
 		int arraycount=0;
@@ -360,6 +358,7 @@ public class FourBitSequence implements CharSequence{
 	
 	public String insertString(int pos){
 		//TODO
+		Logger.getRootLogger();
 		return null;
 	}
 	

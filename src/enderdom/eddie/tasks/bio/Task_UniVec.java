@@ -60,6 +60,7 @@ public class Task_UniVec extends TaskXTwIO{
 		 * Check Output 
 		 */
 		if(output == null){
+			logger.warn("Output file not set, this will be output to the default folder: " + workspace + Tools_System.getFilepathSeparator()+"out");
 			output = workspace + Tools_System.getFilepathSeparator()+"out" + Tools_System.getFilepathSeparator();
 		}
 		File dir = new File(output);
@@ -81,20 +82,30 @@ public class Task_UniVec extends TaskXTwIO{
 		 * Build univec strategy file
 		 */
 		
-		String resource = this.getClass().getPackage().getName();
-		resource=resource.replaceAll("\\.", "/");
-		resource = "/"+resource+"/"+strategyfolder+"/"+strategyfile;
-		logger.debug("Creating resource from internal file at "+resource);
-		InputStream str = this.getClass().getResourceAsStream(resource);
-		if(str == null){
-			logger.error("Failed to create strategy file resource, please send bug to maintainer");
-			return;
+		//Path of Strategy file
+		String strat = this.workspace + Tools_System.getFilepathSeparator()+strategyfolder
+				+Tools_System.getFilepathSeparator()+ strategyfile +".asn";
+		//Does it exist
+		if(!new File(strat).exists()){
+			//Resource package url
+			String resource = this.getClass().getPackage().getName();
+			resource=resource.replaceAll("\\.", "/");
+			resource = "/"+resource+"/"+strategyfolder+"/"+strategyfile;
+			logger.debug("Creating resource from internal file at "+resource);
+			//Create inputstream from resource
+			InputStream str = this.getClass().getResourceAsStream(resource);
+			//Check if it is null
+			if(str == null){
+				logger.error("Failed to create strategy file resource, please send bug to maintainer");
+				return;
+			}
+			//Generate folders for the strategy file
+			File tmpfolder = new File(this.workspace + Tools_System.getFilepathSeparator()+strategyfolder);
+			if(!tmpfolder.exists())tmpfolder.mkdirs();
+			//Write to file
+			if(Tools_File.stream2File(str, strat))logger.error("Failed to create search strategy file at " + strat);
 		}
-		File tmpfolder = new File(this.workspace + Tools_System.getFilepathSeparator()+strategyfolder);
-		if(!tmpfolder.exists())tmpfolder.mkdirs();
-		String strat = tmpfolder.getPath() + Tools_System.getFilepathSeparator() + strategyfile +".asn";
-		if(Tools_File.stream2File(str, strat))logger.error("Failed to create search strategy file at " + strat);
-		
+		else logger.debug("Strategy file already exists, skipping");
 		/* 
 		 * Actually run the blast program
 		 *

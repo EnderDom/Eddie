@@ -33,7 +33,7 @@ import enderdom.eddie.bio.fasta.Fasta;
  *   ALL values are converted to 0 index/base
  */
 @Deprecated
-public class ACEObject implements ACEHandler, Assembly{
+public class ACEObject implements ACEHandler{
 
 	HashMap<Integer, String> contignumb;
 	HashMap<String, String> contigs;
@@ -293,17 +293,6 @@ public class ACEObject implements ACEHandler, Assembly{
 			count++;
 		}
 		return val/(double)count;
-	}
-
-	//TODO
-	public int getMedianCoverageDepth() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public int getGlobalMedianCoverageDepth() {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 	public int getReadsSize(String contigindex) {

@@ -26,7 +26,8 @@ public abstract class Tools_Blast {
 				}
 			}
 		}
-		String exec = blastbin + blastprg+ " " + blastparams + " -db " + blastdb + " -query " + blastquery.getPath() + " -out " +output.getPath();
+		String exec = blastbin + blastprg+ " " + blastparams + " -db " + blastdb + 
+				" -num_threads "+ Tools_System.getCPUs() + " -query " + blastquery.getPath() + " -out " +output.getPath();
 		StringBuffer[] buffer = Tools_Task.runProcess(exec, true);
 		return buffer;
 	}
