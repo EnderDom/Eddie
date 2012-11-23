@@ -9,21 +9,69 @@ import enderdom.eddie.tools.Tools_String;
 
 public class BlastObject extends Hashtable<String, String>{
 
+	//All data is 1-based
 	private static final long serialVersionUID = -5499555843635862257L;
 	int[] hits;
 	Logger logger = Logger.getRootLogger();
+	private static String hit_id = "HIT";
+	private static String hsp_id = "HSP";
 	
 	public BlastObject(){
 		super();
 	}
-
 	
 	/**
-	 * The method actually returns the lenght of the hits array-1
-	 * This is becuase the first integer is -1 as there is no
-	 * hit0. This was done to preserve the 1-base and hopefully avoid
-	 * confusion. (The latter being unsuccessful)
+	 * Same as just put
 	 * 
+	 * @param tag ie Iteration_iter-num, Iteration_query-ID etc...
+	 * @param iteration
+	 */
+	public void putIterationTag(String tag, String value){
+		this.put(tag, value);
+	}
+	
+	public void initHits(int size){
+		if(hits !=null){
+			logger.warn("Overwriting hit array");
+		}
+		hits = new int[size];
+	}
+	
+	/**
+	 * 
+	 * @param number one based number
+	 * @param tag Tag name
+	 * @param value Value at tag
+	 * @throws BlastOneBaseException 
+	 */
+	public void putHitTag(int hitnumber, String tag, String value) throws BlastOneBaseException{
+		if(hitnumber == 0){
+			throw new BlastOneBaseException("You can't add hit zero, no hit zero for you");
+		}
+		if(hits==null){
+			hits = new int[1];
+		}
+		if(hits.length < hitnumber){
+			int[] temp = new int[hitnumber];
+			for(int i=0; i < hits.length;i++)temp[i]=hits[i];
+			temp[hitnumber--]=0;
+			hits=temp;
+		}
+		this.put(this.generateHitTag(hitnumber, tag), value);
+	}
+	
+	public void putHspTag(int hspnumber, int hitnumber, String tag, String value) throws BlastOneBaseException, Exception{
+		if(hspnumber == 0){
+			throw new BlastOneBaseException("You can't add hit zero, no hit zero for you");
+		}
+		if(hits == null){
+			throw new Exception("Either there is a bug in parser, or the blast file is dodgy");
+		}
+		this.put(this.generateHspTag(hspnumber, hitnumber, tag), value);
+		hits[hitnumber--]++;
+	}
+	
+	/**
 	 * @return the number of hits, this will be 50 for 50 hits and
 	 * 0 for 0 hits. Remember to +1 to this for looping through the hits
 	 * when loop parameter is < length 
@@ -34,7 +82,7 @@ public class BlastObject extends Hashtable<String, String>{
 	 */
 	public int getNoOfHits(){
 		if(this.hits != null){
-			return this.hits.length-1;
+			return this.hits.length;
 		}
 		else{
 			return 0;
@@ -43,18 +91,24 @@ public class BlastObject extends Hashtable<String, String>{
 	
 	/**
 	 * 
-	 * NOTE: blast values are all base-1
-	 * as such loops should be started at 1 and
-	 * should stop at this return value +1
-	 * 
 	 * @param hit_num
 	 * @return the number of hsps attached to this hit
-	 * Get Number of hsps at Hit Numb
-	 * Hit_num = 0 will return -1 as 
-	 * there is not hit 0
+	 * 
+	 * for getNoOfHsps(3) this will return the number
+	 * of hsps for the Hit which has the <Hit_num>3</Hit_num>
+	 * and will return the size ie 2
+	 * Which corresponds to <Hsp_num>1</Hsp_num> & <Hsp_num>2</Hsp_num> 
+	 * 
+	 * So loops should be 
+	 * for(int i=1 ; i <= getNoHits();i++){
+	 * 		for(int j =1 ; j <=getNoHsps(i);j++){
+	 * 			//Do something
+	 * 		}	
+	 * }
+	 * 
 	 */
 	public int getNoOfHsps(int hit_num){
-		return this.hits[hit_num]; 
+		return this.hits[hit_num--]; 
 	}
 	
 	/**
@@ -72,7 +126,7 @@ public class BlastObject extends Hashtable<String, String>{
 	 * @param tag the XML tag exactly as written in the  xml
 	 * this is case sensitive
 	 * @param hit_num The number as would be written in the blast
-	 * xml, ie base-1
+	 * xml, ie base 1
 	 * @return The value of that tag for that hit number
 	 * @throws Exception if hit hum is 0 or less , or larger than hits.length
 
@@ -81,10 +135,10 @@ public class BlastObject extends Hashtable<String, String>{
 	 * but length remains the same 
 	 */
 	public String getHitTagContents(String tag, int hit_num) throws Exception{
-		if(hit_num <=0 || hit_num > this.hits.length){
+		if(hit_num ==0 || hit_num > this.getNoOfHits()){
 			throw new Exception("You cannot retrieve a hit which doesn't exist!");
 		}
-		return this.get("HIT"+hit_num+"_"+tag);
+		return this.get(this.generateHitTag(hit_num, tag));
 	}
 	
 	/**
@@ -99,9 +153,17 @@ public class BlastObject extends Hashtable<String, String>{
 		if(hsp_num <= 0){
 			throw new Exception("You cannot retrieve a hsp which doesn't exist!");
 		}
-		return this.get("HSP"+hit_num+"_"+hsp_num+"_"+tag);
+		return this.get(this.generateHspTag(hsp_num, hit_num, tag));
 	}
 		
+	private String generateHitTag(int hitnumber, String tag){
+		return new StringBuilder(hit_id +"_"+ hitnumber + tag).toString();
+	}
+	
+	private String generateHspTag(int hspnumber, int hitnumber, String tag){
+		return new StringBuilder(hsp_id + hitnumber + "_" +hspnumber+ tag).toString();
+	}
+	
 	/**
 	 * Prints all keys to terminal, for debugging purposes
 	 */
