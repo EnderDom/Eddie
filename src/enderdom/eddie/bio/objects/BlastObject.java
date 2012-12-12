@@ -60,12 +60,12 @@ public class BlastObject extends Hashtable<String, String>{
 		this.put(this.generateHitTag(hitnumber, tag), value);
 	}
 	
-	public void putHspTag(int hspnumber, int hitnumber, String tag, String value) throws BlastOneBaseException, Exception{
+	public void putHspTag(int hspnumber, int hitnumber, String tag, String value) throws BlastOneBaseException, GeneralBlastException{
 		if(hspnumber == 0){
-			throw new BlastOneBaseException("You can't add hit zero, no hit zero for you");
+			throw new BlastOneBaseException("You can't add hsp zero, no hsp zero for you");
 		}
 		if(hits == null){
-			throw new Exception("Either there is a bug in parser, or the blast file is dodgy");
+			throw new GeneralBlastException("Either there is a bug in parser, or the blast file is dodgy");
 		}
 		this.put(this.generateHspTag(hspnumber, hitnumber, tag), value);
 		hits[hitnumber--]++;

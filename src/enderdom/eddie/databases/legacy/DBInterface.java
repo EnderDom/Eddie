@@ -2,7 +2,6 @@ package enderdom.eddie.databases.legacy;
 
 import enderdom.eddie.bio.blast.BlastxDocumentParser;
 import enderdom.eddie.bio.objects.GOTermData;
-import enderdom.eddie.bio.xml.XML_Iprscan;
 
 //Still To Finish
 
@@ -14,7 +13,7 @@ public interface DBInterface {
 	
 	public void uploadBlast(BlastxDocumentParser file);
 	
-	public void uploadInterPro(XML_Iprscan file);
+	//public void uploadInterPro(XML_Iprscan file);
 	
 	public void uploadGOTermData(GOTermData file);
 	

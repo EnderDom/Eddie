@@ -176,15 +176,15 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 		}
 		if(logfolder.isDirectory()){
             File log_properties = new File(logfolder.getPath()+slash+"log4j.properties");
+            //If properties previously written
             if(log_properties.isFile()){
-                logger = Logger.getLogger(logfolder.getPath()+slash+"log4j.properties");
-                PropertyConfigurator.configure(log_properties.getPath());
+                configureProps(log_properties.getPath(), log_properties.getPath());
             }
+            //If properties never written, use defaults
             else{
                 Properties defaults = getDefaultLogProperties(logfolder.getPath()+slash);
                 savePropertyFile(log_properties.getPath(), defaults);
-                logger = Logger.getLogger(logfolder.getPath()+slash+"log4j.properties");
-                PropertyConfigurator.configure(defaults);
+                configureProps(log_properties.getPath(), defaults);
             }
             if(logger != null){
             	setLogging(true);
@@ -201,6 +201,16 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
             preLog("Path at "+  logfolder.getPath() + " is supposed to be a directory but it's not");
             return false;
         }
+	}
+	
+	public static void configureProps(String filepath, Properties props){
+		logger = Logger.getLogger(filepath);
+        PropertyConfigurator.configure(props);
+	}
+	
+	public static void configureProps(String filepath, String props){
+		logger = Logger.getLogger(filepath);
+        PropertyConfigurator.configure(props);
 	}
 }
 
