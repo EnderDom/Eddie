@@ -20,6 +20,15 @@ public class BlastObject extends Hashtable<String, String>{
 		super();
 	}
 	
+	public int getIterationNumber(){
+		Integer a = Tools_String.parseString2Int(this.get("Iteration_iter-num"));
+		if(a == null){
+			logger.error("Does not contain iteration number");
+			return -1;
+		}
+		else return a.intValue();
+	}
+	
 	/**
 	 * Same as just put
 	 * 
@@ -53,8 +62,8 @@ public class BlastObject extends Hashtable<String, String>{
 		}
 		if(hits.length < hitnumber){
 			int[] temp = new int[hitnumber];
-			for(int i=0; i < hits.length;i++)temp[i]=hits[i];
-			temp[hitnumber--]=0;
+			for(int i=0; i < hits.length;i++)temp[i]=hits[i];			
+			temp[hitnumber-1]=0;
 			hits=temp;
 		}
 		this.put(this.generateHitTag(hitnumber, tag), value);
@@ -68,7 +77,8 @@ public class BlastObject extends Hashtable<String, String>{
 			throw new GeneralBlastException("Either there is a bug in parser, or the blast file is dodgy");
 		}
 		this.put(this.generateHspTag(hspnumber, hitnumber, tag), value);
-		hits[hitnumber--]++;
+		hits[hitnumber-1]++;
+		System.out.println(this.generateHspTag(hspnumber, hitnumber, tag) +" : " + value);
 	}
 	
 	/**
@@ -108,7 +118,7 @@ public class BlastObject extends Hashtable<String, String>{
 	 * 
 	 */
 	public int getNoOfHsps(int hit_num){
-		return this.hits[hit_num--]; 
+		return this.hits[hit_num-1]; 
 	}
 	
 	/**
@@ -157,11 +167,11 @@ public class BlastObject extends Hashtable<String, String>{
 	}
 		
 	private String generateHitTag(int hitnumber, String tag){
-		return new StringBuilder(hit_id +"_"+ hitnumber + tag).toString();
+		return new StringBuilder(hit_id +"_"+ hitnumber +"_" + tag).toString();
 	}
 	
 	private String generateHspTag(int hspnumber, int hitnumber, String tag){
-		return new StringBuilder(hsp_id + hitnumber + "_" +hspnumber+ tag).toString();
+		return new StringBuilder(hsp_id + hitnumber + "_" +hspnumber +"_"+ tag).toString();
 	}
 	
 	/**

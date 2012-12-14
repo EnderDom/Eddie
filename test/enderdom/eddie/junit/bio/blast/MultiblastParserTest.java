@@ -7,14 +7,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.log4j.Level;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import enderdom.eddie.bio.blast.MultiblastParser;
+import enderdom.eddie.bio.objects.BlastObject;
 import enderdom.eddie.ui.BasicPropertyLoader;
 
 public class MultiblastParserTest {
@@ -53,7 +52,15 @@ public class MultiblastParserTest {
 			int i =-1;
 			while(parser.hasNext()){
 				i++;
-				parser.next();
+				BlastObject obj = parser.next();
+				if(obj.getIterationNumber() == 6){
+					System.out.println("Comparing: CAAGGCACACAGGGGATAGG with " + obj.getHspTagContents("Hsp_qseq", 1, 1) );
+					assertEquals("CAAGGCACACAGGGGATAGG", obj.getHspTagContents("Hsp_qseq", 1, 1));
+					System.out.println("Comparing: 40.527741988586 with " + obj.getHspTagContents("Hsp_bit-score", 1, 1) );
+					assertEquals("40.527741988586", obj.getHspTagContents("Hsp_bit-score", 1, 1));
+					System.out.println("Comparing: 1.10400757585036 with " + obj.getLowestEValue());
+					assertEquals(1.10400757585036,obj.getLowestEValue(), 0.00001);
+				}
 				if(i > 10){
 					fail("Shouldn't parse this far");
 				}
@@ -62,7 +69,7 @@ public class MultiblastParserTest {
 			System.out.println("End position:" + parser.getCurrentPosition());
 			parser.close();
 		}
-		catch (XMLStreamException e) {
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

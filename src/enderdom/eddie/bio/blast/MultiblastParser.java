@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.util.Iterator;
 
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
@@ -28,6 +27,8 @@ public class MultiblastParser implements Iterator<BlastObject>{
 	int i =0;
 	int hits =0;
 	int hsps =0;
+	String buffer;
+	int itercount = 0;
 	
 	public MultiblastParser(File xml) throws FileNotFoundException, XMLStreamException{
 		XMLInputFactory f = XMLInputFactory.newInstance();
@@ -63,6 +64,7 @@ public class MultiblastParser implements Iterator<BlastObject>{
 		last = current;
 		current = null;
 		String tag = "";
+		hits=0;
 		try {
 			while(stream.hasNext()){
 			    i= stream.next();
@@ -74,21 +76,23 @@ public class MultiblastParser implements Iterator<BlastObject>{
 					else if(tag.startsWith("Hit")){
 						if(tag.equals("Hit"))hits++;
 						else if(tag.equals("Hit_hsps"))hsps=0;//Do nothing, picked up by hsp
-						else current.putHitTag(hits, tag.substring(4, tag.length()), getText());
+						else if(this.checkElementHasText())current.putHitTag(hits, tag, getElementText());
 					}
 					else if(tag.startsWith("Hsp")){
 						if(tag.equals("Hsp"))hsps++;
-						else current.putHspTag(hsps, hits, tag.substring(4, tag.length()), getText());
+						else if(this.checkElementHasText())current.putHspTag(hsps, hits, tag, getElementText());
 					}
 					else if(tag.startsWith("Statistics_")){
-						current.putIterationTag(tag, getText());
+						if(this.checkElementHasText())current.putIterationTag(tag, getElementText());
 					}
-					else if(tag.startsWith(iteration+"_")){
-						current.putIterationTag(tag, getText());
+					else if(tag.equals("Iteration_iter-num") || tag.equals("Iteration_query-ID") || tag.equals("Iteration_query-def") || tag.equals("Iteration_query-len")){
+						if(this.checkElementHasText())current.putIterationTag(tag, getElementText());
 					}
 				}
 				if(stream.isEndElement()){
 					if(stream.getName().toString().equals(iteration)){
+						itercount++;
+						logger.debug("Parsed Iteration " + itercount);
 						return;
 					}
 				}
@@ -97,23 +101,35 @@ public class MultiblastParser implements Iterator<BlastObject>{
 		catch (XMLStreamException e) {
 			logger.error("Failed to load XML as stream",e);
 		}
-		
 	}
 	
-	private String getText() throws XMLStreamException{
-		StringBuffer buffer = new StringBuffer();
-		while(!stream.isEndElement()){
-			i = stream.next();
-			if(i == XMLStreamConstants.CHARACTERS
-				 || i == XMLStreamConstants.CDATA
-				 || i == XMLStreamConstants.SPACE
-				 || i == XMLStreamConstants.ENTITY_REFERENCE) {
-				 buffer.append(getText());
-			}
+	/**
+	 * There is probably an easier way of doing this but I can't think of it
+	 * right now. This basically does that thing that shouldn't be done
+	 * and gobbles errors.
+	 * 
+	 * @return whether or not the tag was parsed
+	 * as I'm not 100% sure the various tags which have 
+	 * no text in blast xml will be caught, this will return
+	 * true if the element has text in it. ie <Hit_num> rather than no text
+	 * ie <\Hit> 
+	 */
+	public boolean checkElementHasText(){
+		buffer = new String();
+		try{
+			buffer = stream.getElementText();
+			return true;
 		}
-		return buffer.toString();
+		catch(XMLStreamException e){
+			//nom nom nom
+			logger.trace("This exception was ignored",e);
+			return false;
+		}
 	}
 	
+	public String getElementText(){
+		return buffer;
+	}
 
 	public boolean hasNext() {
 		return current!=null;
