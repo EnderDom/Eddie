@@ -174,14 +174,14 @@ public class Fasta implements FastaHandler, SequenceList{
 	}
 	
 	public int getN50(){
-		return Tools_Sequences.n50(getListOfLens());
+		return Tools_Sequences.n50(getListOfActualLens());
 	}
 	
 	/*
 	 * See Tool_Sequences static method for array values
 	 */
 	public long[] getAllStats(){
-		return Tools_Sequences.SequenceStats(getListOfLens());
+		return Tools_Sequences.SequenceStats(getListOfActualLens());
 	}
 	
 	public int getNoOfSequences(){

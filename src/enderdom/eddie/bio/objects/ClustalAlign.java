@@ -1,63 +1,77 @@
 package enderdom.eddie.bio.objects;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.util.LinkedList;
 
 import enderdom.eddie.bio.interfaces.BioFileType;
 import enderdom.eddie.bio.interfaces.SequenceList;
 import enderdom.eddie.bio.interfaces.SequenceObject;
 import enderdom.eddie.bio.interfaces.UnsupportedTypeException;
+import enderdom.eddie.bio.sequence.GenericSequence;
+import enderdom.eddie.tools.Tools_Math;
+import enderdom.eddie.tools.bio.Tools_Sequences;
 
 //TODO implement
 //@stub
 public class ClustalAlign implements SequenceList{
 
+	GenericSequence[] sequences;
+	int iterator =0;
+	
+	//TODO improve with parse method
 	public boolean hasNext() {
-		// TODO Auto-generated method stub
-		return false;
+		return iterator < sequences.length;
 	}
 
+	//TODO improve with parse method
 	public SequenceObject next() {
-		// TODO Auto-generated method stub
-		return null;
+		iterator++;
+		return sequences[iterator-1];
 	}
 
 	public void remove() {
-		// TODO Auto-generated method stub
-		
+		//TODO
 	}
 
 	public int getN50() {
-		// TODO Auto-generated method stub
-		return 0;
+		return Tools_Sequences.n50(this.getListOfActualLens());
 	}
 
 	public int[] getListOfLens() {
-		// TODO Auto-generated method stub
-		return null;
+		int[] ins = new int[this.sequences.length];
+		for(int i =0;i < sequences.length;i++){
+			ins[i] = sequences[i].getLength();
+		}
+		return ins;
 	}
 
 	public int[] getListOfActualLens() {
-		// TODO Auto-generated method stub
-		return null;
+		int[] ins = new int[this.sequences.length];
+		for(int i =0;i < sequences.length;i++){
+			ins[i] = sequences[i].getActualLength();
+		}
+		return ins;
 	}
 
 	public int getNoOfMolecules() {
-		// TODO Auto-generated method stub
-		return 0;
+		return Tools_Math.sum(getListOfActualLens());
 	}
 
 	public int getNoOfSequences() {
-		// TODO Auto-generated method stub
-		return 0;
+		return sequences.length;
 	}
 
 	public SequenceObject getSequence(int i) {
-		// TODO Auto-generated method stub
-		return null;
+		return sequences[i];
 	}
 
 	public SequenceObject getSequence(String s) {
-		// TODO Auto-generated method stub
+		for(int i=0;i < sequences.length;i++){
+			if(sequences[i].getName().equals(s))return sequences[i];
+		}
 		return null;
 	}
 
@@ -67,9 +81,52 @@ public class ClustalAlign implements SequenceList{
 		return false;
 	}
 
+	/**
+	 * Quick & Dirty Clustal parser
+	 */
 	public int loadFile(File file, BioFileType filetype) throws Exception, UnsupportedTypeException {
-		// TODO Auto-generated method stub
-		return 0;
+		int counter=0;
+		if(file.isFile()){
+			LinkedList<String> nams = new LinkedList<String>();
+			LinkedList<String> seqs = new LinkedList<String>();
+			FileInputStream fis = new FileInputStream(file);
+			InputStreamReader in = new InputStreamReader(fis, "UTF-8");
+			BufferedReader reader = new BufferedReader(in);
+			String line = null;
+			boolean started = false;
+			while((line=reader.readLine()) != null){
+				if(started){
+					if(line.length() > 0){
+						boolean fin = true;
+						String[] lines = line.split("      ");
+						if(lines.length < 2) throw new Exception("Cannot parse clustal");
+						for(int i =0;i < nams.size(); i++){
+							if(nams.get(i).equals(lines[0])){
+								seqs.get(i).concat(line);
+								fin=true;
+							}
+						}
+						if(!fin){
+							nams.add(lines[0]);
+							seqs.add(lines[1]);
+							counter++;
+						}
+					}
+				}
+				if(line.startsWith("CLUSTAL"))started=true;
+			}
+			if(!started)throw new UnsupportedTypeException("CLUSTAL does not have standard Clustal header");
+			else{
+				this.sequences = new GenericSequence[seqs.size()];
+				for(int i =0; i < nams.size(); i++){
+					this.sequences[i] = new GenericSequence(nams.get(i), seqs.get(i));
+				}
+			}
+		}
+		else{
+			throw new Exception("Not a file!");
+		}
+		return counter;
 	}
 
 }

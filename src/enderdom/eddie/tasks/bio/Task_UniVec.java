@@ -1,17 +1,31 @@
 package enderdom.eddie.tasks.bio;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
+import enderdom.eddie.bio.blast.MultiblastParser;
+import enderdom.eddie.bio.blast.UniVecBlastObject;
+import enderdom.eddie.bio.factories.SequenceListFactory;
+import enderdom.eddie.bio.fasta.Fasta;
+import enderdom.eddie.bio.fasta.FastaParser;
+import enderdom.eddie.bio.interfaces.BioFileType;
+import enderdom.eddie.bio.interfaces.SequenceList;
+import enderdom.eddie.bio.interfaces.UnsupportedTypeException;
+import enderdom.eddie.bio.objects.BlastObject;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.Tools_Task;
 import enderdom.eddie.tools.Tools_Web;
+import enderdom.eddie.tools.bio.Tools_Bio_File;
 import enderdom.eddie.tools.bio.Tools_Blast;
 import enderdom.eddie.ui.UI;
 
@@ -20,13 +34,15 @@ public class Task_UniVec extends TaskXTwIO{
 	private String uni_db;
 	private String blast_bin;
 	private String workspace;
+	private String xml;
+	private String qual;
 	private boolean create;
-	private boolean xml;
 	private static String univecsite = "ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec";
 	private static String univeccom = "makeblastdb -title UniVec -dbtype nucl ";
 	private static String strategyfolder = "resources";	
 	private static String strategyfile = "univec_strategy";
 	private static String key = "UNI_VEC_DB";
+	private static SequenceList fout;
 	
 	public Task_UniVec(){
 	}
@@ -56,7 +72,19 @@ public class Task_UniVec extends TaskXTwIO{
 			logger.error("Input file is not a file");
 			return;
 		}
-
+		else{
+			try {
+				if(qual != null &&  new File(qual).isFile()){
+					fout = SequenceListFactory.getSequenceList(input, qual);
+				}
+				else{
+						fout = SequenceListFactory.getSequenceList(input);
+				}
+			} catch (Exception e) {
+				logger.error("Failed to parse input file",e);
+				return;
+			}
+		}
 		/*
 		* Check Output
 		*/
@@ -72,7 +100,7 @@ public class Task_UniVec extends TaskXTwIO{
 		}
 		dir.mkdirs();
 
-		if(!xml){
+		if(xml == null){
 			String outname = file.getName();
 			int e =-1;
 			if((e=outname.lastIndexOf(".")) != -1)outname = outname.substring(0, e);
@@ -103,25 +131,77 @@ public class Task_UniVec extends TaskXTwIO{
 			if(arr[1].length() > 0){
 				logger.info("blastn output:"+Tools_System.getNewline()+arr[0].toString().trim());
 			}
+			if(out.isFile()){
+				xml = out.getPath();
+			}
+			else{
+				logger.error("Search ran, but no outfile found at " + out.getPath());
+				return;
+			}
 		}
-		else{
-
+		if(xml != null){
+			File xm = new File(xml);
+			if(xm.isFile()){
+				
+			}
+			else if(xm.isDirectory()){
+				File[] files = xm.listFiles();
+				int i =0;
+				for(File f : files){
+					if(Tools_Bio_File.detectFileType(f.getPath())==BioFileType.BLAST_XML){
+						try {
+							MultiblastParser parser = new MultiblastParser(xm);
+						} catch (FileNotFoundException e) {
+							logger.error(e);
+						} catch (XMLStreamException e) {
+							logger.error(e);
+						}
+						i++;
+					}
+				}
+				if(i==0){
+					logger.warn("No blast files in folder, attempting to try plain XML");
+					for(File f: files){
+						if(Tools_Bio_File.detectFileType(f.getPath())==BioFileType.XML){
+							
+							i++;
+						}
+					}
+				}
+			}
+			else{
+				
+			}
 		}
-		//TODO implement parsing of file
 
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
 		setComplete(finished);
 	}
 	
+	public void parseBlastAndTrim(File xml, SequenceList seql){
+		try {
+			MultiblastParser parser = new MultiblastParser(xml);
+			while(parser.hasNext()){
+				UniVecBlastObject obj = (UniVecBlastObject) parser.next();
+				//TODO complete
+			}
+		} catch (FileNotFoundException e) {
+			logger.error(e);
+		} catch (XMLStreamException e) {
+			logger.error(e);
+		}
+	}
+	
 	public void buildOptions(){
 		super.buildOptions();
-		options.getOption("i").setDescription("Input sequence file Fast(a/q) or xml if skipping");
+		options.getOption("i").setDescription("Input sequence file Fast(a/q)");
 		options.getOption("o").setDescription("Output folder");
 		options.addOption(new Option("u", "uni_db", true, "Set UniVec database location"));
 		options.addOption(new Option("c", "create_db", false, "Downloads and creates the UniVec database with the makeblastdb"));
 		options.addOption(new Option("bbb", "blast_bin", true, "Specify blast bin directory"));
 		options.addOption(new Option("filetype", true, "Specify filetype (rather then guessing from ext)"));
-		options.addOption(new Option("x","xml", false, "Skip running univec search and import previous blast xml"));
+		options.addOption(new Option("x","xml", true, "Skip running univec search and import previous blast xml"));
+		options.addOption(new Option("q","qual", true, "Include quality file, this will also be trimmed"));
 	}
 	
 	public void parseOpts(Properties props){
@@ -138,7 +218,8 @@ public class Task_UniVec extends TaskXTwIO{
 		if(cmd.hasOption("bbb"))blast_bin=cmd.getOptionValue("bbb");
 		if(cmd.hasOption("c"))create=true;
 		if(cmd.hasOption("i"))input=cmd.getOptionValue("i");
-		if(cmd.hasOption("x"))xml=true;
+		if(cmd.hasOption("x"))xml=cmd.getOptionValue("x");
+		if(cmd.hasOption("q"))qual=cmd.getOptionValue("q");
 	}
 	
 	/**

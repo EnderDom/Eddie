@@ -11,6 +11,7 @@ public enum BioFileType {
 	ALIGN,
 	ACE,
 	SAM,
+	XML,
 	BLAST_XML,
 	BLAST_TXT,
 	BLAST_DB,

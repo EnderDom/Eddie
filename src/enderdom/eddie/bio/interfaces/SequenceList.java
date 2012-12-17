@@ -52,6 +52,7 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	 */
 	public SequenceObject getSequence(String s);
 	
+	
 	/**
 	 * Saves file as stated filetype, if filetype == -1
 	 * will save as filetype which SequenceList was loaded

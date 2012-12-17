@@ -10,11 +10,11 @@ import enderdom.eddie.tools.Tools_String;
 public class BlastObject extends Hashtable<String, String>{
 
 	//All data is 1-based
-	private static final long serialVersionUID = -5499555843635862257L;
-	int[] hits;
+	protected static final long serialVersionUID = -5499555843635862257L;
+	protected int[] hits;
 	Logger logger = Logger.getRootLogger();
-	private static String hit_id = "HIT";
-	private static String hsp_id = "HSP";
+	protected static String hit_id = "HIT";
+	protected static String hsp_id = "HSP";
 	
 	public BlastObject(){
 		super();
@@ -166,11 +166,11 @@ public class BlastObject extends Hashtable<String, String>{
 		return this.get(this.generateHspTag(hsp_num, hit_num, tag));
 	}
 		
-	private String generateHitTag(int hitnumber, String tag){
+	protected String generateHitTag(int hitnumber, String tag){
 		return new StringBuilder(hit_id +"_"+ hitnumber +"_" + tag).toString();
 	}
 	
-	private String generateHspTag(int hspnumber, int hitnumber, String tag){
+	protected String generateHspTag(int hspnumber, int hitnumber, String tag){
 		return new StringBuilder(hsp_id + hitnumber + "_" +hspnumber +"_"+ tag).toString();
 	}
 	
@@ -264,6 +264,12 @@ public class BlastObject extends Hashtable<String, String>{
 		}
 		if(e == 999)return -1;
 		else return e;
+	}
+	
+	public int getQueryLength(){
+		Integer i = Tools_String.parseString2Int(get("Iteration_query-len"));
+		if(i == null) return -1;
+		else return i.intValue();
 	}
 	
 }

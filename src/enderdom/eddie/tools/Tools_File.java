@@ -16,7 +16,8 @@ import java.util.HashMap;
 import org.apache.log4j.Logger;
 
 public abstract class Tools_File {
-
+	
+	public static Logger logger = Logger.getRootLogger();
 	
 	/*
 	 * Quick and simple File Write method, with no real error or overwrite checking though
@@ -30,6 +31,7 @@ public abstract class Tools_File {
 			return true;
 		}
 		catch(IOException exe){
+			logger.warn(exe);
 			return false;
 		}
     }
@@ -60,7 +62,47 @@ public abstract class Tools_File {
 			return buff.toString();
 		}
 		catch(IOException io){
+			logger.warn(io);
 			return buff.toString();
+		}
+	}
+	
+	/**
+	 * 
+	 * @param filepath path to a file
+	 * @param i the line which you want to return, 0-based
+	 * @return the line at integer i returned as a string
+	 */
+	public static String returnLine(String filepath, int i){
+		try{
+			File f = new File(filepath);
+			if(f.isFile()){
+				FileInputStream fis = new FileInputStream(f);
+				InputStreamReader in = new InputStreamReader(fis, "UTF-8");
+				BufferedReader reader = new BufferedReader(in);
+				String line = null;
+				boolean complete =false;
+				while((line = reader.readLine()) != null){
+					if(i==0){
+						complete=true;
+						break;
+					}
+					i--;
+				}
+				reader.close();
+				in.close();
+				fis.close();
+				if(complete)return line;
+				else return null;
+			}
+			else{
+				logger.warn("File is not a text file!");
+				return null;
+			}
+		}
+		catch(IOException io){
+			logger.error("Failed to extract line information");
+			return null;
 		}
 	}
 	
@@ -74,6 +116,7 @@ public abstract class Tools_File {
 			return lnr.getLineNumber();
 		} 
 		catch (IOException e) {
+			logger.warn(e);
 			return -1;
 		}
 	}
@@ -217,7 +260,7 @@ public abstract class Tools_File {
 			return true;
 		}
 		catch(IOException io){
-			io.printStackTrace();
+			logger.warn(io);
 			return false;
 		}
 	}
