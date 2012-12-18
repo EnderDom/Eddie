@@ -4,7 +4,6 @@ import java.io.File;
 
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.bio.objects.BlastObject;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
@@ -133,7 +132,7 @@ public class BlastxHelper {
 	public String getParametersAsString(){
 		StringBuffer buffer = new StringBuffer();
 		int k =0;
-		for(String key : blastx.keySet()){
+		for(String key : blastx.getKeys()){
 			if((k = key.indexOf("Parameters_")) != -1){
 				buffer.append('-');
 				buffer.append(key.substring(k, key.length()));

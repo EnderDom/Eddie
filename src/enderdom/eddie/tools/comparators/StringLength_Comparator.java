@@ -1,12 +1,11 @@
-package enderdom.eddie.tools;
+package enderdom.eddie.tools.comparators;
 
 import java.util.Comparator;
 
-public class Tools_String_Comparator implements Comparator<String>{
+public class StringLength_Comparator implements Comparator<String>{
 	/*
 	 * Code lifted from
 	 * http://stackoverflow.com/questions/3408976/sort-array-first-by-length-then-alphabetically-in-java
-	 * by user: Samuel_xL
 	 * 
 	 */
 	

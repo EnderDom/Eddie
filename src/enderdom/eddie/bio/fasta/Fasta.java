@@ -425,5 +425,15 @@ public class Fasta implements FastaHandler, SequenceList{
 		for(String s : toremove)remove(s);
 		return i;
 	}
+
+	public BioFileType getFileType() {
+		if(this.fastq) return BioFileType.FASTQ;
+		else if(this.qualities.size() > 0 && this.sequences.size() > 0)return BioFileType.FAST_QUAL;
+		else if(this.sequences.size() > 0) return BioFileType.FASTA;
+		else if (this.qualities.size() > 0)return BioFileType.QUAL;
+		else return BioFileType.UNKNOWN;
+	}
+	
+	
 	
 }

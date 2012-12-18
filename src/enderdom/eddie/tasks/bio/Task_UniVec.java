@@ -2,7 +2,6 @@ package enderdom.eddie.tasks.bio;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -13,13 +12,10 @@ import org.apache.commons.cli.Option;
 
 import enderdom.eddie.bio.blast.MultiblastParser;
 import enderdom.eddie.bio.blast.UniVecBlastObject;
+import enderdom.eddie.bio.blast.UniVecRegion;
 import enderdom.eddie.bio.factories.SequenceListFactory;
-import enderdom.eddie.bio.fasta.Fasta;
-import enderdom.eddie.bio.fasta.FastaParser;
 import enderdom.eddie.bio.interfaces.BioFileType;
 import enderdom.eddie.bio.interfaces.SequenceList;
-import enderdom.eddie.bio.interfaces.UnsupportedTypeException;
-import enderdom.eddie.bio.objects.BlastObject;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_System;
@@ -42,7 +38,8 @@ public class Task_UniVec extends TaskXTwIO{
 	private static String strategyfolder = "resources";	
 	private static String strategyfile = "univec_strategy";
 	private static String key = "UNI_VEC_DB";
-	private static SequenceList fout;
+	private SequenceList fout;
+	private BioFileType outfmt;
 	
 	public Task_UniVec(){
 	}
@@ -76,9 +73,11 @@ public class Task_UniVec extends TaskXTwIO{
 			try {
 				if(qual != null &&  new File(qual).isFile()){
 					fout = SequenceListFactory.getSequenceList(input, qual);
+					outfmt = BioFileType.FAST_QUAL;
 				}
 				else{
-						fout = SequenceListFactory.getSequenceList(input);
+					fout = SequenceListFactory.getSequenceList(input);
+					//TODO
 				}
 			} catch (Exception e) {
 				logger.error("Failed to parse input file",e);
@@ -142,20 +141,14 @@ public class Task_UniVec extends TaskXTwIO{
 		if(xml != null){
 			File xm = new File(xml);
 			if(xm.isFile()){
-				
+				parseBlastAndTrim(xm, fout);
 			}
 			else if(xm.isDirectory()){
 				File[] files = xm.listFiles();
 				int i =0;
 				for(File f : files){
 					if(Tools_Bio_File.detectFileType(f.getPath())==BioFileType.BLAST_XML){
-						try {
-							MultiblastParser parser = new MultiblastParser(xm);
-						} catch (FileNotFoundException e) {
-							logger.error(e);
-						} catch (XMLStreamException e) {
-							logger.error(e);
-						}
+						parseBlastAndTrim(f, fout);
 						i++;
 					}
 				}
@@ -180,11 +173,15 @@ public class Task_UniVec extends TaskXTwIO{
 	
 	public void parseBlastAndTrim(File xml, SequenceList seql){
 		try {
-			MultiblastParser parser = new MultiblastParser(xml);
+			MultiblastParser parser = new MultiblastParser(MultiblastParser.UNIVEC, xml);
 			while(parser.hasNext()){
 				UniVecBlastObject obj = (UniVecBlastObject) parser.next();
-				//TODO complete
+				obj.reverseOrder();
+				for(UniVecRegion r : obj.getRegions()){
+					seql.getSequence(obj.getBlastTagContents("Iteration_query-def")).removeSection(r.getStart(0), r.getStop(0));
+				}
 			}
+			seql.saveFile(output+"_trim"+ fasta, filetype);
 		} catch (FileNotFoundException e) {
 			logger.error(e);
 		} catch (XMLStreamException e) {

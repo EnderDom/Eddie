@@ -13,9 +13,6 @@ import javax.xml.stream.XMLStreamReader;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.RootLogger;
 
-import enderdom.eddie.bio.objects.BlastObject;
-import enderdom.eddie.bio.objects.BlastOneBaseException;
-import enderdom.eddie.bio.objects.GeneralBlastException;
 
 public class MultiblastParser implements Iterator<BlastObject>{
 
@@ -29,8 +26,13 @@ public class MultiblastParser implements Iterator<BlastObject>{
 	int hsps =0;
 	String buffer;
 	int itercount = 0;
+	public String classtype;
+	public int blasttype = 0;
+	public static int BASICBLAST =0;
+	public static int UNIVEC =1;
 	
-	public MultiblastParser(File xml) throws FileNotFoundException, XMLStreamException{
+	public MultiblastParser(int blastype, File xml) throws Exception{
+		this.blasttype = blastype;
 		XMLInputFactory f = XMLInputFactory.newInstance();
 		stream = f.createXMLStreamReader(new FileInputStream(xml));
 		try {
@@ -42,7 +44,8 @@ public class MultiblastParser implements Iterator<BlastObject>{
 		}
 	}
 
-	public MultiblastParser(InputStream str)throws XMLStreamException{
+	public MultiblastParser(int blastype, InputStream str)throws Exception{
+		this.blasttype = blastype;
 		XMLInputFactory f = XMLInputFactory.newInstance();
 		stream = f.createXMLStreamReader(str);
 		try {
@@ -60,7 +63,7 @@ public class MultiblastParser implements Iterator<BlastObject>{
 	 * parser is always one ahead of where it claims to be
 	 * 
 	 */
-	private void parseNext() throws GeneralBlastException, BlastOneBaseException{
+	private void parseNext() throws Exception{
 		last = current;
 		current = null;
 		String tag = "";
@@ -71,7 +74,8 @@ public class MultiblastParser implements Iterator<BlastObject>{
 				if(stream.isStartElement()){
 					tag = stream.getName().toString();
 					if(tag.equals(iteration)){
-						current = new BlastObject();
+						if(this.blasttype == UNIVEC) current = new UniVecBlastObject();
+						else current = new BasicBlastObject();	
 					}
 					else if(tag.startsWith("Hit")){
 						if(tag.equals("Hit"))hits++;
@@ -143,10 +147,14 @@ public class MultiblastParser implements Iterator<BlastObject>{
 			logger.error(e);
 		} catch (BlastOneBaseException e) {
 			logger.error(e);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return null;
 	}
 
+	
+	
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}

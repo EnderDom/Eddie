@@ -78,4 +78,7 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	 */
 	public int loadFile(File file, BioFileType filetype) throws Exception, UnsupportedTypeException;
 	
+	public BioFileType getFileType();
+
+	
 }

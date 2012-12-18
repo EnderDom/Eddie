@@ -10,7 +10,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import enderdom.eddie.bio.objects.BlastObject;
 import enderdom.eddie.tools.Tools_XML;
 
 /**
@@ -53,7 +52,7 @@ public class BlastxDocumentParser{
 	
 	public BlastObject parse2Cache(Document d){
 		
-		BlastObject blastcache = new BlastObject();
+		BlastObject blastcache = new BasicBlastObject();
 		
 		ArrayList<Element> elementList = null;
 		try {

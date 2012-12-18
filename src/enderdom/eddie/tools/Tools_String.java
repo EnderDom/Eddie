@@ -10,6 +10,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.Logger;
 
+import enderdom.eddie.tools.comparators.StringLength_Comparator;
+
 
 public abstract class Tools_String {
 	
@@ -129,7 +131,7 @@ public abstract class Tools_String {
 	 * 
 	 */
 	public static List<String> sortStringsByLength(List<String> list){
-		Collections.sort(list, new Tools_String_Comparator());
+		Collections.sort(list, new StringLength_Comparator());
 		return list;
 	}
 	

@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import enderdom.eddie.bio.blast.MultiblastParser;
-import enderdom.eddie.bio.objects.BlastObject;
+import enderdom.eddie.bio.blast.UniVecBlastObject;
 import enderdom.eddie.ui.BasicPropertyLoader;
 
 public class MultiblastParserTest {
@@ -23,7 +23,7 @@ public class MultiblastParserTest {
 	@Before
     public void setup(){
 		BasicPropertyLoader.configureProps("test/log4j.properties", "test/log4j.properties");
-		BasicPropertyLoader.logger.setLevel(Level.DEBUG);
+		BasicPropertyLoader.logger.setLevel(Level.TRACE);
 		in = getClass().getResourceAsStream("data/vecscreen.xml");
     }
 
@@ -48,11 +48,12 @@ public class MultiblastParserTest {
 		assertNotNull(line);
 		in.reset();
 		try {
-			MultiblastParser parser = new MultiblastParser(in);
+			MultiblastParser parser = new MultiblastParser(MultiblastParser.UNIVEC, in);
 			int i =-1;
 			while(parser.hasNext()){
 				i++;
-				BlastObject obj = parser.next();
+				UniVecBlastObject obj = (UniVecBlastObject)parser.next();
+				System.out.println("Region Count:"+obj.regionCount());
 				if(obj.getIterationNumber() == 6){
 					System.out.println("Comparing: CAAGGCACACAGGGGATAGG with " + obj.getHspTagContents("Hsp_qseq", 1, 1) );
 					assertEquals("CAAGGCACACAGGGGATAGG", obj.getHspTagContents("Hsp_qseq", 1, 1));
@@ -60,10 +61,13 @@ public class MultiblastParserTest {
 					assertEquals("40.527741988586", obj.getHspTagContents("Hsp_bit-score", 1, 1));
 					System.out.println("Comparing: 1.10400757585036 with " + obj.getLowestEValue());
 					assertEquals(1.10400757585036,obj.getLowestEValue(), 0.00001);
+					assertEquals(1, obj.regionCount());
+					assertEquals(110,obj.getRegion(0).getStart(1));
 				}
 				if(i > 10){
 					fail("Shouldn't parse this far");
 				}
+				
 			}
 			assertEquals(9, i);		
 			System.out.println("End position:" + parser.getCurrentPosition());

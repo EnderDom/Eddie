@@ -1,4 +1,4 @@
-package enderdom.eddie.bio.objects;
+package enderdom.eddie.bio.blast;
 
 public class GeneralBlastException extends Exception{
 	

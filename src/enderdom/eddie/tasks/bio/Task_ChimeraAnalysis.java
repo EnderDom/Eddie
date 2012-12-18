@@ -11,8 +11,8 @@ import org.apache.commons.cli.Option;
 
 import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.assembly.ACERecord;
+import enderdom.eddie.bio.blast.BlastObject;
 import enderdom.eddie.bio.blast.BlastxDocumentParser;
-import enderdom.eddie.bio.objects.BlastObject;
 
 import enderdom.eddie.tasks.MapManager;
 import enderdom.eddie.tasks.TaskXTwIO;

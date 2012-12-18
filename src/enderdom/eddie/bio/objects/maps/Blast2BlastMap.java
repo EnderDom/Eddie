@@ -6,8 +6,8 @@ import java.util.LinkedHashMap;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.tools.Tools_String;
+import enderdom.eddie.bio.blast.BlastObject;
 import enderdom.eddie.bio.blast.BlastxDocumentParser;
-import enderdom.eddie.bio.objects.BlastObject;
 
 public class Blast2BlastMap {
 

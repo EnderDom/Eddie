@@ -1,4 +1,4 @@
-package enderdom.eddie.bio.objects;
+package enderdom.eddie.bio.blast;
 
 import java.util.Hashtable;
 
@@ -7,17 +7,27 @@ import org.apache.log4j.Logger;
 import enderdom.eddie.tools.Tools_String;
 
 
-public class BlastObject extends Hashtable<String, String>{
+public class BasicBlastObject implements BlastObject{
 
 	//All data is 1-based
 	protected static final long serialVersionUID = -5499555843635862257L;
-	protected int[] hits;
-	Logger logger = Logger.getRootLogger();
+	private int[] hits;
+	protected Logger logger = Logger.getRootLogger();
 	protected static String hit_id = "HIT";
 	protected static String hsp_id = "HSP";
 	
-	public BlastObject(){
-		super();
+	private Hashtable<String, String> cache;
+	
+	public BasicBlastObject(){
+		cache = new Hashtable<String, String>();
+	}
+	
+	public String get(String key){
+		return this.cache.get(key);
+	}
+	
+	public void put(String key, String value){
+		this.cache.put(key, value);
 	}
 	
 	public int getIterationNumber(){
@@ -77,8 +87,7 @@ public class BlastObject extends Hashtable<String, String>{
 			throw new GeneralBlastException("Either there is a bug in parser, or the blast file is dodgy");
 		}
 		this.put(this.generateHspTag(hspnumber, hitnumber, tag), value);
-		hits[hitnumber-1]++;
-		System.out.println(this.generateHspTag(hspnumber, hitnumber, tag) +" : " + value);
+		if(hits[hitnumber-1] < hspnumber)hits[hitnumber-1] = hspnumber;
 	}
 	
 	/**
@@ -179,9 +188,13 @@ public class BlastObject extends Hashtable<String, String>{
 	 */
 	public void keyDump(){
 		System.out.println("Key Dump...");
-		for(String key : this.keySet()){
+		for(String key : this.cache.keySet()){
 			System.out.println(key + " -> " + this.get(key));
 		}
+	}
+	
+	public String[] getKeys(){
+		return this.cache.keySet().toArray(new String[0]);
 	}
 	
 	/**
