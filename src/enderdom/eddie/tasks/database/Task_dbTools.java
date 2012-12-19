@@ -66,7 +66,7 @@ public class Task_dbTools extends TaskXT{
 							}
 							boolean success = false;
 							try {
-								 success = fasta.save2Fasta(new File(this.output));
+								 success = fasta.save2Fasta(new File(this.output)) != null;
 							} 
 							catch (IOException e) {
 								success = false;

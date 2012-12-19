@@ -486,9 +486,9 @@ public class ACERecord implements Contig{
 		return n;
 	}
 		
-	public boolean saveFile(File file, BioFileType filetype) throws Exception {
+	public String[] saveFile(File file, BioFileType filetype) throws Exception {
 		logger.error("Not implemented");
-		return false;
+		return null;
 	}
 
 	public int loadFile(File file, BioFileType filetype) throws Exception,
@@ -527,6 +527,28 @@ public class ACERecord implements Contig{
 
 	public String getName(){
 		return contigname;
+	}
+
+	public BioFileType getFileType() {
+		return BioFileType.ACE_SECTION;
+	}
+
+	public String getFileName() {
+		logger.error("Not implemented");
+		return null;
+	}
+
+	public String getFilePath() {
+		logger.error("Not implemented");
+		return null;
+	}
+
+	public boolean canAddSequenceObjects() {
+		return false;
+	}
+
+	public void addSequenceObject(SequenceObject object) {
+		logger.error("Currently no support for add sequences to ACERecord");
 	}
 
 }

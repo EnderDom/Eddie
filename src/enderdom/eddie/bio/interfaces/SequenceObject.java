@@ -25,6 +25,12 @@ public interface SequenceObject {
 	 */
 	public String getQuality();
 	
+	public void setSequence(String sequence);
+	
+	public void setQuality(String quality);
+	
+	public void setName(String title);
+	
 	/**
 	 * 
 	 * @return an integer representing type of sequence
@@ -64,16 +70,7 @@ public interface SequenceObject {
 	public int leftTrim(int i);
 	
 	/**
-	 * Trims a section from the left
-	 * side of the sequence removing the number
-	 * of characters remaining
-	 * ie leftTrim(4)
-	 * 012345678
-	 * ATGATGATG
-	 * ^^^^^----
-	 * ->
-	 * ATGAT
-	 * @param i index at which to stop sequence
+	 * @param i distance from right side
 	 * @return remaining size of sequence string size, not actual size
 	 */
 	public int rightTrim(int i);
@@ -140,6 +137,9 @@ public interface SequenceObject {
 	 * @param i
 	 */
 	public void extendRight(int i);
+	
+	
+	public boolean hasQuality();
 	
 	
 	

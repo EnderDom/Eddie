@@ -2,6 +2,7 @@ package enderdom.eddie.bio.fasta;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -27,47 +28,56 @@ import enderdom.eddie.tools.bio.Tools_Sequences;
  * BioJava,  but I don't have time
  */
 
-//JUST REALISE THIS BREAKS ON AMINO ACIDS :((((
 public class Fasta implements FastaHandler, SequenceList{
 
-	private LinkedHashMap<String, GenericSequence> sequences;
-	private LinkedHashMap<String, String> qualities;
+	private LinkedHashMap<String, SequenceObject> sequences;
 	private boolean fastq;
 	Logger logger = Logger.getRootLogger();
 	int iteration =0;
+	private String filename;
+	private String filepath;
+	private BioFileType type;
 	
 	public Fasta(){
-		sequences = new LinkedHashMap<String, GenericSequence>();
+		sequences = new LinkedHashMap<String, SequenceObject>();
 	}
 	
 	public Fasta(int fastasize){
-		sequences = new LinkedHashMap<String, GenericSequence>(fastasize);
+		sequences = new LinkedHashMap<String, SequenceObject>(fastasize);
 	}
 	
 	public void addSequence(String title, String sequence) {
+		if(sequences.containsKey(title)){
+			SequenceObject o = sequences.get(title);
+			o.setSequence(sequence);
+			sequences.put(title, o);
+		}
 		sequences.put(title, new GenericSequence(title, sequence));
 	}
 
 	public void addQuality(String title, String quality) {
-		if(qualities == null)qualities = new LinkedHashMap<String, String>();
-		if(fastq)qualities.put(title, quality);
-		else qualities.put(title, Tools_Fasta.Qual2Fastq(quality));
+		if(sequences.containsKey(title)){
+			SequenceObject o = sequences.get(title);
+			if(fastq)o.setQuality(quality);
+			else o.setQuality(Tools_Fasta.Qual2Fastq(quality));
+			sequences.put(title, o);
+		}
+		else{
+			SequenceObject o = new GenericSequence(title);
+			o.setQuality(quality);
+		}
 	}
 
 	public void addAll(String title, String sequence, String quality) {
-		if(qualities == null)qualities = new LinkedHashMap<String, String>();
-		addSequence(title, sequence);
-		addQuality(title, quality);
+		this.sequences.put(title, new GenericSequence(title, sequence, quality));
 	}
 
 	public void remove(String title){
 		sequences.remove(title);
-		if(qualities.containsValue(title)) qualities.remove(title);
 	}
 	
 	public void setFastq(boolean fastq) {
 		this.fastq =fastq;
-		if(qualities == null)qualities = new LinkedHashMap<String, String>();
 	}
 
 	public boolean isFastq() {
@@ -80,46 +90,19 @@ public class Fasta implements FastaHandler, SequenceList{
 		return newstr;
 	}
 
-	public void setSequences(LinkedHashMap<String, String> seqs) {
-		for(String key : seqs.keySet())this.sequences.put(key, new GenericSequence(key, seqs.get(key)));
-	}
-
-	public LinkedHashMap<String, String> getQualities() {
-		return qualities;
-	}
-
-	public void setQualities(LinkedHashMap<String, String> qualities) {
-		this.qualities = qualities;
+	public SequenceObject getsubFasta(String title){
+		return this.sequences.get(title);
 	}
 	
-	public String[] getsubFasta(String title){
-		return new String[]{sequences.get(title).getSequence(), qualities.get(title)};
-	}
-	
-	/*
-	 * Will get a specific index of sequence,
-	 * though may not be particularly quick???
-	 */
-	public String[] getsubFasta(int  i){
-		int j=0;
-		String[] ret = null;
-		for(String title : sequences.keySet()){
-			if(i == j){
-				ret = new String[]{sequences.get(title).getSequence(), qualities.get(title)};
-				break;
-			}
-			j++;
-		}
-		return ret;
-	}
-	
-	public boolean save2Fastq(File output) throws IOException{
+	public String save2Fastq(File output) throws IOException{
+		filename = output.getName();
+		filepath = output.getPath();
 		FileWriter fstream = new FileWriter(output);
 		BufferedWriter out = new BufferedWriter(fstream);
 		int count =0;
 		for(String str : sequences.keySet()){
-			if(Tools_Fasta.checkFastq(str, sequences.get(str).getSequence(), qualities.get(str))){
-				Tools_Fasta.saveFastq(str, sequences.get(str).getSequence(), qualities.get(str), out);
+			if(Tools_Fasta.checkFastq(str, sequences.get(str).getSequence(), sequences.get(str).getQuality())){
+				Tools_Fasta.saveFastq(str, sequences.get(str).getSequence(), sequences.get(str).getQuality(), out);
 			}
 			else{
 				throw new IOException("Fastq failed QC check");
@@ -127,11 +110,11 @@ public class Fasta implements FastaHandler, SequenceList{
 			count++;
 		}
 		out.close();fstream.close();
-		if(count == sequences.keySet().size())return true;
-		else return false;
+		if(count == sequences.keySet().size())return output.getPath();
+		else return null;
 	}
 	
-	public boolean save2Fasta(File output) throws IOException{
+	public String save2Fasta(File output) throws IOException{
 		FileWriter fstream = new FileWriter(output);
 		BufferedWriter out = new BufferedWriter(fstream);
 		int count = 0;
@@ -141,20 +124,20 @@ public class Fasta implements FastaHandler, SequenceList{
 		}
 		out.close();fstream.close();
 		logger.info("Fasta Saved Successfully");
-		if(count == sequences.keySet().size())return true;
-		else return false;
+		if(count == sequences.keySet().size())return output.getPath();
+		else return null;
 	}
 	
-	public boolean save2FastaAndQual(File output, File quality)throws IOException{
+	public String[] save2FastaAndQual(File output, File quality)throws IOException{
 		FileWriter fstream = new FileWriter(output);
 		BufferedWriter out = new BufferedWriter(fstream);
 		FileWriter fstream2 = new FileWriter(quality);
 		BufferedWriter out2 = new BufferedWriter(fstream2);
 		int count = 0;
 		for(String str : sequences.keySet()){
-			if(Tools_Fasta.checkFastq(str, sequences.get(str).getSequence(), qualities.get(str))){
+			if(Tools_Fasta.checkFastq(str, sequences.get(str).getSequence(),  sequences.get(str).getQuality())){
 				Tools_Fasta.saveFasta(str, sequences.get(str).getSequence(), out);
-				Tools_Fasta.saveFasta(str, Tools_Fasta.Fastq2Qual(qualities.get(str)), out2);
+				Tools_Fasta.saveFasta(str, Tools_Fasta.Fastq2Qual( sequences.get(str).getQuality()), out2);
 				count++;
 			}
 			else{
@@ -162,8 +145,8 @@ public class Fasta implements FastaHandler, SequenceList{
 			}
 		}
 		out.close();out2.close();fstream.close();fstream2.close();
-		if(count == sequences.keySet().size())return true;
-		else return false;
+		if(count == sequences.keySet().size())return new String[]{output.getPath(), quality.getPath()};
+		else return null;
 	}
 		
 	public int getNoOfBps(){
@@ -210,7 +193,7 @@ public class Fasta implements FastaHandler, SequenceList{
 		int trimcount = 0;
 		LinkedList<String> toremove = new LinkedList<String>();
 		for(String s : sequences.keySet()){
-			GenericSequence seq = sequences.get(s);
+			SequenceObject seq = sequences.get(s);
 			if(seq.getLength() < tr){
 				logger.info("Remove Sequence " + s +" of length " + seq.getLength());
 				toremove.add(s);
@@ -244,22 +227,26 @@ public class Fasta implements FastaHandler, SequenceList{
 	 * will happen if s1 occurs more than once and this is not counted)
 	 */
 	public int replaceNames(String s1, String s2){
-		LinkedHashMap<String, GenericSequence> seqs2 = new LinkedHashMap<String, GenericSequence>();
-		LinkedHashMap<String, String> quals2 = new LinkedHashMap<String, String>();
+		LinkedHashMap<String, SequenceObject> seqs2 = new LinkedHashMap<String, SequenceObject>();
 		int i = 0;
 		for(String s : sequences.keySet()){
-			if(s.indexOf(s1) != -1)i++;
-			String two = s.replaceAll(s1, s2);
-			seqs2.put(two, sequences.get(s));
-			if(qualities.containsValue(s)) quals2.put(two, qualities.get(s));
+			if(s.contains(s2)){
+				String n =s.replace(s1, s2); 
+				SequenceObject o = sequences.get(s);
+				o.setName(n);
+				seqs2.put(n, o);
+				i++;
+			}
+			else{
+				seqs2.put(s, sequences.get(s));
+			}
 		}
 		if(this.sequences.size() != seqs2.size()){
 			logger.error("An error occured, for some reason the" +
 					" new hashmap is not the same size as the old one. No changes made.");
 		}
 		else{
-			this.sequences = seqs2;
-			this.qualities = quals2;
+			sequences = seqs2;
 		}
 		return i;
 	}
@@ -277,12 +264,10 @@ public class Fasta implements FastaHandler, SequenceList{
 	 * this should be all of them
 	 */
 	public int renameSeqs(String s1, int start){
-		LinkedHashMap<String, GenericSequence> seqs2 = new LinkedHashMap<String, GenericSequence>();
-		LinkedHashMap<String, String> quals2 = new LinkedHashMap<String, String>();
-		int i = start;
+		LinkedHashMap<String, SequenceObject> seqs2 = new LinkedHashMap<String, SequenceObject>();
+		int i = 0;
 		for(String s : sequences.keySet()){
-			seqs2.put(s1+start, sequences.get(s));
-			if(qualities.containsValue(s)) quals2.put(s1+start, qualities.get(s));
+			seqs2.put(s1+(start+i), sequences.get(s));
 			i++;
 		}
 		if(this.sequences.size() != seqs2.size()){
@@ -290,10 +275,9 @@ public class Fasta implements FastaHandler, SequenceList{
 					" new hashmap is not the same size as the old one. No changes made.");
 		}
 		else{
-			this.sequences = seqs2;
-			this.qualities = quals2;
+			sequences = seqs2;
 		}
-		return i-start;
+		return i;
 	}
 
 	public String[] getTruncatedNames() {
@@ -357,31 +341,38 @@ public class Fasta implements FastaHandler, SequenceList{
 	}
 
 	//TODO improve
-	public boolean saveFile(File file, BioFileType filetype) throws UnsupportedTypeException, IOException {
+	public String[] saveFile(File file, BioFileType filetype) throws UnsupportedTypeException, IOException {
 		switch(filetype){
 			case FAST_QUAL:
 				return this.save2FastaAndQual(new File(file.getPath()+".fasta"), new File(file.getPath()+".qual"));
 			case FASTA:
-				return this.save2Fasta(file);
+				return new String[]{this.save2Fasta(file)};
 			case FASTQ:
-				return this.save2Fastq(file);
+				return new String[]{this.save2Fastq(file)};
 			default:
 				throw new UnsupportedTypeException("Fasta(q) cannot be saved as this filetype");
 		}
 	}
 
 	public int loadFile(File file, BioFileType filetype) throws UnsupportedTypeException, IOException {
-		FastaParser parser = new FastaParser(this);
-		switch(filetype){
-			case QUAL:
-				return parser.parseQual(file);
-			case FASTA:
-				return parser.parseFasta(file);
-			case FASTQ:
-				return parser.parseFastq(file);
-			default:
-				throw new UnsupportedTypeException("Cannot load this filetype into fasta object"); 
-		}	
+		if(file.isFile()){
+			filename = file.getName();
+			filepath = file.getPath();
+			FastaParser parser = new FastaParser(this);
+			switch(filetype){
+				case QUAL:
+					return parser.parseQual(file);
+				case FASTA:
+					return parser.parseFasta(file);
+				case FASTQ:
+					return parser.parseFastq(file);
+				default:
+					throw new UnsupportedTypeException("Cannot load this filetype into fasta object"); 
+			}
+		}
+		else{
+			throw new FileNotFoundException("File is not a file");
+		}
 	}
 
 	public int removeSequencesWithNs(int Ns){
@@ -427,13 +418,45 @@ public class Fasta implements FastaHandler, SequenceList{
 	}
 
 	public BioFileType getFileType() {
-		if(this.fastq) return BioFileType.FASTQ;
-		else if(this.qualities.size() > 0 && this.sequences.size() > 0)return BioFileType.FAST_QUAL;
-		else if(this.sequences.size() > 0) return BioFileType.FASTA;
-		else if (this.qualities.size() > 0)return BioFileType.QUAL;
-		else return BioFileType.UNKNOWN;
+		if(type!=null) return type;
+		else{
+			type = BioFileType.UNKNOWN;
+			if(this.fastq) return BioFileType.FASTQ;
+			else if(this.sequences.size() > 0){
+				for(String tag : sequences.keySet()){
+					if(sequences.get(tag).getSequence() != null && sequences.get(tag).getQuality() != null){
+						type= BioFileType.FAST_QUAL;
+					}
+					else{
+						type = (sequences.get(tag).getQuality()!= null) ? BioFileType.QUAL :BioFileType.FASTA; 
+					}
+					return type;
+				}
+			}
+		}
+		return type;
 	}
-	
-	
-	
+
+	public String getFileName() {
+		return this.filename;
+	}
+
+	public String getFilePath() {
+		return this.filepath;
+	}
+
+	public boolean canAddSequenceObjects() {
+		return true;
+	}
+
+	public void addSequenceObject(SequenceObject obj) {
+		if(obj.hasQuality()){
+			this.addAll(obj.getName(), obj.getSequence(), obj.getQuality());
+		}
+		else{
+			this.addSequence(obj.getName(), obj.getSequence());
+		}
+	}
+
+		
 }

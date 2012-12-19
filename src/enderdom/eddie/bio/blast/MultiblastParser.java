@@ -2,7 +2,6 @@ package enderdom.eddie.bio.blast;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Iterator;
 
@@ -12,7 +11,6 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.RootLogger;
-
 
 public class MultiblastParser implements Iterator<BlastObject>{
 

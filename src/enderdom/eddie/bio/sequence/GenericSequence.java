@@ -17,6 +17,10 @@ public class GenericSequence implements SequenceObject{
 	private String name;
 	private String quality; //QUALITY STORED AS FASTQ 
 	
+	public GenericSequence(String name){
+		this.name = name;
+	}
+	
 	public GenericSequence(String name, String sequence, String quality){
 		this.name = name;
 		this.sequence = sequence;
@@ -142,6 +146,22 @@ public class GenericSequence implements SequenceObject{
 		if(quality != null){
 			this.quality = Tools_String.stringPadding(sequence, sequence.length()+i, false, (char)33 , true);
 		}
+	}
+
+	public boolean hasQuality() {
+		return quality != null;
+	}
+
+	public void setSequence(String sequence) {
+		this.sequence = sequence;
+	}
+
+	public void setQuality(String quality) {
+		this.quality = quality;
+	}
+
+	public void setName(String title) {
+		this.name = title;
 	}
 	
 

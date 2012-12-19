@@ -68,7 +68,7 @@ public class SequenceListFactory {
 		if(!i.exists() || !i2.exists()){
 			throw new FileNotFoundException("File: " + input + " does not exist");
 		}
-		else if(i.isDirectory() || i2.exists()){
+		else if(i.isDirectory() || i2.isDirectory()){
 			throw new FileNotFoundException("File: " + input + " is a directory");
 		}
 		else{
@@ -90,5 +90,19 @@ public class SequenceListFactory {
 		}
 	}
 	
+	public static SequenceList buildSequenceList(BioFileType type) throws UnsupportedTypeException{
+		switch(type){
+			case FASTQ:
+				Fasta f = new Fasta();
+				f.setFastq(true);
+				return f;
+			case FASTA:
+				return new Fasta();
+			case FAST_QUAL:
+				return new Fasta();
+			default:
+				throw new UnsupportedTypeException("Builder for this filetype not yet implemented");
+		}
+	}
 
 }

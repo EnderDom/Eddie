@@ -3,6 +3,7 @@ package enderdom.eddie.junit.bio.blast;
 import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -14,17 +15,25 @@ import org.junit.Test;
 
 import enderdom.eddie.bio.blast.MultiblastParser;
 import enderdom.eddie.bio.blast.UniVecBlastObject;
+import enderdom.eddie.bio.factories.SequenceListFactory;
+import enderdom.eddie.bio.interfaces.BioFileType;
+import enderdom.eddie.bio.interfaces.SequenceList;
+import enderdom.eddie.tasks.bio.Task_UniVec;
 import enderdom.eddie.ui.BasicPropertyLoader;
 
 public class MultiblastParserTest {
 
 	private InputStream in = null;
+	private String in2 = null;
+	private String in3 = null;
 	
 	@Before
     public void setup(){
 		BasicPropertyLoader.configureProps("test/log4j.properties", "test/log4j.properties");
 		BasicPropertyLoader.logger.setLevel(Level.TRACE);
 		in = getClass().getResourceAsStream("data/vecscreen.xml");
+		in2 = getClass().getResource("data/vecsreen_fasta.fasta").getPath();
+		in3 = getClass().getResource("data/vecsreen_fasta.qual").getPath();
     }
 
     @After
@@ -40,13 +49,18 @@ public class MultiblastParserTest {
         in = null;
     }
 	
-	@Test
-	public void test() throws IOException {
+    @Test
+    public void testDataFileCheck() throws IOException {
 		in.mark(128);
 		BufferedReader r = new BufferedReader(new InputStreamReader(in));
 		String line = r.readLine();
 		assertNotNull(line);
 		in.reset();
+    }
+    
+	@Test
+	public void testUniVecRegions(){
+		
 		try {
 			MultiblastParser parser = new MultiblastParser(MultiblastParser.UNIVEC, in);
 			int i =-1;
@@ -75,7 +89,40 @@ public class MultiblastParserTest {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+			fail("Failed due to exception");
 		}
 	}
 	
+	@Test
+	public void testTrimming(){
+		try{
+			File outfolder = new File(in2).getParentFile();
+			if(!outfolder.isDirectory())fail("Outfolder should be a directory");
+			SequenceList seq = SequenceListFactory.getSequenceList(in2, in3);
+			int[] l1 = seq.getListOfLens();
+			String[] files = Task_UniVec.parseBlastAndTrim(new MultiblastParser(MultiblastParser.UNIVEC, in), seq, outfolder.getPath(), BioFileType.FAST_QUAL);
+			assertNotNull(files);
+			assertEquals(2,files.length);
+			if(files != null && files.length == 2) {
+				SequenceList list = SequenceListFactory.getSequenceList(files[0], files[1]);
+				System.out.println(files[0] +", " + files[1]);
+				System.out.println("LIST OF MODDED LENGTHS");
+				int[] l2 = list.getListOfLens();
+				System.out.println(list.getSequence("GQYW8I402ET26S").getSequence());
+				for(int i =0; i < l1.length; i++){
+					System.out.println(l1[i] + " -> " +l2[i]);
+				}
+			}
+			else{
+				fail("Did not create files");
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			fail("Failed due to exception");
+		}
+	}
+
+	
 }
+

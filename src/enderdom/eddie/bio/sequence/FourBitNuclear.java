@@ -399,4 +399,13 @@ public class FourBitNuclear extends FourBitSequence implements SequenceObject, I
 		// TODO Auto-generated method stub
 		Logger.getRootLogger().error("Unimplemented method");
 	}
+
+	public boolean hasQuality() {
+		return quality!=null;
+	}
+
+	public void setSequence(String sequence) {
+		init(sequence.length());
+		parseString(sequence);
+	}
 }

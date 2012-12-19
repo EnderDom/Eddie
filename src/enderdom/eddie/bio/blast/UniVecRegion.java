@@ -103,6 +103,14 @@ public class UniVecRegion {
 	private static boolean isTerminal(int start, int stop, int querylen){
 		return start < 25 ? true : stop+25 >= querylen;
 	}
+	
+	public boolean isRightTerminal(){
+		return stop+25>=querylen;
+	}
+	
+	public boolean isLeftTerminal(){
+		return start < 25;
+	}
 
 	public int getStart(int base) {
 		return start+base;

@@ -1,14 +1,13 @@
 package enderdom.eddie.tasks.bio;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
+import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.blast.MultiblastParser;
 import enderdom.eddie.bio.blast.UniVecBlastObject;
@@ -16,6 +15,7 @@ import enderdom.eddie.bio.blast.UniVecRegion;
 import enderdom.eddie.bio.factories.SequenceListFactory;
 import enderdom.eddie.bio.interfaces.BioFileType;
 import enderdom.eddie.bio.interfaces.SequenceList;
+import enderdom.eddie.bio.interfaces.SequenceObject;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_System;
@@ -39,7 +39,6 @@ public class Task_UniVec extends TaskXTwIO{
 	private static String strategyfile = "univec_strategy";
 	private static String key = "UNI_VEC_DB";
 	private SequenceList fout;
-	private BioFileType outfmt;
 	
 	public Task_UniVec(){
 	}
@@ -73,12 +72,11 @@ public class Task_UniVec extends TaskXTwIO{
 			try {
 				if(qual != null &&  new File(qual).isFile()){
 					fout = SequenceListFactory.getSequenceList(input, qual);
-					outfmt = BioFileType.FAST_QUAL;
 				}
 				else{
 					fout = SequenceListFactory.getSequenceList(input);
-					//TODO
 				}
+				this.filetype = fout.getFileType();
 			} catch (Exception e) {
 				logger.error("Failed to parse input file",e);
 				return;
@@ -141,14 +139,14 @@ public class Task_UniVec extends TaskXTwIO{
 		if(xml != null){
 			File xm = new File(xml);
 			if(xm.isFile()){
-				parseBlastAndTrim(xm, fout);
+				parseBlastAndTrim(xm, fout, output, this.filetype);
 			}
 			else if(xm.isDirectory()){
 				File[] files = xm.listFiles();
 				int i =0;
 				for(File f : files){
 					if(Tools_Bio_File.detectFileType(f.getPath())==BioFileType.BLAST_XML){
-						parseBlastAndTrim(f, fout);
+						parseBlastAndTrim(f, fout, output, this.filetype);
 						i++;
 					}
 				}
@@ -156,39 +154,20 @@ public class Task_UniVec extends TaskXTwIO{
 					logger.warn("No blast files in folder, attempting to try plain XML");
 					for(File f: files){
 						if(Tools_Bio_File.detectFileType(f.getPath())==BioFileType.XML){
-							
 							i++;
 						}
 					}
 				}
 			}
 			else{
-				
+				logger.error("Error loading XML file");
 			}
 		}
 
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
 		setComplete(finished);
 	}
-	
-	public void parseBlastAndTrim(File xml, SequenceList seql){
-		try {
-			MultiblastParser parser = new MultiblastParser(MultiblastParser.UNIVEC, xml);
-			while(parser.hasNext()){
-				UniVecBlastObject obj = (UniVecBlastObject) parser.next();
-				obj.reverseOrder();
-				for(UniVecRegion r : obj.getRegions()){
-					seql.getSequence(obj.getBlastTagContents("Iteration_query-def")).removeSection(r.getStart(0), r.getStop(0));
-				}
-			}
-			seql.saveFile(output+"_trim"+ fasta, filetype);
-		} catch (FileNotFoundException e) {
-			logger.error(e);
-		} catch (XMLStreamException e) {
-			logger.error(e);
-		}
-	}
-	
+
 	public void buildOptions(){
 		super.buildOptions();
 		options.getOption("i").setDescription("Input sequence file Fast(a/q)");
@@ -217,6 +196,43 @@ public class Task_UniVec extends TaskXTwIO{
 		if(cmd.hasOption("i"))input=cmd.getOptionValue("i");
 		if(cmd.hasOption("x"))xml=cmd.getOptionValue("x");
 		if(cmd.hasOption("q"))qual=cmd.getOptionValue("q");
+	}
+	
+	
+	public static String[] parseBlastAndTrim(File xml, SequenceList seql, String outputfolder, BioFileType filetype){
+		try {
+			return parseBlastAndTrim(new MultiblastParser(MultiblastParser.UNIVEC, xml), seql, outputfolder, filetype);
+		} 
+		catch (Exception e) {
+			Logger.getRootLogger().error("Error trimming file ", e);
+			return null;
+		}
+	}
+	
+	public static String[] parseBlastAndTrim(MultiblastParser parser, SequenceList seql, String outputfolder, BioFileType filetype) throws Exception{
+		SequenceList list = SequenceListFactory.buildSequenceList(filetype);
+		while(parser.hasNext()){
+			UniVecBlastObject obj = (UniVecBlastObject) parser.next();
+			obj.reverseOrder();
+			for(UniVecRegion r : obj.getRegions()){
+				if(r.isLeftTerminal()){
+					SequenceObject o = seql.getSequence(obj.getBlastTagContents("Iteration_query-def"));
+					o.leftTrim(r.getStop(0));
+					list.addSequenceObject(o);
+				}
+				else if(r.isRightTerminal()){
+					SequenceObject o = seql.getSequence(obj.getBlastTagContents("Iteration_query-def"));
+					o.rightTrim(o.getLength()-r.getStart(0));
+					list.addSequenceObject(o);
+				}
+				else{
+					Logger.getRootLogger().error("Not yet implemented mid section");
+				}
+			}
+		}
+		String name = outputfolder+Tools_System.getFilepathSeparator();
+		name += seql.getFileName() !=null ? seql.getFileName()+"_trimmed" : "out_trimmed";  
+		return seql.saveFile(new File(name), filetype);
 	}
 	
 	/**

@@ -68,7 +68,7 @@ public class Tools_Converters {
 				record = parser.next();
 				fasta.addSequence(record.getConsensus().getName(), record.getConsensus().getSequence());
 			}
-			if(!fasta.save2Fasta(output)){
+			if(fasta.save2Fasta(output) != null){
 				logger.error("File was not successfully saved");
 				return false;
 			}
@@ -101,7 +101,7 @@ public class Tools_Converters {
 				fasta.addSequence(record.getConsensus().getName(), record.getConsensus().getSequence());
 				fasta.addQuality(record.getConsensus().getName(), record.getConsensus().getQuality());
 			}
-			if(!fasta.save2Fastq(output)){
+			if(fasta.save2Fastq(output) != null){
 				logger.error("File was not successfully saved");
 				return false;
 			}

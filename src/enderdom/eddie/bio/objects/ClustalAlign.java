@@ -6,6 +6,8 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
+
 import enderdom.eddie.bio.interfaces.BioFileType;
 import enderdom.eddie.bio.interfaces.SequenceList;
 import enderdom.eddie.bio.interfaces.SequenceObject;
@@ -18,8 +20,15 @@ import enderdom.eddie.tools.bio.Tools_Sequences;
 //@stub
 public class ClustalAlign implements SequenceList{
 
-	GenericSequence[] sequences;
+	private String filename;
+	private String filepath;
+	SequenceObject[] sequences;
 	int iterator =0;
+	Logger logger = Logger.getRootLogger();
+	
+	public ClustalAlign(File file, BioFileType type) throws UnsupportedTypeException, Exception{
+		loadFile(file, type);
+	}
 	
 	//TODO improve with parse method
 	public boolean hasNext() {
@@ -75,10 +84,10 @@ public class ClustalAlign implements SequenceList{
 		return null;
 	}
 
-	public boolean saveFile(File file, BioFileType filetype) throws Exception,
+	public String[] saveFile(File file, BioFileType filetype) throws Exception,
 			UnsupportedTypeException {
-		// TODO Auto-generated method stub
-		return false;
+		logger.error("Not yet implemented");
+		return null;
 	}
 
 	/**
@@ -86,7 +95,10 @@ public class ClustalAlign implements SequenceList{
 	 */
 	public int loadFile(File file, BioFileType filetype) throws Exception, UnsupportedTypeException {
 		int counter=0;
+		
 		if(file.isFile()){
+			filename = file.getName();
+			filepath = file.getPath();
 			LinkedList<String> nams = new LinkedList<String>();
 			LinkedList<String> seqs = new LinkedList<String>();
 			FileInputStream fis = new FileInputStream(file);
@@ -127,6 +139,31 @@ public class ClustalAlign implements SequenceList{
 			throw new Exception("Not a file!");
 		}
 		return counter;
+	}
+
+	public BioFileType getFileType() {
+		return BioFileType.CLUSTAL_ALN;
+	}
+
+	public String getFileName() {
+		return filename;
+	}
+
+	public String getFilePath() {
+		return filepath;
+	}
+
+	public boolean canAddSequenceObjects() {
+		return true;
+	}
+
+	public void addSequenceObject(SequenceObject object) {
+		SequenceObject[] temp = new GenericSequence[this.sequences.length+1];
+		for(int i =0;i < sequences.length;i++){
+			temp[i] = sequences[i];
+		}
+		temp[this.sequences.length] = object;
+		this.sequences = temp;
 	}
 
 }

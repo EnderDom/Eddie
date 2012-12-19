@@ -26,10 +26,10 @@ public class UniVecBlastObject extends BasicBlastObject implements Comparator<Un
 	
 	public UniVecBlastObject() throws Exception{
 		super();
-		generateRegions();
 	}
 	
-	public boolean requiresTrim(){
+	public boolean requiresTrim() throws Exception{
+		if(regions == null)generateRegions();
 		return this.getNoOfHits() != 0;
 	}
 	
@@ -38,7 +38,8 @@ public class UniVecBlastObject extends BasicBlastObject implements Comparator<Un
 		return this.regions.get(i);
 	}
 	
-	public List<UniVecRegion> getRegions(){
+	public List<UniVecRegion> getRegions() throws Exception{
+		if(regions == null)generateRegions();
 		return this.regions;
 	}
 	
@@ -53,7 +54,7 @@ public class UniVecBlastObject extends BasicBlastObject implements Comparator<Un
 	 * 
 	 * @throws Exception
 	 */
-	private void generateRegions() throws Exception{
+	public void generateRegions() throws Exception{
 		regions = new LinkedList<UniVecRegion>();
 		int laststart = 0;
 		int lastend =0;
@@ -124,7 +125,8 @@ public class UniVecBlastObject extends BasicBlastObject implements Comparator<Un
 		}
 	}
 	
-	public void reverseOrder(){
+	public void reverseOrder() throws Exception{
+		if(regions == null)generateRegions();
 		reversed = true;
 		Collections.sort(regions, this);
 	}

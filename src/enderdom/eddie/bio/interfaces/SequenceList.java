@@ -52,6 +52,9 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	 */
 	public SequenceObject getSequence(String s);
 	
+	public boolean canAddSequenceObjects();
+	
+	public void addSequenceObject(SequenceObject object);
 	
 	/**
 	 * Saves file as stated filetype, if filetype == -1
@@ -62,9 +65,9 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	 * @param filetype type of file as listed above
 	 * @throws Exception
 	 * 
-	 * @return true if save successful
+	 * @return returns the paths of all files saved
 	 */
-	public boolean saveFile(File file, BioFileType filetype) throws Exception, UnsupportedTypeException;
+	public String[] saveFile(File file, BioFileType filetype) throws Exception, UnsupportedTypeException;
 	
 	/**
 	 * 
@@ -80,5 +83,18 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	
 	public BioFileType getFileType();
 
+	/**
+	 * 
+	 * @return file name if available, else
+	 * returns null
+	 */
+	public String getFileName();
+	
+	/**
+	 * 
+	 * @return file path if available, else
+	 * returns null
+	 */
+	public String getFilePath();
 	
 }
