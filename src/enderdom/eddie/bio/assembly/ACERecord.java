@@ -460,7 +460,7 @@ public class ACERecord implements Contig{
 		return lens;
 	}
 
-	public int getNoOfMolecules() {
+	public int getNoOfMonomers() {
 		int t = 0;
 		for(int i =0; i < this.readcount; i++){
 			t=seqs[i+1].getActualLength();

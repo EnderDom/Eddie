@@ -15,8 +15,38 @@ import enderdom.eddie.bio.interfaces.SequenceObject;
 import enderdom.eddie.bio.sequence.FourBitNuclear;
 
 import enderdom.eddie.tools.Tools_Math;
+import enderdom.eddie.tools.Tools_String;
 
 public class Tools_Sequences {
+	
+	public static int UNKNOWN = -1;
+	public static int DNA = 0;
+	public static int RNA = 1;
+	public static int PROTEIN = 2;
+	public static int OTHER = 3;
+	
+	//AA codes
+	//A,B,C,D,E,F,G,H,I,J,K,L,M,N,P,Q,R,S,T,V,W,X,Y,z
+	//Nucleic
+	//A,B,C,D,    G,H,I,   K,  M,N,    R,S,T,V,W,Y
+
+	
+	public static int detectSequence(SequenceObject o){
+		String exc_aas[] = new String[]{"E","F","J","L","P","Q","Z"};
+		for(int i =0; i < exc_aas.length; i++){
+			if(o.getSequence().contains(exc_aas[i])){
+				if(!o.hasQuality())return PROTEIN;
+				else return UNKNOWN;
+			}
+		}
+		if(o.getSequence().contains("U")){
+			if(!o.getSequence().contains("T"))return RNA;
+			else return UNKNOWN;
+		}
+		if(Tools_String.containsDigits(o.getSequence()))return UNKNOWN;
+		else return DNA;
+	}
+	
 	
 	/**
 	 * Source code taken from 

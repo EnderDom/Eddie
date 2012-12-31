@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import enderdom.eddie.bio.interfaces.SequenceObject;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.bio.Tools_Fasta;
+import enderdom.eddie.tools.bio.Tools_Sequences;
 
 /*
  * I guess just a wrapper for String
@@ -16,6 +17,8 @@ public class GenericSequence implements SequenceObject{
 	private String sequence;
 	private String name;
 	private String quality; //QUALITY STORED AS FASTQ 
+	private boolean gaps;
+	private int type = -1;
 	
 	public GenericSequence(String name){
 		this.name = name;
@@ -26,8 +29,10 @@ public class GenericSequence implements SequenceObject{
 		this.sequence = sequence;
 		this.quality = quality;
 		if(this.quality !=null)if(this.sequence.length() != this.quality.length()){
-			Logger.getRootLogger().warn("Sequence length and quality length are not the same, this will fail");
+			Logger.getRootLogger().warn("Sequence length and quality length are not the same "+
+					this.sequence.length() + " and " + this.quality.length()+" for "+name+", this will fail");
 		}
+		if(hasGaps(sequence))gaps=true;
 	}
 	
 	public GenericSequence(String name, String sequence){
@@ -55,12 +60,15 @@ public class GenericSequence implements SequenceObject{
 	}
 
 	public int getSequenceType() {
-		// TODO Auto-generated method stub
-		return -1;
+		if(type == -1){
+			this.type = Tools_Sequences.detectSequence(this);
+		}
+		return type;
 	}
 
 	public int getActualLength() {//Rough implementation for now
-		return this.sequence.replaceAll("-", "").length();
+		if(this.gaps)return this.sequence.replaceAll("-", "").length();
+		else return this.getLength();
 	}
 	
 	public int getLength(){
@@ -90,8 +98,14 @@ public class GenericSequence implements SequenceObject{
 	}
 	
 	private void trim(int start, int end){
-		this.sequence = this.sequence.substring(start, end);
-		if(this.quality != null) this.quality = this.quality.substring(start, end);
+		if(end >= this.sequence.length()-1){
+			this.sequence.substring(start);
+			if(this.quality != null) this.quality = this.quality.substring(start);
+		}
+		else{
+			this.sequence = this.sequence.substring(start, end);
+			if(this.quality != null) this.quality = this.quality.substring(start, end);
+		}
 	}
 
 	public SequenceObject[] removeSection(int start, int end) {
@@ -99,7 +113,9 @@ public class GenericSequence implements SequenceObject{
 		seq[0] = this.replicate();
 		seq[1] = this.replicate();
 		seq[0].rightTrim(start);
-		seq[1].leftTrim(end);
+		seq[1].leftTrim(seq[1].getLength()-end);
+		seq[0].setName(this.name+"_0");
+		seq[1].setName(this.name+"_1");
 		return seq;
 	}
 
@@ -154,6 +170,7 @@ public class GenericSequence implements SequenceObject{
 
 	public void setSequence(String sequence) {
 		this.sequence = sequence;
+		if(hasGaps(sequence));
 	}
 
 	public void setQuality(String quality) {
@@ -164,5 +181,8 @@ public class GenericSequence implements SequenceObject{
 		this.name = title;
 	}
 	
+	private boolean hasGaps(String seq){
+		return seq.contains("-");
+	}
 
 }

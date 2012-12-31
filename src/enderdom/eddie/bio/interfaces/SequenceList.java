@@ -30,7 +30,7 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	 * @return Total number of base pairs or amino acids 
 	 * (Sum of all sequences lengths (actual))
 	 */
-	public int getNoOfMolecules();
+	public int getNoOfMonomers();
 	
 	/**
 	 * 

@@ -52,19 +52,26 @@ public class Fasta implements FastaHandler, SequenceList{
 			o.setSequence(sequence);
 			sequences.put(title, o);
 		}
-		sequences.put(title, new GenericSequence(title, sequence));
+		else{
+			sequences.put(title, new GenericSequence(title, sequence));
+		}
 	}
 
+	/**
+	 * Quality must be fastq
+	 * @param title the name of sequence
+	 * @param quality the quality string as in fastq 
+	 */
 	public void addQuality(String title, String quality) {
 		if(sequences.containsKey(title)){
 			SequenceObject o = sequences.get(title);
-			if(fastq)o.setQuality(quality);
-			else o.setQuality(Tools_Fasta.Qual2Fastq(quality));
+			o.setQuality(quality);
 			sequences.put(title, o);
 		}
 		else{
 			SequenceObject o = new GenericSequence(title);
 			o.setQuality(quality);
+			sequences.put(title, o);
 		}
 	}
 
@@ -336,7 +343,7 @@ public class Fasta implements FastaHandler, SequenceList{
 		return li;
 	}
 
-	public int getNoOfMolecules() {
+	public int getNoOfMonomers() {
 		return Tools_Math.sum(this.getListOfActualLens());
 	}
 
@@ -450,12 +457,7 @@ public class Fasta implements FastaHandler, SequenceList{
 	}
 
 	public void addSequenceObject(SequenceObject obj) {
-		if(obj.hasQuality()){
-			this.addAll(obj.getName(), obj.getSequence(), obj.getQuality());
-		}
-		else{
-			this.addSequence(obj.getName(), obj.getSequence());
-		}
+		this.sequences.put(obj.getName(), obj);
 	}
 
 		

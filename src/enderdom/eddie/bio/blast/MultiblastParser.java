@@ -5,18 +5,27 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Iterator;
 
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
+
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.RootLogger;
+import org.codehaus.stax2.XMLInputFactory2;
+import org.codehaus.stax2.XMLStreamReader2;
+
+/*
+ * Had issues because of this:
+ * bug report 6536111 {@link http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6536111}
+ * 
+ * Switched to woodstox
+ * 
+ */
 
 public class MultiblastParser implements Iterator<BlastObject>{
 
 	private Logger logger = RootLogger.getRootLogger();
 	private static String iteration = "Iteration";
-	private XMLStreamReader stream;
+	private XMLStreamReader2 stream;
 	private BlastObject current;
 	private BlastObject last;
 	int i =0;
@@ -31,8 +40,9 @@ public class MultiblastParser implements Iterator<BlastObject>{
 	
 	public MultiblastParser(int blastype, File xml) throws Exception{
 		this.blasttype = blastype;
-		XMLInputFactory f = XMLInputFactory.newInstance();
-		stream = f.createXMLStreamReader(new FileInputStream(xml));
+		XMLInputFactory2 f = (XMLInputFactory2) XMLInputFactory2.newInstance();
+	    f.setProperty(XMLInputFactory2.SUPPORT_DTD, Boolean.FALSE);
+		stream = (XMLStreamReader2) f.createXMLStreamReader(new FileInputStream(xml));
 		try {
 			parseNext();
 		} catch (GeneralBlastException e) {
@@ -44,8 +54,9 @@ public class MultiblastParser implements Iterator<BlastObject>{
 
 	public MultiblastParser(int blastype, InputStream str)throws Exception{
 		this.blasttype = blastype;
-		XMLInputFactory f = XMLInputFactory.newInstance();
-		stream = f.createXMLStreamReader(str);
+		XMLInputFactory2 f = (XMLInputFactory2) XMLInputFactory2.newInstance();
+	    f.setProperty(XMLInputFactory2.SUPPORT_DTD, Boolean.FALSE);
+		stream = (XMLStreamReader2) f.createXMLStreamReader(str);
 		try {
 			parseNext();
 		} catch (GeneralBlastException e) {
@@ -94,7 +105,7 @@ public class MultiblastParser implements Iterator<BlastObject>{
 				if(stream.isEndElement()){
 					if(stream.getName().toString().equals(iteration)){
 						itercount++;
-						logger.debug("Parsed Iteration " + itercount);
+						System.out.print("\rParsed Iteration " + itercount+ "       ");
 						return;
 					}
 				}
@@ -103,6 +114,7 @@ public class MultiblastParser implements Iterator<BlastObject>{
 		catch (XMLStreamException e) {
 			logger.error("Failed to load XML as stream",e);
 		}
+		System.out.println();
 	}
 	
 	/**

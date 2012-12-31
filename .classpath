@@ -33,5 +33,7 @@
 	<classpathentry kind="lib" path="lib/pdfbox/fontbox-1.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/jfreechart/jfreechart-1.0.14.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="J:/eclipse/Eddie4/lib/stox/woodstox-core-lgpl-4.1.4.jar"/>
+	<classpathentry kind="lib" path="J:/eclipse/Eddie4/lib/stox/stax2-api-3.1.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

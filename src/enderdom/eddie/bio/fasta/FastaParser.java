@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.tools.Tools_String;
+import enderdom.eddie.tools.bio.Tools_Fasta;
 
 public class FastaParser{
 
@@ -118,6 +119,7 @@ public class FastaParser{
 		StringBuilder sequence = new StringBuilder();
 		StringBuilder quality = new StringBuilder();
 		String title = "";
+		String qualtitle = "";
 		while(line != null){
 			while ((line = reader.readLine()) != null){
 				System.out.println(line);
@@ -141,15 +143,15 @@ public class FastaParser{
 			while ((line = reader2.readLine()) != null){
 				if(line.startsWith(">")){
 					if(quality.length() > 0){
-						handler.addQuality(title, quality.toString());
+						handler.addQuality(qualtitle, Tools_Fasta.Qual2Fastq(quality.toString()));
 						sequence = new StringBuilder();
 						count2++;
 					}
 					if(this.shorttitles && line.indexOf(" ") != 0){
-						title = line.substring(1, line.indexOf(" "));
+						qualtitle = line.substring(1, line.indexOf(" "));
 					}
 					else{
-						title= line.substring(1, line.length());
+						qualtitle= line.substring(1, line.length());
 					}
 				}
 				else{
@@ -194,7 +196,7 @@ public class FastaParser{
 			if(line.startsWith(">")){
 				if(sequence.length() > 0){
 					if(!qual)handler.addSequence(title, sequence.toString());
-					else handler.addQuality(title, sequence.toString());
+					else handler.addQuality(title, Tools_Fasta.Qual2Fastq(sequence.toString()));
 					sequence = new StringBuilder();
 					count++;
 				}

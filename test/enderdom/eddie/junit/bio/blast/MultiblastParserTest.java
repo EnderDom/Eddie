@@ -100,7 +100,7 @@ public class MultiblastParserTest {
 			if(!outfolder.isDirectory())fail("Outfolder should be a directory");
 			SequenceList seq = SequenceListFactory.getSequenceList(in2, in3);
 			int[] l1 = seq.getListOfLens();
-			String[] files = Task_UniVec.parseBlastAndTrim(new MultiblastParser(MultiblastParser.UNIVEC, in), seq, outfolder.getPath(), BioFileType.FAST_QUAL);
+			String[] files = Task_UniVec.parseBlastAndTrim(new MultiblastParser(MultiblastParser.UNIVEC, in), seq, outfolder.getPath(), BioFileType.FAST_QUAL, 50);
 			assertNotNull(files);
 			assertEquals(2,files.length);
 			if(files != null && files.length == 2) {

@@ -1,5 +1,7 @@
 package enderdom.eddie.bio.blast;
 
+import org.apache.log4j.Logger;
+
 /**
  * 
  * @author dominic
@@ -32,6 +34,9 @@ public class UniVecRegion {
 	 * will then check if the region is suspect
 	 */
 	public UniVecRegion(int start, int stop, int querylen, double bitscore){
+		if(start < 0 || stop < 0){ 
+			Logger.getRootLogger().error("Cannot set start or stop as 0");
+		}
 		setAll(start, stop, querylen, -1);
 		if(bitscore != -1){
 			this.regionstrength = calcStrength(start, stop, querylen, bitscore);
@@ -105,7 +110,7 @@ public class UniVecRegion {
 	}
 	
 	public boolean isRightTerminal(){
-		return stop+25>=querylen;
+		return stop+25 >= querylen;
 	}
 	
 	public boolean isLeftTerminal(){

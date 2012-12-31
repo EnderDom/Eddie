@@ -65,7 +65,7 @@ public class ClustalAlign implements SequenceList{
 		return ins;
 	}
 
-	public int getNoOfMolecules() {
+	public int getNoOfMonomers() {
 		return Tools_Math.sum(getListOfActualLens());
 	}
 

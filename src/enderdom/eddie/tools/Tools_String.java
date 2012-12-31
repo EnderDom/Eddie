@@ -77,6 +77,14 @@ public abstract class Tools_String {
 		}
 	}
 	
+	public static boolean containsDigits(String str){
+		return str.matches(".*\\d.*");
+	}
+	
+	public static boolean containsOnlyAtoZ(String str){
+		return containsDigits(str) ? true : str.matches(".*\\W.*");
+	}
+	
 	public static String cutLineBetween(String start, String end, String src) throws Exception{
 		int i =0;
 		int j =0;

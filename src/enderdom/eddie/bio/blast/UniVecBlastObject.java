@@ -96,7 +96,7 @@ public class UniVecBlastObject extends BasicBlastObject implements Comparator<Un
 	private void mergeOverlaps(){
 		Collections.sort(regions, this);
 		for(int i =0;i < regions.size()-1; i++){
-			System.out.println("Compare " + regions.get(i).getStop(0) +"("+regions.get(i).getStart(0)+") with " +regions.get(i+1).getStart(0));
+			logger.trace("Compare " + regions.get(i).getStop(0) +"("+regions.get(i).getStart(0)+") with " +regions.get(i+1).getStart(0));
 			if(regions.get(i).getStop(0) >= regions.get(i+1).getStart(0)){
 				regions.get(i).setStop(regions.get(i+1).getStop(0), 0);
 				regions.get(i).setRegionstrength(Math.max(regions.get(i).getRegionstrength(), regions.get(i+1).getRegionstrength()));
