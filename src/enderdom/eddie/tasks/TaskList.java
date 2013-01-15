@@ -6,7 +6,6 @@ import enderdom.eddie.tasks.bio.Task_Assembly;
 import enderdom.eddie.tasks.bio.Task_BioTools;
 import enderdom.eddie.tasks.bio.Task_BlastAnalysis;
 import enderdom.eddie.tasks.bio.Task_BlastLocal;
-import enderdom.eddie.tasks.bio.Task_ChimeraAnalysis;
 import enderdom.eddie.tasks.bio.Task_Convert;
 import enderdom.eddie.tasks.bio.Task_Fasta_Tools;
 import enderdom.eddie.tasks.bio.Task_UniVec;
@@ -16,8 +15,6 @@ import enderdom.eddie.tasks.database.Task_Assembly2DB;
 import enderdom.eddie.tasks.database.Task_BioSQLDB;
 import enderdom.eddie.tasks.database.Task_Blast;
 import enderdom.eddie.tasks.database.Task_dbTools;
-import enderdom.eddie.tasks.database.niche.Task_ContigComparison;
-import enderdom.eddie.tasks.testing.Task_Test;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.ui.UI;
 
@@ -86,10 +83,10 @@ public class TaskList {
 			tasks[1][6] = "blastanalysis";
 			tasks[2][6] = "analyse fasta and blast files";
 			
-			//Chimera Analysis
-			tasks[0][7] = Task_ChimeraAnalysis.class.getName();
-			tasks[1][7] = "chimera";
-			tasks[2][7] = "run chimera analysis using ACE and blast files";
+			// Empty
+			//tasks[0][7] = 
+			//tasks[1][7] = 
+			//tasks[2][7] = 
 			
 			//SQL admin tools
 			tasks[0][8] = Task_BioSQLDB.class.getName();
@@ -116,19 +113,20 @@ public class TaskList {
 			tasks[1][12] = "dbtools";
 			tasks[2][12] = "tools for downloading various data from database";
 	
-			//Contig Comparison
-			tasks[0][13] = Task_ContigComparison.class.getName();
-			tasks[1][13] = "contigcompare";
-			tasks[2][13] = "contig comparison analysis [WIP]";
+			// Empty
+			//tasks[0][13] = 
+			//tasks[1][13] = 
+			//tasks[2][13] =
 			
 			//Contig Comparison
 			tasks[0][14] = Task_UniVec.class.getName();
 			tasks[1][14] = "univec";
 			tasks[2][14] = "Run UniVec screen on dataset";
 			
-			tasks[0][15] = Task_Test.class.getName();
-			tasks[1][15] = "test";
-			tasks[2][15] = "Run available tests";
+			//Empty
+			//tasks[0][15] = 
+			//tasks[1][15] = 
+			//tasks[2][15] = 
 			
 			return tasks;
 		}
@@ -143,8 +141,7 @@ public class TaskList {
 	public static boolean isTask(String task){
 		String[][] tasklist = getTasklist();
 		for(int i =0; i < tasklist[1].length; i++){
-			if(tasklist[1][i] == null) break;
-			else{
+			if(tasklist[1][i] != null){			
 				if(tasklist[1][i].equalsIgnoreCase(task)){
 					return true;
 				}
@@ -163,18 +160,19 @@ public class TaskList {
 		String[][] tasks = getTasklist();
 		Logger.getRootLogger().debug("Task "+ s + " sent");
 		for(int i =0; i < tasks[1].length; i++){
-			if(tasks[1][i] == null) return false;
-			else if(s.equalsIgnoreCase(tasks[1][i])){
-				try {
-					Task t = (Task) Class.forName(tasks[0][i]).getConstructor().newInstance();
-					if(t != null){
-						cli.addTask(t);
-						return true;
+			if(tasks[1][i] != null){
+				if(s.equalsIgnoreCase(tasks[1][i])){
+					try {
+						Task t = (Task) Class.forName(tasks[0][i]).getConstructor().newInstance();
+						if(t != null){
+							cli.addTask(t);
+							return true;
+						}
+					} 					
+					catch (Exception e) {
+						Logger.getRootLogger().fatal("Task class failed, please report this bug:", e);
+						return false;
 					}
-				} 					
-				catch (Exception e) {
-					Logger.getRootLogger().fatal("Task class failed, please report this bug:", e);
-					return false;
 				}
 			}
 		}
@@ -186,13 +184,13 @@ public class TaskList {
 		StringBuilder build = new StringBuilder();
 		System.out.println("--Task List--");
 		for(int i =0; i < tasks[1].length; i++){
-			if(tasks[1][i] == null)break;
-			build = new StringBuilder();
-			build.append(Tools_String.padString("-task "+tasks[1][i] + " [args]", taskpad, false));
-			build.append("    ");
-			build.append(Tools_String.padString(tasks[2][i], descriptionpad, false));
-			
-			System.out.println(build.toString());
+			if(tasks[1][i] != null){
+				build = new StringBuilder();
+				build.append(Tools_String.padString("-task "+tasks[1][i] + " [args]", taskpad, false));
+				build.append("    ");
+				build.append(Tools_String.padString(tasks[2][i], descriptionpad, false));
+				System.out.println(build.toString());
+			}
 		}
 		System.out.println("Usage Example: -task taskname -arg1 one -arg2 two");
 	}
