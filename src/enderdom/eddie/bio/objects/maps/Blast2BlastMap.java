@@ -93,7 +93,6 @@ public class Blast2BlastMap {
 	 * two blast files. array is length 3, index
 	 *  0 are the number of shared blasts in xml1 & xml2
 	 */
-	
 	public int getAccessionOverlap(){
 		int t =0;
 		if(map != null){

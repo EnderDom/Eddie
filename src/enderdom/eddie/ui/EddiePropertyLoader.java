@@ -1,22 +1,10 @@
 package enderdom.eddie.ui;
 
-import enderdom.eddie.gui.EddieGUI;
-import enderdom.eddie.gui.utilities.PropertyFrame;
-import enderdom.eddie.gui.viewers.file.FileViewerModel;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.swing.JMenuItem;
-
-import javax.swing.KeyStroke;
-
-import enderdom.eddie.cli.EddieCLI;
 import enderdom.eddie.cli.LazyPosixParser;
-import enderdom.eddie.modules.Module;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -25,16 +13,13 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
-import enderdom.eddie.tools.Tools_Modules;
-import enderdom.eddie.tools.Tools_Array;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_System;
 
-public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
+public class EddiePropertyLoader extends BasicPropertyLoader{
 
 	//TODO hand over database properties to another class
     public static String propertyfilename = new String("eddie.properties");
@@ -48,7 +33,6 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
     public static double subversion = 0.37;
     public static String edition = "Development";
     public String[] actions;
-    private PropertyFrame propsframe;
 	
 	public String[] args;
 	public String modulename;
@@ -199,7 +183,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 		defaultvalues = new String[]{
 				propfile.getParent(), "5", "1", 
 				"/usr/bin/", "/home/dominic/bioapps/blast/db/", "/usr/bin/",
-				propfile.getParent()+slash+FileViewerModel.filename, defaultlnf, propfile.getParent()+slash+"test", 
+				"null", defaultlnf, propfile.getParent()+slash+"test", 
 				"mysql","com.mysql.jdbc.Driver", "Localhost", 
 				DatabaseManager.default_database, "user", "","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec"
 				};
@@ -263,89 +247,6 @@ public class EddiePropertyLoader extends BasicPropertyLoader implements Module{
 	
 	public String getPropertyFilePath(){
 		return this.propfile.getPath();
-	}
-	
-	/****************************************************************************/
-	/*																			*
-	 *																			*
-	 * 						MODULE SPECIFIC METHODS 							*
-	 * 																			*
-	 * 																			*
-	 *																			*/
-	/****************************************************************************/
-	public boolean ownsThisAction(String s) {
-		return Tools_Modules.ownsThisAction(actions, s);
-	}
-
-	public void actOnAction(String s, EddieGUI gui) {
-		Logger.getRootLogger().debug("PropertyLoader acting upon command "+s);
-		if(s.contentEquals(this.modulename)){
-			Logger.getRootLogger().debug("Building General Properties Frame");
-			propsframe = new PropertyFrame();
-			String[][] labels = this.getChangableStats();
-			for(int i =0;i < labels[0].length; i++)labels[1][i]=this.getValueOrSet(labels[0][i], labels[1][i]);
-			actions = Tools_Array.mergeStrings(actions, propsframe.build(this.modulename,"", gui, labels));
-			propsframe.setVisible(true);
-			gui.add2Desktop(propsframe);
-		}
-		else if(s.contentEquals(modulename+"_PROPS_CLOSE")){
-			Logger.getRootLogger().debug("Closing General Properties Without Saving");
-			this.propsframe.dispose();
-			actions = new String[]{actions[0]};
-		}
-		else if(s.contentEquals(modulename+"_PROPS_SAVE")){
-			Logger.getRootLogger().debug("Closing General Properties and Saving");
-			String[][] states = getChangableStats();
-			for(int i =0; i< states[0].length;i++){
-				Logger.getRootLogger().trace("Setting Property "+states[0][i]+" to " + propsframe.getInput(i));
-				setValue(states[0][i], propsframe.getInput(i));
-			}
-			this.propsframe.dispose();
-			actions = new String[]{actions[0]};
-		} 	
-	}
-
-	public void addToGui(EddieGUI eddiegui) {
-		actions = new String[1]; 
-		JMenuItem menuItem = new JMenuItem("General Properties");
-		menuItem.setMnemonic(KeyEvent.VK_P);
-	    menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.ALT_MASK));
-	    menuItem.setActionCommand(this.modulename);
-	    actions[0] = this.modulename;
-	    menuItem.addActionListener(eddiegui);
-	    Tools_Modules.add2JMenuBar(eddiegui.getMenu(), menuItem, "Properties", true);
-	}
-
-	public String getModuleName() {
-		return this.modulename;
-	}	
-	public void printTasks() {
-		// TODO Auto-generated method stub
-	}
-
-	public void actOnTask(String s, UI ui) {
-		// TODO Auto-generated method stub
-	}
-	
-	public void addToCli(EddieCLI cli) {
-		cli.setArgs(this.args);
-	}
-
-	public boolean isPersistant() {
-		return true;
-	}
-
-	public String[] getTasks() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String[] getActions() {
-		return actions;
-	}
-	
-	public void resetModuleName(String name){
-		this.modulename = name;
 	}
 
 	public boolean isTest() {

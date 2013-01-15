@@ -6,7 +6,6 @@ package enderdom.eddie.main;
 import enderdom.eddie.cli.EddieCLI;
 import enderdom.eddie.tools.Tools_Fun;
 import enderdom.eddie.ui.EddiePropertyLoader;
-import enderdom.eddie.gui.EddieGUI;
 
 /**
  * @author Dominic Matthew Wood
@@ -31,8 +30,7 @@ public class Eddie {
 				EddieCLI cli = new EddieCLI(loader, true);
 			}	
 			else if(retvalue == 4){
-				 @SuppressWarnings("unused")
-				EddieGUI desk = new EddieGUI(loader);
+				System.out.println(EddiePropertyLoader.edition+ " Edition does not include GUI modules ");
 			}
 			else if(retvalue == 6){
 				Tools_Fun.printAbout();
