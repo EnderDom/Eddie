@@ -250,6 +250,8 @@ public class Task_UniVec extends TaskXTwIO{
 	 */
 	public static String[] parseBlastAndTrim(MultiblastParser parser, SequenceList seql, String outputfolder, BioFileType filetype, int trimlength) throws Exception{
 		SequenceList list = SequenceListFactory.buildSequenceList(filetype);	
+		int startsize =  seql.getNoOfSequences();
+		
 		int lefttrims = 0;
 		int righttrims = 0;
 		int midtrims = 0;
@@ -266,14 +268,20 @@ public class Task_UniVec extends TaskXTwIO{
 					if(r.isLeftTerminal()){
 						o = seql.getSequence(obj.getBlastTagContents("Iteration_query-def"));
 						o.leftTrim(r.getStop(0));
-						if(o.getLength() >= trimlength)list.addSequenceObject(o);
-						else lefttrims++;
+						if(o.getLength() >= trimlength){
+							list.addSequenceObject(o);
+							lefttrims++;
+						}
+						else removed++;
 					}
 					else if(r.isRightTerminal()){
 						o = seql.getSequence(obj.getBlastTagContents("Iteration_query-def"));
 						o.rightTrim(o.getLength()-r.getStart(0));
-						if(o.getLength() >= trimlength)list.addSequenceObject(o);
-						else righttrims++;
+						if(o.getLength() >= trimlength){
+							list.addSequenceObject(o);
+							righttrims++;
+						}
+						else removed++;
 					}
 					else{
 						o = seql.getSequence(obj.getBlastTagContents("Iteration_query-def"));
@@ -316,16 +324,16 @@ public class Task_UniVec extends TaskXTwIO{
 					" Last object was " + o.getName() + " of length " + o.getLength(), e);
 			return null;
 		}
-		int startsize =  seql.getNoOfSequences();
+		
 		int endsize =  list.getNoOfSequences();
 		int startmonmers = list.getNoOfMonomers();
 		int endmonmers = list.getNoOfMonomers();
 		System.out.println("__REPORT__");
 		System.out.println("A total of " + regions + " were found across " + startsize + " sequences, containing " + startmonmers + "bps");
-		System.out.println("After trimming "+ endsize + "(" +(endsize-startsize)+ "), a change of " +(endmonmers-startmonmers)+ " bps");
-		System.out.println(lefttrims+" seqeunces trimmed left and " + righttrims + "trimmed right");
+		System.out.println("After trimming "+ endsize + "(" +(startsize-endsize)+ "), a change of " +(endmonmers-startmonmers)+ " bps");
+		System.out.println(lefttrims+" sequences trimmed left and " + righttrims + " trimmed right");
 		System.out.println(midtrims + " sequences were trimmed inside the sequence");
-		System.out.println("A total of "+ removed +" sequences (" + added +" Added due to internal trims)" );
+		System.out.println("A total of "+ removed +" sequences were removed (" + added +" Added due to internal trims)" );
 		String name = outputfolder+Tools_System.getFilepathSeparator();
 		name += seql.getFileName() !=null ? seql.getFileName()+"_trimmed" : "out_trimmed";  
 		return seql.saveFile(new File(name), filetype);

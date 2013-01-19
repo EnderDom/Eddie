@@ -148,6 +148,8 @@ public class Fasta implements FastaHandler, SequenceList{
 				count++;
 			}
 			else{
+				System.out.println(sequences.get(str).getSequence() );
+				System.out.println(sequences.get(str).getQuality() );
 				throw new IOException("Fasta failed QC check");
 			}
 		}

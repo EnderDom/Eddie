@@ -105,7 +105,6 @@ public class MultiblastParser implements Iterator<BlastObject>{
 				if(stream.isEndElement()){
 					if(stream.getName().toString().equals(iteration)){
 						itercount++;
-						System.out.print("\rParsed Iteration " + itercount+ "       ");
 						return;
 					}
 				}
@@ -114,7 +113,6 @@ public class MultiblastParser implements Iterator<BlastObject>{
 		catch (XMLStreamException e) {
 			logger.error("Failed to load XML as stream",e);
 		}
-		System.out.println();
 	}
 	
 	/**

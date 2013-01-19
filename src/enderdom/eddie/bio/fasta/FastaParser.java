@@ -160,10 +160,10 @@ public class FastaParser{
 			multi++;
 			linecount++;
 		}
-		System.out.println();
+		if(multi>5000)System.out.println();
 		if(sequence.length() > 0){
 			if(!qual)handler.addSequence(title, sequence.toString());
-			else handler.addQuality(title, sequence.toString());
+			else handler.addQuality(title, Tools_Fasta.Qual2Fastq(sequence.toString()));
 			count++;
 		}
 		return count;
