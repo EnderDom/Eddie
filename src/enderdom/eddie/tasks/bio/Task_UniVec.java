@@ -40,7 +40,7 @@ public class Task_UniVec extends TaskXTwIO{
 	private static String strategyfile = "univec_strategy";
 	private static String key = "UNI_VEC_DB";
 	private SequenceList fout;
-	private int trimlength = 50;
+	private int filter = 50;
 	
 	public Task_UniVec(){
 	}
@@ -49,65 +49,20 @@ public class Task_UniVec extends TaskXTwIO{
 		setComplete(started);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
 		/*
-		* Check UI is being set, which sometimes happens if
-		* I have extended the super class and not overwritten the
-		* setUI functions. Must do better.
+		* Check IO
 		*/
-		if(this.ui == null)logger.error("UI has not been set for this class, code bug");
-
-		/*
-		* Check Input
-		*/
-		if(input == null){
-			logger.error("No input file specified");
-			return;
-		}
-		File file = new File(input);
-		if(!file.isFile()){
-			logger.error("Input file is not a file");
-			return;
-		}
-		else{
-			try {
-				if(qual != null &&  new File(qual).isFile()){
-					fout = SequenceListFactory.getSequenceList(input, qual);
-				}
-				else{
-					fout = SequenceListFactory.getSequenceList(input);
-				}
-				this.filetype = fout.getFileType();
-			} catch (Exception e) {
-				logger.error("Failed to parse input file",e);
-				return;
-			}
-		}
-		/*
-		* Check Output
-		*/
-		if(output == null){
-			output = workspace + Tools_System.getFilepathSeparator()+
-					"out" + Tools_System.getFilepathSeparator();
-		}
-		File dir = new File(output);
-		if(dir.isFile()){
-			logger.warn("File named out present in folder ...ugh...");
-			Tools_File.justMoveFileSomewhere(dir);
-			dir = new File(output);
-		}
-		dir.mkdirs();
+		File dir = checkOutput();
+		File file = checkInput();
+		if(file == null) return;
+		
 
 		if(xml == null){
 			if(!checkUniDB()){
 				logger.error("Failed to establish UniVec database");
 				return;
 			}
-			String outname = file.getName();
-			int e =-1;
-			if((e=outname.lastIndexOf(".")) != -1)outname = outname.substring(0, e);
-			e=0;
-			File out;
-			while((out=new File(dir.getPath()+Tools_System.getFilepathSeparator()+outname+e+".xml")).exists())e++;
-	
+			File out = Tools_File.getOutFileName(dir, file, ".xml");
+			
 			/*
 			* Build univec strategy file
 			*/
@@ -116,13 +71,10 @@ public class Task_UniVec extends TaskXTwIO{
 			if(!new File(strat).exists()){
 				if(!generateStrategyFile(strat))return;
 			}
-			
 	
 			/*
 			* Actually run the blast program
-			*
 			* See http://www.ncbi.nlm.nih.gov/VecScreen/VecScreen_docs.html for specs on vecscreen
-			*
 			*/
 			StringBuffer[] arr = Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-import_search_strategy "+strat+" -outfmt 5 ", out);
 			if(arr[0].length() > 0){
@@ -139,24 +91,28 @@ public class Task_UniVec extends TaskXTwIO{
 				return;
 			}
 		}
+		//
+		//
+		//Trim fasta based on univec output
 		if(xml != null){
 			File xm = new File(xml);
 			if(xm.isFile()){
-				parseBlastAndTrim(xm, fout, output, this.filetype, trimlength);
+				parseBlastAndTrim(xm, fout, output, this.filetype, filter);
 			}
 			else if(xm.isDirectory()){
 				File[] files = xm.listFiles();
 				int i =0;
 				for(File f : files){
 					if(Tools_Bio_File.detectFileType(f.getPath())==BioFileType.BLAST_XML){
-						parseBlastAndTrim(f, fout, output, this.filetype, trimlength);
+						parseBlastAndTrim(f, fout, output, this.filetype, filter);
 						i++;
 					}
 				}
 				if(i==0){
-					logger.warn("No blast files in folder, attempting to try plain XML");
+					logger.warn("No blast files detected in folder, attempting to parse any old XMLs");
 					for(File f: files){
 						if(Tools_Bio_File.detectFileType(f.getPath())==BioFileType.XML){
+							parseBlastAndTrim(f, fout, output, this.filetype, filter);
 							i++;
 						}
 					}
@@ -204,9 +160,9 @@ public class Task_UniVec extends TaskXTwIO{
 		if(cmd.hasOption("r")){
 			Integer trimlen = Tools_String.parseString2Int(cmd.getOptionValue("r"));
 			if(trimlen != null){
-				this.trimlength = trimlen;
+				this.filter = trimlen;
 			}
-			else logger.warn("Trim length suggested is not a number, defaulted to " + trimlength);	
+			else logger.warn("Trim length suggested is not a number, defaulted to " + filter);	
 		}
 	}
 	
@@ -221,6 +177,77 @@ public class Task_UniVec extends TaskXTwIO{
 		}
 	}
 	
+	/**
+	 * Checks input is okay, sets fout sequenceList
+	 * @return the Input File as a file object or null
+	 * if a problem occurs
+	 */
+	public File checkInput(){
+		if(input == null){
+			logger.error("No input file specified");
+			return null;
+		}
+		File file = new File(input);
+		if(!file.isFile()){
+			logger.error("Input file is not a file");
+			return null;
+		}
+		else{
+			try {
+				if(qual != null &&  new File(qual).isFile()){
+					fout = SequenceListFactory.getSequenceList(input, qual);
+				}
+				else{
+					fout = SequenceListFactory.getSequenceList(input);
+				}
+				this.filetype = fout.getFileType();
+				return file;
+			} catch (Exception e) {
+				logger.error("Failed to parse input file",e);
+				return null;
+			}
+		}
+	}
+	
+	public File checkOutput(){
+		if(output == null){
+			output = workspace + Tools_System.getFilepathSeparator()+
+					"out" + Tools_System.getFilepathSeparator();
+		}
+		File dir = new File(output);
+		if(dir.isFile()){
+			logger.warn("File named out present in folder ...ugh...");
+			Tools_File.justMoveFileSomewhere(dir);
+			dir = new File(output);
+		}
+		dir.mkdirs();
+		return dir;
+	}
+	
+	
+	/**
+	 * Parses a blast xml file and trims a SequenceList according
+	 * to the hit locations based on UniVec rules. Obviously this 
+	 * is only really designed for univec
+	 * 
+	 * @param parser MultiBlastParser object
+	 * 
+	 * @param seql Sequence list, make sure quality data is there
+	 * if it is included
+	 * 
+	 * @param outputfolder where to save to
+	 * 
+	 * @param filetype type of file to save to, obviously this
+	 * will only work if the SequenceList is amenable to it
+	 * 
+	 * @param filter sequences shorter than this will be removed entirely
+	 * (set to <1 for no filtering)
+	 * 
+	 * @return the return value for SequenceList.saveFile, the path of 
+	 * all files saved
+	 * 
+	 * @throws Exception
+	 */
 	public static String[] parseBlastAndTrim(MultiblastParser parser, SequenceList seql, String outputfolder, BioFileType filetype, int trimlength) throws Exception{
 		SequenceList list = SequenceListFactory.buildSequenceList(filetype);	
 		int lefttrims = 0;

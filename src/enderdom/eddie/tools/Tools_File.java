@@ -279,4 +279,15 @@ public abstract class Tools_File {
 		return f.renameTo(mov);
 	}
 	
+	
+	public static File getOutFileName(File directory, File filename, String fileending){
+		//Avoids overwriting previous stuff
+		String outname = filename.getName();
+		int e =-1;
+		if((e=outname.lastIndexOf(".")) != -1)outname = outname.substring(0, e);
+		e=0;
+		File out;
+		while((out=new File(directory.getPath()+Tools_System.getFilepathSeparator()+outname+e+fileending)).exists())e++;
+		return out;
+	}
 }
