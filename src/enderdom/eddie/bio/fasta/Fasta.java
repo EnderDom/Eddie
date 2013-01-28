@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.interfaces.BioFileType;
@@ -111,8 +112,10 @@ public class Fasta implements FastaHandler, SequenceList{
 	}
 	
 	public String save2Fastq(File output) throws IOException{
-		filename = output.getName();
-		filepath = output.getPath();
+		filename= FilenameUtils.getBaseName(output.getName()) + ".fastq";
+		filepath = FilenameUtils.getPath(output.getPath());
+		output = new File(FilenameUtils.concat(filepath, filename));
+
 		FileWriter fstream = new FileWriter(output);
 		BufferedWriter out = new BufferedWriter(fstream);
 		int count =0;
