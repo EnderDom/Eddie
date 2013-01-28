@@ -8,6 +8,7 @@ import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.blast.MultiblastParser;
@@ -363,7 +364,7 @@ public class Task_UniVec extends TaskXTwIO{
 		System.out.println("###############################");
 		System.out.println("");
 		String name = outputfolder+Tools_System.getFilepathSeparator();
-		name += seql.getFileName() !=null ? seql.getFileName()+"_trimmed" : "out_trimmed";  
+		name += seql.getFileName() !=null ? FilenameUtils.getBaseName(seql.getFileName())+"_trimmed" : "out_trimmed";  
 		if(!saveasfastq){
 			return seql.saveFile(new File(name), filetype);
 		}
