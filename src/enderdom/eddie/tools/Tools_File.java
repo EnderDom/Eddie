@@ -68,6 +68,10 @@ public abstract class Tools_File {
 	}
 	
 	/**
+	 * Returns 1 line from a file. File is opened
+	 * line read and then closed and line is returned
+	 * obviously all the ioexceptions apply, but will
+	 * be caught within the method and logged
 	 * 
 	 * @param filepath path to a file
 	 * @param i the line which you want to return, 0-based

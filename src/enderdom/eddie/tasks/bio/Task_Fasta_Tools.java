@@ -6,18 +6,23 @@ import java.util.Properties;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
+import enderdom.eddie.bio.interfaces.BioFileType;
 
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 
+/*
+ * This is a fucking mess
+ */
 public class Task_Fasta_Tools extends TaskXTwIO{
 	
-	protected String qual;
+	
 	Fasta fasta;
 	private boolean stats;
 	private int trim;
@@ -30,6 +35,9 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 	private int offset;
 	private boolean replace;
 	private boolean convert;
+	private String[] inputs;
+	private String[] quals;
+	private boolean shorttitles;
 	
 	public Task_Fasta_Tools(){
 		trimRowNs = -1;
@@ -47,84 +55,75 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 			logger.error("No Input/output");
 			return;
 		}
-		output = output.replaceAll(".fasta", "");
-		output = output.replaceAll(".fastq", "");
-		output = output.replaceAll(".fna", "");
-		output = output.replaceAll(".qual", "");
-		File infile = new File(this.input);
-		File qualfile = new File(this.qual);
-		File outfile =  new File(output+".fastq");
-		if(infile.exists()){
-			logger.debug("Input File is good");
-			/*
-			 * Convert Fasta And Qual 2 Fastq
-			 */
-			if(this.detectFileType(this.input).equals("FASTA")){
-				fasta = new Fasta();
-				fasta.setFastq(false);
-				FastaParser parser = new FastaParser(fasta);
-				try {
-					parser.parseFasta(infile);
-					if(qualfile.exists())parser.parseQual(qualfile);	
-					Logger.getRootLogger().debug("Fasta Parsed, saving...");
-					subRun();
-					if(!NoOut){
-						if(!convert){ 
-							outfile =  new File(output+".fasta");
-							File outfile2 =  new File(output+".qual");
-							if(qualfile.exists())fasta.save2FastaAndQual(outfile, outfile2);
-							else fasta.save2Fasta(outfile);
-						}
-						else fasta.save2Fastq(outfile);
-					}
+		output = FilenameUtils.removeExtension(output);
+		if(this.inputs == null || this.inputs.length  == 0){
+			logger.error("No input files included");
+			return;
+		}
+		
+		if(this.detectFileType(inputs[0]) == BioFileType.FASTA){
+			logger.info("Detected as FASTA");
+			fasta = new Fasta();
+			fasta.setFastq(false);
+			FastaParser parser = new FastaParser(fasta);
+			if(shorttitles)parser.setShorttitles(true);
+			try {
+				for(int i =0;i < inputs.length; i++){
+					logger.info("Parsing: " + FilenameUtils.getBaseName(inputs[i]));
+					parser.parseFasta(new File(inputs[i]));
+					if(quals.length > 0) parser.parseQual(new File(quals[i]));
 				}
-				catch (Exception e) {
-					Logger.getRootLogger().error("Error parsing Fastq file", e);
+				Logger.getRootLogger().debug("Fasta Parsed, saving...");
+				subRun();
+				if(!NoOut){
+					if(!convert){ 
+						if(quals.length > 0)fasta.save2FastaAndQual(output);
+						else fasta.save2Fasta(new File(output+".fasta"));
+					}
+					else fasta.save2Fastq(new File(output+".fastq"));
 				}
 			}
-			/*
-			 * Convert Fastq to Fasta And Qual
-			 */
-			else if(this.detectFileType(this.input).equals("FASTQ")){
-				File outfile2 =  new File(output+".qual");
-				outfile =new File(output+".fasta");
-				if((!outfile.exists() && !outfile2.exists()) || overwrite){
-					fasta = new Fasta();
-					fasta.setFastq(true);
-					FastaParser parser = new FastaParser(fasta);
-					try {
-						parser.parseFastq(infile);
-						Logger.getRootLogger().debug("Fastq Parsed, saving...");
-						subRun();
-						if(!NoOut){
-							if(convert) fasta.save2FastaAndQual(outfile, outfile2);
-							else{ 
-								outfile = new File(output+".fastq");
-								fasta.save2Fastq(outfile);
-							}
-						}
-					}
-					catch (Exception e) {
-						logger.error("Error parsing Fastq file", e);
+			catch (Exception e) {
+				Logger.getRootLogger().error("Error parsing Fasta file", e);
+			}
+		}
+		/*
+		 * Convert Fastq to Fasta And Qual
+		 */
+		else if(this.detectFileType(inputs[0]) == BioFileType.FASTQ){
+			logger.info("Detected as FASTQ");
+			fasta = new Fasta();
+			fasta.setFastq(true);
+			FastaParser parser = new FastaParser(fasta);
+			if(shorttitles)parser.setShorttitles(true);
+			try {
+				for(int i =0;i < inputs.length; i++){
+					logger.info("Parsing: " + FilenameUtils.getBaseName(inputs[i]));
+					parser.parseFasta(new File(inputs[i]));
+				}
+				Logger.getRootLogger().debug("Fastq Parsed, saving...");
+				subRun();
+				if(!NoOut){
+					if(convert) fasta.save2FastaAndQual(output);
+					else{ 
+						fasta.save2Fastq(output);
 					}
 				}
 			}
-			else{
-				logger.warn("No support for files with unknown file extensions as yet." +
-						" Please rename files to .fasta/.fna/.fastq/.qual");
+			catch (Exception e) {
+				logger.error("Error parsing Fastq file", e);
 			}
 		}
 		else{
-			logger.error("Input file is set, but filepath: "+input+" is not a valid file");	
+			logger.warn("No support for files with unknown file extensions as yet." +
+					" Please rename files to .fasta/.fna/.fastq/.qual");
 		}
 
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
 	}
 	
-	
-	
-	
+	//TODO replace with SequenceList methods
 	public void subRun(){
 		if(trimRowNs != -1){
 			logger.info("Removing Sequences with rows>="+trimRowNs+" N...");
@@ -174,8 +173,8 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 	
 	public void buildOptions(){
 		super.buildOptions();
-		options.getOption("i").setDescription("Input fasta file");
-		options.addOption(new Option("q", "qual", true, "Optional quality file for convert fasta & qual -> fastq"));
+		options.getOption("i").setDescription("Input fasta files");
+		options.addOption(new Option("q", "qual", true, "Optional quality file for convert fastas & qual -> fastq"));
 		options.getOption("o").setDescription("Output file or files");
 		options.addOption(new Option("trim", true, "Trim Sequences Using below this value ie -trim 100"));
 		options.addOption(new Option("stats", false, "Print Statistics for Fasta/q files"));
@@ -187,12 +186,11 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 		options.addOption(new Option("replace", true, "Replace a with b in fasta names use " +
 				">< between find and replace, ie -replace \"Contig_><Contigous File\" would " +
 				"replace fasta names with >Contig_1 to >Contigous File1"));
-		
+		options.addOption(new Option("s","short", false, "Use Short titles, names are truncated to first space (Needed to match fasta qual)"));
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		qual = new String();
 		if(cmd.hasOption("replace")){
 			string1 = new String();
 			string2 = new String();
@@ -239,8 +237,8 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 		if(cmd.hasOption("rename")){
 			rename = cmd.getOptionValue("rename");
 		} 
-		if(cmd.hasOption("qual")){
-			qual = cmd.getOptionValue("qual");
+		if(cmd.hasOption("q")){
+			quals = cmd.getOptionValues("q");
 		} 
 		if(cmd.hasOption("trim")){
 			Integer i = Tools_String.parseString2Int(cmd.getOptionValue("trim"));
@@ -257,6 +255,12 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 		if(cmd.hasOption("convert")){
 			this.convert = true;
 		}
+		if(cmd.hasOption("s")){
+			this.shorttitles = true;
+		}
+		if(cmd.hasOption("i")){
+			this.inputs = cmd.getOptionValues("i"); 
+		}
 		if(this.output == null){
 			this.NoOut = true;
 		}
@@ -269,12 +273,5 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 		return this.options;
 	}
 
-	public String getQual() {
-		return qual;
-	}
-
-	public void setQual(String qual) {
-		this.qual = qual;
-	}
 }
 

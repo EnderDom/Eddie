@@ -16,7 +16,8 @@ public class Task_Convert extends TaskXTwIO{
 	
 	int conversiontype;
 	private static int BAM2SAM = 1;
-	private static int ACE2FNA = 1;
+	private static int ACE2FNA = 2;
+	//private static int FASTA2FASTQ = 3;
 	Logger logger = Logger.getLogger("Converterz");
 	
 	
@@ -38,6 +39,8 @@ public class Task_Convert extends TaskXTwIO{
 		super.buildOptions();
 		options.addOption(new Option("sam2bam", false, "Convert SAM/BAM to BAM/SAM"));
 		options.addOption(new Option("ace2fna", false, "Converts ACE"));
+		//options.addOption(new Option("fasta2fastq", false, "Convert Fasta and Qual file to Fastq"));
+		//options.addOption(new Option("q","qual", true, "Quality file if needed"));
 	}
 	
 	public void run(){

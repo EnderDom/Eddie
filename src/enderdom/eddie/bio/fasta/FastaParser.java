@@ -78,7 +78,7 @@ public class FastaParser{
 			}
 			else{
 				if(!qual){
-					sequence = sequence.append(line);
+					sequence = sequence.append(line.trim());
 				}
 				else{
 					quality = quality.append(line);
@@ -146,7 +146,7 @@ public class FastaParser{
 				}
 			}
 			else{
-				if(!qual)sequence = sequence.append(line);
+				if(!qual)sequence = sequence.append(line.trim());
 				else sequence = sequence.append(line + " "); /*Space is important as 
 				the quality string is broken into an int array based on spaces.
 				Without adding the space the last and first numbers on each line are
@@ -160,7 +160,7 @@ public class FastaParser{
 			multi++;
 			linecount++;
 		}
-		if(multi>5000)System.out.println();
+		if(linecount>5000)System.out.println();
 		if(sequence.length() > 0){
 			if(!qual)handler.addSequence(title, sequence.toString());
 			else handler.addQuality(title, Tools_Fasta.Qual2Fastq(sequence.toString()));

@@ -68,6 +68,14 @@ public class ClustalAlign implements SequenceList{
 	public int getNoOfMonomers() {
 		return Tools_Math.sum(getListOfActualLens());
 	}
+	
+	public int getQuickMonomers() {
+		int i =0;
+		for(int j =0; j < this.sequences.length ; j++){
+			i += this.sequences[i].getLength();
+		}
+		return i;
+	}
 
 	public int getNoOfSequences() {
 		return sequences.length;
@@ -164,6 +172,25 @@ public class ClustalAlign implements SequenceList{
 		}
 		temp[this.sequences.length] = object;
 		this.sequences = temp;
+	}
+
+	public boolean canRemoveSequenceObjects() {
+		return true;
+	}
+
+	public void removeSequenceObject(String name) {
+		SequenceObject[] temp = new GenericSequence[this.sequences.length-1];
+		int j=0;
+		for(int i =0;i < temp.length;i++){
+			if(sequences[i].getName().equals(name)){
+				j=1;
+			}
+			temp[i] = sequences[i+j];		
+		}
+		this.sequences = temp;
+		if(j!=1){
+			logger.warn("Sequence with name " + name + " doens't exist in SequenceList");
+		}
 	}
 
 }

@@ -86,9 +86,7 @@ public abstract class Task implements Runnable, Future<Object> {
 		CommandLineParser parser = new LazyPosixParser();
 		try {
 			CommandLine cmd = parser.parse(getOptions(), args);
-			if(cmd.hasOption("test")){
-				testmode =true;
-			}
+
 			if(cmd.hasOption("p")){
 				this.password = cmd.getOptionValue("p");
 			}
@@ -207,7 +205,6 @@ public abstract class Task implements Runnable, Future<Object> {
 	public void buildOptions(){
 		options = new Options();
 		options.addOption(new Option("opts", false, "Help Menu for this specific task"));
-		options.addOption(new Option("test", false, "Runs any test for this task"));
 		options.addOption(new Option("p", "password", true, "Add a password to a task if it is needed"));
 	}
 	

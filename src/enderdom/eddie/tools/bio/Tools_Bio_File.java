@@ -16,7 +16,7 @@ public class Tools_Bio_File {
 				Logger.getRootLogger().debug("Filetype detected as " + filetype[i]);
 				BioFileType t = BioFileType.valueOf(filetype[i]);
 				if(t == BioFileType.XML){
-					//Check Blast
+					//Check Blast first line
 					String s = Tools_File.returnLine(filename, 1);
 					if(s != null){
 						if(s.contains("BlastOutput")) return BioFileType.BLAST_XML;

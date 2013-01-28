@@ -34,6 +34,13 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	
 	/**
 	 * 
+	 * @return Total number of base pairs or amino acids 
+	 * (Sum of all sequences lengths (not actual) includes gaps '-')
+	 */
+	public int getQuickMonomers();
+	
+	/**
+	 * 
 	 * @return number of sequences in list
 	 */
 	public int getNoOfSequences();
@@ -54,7 +61,18 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	
 	public boolean canAddSequenceObjects();
 	
+	/**
+	 * Standard is to overwrite sequence object if already present
+	 * @param object
+	 */
 	public void addSequenceObject(SequenceObject object);
+
+	public boolean canRemoveSequenceObjects();
+	
+	/**
+	 * @param name string name of the sequenceObject 
+	 */
+	public void removeSequenceObject(String name);
 	
 	/**
 	 * Saves file as stated filetype, if filetype == -1

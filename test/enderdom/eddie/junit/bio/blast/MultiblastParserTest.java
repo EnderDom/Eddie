@@ -108,7 +108,7 @@ public class MultiblastParserTest {
 			String comp1 = seq.getSequence("GQYW8I402CYV16").getSequence();
 			String comp2 = seq.getSequence("GQYW8I402ET26S").getSequence();
 			int[] l1 = seq.getListOfLens();
-			String[] files = Task_UniVec.parseBlastAndTrim(new MultiblastParser(MultiblastParser.UNIVEC, in), seq, outfolder.getPath(), BioFileType.FAST_QUAL, 50);
+			String[] files = Task_UniVec.parseBlastAndTrim(new MultiblastParser(MultiblastParser.UNIVEC, in), seq, outfolder.getPath(), BioFileType.FAST_QUAL, 50, false);
 			assertNotNull(files);
 			assertEquals(2,files.length);
 			if(files != null && files.length == 2) {

@@ -2,6 +2,7 @@ package enderdom.eddie.tasks.bio;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.Properties;
 
 
@@ -41,6 +42,7 @@ public class Task_UniVec extends TaskXTwIO{
 	private static String key = "UNI_VEC_DB";
 	private SequenceList fout;
 	private int filter = 50;
+	private boolean saveasfastq;
 	
 	public Task_UniVec(){
 	}
@@ -94,17 +96,18 @@ public class Task_UniVec extends TaskXTwIO{
 		//
 		//
 		//Trim fasta based on univec output
+		String[] outs = null;
 		if(xml != null){
 			File xm = new File(xml);
 			if(xm.isFile()){
-				parseBlastAndTrim(xm, fout, output, this.filetype, filter);
+				outs = parseBlastAndTrim(xm, fout, output, this.filetype, filter,this.saveasfastq);
 			}
 			else if(xm.isDirectory()){
 				File[] files = xm.listFiles();
 				int i =0;
 				for(File f : files){
 					if(Tools_Bio_File.detectFileType(f.getPath())==BioFileType.BLAST_XML){
-						parseBlastAndTrim(f, fout, output, this.filetype, filter);
+						outs = parseBlastAndTrim(f, fout, output, this.filetype, filter, this.saveasfastq);
 						i++;
 					}
 				}
@@ -112,7 +115,7 @@ public class Task_UniVec extends TaskXTwIO{
 					logger.warn("No blast files detected in folder, attempting to parse any old XMLs");
 					for(File f: files){
 						if(Tools_Bio_File.detectFileType(f.getPath())==BioFileType.XML){
-							parseBlastAndTrim(f, fout, output, this.filetype, filter);
+							outs = parseBlastAndTrim(f, fout, output, this.filetype, filter,this.saveasfastq);
 							i++;
 						}
 					}
@@ -122,7 +125,9 @@ public class Task_UniVec extends TaskXTwIO{
 				logger.error("Error loading XML file");
 			}
 		}
-
+		for(int i =0; i < outs.length ; i++){
+			logger.info("Saved file to " + outs[i]);
+		}
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
 		setComplete(finished);
 	}
@@ -138,6 +143,7 @@ public class Task_UniVec extends TaskXTwIO{
 		options.addOption(new Option("x","xml", true, "Skip running univec search and import previous blast xml"));
 		options.addOption(new Option("q","qual", true, "Include quality file, this will also be trimmed"));
 		options.addOption(new Option("r", "trim", true, "Remove sequences smaller than this (After trimming) "));
+		options.getOption("w").setDescription("Force Save file as fastq format");
 		
 	}
 	
@@ -164,12 +170,15 @@ public class Task_UniVec extends TaskXTwIO{
 			}
 			else logger.warn("Trim length suggested is not a number, defaulted to " + filter);	
 		}
+		if(cmd.hasOption("w")){
+			this.saveasfastq = true;
+		}
 	}
 	
 	
-	public static String[] parseBlastAndTrim(File xml, SequenceList seql, String outputfolder, BioFileType filetype, int trimlength){
+	public static String[] parseBlastAndTrim(File xml, SequenceList seql, String outputfolder, BioFileType filetype, int trimlength, boolean saveasfastq){
 		try{
-			return parseBlastAndTrim(new MultiblastParser(MultiblastParser.UNIVEC, xml), seql, outputfolder, filetype, trimlength);
+			return parseBlastAndTrim(new MultiblastParser(MultiblastParser.UNIVEC, xml), seql, outputfolder, filetype, trimlength, saveasfastq);
 		}
 		catch(Exception e){
 			Logger.getRootLogger().error("Failed to parse XML and trim sequences", e);
@@ -248,10 +257,9 @@ public class Task_UniVec extends TaskXTwIO{
 	 * 
 	 * @throws Exception
 	 */
-	public static String[] parseBlastAndTrim(MultiblastParser parser, SequenceList seql, String outputfolder, BioFileType filetype, int trimlength) throws Exception{
-		SequenceList list = SequenceListFactory.buildSequenceList(filetype);	
+	public static String[] parseBlastAndTrim(MultiblastParser parser, SequenceList seql, String outputfolder, BioFileType filetype, int trimlength, boolean saveasfastq) throws Exception{
 		int startsize =  seql.getNoOfSequences();
-		
+		int startmonmers = seql.getQuickMonomers();
 		int lefttrims = 0;
 		int righttrims = 0;
 		int midtrims = 0;
@@ -260,83 +268,108 @@ public class Task_UniVec extends TaskXTwIO{
 		int regions =0;
 		UniVecBlastObject obj = null;
 		SequenceObject o =null;
+		HashSet<String> alreadytrimmed = new HashSet<String>();
+		String s = new String();
 		try{
 			while(parser.hasNext()){
 				obj = (UniVecBlastObject) parser.next();
 				obj.reverseOrder();
+				s = obj.getBlastTagContents("Iteration_query-def");
 				for(UniVecRegion r : obj.getRegions()){
-					if(r.isLeftTerminal()){
-						o = seql.getSequence(obj.getBlastTagContents("Iteration_query-def"));
-						o.leftTrim(r.getStop(0));
-						if(o.getLength() >= trimlength){
-							list.addSequenceObject(o);
-							lefttrims++;
+					if(!alreadytrimmed.contains(s)){
+						alreadytrimmed.add(s);
+						o = seql.getSequence(s);
+						if(r.isLeftTerminal()){
+							o.leftTrim(r.getStop(0));
+							if(o.getLength() >= trimlength){
+								seql.addSequenceObject(o);
+								lefttrims++;
+							}
+							else{
+								seql.removeSequenceObject(o.getName());
+								removed++;
+							}
 						}
-						else removed++;
-					}
-					else if(r.isRightTerminal()){
-						o = seql.getSequence(obj.getBlastTagContents("Iteration_query-def"));
-						o.rightTrim(o.getLength()-r.getStart(0));
-						if(o.getLength() >= trimlength){
-							list.addSequenceObject(o);
-							righttrims++;
+						else if(r.isRightTerminal()){
+							o.rightTrim(o.getLength()-r.getStart(0));
+							if(o.getLength() >= trimlength){
+								seql.addSequenceObject(o);
+								righttrims++;
+							}
+							else{
+								seql.removeSequenceObject(o.getName());
+								removed++;
+							}
 						}
-						else removed++;
-					}
-					else{
-						o = seql.getSequence(obj.getBlastTagContents("Iteration_query-def"));
-						SequenceObject[] splits =  o.removeSection(r.getStart(0), r.getStop(0));
-						if(splits.length > 1){
-							if(splits[0].getLength() > trimlength){
-								list.addSequenceObject(splits[0]);
-								if(splits[1].getLength() > trimlength){
-									list.addSequenceObject(splits[1]) ;
-									added++;
+						else{
+							SequenceObject[] splits =  o.removeSection(r.getStart(0), r.getStop(0));
+							if(splits.length > 1){
+								//Remove, as when added, added with diff name
+								seql.removeSequenceObject(o.getName());
+								if(splits[0].getLength() > trimlength){
+									seql.addSequenceObject(splits[0]);
+									if(splits[1].getLength() > trimlength){
+										seql.addSequenceObject(splits[1]) ;
+										added++;
+									}
+									midtrims++;
 								}
-								midtrims++;
+								else if(splits[1].getLength() > trimlength){
+									seql.addSequenceObject(splits[1]) ;
+									midtrims++;
+								}
+								else{
+									removed++;
+								}
 							}
-							else if(splits[1].getLength() > trimlength){
-								list.addSequenceObject(splits[1]) ;
-								midtrims++;
+							else if(splits.length > 0){
+								seql.removeSequenceObject(o.getName());
+								if(splits[0].getLength() > trimlength){
+									seql.addSequenceObject(splits[0]);
+									midtrims++;
+								}
+								else{
+									removed++;
+								}
 							}
-							else{
-								removed++;
-							}
+							else Logger.getRootLogger().debug("All sequence trimmed");
 						}
-						else if(splits.length > 0){
-							if(splits[0].getLength() > trimlength){
-								list.addSequenceObject(splits[0]);
-								midtrims++;
-							}
-							else{
-								removed++;
-							}
-						}
-						else Logger.getRootLogger().debug("All sequence trimmed");
+						regions++;
 					}
-					regions++;
 				}
 			}
 		}
 		catch (Exception e) {
-			Logger.getRootLogger().error("Error trimming file at " + obj.getIterationNumber() + 
-					" XML iteration, with " +obj.getBlastTagContents("Iteration_query-def") + 
-					" Last object was " + o.getName() + " of length " + o.getLength(), e);
+			Logger.getRootLogger().error("Exception in UniVec ",e);
+			if(obj != null){
+				Logger.getRootLogger().error("Error trimming file at " + obj.getIterationNumber() + 
+						" XML iteration, with " +obj.getBlastTagContents("Iteration_query-def"));
+			}
+			if(o != null){
+				Logger.getRootLogger().error(" Last object was " + o.getName() + " of length " + o.getLength());
+			}
 			return null;
 		}
 		
-		int endsize =  list.getNoOfSequences();
-		int startmonmers = list.getNoOfMonomers();
-		int endmonmers = list.getNoOfMonomers();
-		System.out.println("__REPORT__");
-		System.out.println("A total of " + regions + " were found across " + startsize + " sequences, containing " + startmonmers + "bps");
-		System.out.println("After trimming "+ endsize + "(" +(startsize-endsize)+ "), a change of " +(endmonmers-startmonmers)+ " bps");
+		int endsize =  seql.getNoOfSequences();
+		int endmonmers = seql.getQuickMonomers();
+		System.out.println("");
+		System.out.println("##########__REPORT__###########");
+		System.out.println("A total of " + regions + " univec hits were found the across the " + startsize + " sequences, containing " + startmonmers + "bps");
+		System.out.println("After trimming "+ endsize + " remain (" +(startsize-endsize)+ " removed), a change of " +(startmonmers-endmonmers)+ " bps");
 		System.out.println(lefttrims+" sequences trimmed left and " + righttrims + " trimmed right");
 		System.out.println(midtrims + " sequences were trimmed inside the sequence");
 		System.out.println("A total of "+ removed +" sequences were removed (" + added +" Added due to internal trims)" );
+		System.out.println("###############################");
+		System.out.println("");
 		String name = outputfolder+Tools_System.getFilepathSeparator();
 		name += seql.getFileName() !=null ? seql.getFileName()+"_trimmed" : "out_trimmed";  
-		return seql.saveFile(new File(name), filetype);
+		if(!saveasfastq){
+			return seql.saveFile(new File(name), filetype);
+		}
+		else{
+			return seql.saveFile(new File(name), BioFileType.FASTQ);
+		}
 	}
 	
 	/**

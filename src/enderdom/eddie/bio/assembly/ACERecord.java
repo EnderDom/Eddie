@@ -468,6 +468,14 @@ public class ACERecord implements Contig{
 		return t;
 	}
 
+	public int getQuickMonomers() {
+		int t = 0;
+		for(int i =0; i < this.readcount; i++){
+			t=seqs[i+1].getLength();
+		}
+		return t;
+	}
+	
 	public int getNoOfSequences() {
 		return this.readcount;
 	}
@@ -543,6 +551,7 @@ public class ACERecord implements Contig{
 		return null;
 	}
 
+	//TODO
 	public boolean canAddSequenceObjects() {
 		return false;
 	}
@@ -551,4 +560,13 @@ public class ACERecord implements Contig{
 		logger.error("Currently no support for add sequences to ACERecord");
 	}
 
+	public boolean canRemoveSequenceObjects() {
+		return false;
+	}
+
+	public void removeSequenceObject(String name) {
+		logger.error("Currently no support for add sequences to ACERecord");
+	}
+
+	
 }

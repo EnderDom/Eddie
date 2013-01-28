@@ -72,12 +72,12 @@ public class GenericSequence implements SequenceObject{
 	}
 	
 	public int getLength(){
-		return this.sequence.length();
+		return (this.sequence == null) ? 0 :this.sequence.length();
 	}
 
 	public int leftTrim(int i) {
 		if(i > this.sequence.length()){
-			Logger.getRootLogger().warn("Trimmed shorter than actual length");
+			Logger.getRootLogger().warn("Tried to Trim "+i+"bp from "+name+" shorter than actual length of "+getLength());
 			this.sequence = "";
 			this.quality = "";
 		}
@@ -89,7 +89,7 @@ public class GenericSequence implements SequenceObject{
 
 	public int rightTrim(int i) {
 		if(i > this.sequence.length()){
-			Logger.getRootLogger().warn("Trimmed shorter than actual length");
+			Logger.getRootLogger().warn("Tried to Trim "+i+"bp from "+name+" shorter than actual length of "+getLength());
 			this.sequence = "";
 			this.quality = "";
 		}
@@ -99,12 +99,16 @@ public class GenericSequence implements SequenceObject{
 	
 	private void trim(int start, int end){
 		if(end >= this.sequence.length()-1){
-			this.sequence.substring(start);
+			this.sequence = this.sequence.substring(start);
 			if(this.quality != null) this.quality = this.quality.substring(start);
 		}
 		else{
 			this.sequence = this.sequence.substring(start, end);
 			if(this.quality != null) this.quality = this.quality.substring(start, end);
+		}
+		
+		if(this.quality.length() != this.sequence.length()){
+			Logger.getRootLogger().error("Quality Check Failed, Sequence and Quality not same length for " + this.name);
 		}
 	}
 
