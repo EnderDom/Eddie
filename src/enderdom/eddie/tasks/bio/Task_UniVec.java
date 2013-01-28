@@ -333,14 +333,15 @@ public class Task_UniVec extends TaskXTwIO{
 									removed++;
 								}
 							}
-							else Logger.getRootLogger().debug("All sequence trimmed");
 						}
 						regions++;
+						System.out.print("\rUnivec Region Count: " + regions + "          ");
 					}
 				}
 			}
 		}
 		catch (Exception e) {
+			System.out.println();
 			Logger.getRootLogger().error("Exception in UniVec ",e);
 			if(obj != null){
 				Logger.getRootLogger().error("Error trimming file at " + obj.getIterationNumber() + 
@@ -351,7 +352,7 @@ public class Task_UniVec extends TaskXTwIO{
 			}
 			return null;
 		}
-		
+		System.out.println();
 		int endsize =  seql.getNoOfSequences();
 		int endmonmers = seql.getQuickMonomers();
 		System.out.println("");
