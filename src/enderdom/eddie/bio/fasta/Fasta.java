@@ -342,7 +342,7 @@ public class Fasta implements FastaHandler, SequenceList{
 		return null;
 	}
 
-	public boolean hasNext() {
+	public boolean hasNext() {	
 		return iteration < this.getNoOfSequences();
 	}
 

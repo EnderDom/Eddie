@@ -2,7 +2,6 @@ package enderdom.eddie.tasks.database;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedHashMap;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -13,6 +12,7 @@ import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.assembly.ACERecord;
 import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
+import enderdom.eddie.bio.interfaces.SequenceObject;
 
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQL;
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
@@ -84,7 +84,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	public void run(){
 		setComplete(started);
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
-		openChecklist();
+		this.checklist = openChecklist(ui);
 		DatabaseManager manager = this.ui.getDatabaseManager(password);
 		if(manager.open()){
 			//UPLOADING READS
@@ -106,9 +106,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 						if(fastq)parser.parseFastq(file);
 						else parser.parseFasta(file);
 						
-						checklist.start(this.args);
+						super.checklist.start(this.args);
 						
-						LinkedHashMap<String, String> sequences = fasta.getSequences();
 						BioSQL bs = manager.getBioSQL();
 						int biodatabase_id = manager.getEddieDBID();
 						logger.debug("Bio Database id: "+biodatabase_id);
@@ -117,22 +116,31 @@ public class Task_Assembly2DB extends TaskXTwIO{
 							return;
 						}
 						int count =0;
-						int size = sequences.size();
+						int size = fasta.getNoOfSequences();
+						logger.info("Fasta contains " + size + " sequences" );
 						if(checklist.inRecovery()){
 							logger.debug("Checklist is in recovery, trimming completed data");
 							String[] seqs = checklist.getData();
+							int rem = 0;
 							for(int i =0 ; i < seqs.length;i++){
-								sequences.remove(seqs[i]);
+								fasta.remove(seqs[i]);
+								rem++;
 							}
+							logger.info(rem+" sequences skipped due to already uploaded");
 						}
 						logger.debug("Uploading....");
 						
-						for(String s : sequences.keySet()){
-							String seq = sequences.get(s);
-							if(!bs.addSequence(manager.getCon(), biodatabase_id, null, s, s, this.identifier+count, "READ", null, 0, seq, BioSQL.alphabet_DNA))break;
+						while(fasta.hasNext()){
+							SequenceObject o = fasta.next();
+							if(!bs.addSequence(manager.getCon(), biodatabase_id, null, o.getName(), o.getName(),
+									this.identifier+count, "READ", null, 0, o.getSequence(), BioSQL.alphabet_DNA)){
+								logger.error("An error occured uploading " + o.getName());
+								break;
+								
+							}
 							count++;
 							System.out.print("\r"+(count) + " of " +size + "       ");
-							checklist.update(s);
+							checklist.update(o.getName());
 						}
 						System.out.println();
 						if(count != size-1){
@@ -290,6 +298,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		manager.getBioSQL().addBiosequence(manager.getCon(), v_high, record.getRead(read_numb).getLength(), BioSQL.alphabet_DNA, record.getReadAsString(read_numb), read_id);
 		return v_high;
 	}
+	
+	
 
 }
 

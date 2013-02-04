@@ -123,7 +123,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 	public void run(){
 		setComplete(started);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
-		openChecklist();
+		this.checklist = openChecklist(ui);
 		if(input != null && output != null && !err){
 			File in = new File(input);
 			File out = new File(output);

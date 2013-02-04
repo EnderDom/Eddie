@@ -90,7 +90,8 @@ public class MySQL_BioSQL implements BioSQL{
 			else BioSequenceSET.setString(4, alphabet);
 			if(seq == null)BioSequenceSET.setNull(5, Types.VARCHAR) ;
 			else BioSequenceSET.setString(5, seq);
-			return BioSequenceSET.execute();
+			BioSequenceSET.execute();
+			return true;
 		}
 		catch(SQLException sq){
 			logger.error("Failed to add BioSequence", sq);
@@ -118,7 +119,8 @@ public class MySQL_BioSQL implements BioSQL{
 			else BioEntrySET.setString(6, division);
 			if(description == null) BioEntrySET.setNull(7, Types.VARCHAR);
 			else BioEntrySET.setString(7, description);
-			return BioEntrySET.execute();
+			BioEntrySET.execute();
+			return true;
 		}
 		catch(SQLException sq){
 			logger.error("Failed to add Biosequence ", sq);
@@ -148,7 +150,8 @@ public class MySQL_BioSQL implements BioSQL{
 			PreparedStatement st = con.prepareStatement("INSERT INTO ontology (name, definition) VALUES (?,?)");
 			st.setString(1, name);
 			st.setString(2, definition);
-			return st.execute();
+			st.execute();
+			return true;
 		}
 		catch(SQLException sq){
 			logger.error("Failed to add Ontology with name " + name, sq);
@@ -167,7 +170,8 @@ public class MySQL_BioSQL implements BioSQL{
 			if(is_obsolete == null)st.setNull(4, Types.CHAR);
 			else st.setString(4, new String(is_obsolete.toString()));
 			st.setInt(5, ontology_id);
-			return st.execute();
+			st.execute();
+			return true;
 		}
 		catch(SQLException sq){
 			logger.error("Failed to add Ontology with name " + name, sq);
@@ -183,7 +187,8 @@ public class MySQL_BioSQL implements BioSQL{
 			BioEntryRelationshipSET.setInt(3, term_id);
 			if(rank == null) BioEntryRelationshipSET.setNull(4, Types.INTEGER);
 			else BioEntryRelationshipSET.setInt(4, rank);
-			return BioEntryRelationshipSET.execute();
+			BioEntryRelationshipSET.execute();
+			return true;
 		}
 		catch(SQLException sq){
 			logger.error("Failed to add Entry_Relationship " + BioEntryRelationshipSET.toString(), sq);
@@ -200,7 +205,9 @@ public class MySQL_BioSQL implements BioSQL{
 			if(display_name == null)SeqFeatureSET.setNull(4, Types.VARCHAR);
 			else SeqFeatureSET.setString(4, display_name);
 			SeqFeatureSET.setInt(5, rank);
-			return SeqFeatureSET.execute();
+			SeqFeatureSET.execute();
+			return true;
+					
 		}
 		catch(SQLException sq){
 			logger.error("Failed to add seqfeature "+SeqFeatureSET.toString(), sq);
@@ -222,7 +229,8 @@ public class MySQL_BioSQL implements BioSQL{
 			else LocationSET.setInt(5, stop_pos);
 			LocationSET.setInt(6, strand);
 			LocationSET.setInt(7, rank);
-			return LocationSET.execute();
+			LocationSET.execute();
+			return true;
 		}
 		catch(SQLException sq){
 			logger.error("Failed to add location ", sq);
@@ -236,7 +244,8 @@ public class MySQL_BioSQL implements BioSQL{
 			DBxrefSET.setString(1, dbname);
 			DBxrefSET.setString(2, accession);
 			DBxrefSET.setInt(3, version);
-			return DBxrefSET.execute();
+			DBxrefSET.execute();
+			return true;
 		} 
 		catch(SQLException sq){
 			logger.error("Failed to add location ", sq);

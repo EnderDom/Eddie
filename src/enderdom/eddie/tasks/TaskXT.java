@@ -18,7 +18,7 @@ public class TaskXT extends Task{
 		super.buildOptions();
 	}
 	
-	public void openChecklist(){
+	protected Checklist openChecklist(UI ui){
 		checklist = new Checklist(ui.getPropertyLoader().getValue("WORKSPACE"), this.getClass().getName());
 		if(checklist.check()){
 			logger.trace("Moved to recovering past Task");
@@ -48,6 +48,7 @@ public class TaskXT extends Task{
 		else{
 			checklist.start(this.args);
 		}
+		return checklist;
 	}
 	
 	public boolean wantsUI(){
@@ -57,6 +58,10 @@ public class TaskXT extends Task{
 	public void addUI(UI ui){
 		logger.debug("UI "+ui.getClass().getName()+" was given to me " + this.getClass().getName());
 		this.ui = ui;
+	}
+	
+	protected UI getUI(){
+		return ui;
 	}
 	
 	public boolean isKeepArgs(){

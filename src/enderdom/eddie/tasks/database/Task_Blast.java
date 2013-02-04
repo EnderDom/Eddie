@@ -65,7 +65,7 @@ public class Task_Blast extends TaskXT{
 		logger.debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		File in=null;
 		if(input !=null)in = new File(input);
-		openChecklist();
+		this.checklist = openChecklist(ui);
 		if(in == null || !in.exists()){
 			ui.error("File "+input+" does not exists");
 			return;

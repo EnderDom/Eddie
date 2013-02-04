@@ -13,7 +13,7 @@ public interface UI{
 	public static int YES =0;
 	public static int NO =1;
 	public static int CANCEL =2;
-
+	
 	public void exit();
 	
 	public void addTask(Task task);

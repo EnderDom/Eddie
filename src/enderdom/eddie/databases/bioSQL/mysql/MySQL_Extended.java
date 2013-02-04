@@ -476,7 +476,8 @@ public class MySQL_Extended implements BioSQLExtended{
 			else assemblySET.setInt(5, 0);
 			assemblySET.setInt(6, start);
 			assemblySET.setInt(7, stop);
-			return assemblySET.execute();
+			assemblySET.execute();
+			return true;
 		} 
 		catch(SQLException e){
 			logger.error("Failed to insert assembly data into database", e);
@@ -602,7 +603,8 @@ public class MySQL_Extended implements BioSQLExtended{
 			else dbxrefGET.setNull(11, Types.INTEGER);
 			if(bioentry_frame != null) dbxrefGET.setInt(12, bioentry_frame);
 			else dbxrefGET.setNull(12, Types.INTEGER);
-			return dbxrefGET.execute();
+			dbxrefGET.execute();
+			return true;
 		} 
 		catch (SQLException e) {
 			logger.error("Failed to add bioentry_dbxref entry", e);
