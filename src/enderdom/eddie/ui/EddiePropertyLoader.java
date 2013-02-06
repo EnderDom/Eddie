@@ -66,7 +66,17 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 		try {
 			CommandLine cmd = parser.parse(options, args);
 			if(cmd.hasOption("h")){
-				mode = 1;
+				if(cmd.hasOption("task")){
+					for(int i =0; i < args.length; i++){					
+						if(args[i].equals("-h") || args[i].equals("--help")){
+							mode = 1;
+							break;
+						}
+						if(args[i].equals("-task")){
+							break;
+						}
+					}
+				}
 			}
 			else if(cmd.hasOption("about")){
 				mode = 6;

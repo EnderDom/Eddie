@@ -144,8 +144,8 @@ public class Task_UniVec extends TaskXTwIO{
 		options.addOption(new Option("x","xml", true, "Skip running univec search and import previous blast xml"));
 		options.addOption(new Option("q","qual", true, "Include quality file, this will also be trimmed"));
 		options.addOption(new Option("r", "trim", true, "Remove sequences smaller than this (After trimming) "));
-		options.getOption("w").setDescription("Force Save file as fastq format");
-		
+		options.addOption(new Option("s", "saveFastq", true, "Force Save file as fastq format"));
+		options.removeOption("w");
 	}
 	
 	public void parseOpts(Properties props){
@@ -171,7 +171,7 @@ public class Task_UniVec extends TaskXTwIO{
 			}
 			else logger.warn("Trim length suggested is not a number, defaulted to " + filter);	
 		}
-		if(cmd.hasOption("w")){
+		if(cmd.hasOption("s")){
 			this.saveasfastq = true;
 		}
 	}

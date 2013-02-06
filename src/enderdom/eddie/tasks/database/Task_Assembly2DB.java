@@ -73,6 +73,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		//options.addOption(new Option("taxon_id", false, "Set the taxon_id"));
 		options.addOption(new Option("pid","programname", true, "Set Assembly program namer"));
 		options.addOption(new Option("runid", true, "Preset the run id (id column from db), this bypasses questioning if multiple assemblies with same assembler program"));
+		options.removeOption("w");
+		options.removeOption("o");
 	}
 	
 	public Options getOptions(){
@@ -88,6 +90,9 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		DatabaseManager manager = this.ui.getDatabaseManager(password);
 		if(manager.open()){
 			//UPLOADING READS
+			if(this.identifier == null){
+				this.identifier = ui.requiresUserInput("Please Enter a unique identifier:", "Identifier required, maybe Digest_Read? or CAP3_Contig");
+			}
 			if(uploadreads){
 				File file = new File(this.input);
 				if(file.exists()){

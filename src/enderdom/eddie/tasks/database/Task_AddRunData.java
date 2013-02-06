@@ -38,7 +38,7 @@ public class Task_AddRunData extends TaskXT{
 		super.buildOptions();
 		options.addOption(new Option("prg","program", true, "Name of program used for run"));
 		options.addOption(new Option("ver","version", true, "Version of program run"));
-		options.addOption(new Option("rtp","run_type", true, "Run type, see list of current types"));
+		options.addOption(new Option("rtp","run_type", true, "Run type (eg. BLAST, ASSEMBLY...), see list of current types"));
 		options.addOption(new Option("pdb","run_date", true, "Run date, date of run "+Tools_System.SQL_DATE_FORMAT));
 		options.addOption(new Option("dbn","dbname", true, "Database name, if any database used"));
 		options.addOption(new Option("par","params", true, "Program parameters"));
