@@ -92,6 +92,19 @@ public class FourBitNuclear extends FourBitSequence implements SequenceObject, I
 	}
 	
 	/**
+	 * Temp hack as can't cast sequence to nuclear
+	 * Need to sort out
+	 * @param seq 
+	 */
+	public FourBitNuclear(FourBitSequence seq){
+		this.dna = seq.dna;
+		this.length = seq.length;
+		this.actlength = seq.actlength;
+		this.forward = seq.forward;
+		this.isRNA = seq.isRNA;
+	}
+	
+	/**
 	 * 
 	 * Currently only supports standard IUPAC notation
 	 * for alternative codon translation, use BioJava

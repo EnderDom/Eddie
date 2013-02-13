@@ -267,7 +267,7 @@ public class ACERecord implements Contig{
 	 * @return Consensus sequence as a String
 	 */
 	public FourBitNuclear getConsensus(){
-		FourBitNuclear n = (FourBitNuclear)this.seqs[0];
+		FourBitNuclear n = new FourBitNuclear(this.seqs[0]);
 		n.setName(this.contigname);
 		n.setQuality(this.consensusqual);
 		return n;
@@ -394,7 +394,7 @@ public class ACERecord implements Contig{
 	 */
 	public int[] getDepthMap(){
 		int[] arr = new int[this.getConsensus().getActualLength()];
-		FourBitNuclear seq = (FourBitNuclear) this.getConsensus();
+		FourBitNuclear seq = this.getConsensus();
 		int actuallength = 0;
 		int depth=0;
 		for(int i =0; i < seq.length(); i++){
@@ -481,14 +481,14 @@ public class ACERecord implements Contig{
 	}
 
 	public SequenceObject getSequence(int i) {
-		FourBitNuclear n = (FourBitNuclear)getRead(i);
+		FourBitNuclear n = new FourBitNuclear(getRead(i));
 		n.setName(this.getReadName(i));
 		n.setQuality(this.consensusqual);
 		return n;
 	}
 
 	public SequenceObject getSequence(String s) {
-		FourBitNuclear n = (FourBitNuclear)getRead(s);
+		FourBitNuclear n =new FourBitNuclear(getRead(s));
 		n.setName(s);
 		n.setQuality(this.consensusqual);
 		return n;

@@ -12,6 +12,7 @@ import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.assembly.ACERecord;
 import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
+import enderdom.eddie.bio.interfaces.BioFileType;
 import enderdom.eddie.bio.interfaces.SequenceObject;
 
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQL;
@@ -22,6 +23,7 @@ import enderdom.eddie.databases.manager.DatabaseManager;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Assembly;
+import enderdom.eddie.tools.bio.Tools_Bio_File;
 
 /**
  * The idea here is to upload an entire ACE fileset of data  
@@ -168,8 +170,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 			else if(uploadcontigs || remaplocations){
 				File file = new File(this.input);
 				if(file.exists()){
-					if(filetype == null)this.filetype =detectFileType(input);
-					if(this.filetype.equals("ACE")){
+					BioFileType type = Tools_Bio_File.detectFileType(input);
+					if(type == BioFileType.ACE){
 						BioSQL bs = manager.getBioSQL();
 						int biodatabase_id = manager.getEddieDBID();
 						if(biodatabase_id < 0){
@@ -199,7 +201,6 @@ public class Task_Assembly2DB extends TaskXTwIO{
 								if(!skip){
 									if(uploadcontigs){
 										if(bs.getBioEntry(manager.getCon(),  this.identifier+count,  this.identifier+count, biodatabase_id) <0){
-											
 											String seq = record.getConsensus().getSequence();
 											if(unpad)seq.replaceAll("-", "");
 											if(!bs.addSequence(manager.getCon(), biodatabase_id, null, name, this.identifier+count, this.identifier+count, "CONTIG", record.getContigName(), 0, seq, BioSQL.alphabet_DNA))break;
@@ -210,6 +211,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 													if(j != 0)return;
 												}
 											}
+											System.out.print("\r"+"Contig No.: "+count+"               ");
+											count++;
 										}
 										else{
 											System.out.print("\r"+"Skipped Contig, already exists...                ");
@@ -217,7 +220,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 									}
 								}
 								else{
-									logger.debug("Skipped as in checklist");
+									logger.debug("Skipped contig as it's in the checklist");
 								}
 								checklist.update(name);
 							}
@@ -293,7 +296,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 				}
 			}
 			catch(Exception e){
-				logger.error("Problem with the reads, they day they're not actually DNA/RNA");
+				logger.error("Problem with the reads, they day they're not actually DNA/RNA", e);
 			}
 			if(s.getVersion() > v_high){
 				v_high = s.getVersion();
