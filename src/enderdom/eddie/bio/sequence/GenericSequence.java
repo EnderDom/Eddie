@@ -9,30 +9,39 @@ import enderdom.eddie.tools.bio.Tools_Sequences;
 
 /*
  * I guess just a wrapper for String
- * in reality, but you should switch
- * to nuclear or amino as quick as possible
+ * in reality
+ * 
+ * Probably good idea to migrate to biojava, somehow
+ * 
  */
 public class GenericSequence implements SequenceObject{
 	
 	private String sequence;
 	private String name;
 	private String quality; //QUALITY STORED AS FASTQ 
-	private boolean gaps;
 	private int type = -1;
+	private int positioninlist = -1;
 	
 	public GenericSequence(String name){
 		this.name = name;
+	}
+	
+	public GenericSequence(String name, int position){
+		this.name = name;
+		this.positioninlist = position;
+	}
+	
+	public GenericSequence(String name, String sequence, String quality, int postion){
+		this.name = name;
+		this.sequence = sequence;
+		this.quality = quality;
+		this.positioninlist = -1;
 	}
 	
 	public GenericSequence(String name, String sequence, String quality){
 		this.name = name;
 		this.sequence = sequence;
 		this.quality = quality;
-		if(this.quality !=null)if(this.sequence.length() != this.quality.length()){
-			Logger.getRootLogger().warn("Sequence length and quality length are not the same "+
-					this.sequence.length() + " and " + this.quality.length()+" for "+name+", this will fail");
-		}
-		if(hasGaps(sequence))gaps=true;
 	}
 	
 	public GenericSequence(String name, String sequence){
@@ -66,16 +75,24 @@ public class GenericSequence implements SequenceObject{
 		return type;
 	}
 
-	public int getActualLength() {//Rough implementation for now
-		if(this.gaps)return this.sequence.replaceAll("-", "").length();
-		else return this.getLength();
+	public int getActualLength() {
+		int l = this.getLength();
+		int i =0;
+		while(i < sequence.length()){
+			if(sequence.charAt(i) == '-' || sequence.charAt(i) == '*') {
+				l--;
+				i++;
+			} 
+		}
+		return l;
 	}
 	
 	public int getLength(){
 		return (this.sequence == null) ? 0 :this.sequence.length();
 	}
 
-	public int leftTrim(int i) {
+	public int leftTrim(int i, int base) {
+		i-=base;
 		if(i > this.sequence.length()){
 			Logger.getRootLogger().warn("Tried to Trim "+i+"bp from "+name+" shorter than actual length of "+getLength());
 			this.sequence = "";
@@ -87,7 +104,8 @@ public class GenericSequence implements SequenceObject{
 		return this.sequence.length();
 	}
 
-	public int rightTrim(int i) {
+	public int rightTrim(int i, int base) {
+		i-=base;
 		if(i > this.sequence.length()){
 			Logger.getRootLogger().warn("Tried to Trim "+i+"bp from "+name+" shorter than actual length of "+getLength());
 			this.sequence = "";
@@ -112,30 +130,27 @@ public class GenericSequence implements SequenceObject{
 		}
 	}
 
-	public SequenceObject[] removeSection(int start, int end) {
+	public SequenceObject[] removeSection(int start, int end, int base) {
 		GenericSequence[] seq = new GenericSequence[2];
 		seq[0] = this.replicate();
 		seq[1] = this.replicate();
-		seq[0].rightTrim(start);
-		seq[1].leftTrim(seq[1].getLength()-end);
+		seq[0].rightTrim(start, base);
+		seq[1].leftTrim(seq[1].getLength()-end, base);
 		seq[0].setName(this.name+"_0");
 		seq[1].setName(this.name+"_1");
 		return seq;
 	}
-
-	public FourBitNuclear getAsNuclear(){
-		return new FourBitNuclear(this.name, this.sequence, this.quality);
-	}
 	
 	private String insertString(int pos, String s1, String s2){
 		StringBuilder build = new StringBuilder();
-		build.append(s1.substring(0,pos));
+		if(pos!=0)build.append(s1.substring(0,pos));		
 		build.append(s2);
 		build.append(s1.substring(pos, s1.length()));
 		return build.toString();
 	}
 	
-	public void insert(int pos, SequenceObject s) {
+	public void insert(int pos, SequenceObject s, int base) {
+		pos-=base;
 		this.sequence = insertString(pos, this.sequence, s.getSequence());
 		if(quality != null && quality.length() != 0){
 			String q = s.getQuality();
@@ -144,14 +159,12 @@ public class GenericSequence implements SequenceObject{
 				q= Tools_Fasta.converArray2Phrap(arr);
 			}
 			this.quality = insertString(pos, this.quality, q);
-			if(quality.length() != sequence.length()){
-				Logger.getRootLogger().error("Sequence and quality not same length for "+ this.name);
-			}
+			
 		}
 	}
 
 	public void append(SequenceObject s) {
-		insert(this.sequence.length(), s);
+		insert(this.sequence.length(), s, 0);
 	}
 
 	public void extendLeft(int i) {
@@ -174,7 +187,6 @@ public class GenericSequence implements SequenceObject{
 
 	public void setSequence(String sequence) {
 		this.sequence = sequence;
-		if(hasGaps(sequence));
 	}
 
 	public void setQuality(String quality) {
@@ -184,9 +196,18 @@ public class GenericSequence implements SequenceObject{
 	public void setName(String title) {
 		this.name = title;
 	}
+
+
+	public int getPositionInList() {
+		return this.positioninlist;
+	}
 	
-	private boolean hasGaps(String seq){
-		return seq.contains("-");
+	public void setPositionInList(int i) {
+		positioninlist = i;
 	}
 
+	public boolean qualCheck(){
+		return quality.length() != sequence.length();
+	}
+	
 }

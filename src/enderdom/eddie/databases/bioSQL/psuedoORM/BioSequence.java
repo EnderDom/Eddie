@@ -1,7 +1,6 @@
 package enderdom.eddie.databases.bioSQL.psuedoORM;
 
-import enderdom.eddie.databases.bioSQL.interfaces.BioSQL;
-import enderdom.eddie.bio.sequence.FourBitSequence;
+import enderdom.eddie.bio.interfaces.SequenceObject;
 
 public class BioSequence {
 
@@ -54,14 +53,8 @@ public class BioSequence {
 		return this.sequence.toUpperCase().equals(s.toUpperCase());
 	}
 	
-	public boolean rawDNACompare(FourBitSequence s) throws Exception{
-		if(this.alphabet == BioSQL.alphabet_DNA){
-			FourBitSequence resolve = new FourBitSequence(this.sequence);
-			return resolve.compareBasic(s);	
-		}
-		else{
-			throw new Exception("Cannot compare, not DNA");
-		}
+	public boolean basicCompare(SequenceObject s) throws Exception{
+		return this.sequence.equals(s.getSequence());
 	}
 	
 }

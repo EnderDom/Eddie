@@ -2,6 +2,8 @@ package enderdom.eddie.bio.blast;
 
 import org.apache.log4j.Logger;
 
+import enderdom.eddie.bio.sequence.Region;
+
 /**
  * 
  * @author dominic
@@ -11,7 +13,7 @@ import org.apache.log4j.Logger;
  * 0 <= x <querylen
  *
  */
-public class UniVecRegion {
+public class UniVecRegion implements Region{
 
 	private int start;
 	private int stop;
@@ -23,6 +25,7 @@ public class UniVecRegion {
 	public static int MODERATE = 3;
 	public static int STRONG = 4;
 	private int regionstrength;
+	private String name;
 	
 	
 	/**
@@ -147,6 +150,14 @@ public class UniVecRegion {
 
 	public void setRegionstrength(int regionstrength) {
 		this.regionstrength = regionstrength;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getName() {
+		return this.name;
 	}
 
 }

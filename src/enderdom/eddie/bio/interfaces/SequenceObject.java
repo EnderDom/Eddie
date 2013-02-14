@@ -1,6 +1,8 @@
 package enderdom.eddie.bio.interfaces;
 
-public interface SequenceObject {
+
+
+public interface SequenceObject{
 
 	public static int DNA = 0;
 	public static int RNA = 1;
@@ -46,13 +48,8 @@ public interface SequenceObject {
 	 */
 	public int getActualLength();
 	
-	
-	/**
-	 * 
-	 * @return the string length of the sequence including gaps 
-	 * that were introduced
-	 */
 	public int getLength();
+	
 	
 	/**
 	 * Trims a section from the left
@@ -67,13 +64,13 @@ public interface SequenceObject {
 	 * @param i index at which to start sequence
 	 * @return remaining size of sequence string size, not actual size
 	 */
-	public int leftTrim(int i);
+	public int leftTrim(int i, int base);
 	
 	/**
 	 * @param i distance from right side
 	 * @return remaining size of sequence string size, not actual size
 	 */
-	public int rightTrim(int i);
+	public int rightTrim(int i, int base);
 	
 	/**
 	 * removeSection(4,7);
@@ -91,7 +88,7 @@ public interface SequenceObject {
 	 * there names will be the original sequence name plus an additional 
 	 * identifier ie Seq1 -> Seq1_A, Seq1_B 
 	 */
-	public SequenceObject[] removeSection(int start, int end);
+	public SequenceObject[] removeSection(int start, int end, int base);
 	
 	/**
 	 * Insert a sequence within the sequence
@@ -105,7 +102,7 @@ public interface SequenceObject {
 	 * @see getSequenceType()
 	 * @return 
 	 */
-	public void insert(int pos, SequenceObject s);
+	public void insert(int pos, SequenceObject s, int base);
 	
 	/**
 	 * 
@@ -138,10 +135,9 @@ public interface SequenceObject {
 	 */
 	public void extendRight(int i);
 	
-	
 	public boolean hasQuality();
 	
+	public int getPositionInList();
 	
-	
-	
+	public void setPositionInList(int i);
 }

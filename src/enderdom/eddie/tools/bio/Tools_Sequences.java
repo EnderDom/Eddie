@@ -12,7 +12,7 @@ import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
 import enderdom.eddie.bio.interfaces.BioFileType;
 import enderdom.eddie.bio.interfaces.SequenceObject;
-import enderdom.eddie.bio.sequence.FourBitNuclear;
+import enderdom.eddie.bio.sequence.GenericSequence;
 
 import enderdom.eddie.tools.Tools_Math;
 import enderdom.eddie.tools.Tools_String;
@@ -218,7 +218,7 @@ public class Tools_Sequences {
 				logger.debug("Database connection open...");
 				int bioentry = manager.getBioSQLXT().getBioEntryId(manager, contig, fuzzy, manager.getEddieDBID());
 				if(bioentry > 0){
-					seq = new FourBitNuclear(manager.getBioSQL().getSequence(manager.getCon(), bioentry));				
+					seq = new GenericSequence(manager.getBioSQL().getSequence(manager.getCon(), bioentry));				
 					manager.close();
 				}
 				else if(bioentry < 1 && !fuzzy){

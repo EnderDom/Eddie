@@ -1,6 +1,8 @@
 package enderdom.eddie.bio.assembly;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
 
@@ -8,8 +10,10 @@ import enderdom.eddie.bio.interfaces.BioFileType;
 import enderdom.eddie.bio.interfaces.Contig;
 import enderdom.eddie.bio.interfaces.SequenceObject;
 import enderdom.eddie.bio.interfaces.UnsupportedTypeException;
-import enderdom.eddie.bio.sequence.FourBitNuclear;
-import enderdom.eddie.bio.sequence.FourBitSequence;
+import enderdom.eddie.bio.sequence.BasicRegion;
+import enderdom.eddie.bio.sequence.GenericSequence;
+import enderdom.eddie.tools.Tools_Math;
+
 
 /**
  * 
@@ -23,38 +27,38 @@ import enderdom.eddie.bio.sequence.FourBitSequence;
  * ALL NUCLEOTIDE INDEXES RETURNED AS 0-BASED!!!!!!!!!!!!!
  * 
  * 
- * This currently stores sequence data as FourBitSequence
+ * This currently stores sequence data as GenericSequence
  * But this should be relatively trivial to change. You could store
- * as Strings and anywhere which requires return FourBitSequence
+ * as Strings and anywhere which requires return GenericSequence
  * have a new Construcion there.
  * 
  */
 public class ACERecord implements Contig{
 
-	private StringBuilder current;
+	private StringBuilder sequencebuffer;
+	private StringBuilder contigbuffer;
+	private StringBuilder qualitybuffer;
 	private String contigname;
-	private String[] readnames;
-	//NOTE reads are offset by one relative to readnames due to consensus being shoved in seqs
-	private FourBitSequence[] seqs;//Note, first sequence is consensus, if empty no consensus provided
+	private LinkedHashMap<String, SequenceObject> sequences;
+	private ArrayList<BasicRegion> regions;
 	private boolean finalised;
-	private int readcount;
-	private int expectedlength;
+	private int arraycount =0;
+	private int position =1;
+	private String currentread;
 	Logger logger = Logger.getLogger("ACEFileParser");
-	private String consensusqual; //<-- Better way of storing quality?
-	private StringBuilder cons;
 	private int[][] offset;
-	private int[][] regions;
-	private int regioncount;
 	private char[] compliments;
-	//TODO sort out adding RD with quality data from a qual/fastq file
 	private int iteratorcount = 0;
 	
 	/**
 	 * Constructor
 	 */
 	public ACERecord(){
-		current = new StringBuilder();
-		cons = new StringBuilder();
+		sequences = new LinkedHashMap<String, SequenceObject>();
+		sequencebuffer = new StringBuilder();
+		qualitybuffer = new StringBuilder();
+		contigbuffer = new StringBuilder();
+		regions = new ArrayList<BasicRegion>();
 	}
 	
 	/** 
@@ -77,7 +81,11 @@ public class ACERecord implements Contig{
 	 * 
 	 */
 	public void addCurrentSequence(String line){
-		current.append(line);
+		sequencebuffer.append(line);
+	}
+	
+	public void addContigSequence(String line){
+		contigbuffer.append(line);
 	}
 	
 	/**
@@ -85,7 +93,7 @@ public class ACERecord implements Contig{
 	 * @param line
 	 */
 	public void addQuality(String line){
-		cons.append(line+" ");//Added space, as the line break usually replaces space in quality strings
+		qualitybuffer.append(line+" ");//Added space, as the line break usually replaces space in quality strings
 	}
 	
 	/**
@@ -93,7 +101,7 @@ public class ACERecord implements Contig{
 	 * @return the reference name of this contig
 	 */
 	public String getContigName(){
-		return this.contigname;
+		return contigname;
 	}
 	
 	/**
@@ -101,7 +109,8 @@ public class ACERecord implements Contig{
 	 * @param name
 	 */
 	public void setContigName(String name){
-		this.contigname= name;
+		logger.trace("Contig name set as " + name);
+		this.contigname = name;
 	}
 	
 	/**
@@ -112,18 +121,23 @@ public class ACERecord implements Contig{
 	 */
 	public void setNumberOfReads(int i){
 		logger.trace("Number of reads set to " + i);
-		this.seqs = new FourBitSequence[i+1]; //+1 for the consensus
 		this.offset = new int[5][i];
 		this.compliments = new char[i];
-		this.readnames = new String[i];
 	}
 	
 	/**
 	 * Sets the number of regions (BS)
+	 * 
 	 * @param i
 	 */
 	public void setNumberOfRegions(int i){
-		this.regions = new int[3][i];//0 stores start, 1 stores end, 2 stores read index for readnames/seqs
+		ArrayList<BasicRegion> regs = new ArrayList<BasicRegion>(i);
+		if(regions.size() !=0){
+			for(int j=0;j < regions.size(); j++){
+				regs.add(regions.get(j));
+			}
+		}
+		regions = regs;
 	}
 	
 	/**
@@ -132,16 +146,15 @@ public class ACERecord implements Contig{
 	 * @param readname
 	 */
 	public void setReadName(String readname){
-		seqs[readcount] = new FourBitSequence(current.toString());
-		if(seqs[readcount].length() != expectedlength && seqs[readcount].getActualLength() != expectedlength){
-			logger.warn("Expected length "+expectedlength+" of the read is not equal to its total("+seqs[readcount].getActualLength()+") or actual("+seqs[readcount].length()+") ([!*]) length ");
+		if(readname!=null){
+			sequences.put(readname, new GenericSequence(readname, position));	
 		}
-		current = new StringBuilder();
-		if(!readname.equals(readnames[readcount])){
-			logger.warn("Someting has gone wrong, but I'm not sure what...:S");
-		}
-		readcount++;
+		sequencebuffer = new StringBuilder();
+		currentread=readname;
+		position++;
+		
 	}
+
 	
 	/**
 	 * 
@@ -161,22 +174,13 @@ public class ACERecord implements Contig{
 	 * etc.
 	 */
 	public void finalise(){
-		this.consensusqual=cons.toString();
-		cons = null;
-		seqs[readcount] = new FourBitSequence(current.toString());
-		current = null;
+		sequences.put(contigname, new GenericSequence(this.contigname, this.contigbuffer.toString(), 
+				this.qualitybuffer.toString(),0));
+		sequences.get(currentread).setSequence(this.sequencebuffer.toString());
+		this.sequencebuffer = null;
 		setFinalised(true);
 	}
-	
-	/**
-	 * Sets the expected length of the read to be put
-	 * into this contig object. If this is different
-	 * a warning will be alerted (but not an error)
-	 * @param l
-	 */
-	public void setExpectedLength(int l){
-		this.expectedlength = l;
-	}
+
 	
 	/**
 	 * Add offset 'off' to read 'name' with complimentation 'c'
@@ -185,17 +189,10 @@ public class ACERecord implements Contig{
 	 * @param c expected to be 'C' or 'U'
 	 */
 	public void addOffSet(String name, int off, char c){
-		logger.trace("Set readname " + name + " @" + readcount);
-		readnames[readcount]=name;
-		offset[0][readcount] = off-1;
-		compliments[readcount] = c;
-		readcount++;
-		if(readcount == readnames.length){
-			readcount=0;/*
-			* Sets back to 0 for when read sequences are added, 
-			* so we can use this variable for both rather than 2 vars
-			*/
-		}
+		logger.trace("Set readname " + name + " @" + arraycount);
+		offset[0][arraycount] = off-1;
+		compliments[arraycount] = c;
+		arraycount++;
 	}
 
 	/**
@@ -210,10 +207,10 @@ public class ACERecord implements Contig{
 	 * @param i4
 	 */
 	public void addQA(int i1, int i2, int i3, int i4){
-		this.offset[1][readcount-1] = i1-1;
-		this.offset[2][readcount-1] = i2-1;
-		this.offset[3][readcount-1] = i3-1;
-		this.offset[4][readcount-1] = i4-1;
+		this.offset[1][arraycount-1] = i1-1;
+		this.offset[2][arraycount-1] = i2-1;
+		this.offset[3][arraycount-1] = i3-1;
+		this.offset[4][arraycount-1] = i4-1;
 	}
 	
 	/**
@@ -222,64 +219,29 @@ public class ACERecord implements Contig{
 	 * @param i2
 	 * @param readname
 	 */
-	public void addRegion(int i1, int i2, String readname){
-		int l =-1;
-		for(int i = 0; i < readnames.length; i++){
-			if(readnames[i].equals(readname)){
-				l=i;
-				break;
-			}
-		}
-		if(l == -1)logger.error("There is a region for a readname which doesn't pre-exist in the contig");
-		regions[0][regioncount] = i1-1;
-		regions[1][regioncount] = i2-1;
-		regions[2][regioncount] = l;
-		regioncount++;
+	public void addRegion(int i1, int i2, String readname){		
+		regions.add(new BasicRegion(i1, i2, 0, readname));
 	}
 	
+
 	/**
 	 * 
-	 * @return consensus Quality as String
+	 * @return Consensus sequence as a SequenceObject
 	 */
-	public String getConsensusQualityLine(){
-		return this.consensusqual;
-	}
-	
-	/**
-	 *
-	 * @param str
-	 */
-	public void setConsensusQuality(String str){
-		this.consensusqual = str;
-	}
-	
-	/**
-	 * 
-	 * @return consensus as a FourBitSequence
-	 * object
-	 */
-	public FourBitSequence getConsensusAs4(){
-		return this.seqs[0];
-	}
-	
-	/**
-	 * 
-	 * @return Consensus sequence as a String
-	 */
-	public FourBitNuclear getConsensus(){
-		FourBitNuclear n = new FourBitNuclear(this.seqs[0]);
-		n.setName(this.contigname);
-		n.setQuality(this.consensusqual);
-		return n;
+	public SequenceObject getConsensus(){
+		return sequences.get(contigname);
 	}
 	
 	/**
 	 * 
 	 * @param i
-	 * @return read at i as FourBitSequence
+	 * @return read at i as GenericSequence
 	 */
-	public FourBitSequence getRead(int i){
-		return this.seqs[i+1];
+	public SequenceObject getRead(int i){
+		for(String key : sequences.keySet()){
+			if(sequences.get(key).getPositionInList()-1==i)return sequences.get(key); 
+		}
+		return null;
 	}
 	
 	/**
@@ -288,34 +250,10 @@ public class ACERecord implements Contig{
 	 * @return sequence for read named 'name',
 	 * else returns null if the read doesn't exist
 	 */
-	public FourBitSequence getRead(String name){
-		int l = getReadIndex(name);
-		if(l == -1){
-			logger.error("ACErecord does not contain the read name");
-			return null;
-		}
-		else{
-			return getRead(l);
-		}
+	public SequenceObject getRead(String name){
+		return sequences.get(name);
 	}
 	
-	/**
-	 * Remember, as with all methods, 0-based
-	 * @param i
-	 * @return read number i as string
-	 */
-	public String getReadAsString(int i){
-		return getRead(i).getAsString();
-	}
-	
-	/**
-	 * 
-	 * @param name
-	 * @return read named as a String
-	 */
-	public String getReadAsString(String name){
-		return getRead(name).getAsString();
-	}
 	
 	/**
 	 * 
@@ -325,14 +263,7 @@ public class ACERecord implements Contig{
 	 * using index
 	 */
 	public int getReadIndex(String name){
-		int l =-1;
-		for(int i =0; i < readnames.length; i++){
-			if(name.equalsIgnoreCase(name)){
-				l=i;
-				break;
-			}
-		}
-		return l;		
+		return sequences.get(name).getPositionInList();
 	}
 	
 	/**
@@ -341,7 +272,7 @@ public class ACERecord implements Contig{
 	 * @return read at that index
 	 */
 	public String getReadName(int index){
-		return this.readnames[index];
+		return this.getRead(index).getName();
 	}
 	
 	/**
@@ -349,7 +280,7 @@ public class ACERecord implements Contig{
 	 * @return self explanatory
 	 */
 	public int getNoOfReads(){
-		return this.readnames.length;
+		return this.sequences.size()-1;
 	}
 	
 	/**
@@ -394,17 +325,17 @@ public class ACERecord implements Contig{
 	 */
 	public int[] getDepthMap(){
 		int[] arr = new int[this.getConsensus().getActualLength()];
-		FourBitNuclear seq = this.getConsensus();
+		SequenceObject seq = sequences.get(contigname);
 		int actuallength = 0;
 		int depth=0;
-		for(int i =0; i < seq.length(); i++){
-			if(seq.charAt(i) != '-'){
+		for(int i =0; i < seq.getSequence().length(); i++){
+			if(seq.getSequence().charAt(i) != '-'){
 				depth=0;
 				for(int j =0; j < this.getNoOfReads(); j++){
 					int l = this.getReadOffset(j);
 					if(i >= l && i < this.getReadRange(j)[1]+l){
 						//TODO consider BS inclusion ranges <-- at the moment this is inaccurate without them						
-						if(this.getRead(j).charAt(i+l) != '-'){
+						if(this.getRead(j).getSequence().charAt(i+l) != '-'){
 							depth++;
 						}
 					}
@@ -444,54 +375,53 @@ public class ACERecord implements Contig{
 	}
 
 	public int[] getListOfLens() {
-		int[] lens = new int[this.readcount];
-		for(int i =0;i < lens.length; i++){
-			lens[i] = seqs[i+1].getLength();
+		int[] lens = new int[this.getNoOfReads()];
+		int i=0;
+		for(String s : sequences.keySet()){
+			if(!s.equals(contigname)){
+				lens[i] = sequences.get(s).getLength();
+				i++;
+			}
 		}
 		return lens;
 	}
 	
 
 	public int[] getListOfActualLens() {
-		int[] lens = new int[this.readcount];
-		for(int i =0;i < lens.length; i++){
-			lens[i] = seqs[i+1].getActualLength();
+		int[] lens = new int[this.getNoOfReads()];
+		int i=0;
+		for(String s : sequences.keySet()){
+			if(!s.equals(contigname)){
+				lens[i] = sequences.get(s).getActualLength();
+				i++;
+			}
 		}
 		return lens;
 	}
 
 	public int getNoOfMonomers() {
-		int t = 0;
-		for(int i =0; i < this.readcount; i++){
-			t=seqs[i+1].getActualLength();
-		}
-		return t;
+		return Tools_Math.sum(getListOfActualLens());
 	}
 
 	public int getQuickMonomers() {
-		int t = 0;
-		for(int i =0; i < this.readcount; i++){
-			t=seqs[i+1].getLength();
-		}
-		return t;
+		return Tools_Math.sum(getListOfLens());
 	}
 	
 	public int getNoOfSequences() {
-		return this.readcount;
+		return this.getNoOfReads();
 	}
 
 	public SequenceObject getSequence(int i) {
-		FourBitNuclear n = new FourBitNuclear(getRead(i));
-		n.setName(this.getReadName(i));
-		n.setQuality(this.consensusqual);
-		return n;
+		for(String s : sequences.keySet()){
+			if(sequences.get(s).getPositionInList()-1 == i){
+				return sequences.get(s);
+			}
+		}
+		return null;
 	}
 
 	public SequenceObject getSequence(String s) {
-		FourBitNuclear n =new FourBitNuclear(getRead(s));
-		n.setName(s);
-		n.setQuality(this.consensusqual);
-		return n;
+		return sequences.get(s);
 	}
 		
 	public String[] saveFile(File file, BioFileType filetype) throws Exception {
@@ -506,7 +436,7 @@ public class ACERecord implements Contig{
 	}
 
 	public boolean hasNext() {
-		return iteratorcount+1 < this.seqs.length;
+		return iteratorcount+1 < this.getNoOfReads();
 	}
 
 	public SequenceObject next() {
@@ -570,3 +500,4 @@ public class ACERecord implements Contig{
 
 	
 }
+

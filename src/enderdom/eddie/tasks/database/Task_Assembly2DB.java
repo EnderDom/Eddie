@@ -17,10 +17,10 @@ import enderdom.eddie.bio.interfaces.SequenceObject;
 
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQL;
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
-import enderdom.eddie.databases.bioSQL.psuedoORM.BioSequence;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.tasks.TaskXTwIO;
+import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Assembly;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
@@ -41,7 +41,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 
 	private boolean uploadreads;
 	private boolean uploadcontigs;
-	private boolean remaplocations;
+	
 	private boolean mapcontigs;
 	private boolean unpad;
 	private String identifier;
@@ -57,17 +57,24 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		super.parseArgsSub(cmd);
 		if(cmd.hasOption("uploadreads"))uploadreads=true;
 		if(cmd.hasOption("uploadcontigs"))uploadcontigs=true;
-		if(cmd.hasOption("remaploc"))remaplocations=true;
+		//if(cmd.hasOption("remaploc"))remaplocations=true;
 		if(cmd.hasOption("mapcontigs"))mapcontigs=true;
 		if(cmd.hasOption("identifier"))this.identifier=cmd.getOptionValue("identifier");
 		if(cmd.hasOption("programname"))this.programname=cmd.getOptionValue("programid");
 		if(cmd.hasOption("unpad"))this.unpad = true;
+		if(cmd.hasOption("runid")){
+			Integer a = Tools_String.parseString2Int(cmd.getOptionValue("runid"));
+			if(a != null)runid=a.intValue();
+			else{
+				logger.error("Run id is not a number!!");
+			}
+		}
 	}
 	
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("u","uploadreads", false, "Uploads a read Fasta or Fastq file"));
-		options.addOption(new Option("r","remaploc", false, "Remap read Locations with ACE file (only if upload already run)"));
+		//options.addOption(new Option("r","remaploc", false, "Remap read Locations with ACE file (only if upload already run)"));
 		options.addOption(new Option("c","uploadcontigs", false, "Uploads a contigs from ACE (run separate from uploadreads)"));
 		options.addOption(new Option("m","mapcontigs", false, "Map Contigs to reads, reads should have been uploaded, can be done in parallel with -c"));
 		options.addOption(new Option("id","identifier", true, "Uses this as the base identifier for contigs, such as CLCbio_Contig_"));
@@ -84,7 +91,6 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	}
 	
 	//TODO implement use of the checklist
-	
 	public void run(){
 		setComplete(started);
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
@@ -98,9 +104,9 @@ public class Task_Assembly2DB extends TaskXTwIO{
 			if(uploadreads){
 				File file = new File(this.input);
 				if(file.exists()){
-					if(filetype == null)this.filetype =detectFileType(input);
+					BioFileType type = Tools_Bio_File.detectFileType(input);
 					boolean fastq = false;
-					if(filetype.equals("FASTQ")){
+					if(type == BioFileType.FASTQ){
 						fastq=true;
 						logger.debug("File is detected as Fastq");
 					}
@@ -167,7 +173,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 				}
 			}
 			//UPLOADING CONTIGS
-			else if(uploadcontigs || remaplocations){
+			else if(uploadcontigs){
 				File file = new File(this.input);
 				if(file.exists()){
 					BioFileType type = Tools_Bio_File.detectFileType(input);
@@ -182,11 +188,15 @@ public class Task_Assembly2DB extends TaskXTwIO{
 						if(runid == -1){
 							runid = Tools_Assembly.getSingleRunId(manager, programname, BioSQLExtended.assembly);
 							logger.debug("Run id for " + this.programname+ " returned as " + runid);
+							if(runid == -1){
+								logger.error("This upload needs to be tied to a run, see -task uploadrun");
+								return;
+							}
 						}
 						try{
 							ACEFileParser parser = new ACEFileParser(file);
 							ACERecord record = null;
-							int count =0;
+							int count =1;
 							boolean mapping = true;
 							String[] done = null;
 							if(checklist.inRecovery()) {
@@ -205,18 +215,17 @@ public class Task_Assembly2DB extends TaskXTwIO{
 											if(unpad)seq.replaceAll("-", "");
 											if(!bs.addSequence(manager.getCon(), biodatabase_id, null, name, this.identifier+count, this.identifier+count, "CONTIG", record.getContigName(), 0, seq, BioSQL.alphabet_DNA))break;
 											if(mapcontigs && mapping){
-												mapping = mapReads(record, manager, this.identifier+count, biodatabase_id, runid);
+												mapping = mapReads(record, manager, this.identifier+count, biodatabase_id, runid, count);
 												if(!mapping){
 													int j =ui.requiresUserYNI("Mapping failed for some reason, Continue uploading contigs without mapping to reads?", "Mapping Failure Message");
 													if(j != 0)return;
 												}
 											}
-											System.out.print("\r"+"Contig No.: "+count+"               ");
-											count++;
 										}
 										else{
-											System.out.print("\r"+"Skipped Contig, already exists...                ");
-										}
+											System.out.print("\r"+"Contig No.: "+count+"Skipped Contig ");
+										}					
+										count++;
 									}
 								}
 								else{
@@ -252,11 +261,12 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	    setComplete(finished);
 	}
 	
-	public boolean mapReads(ACERecord record, DatabaseManager manager, String identifier, int biodatabase_id, int runid){
+	public boolean mapReads(ACERecord record, DatabaseManager manager, String identifier, int biodatabase_id, int runid, int count){
 		BioSQL bs = manager.getBioSQL();
 		BioSQLExtended bsxt = manager.getBioSQLXT();
 		int bioentry_id = bs.getBioEntry(manager.getCon(), identifier, null, biodatabase_id);
 		for(int i =0; i < record.getNoOfReads() ; i++){
+			
 			String read = record.getReadName(i);
 			int read_id = bs.getBioEntry(manager.getCon(), read, read, biodatabase_id);
 			if(read_id < 0){
@@ -274,39 +284,16 @@ public class Task_Assembly2DB extends TaskXTwIO{
 					comp = 1;
 					//TODO add better strand info
 				}
-				System.out.print("\r"+"Mapping "+identifier+"... Read No."+i+"             ");
-				int read_version = readVersioning(record, manager, read_id, i);
 				//As ace isn't normally trimmed, assumes not trimmed
-				if(!bsxt.mapRead2Contig(manager, bioentry_id, read_id, read_version, runid, start, end, false)){
+				if(!bsxt.mapRead2Contig(manager, bioentry_id, read_id, 0, runid, start, end, false)){
 					logger.error("Read mapping has failed");
 					return false;
 				}
+				System.out.print("\r"+"Mapping Read No.:"+i+" in Contig No.:"+count+"    ");
 			}
 		}
 		return true;
-	}
-
-	public int readVersioning(ACERecord record, DatabaseManager manager, int read_id, int read_numb){
-		BioSequence[] biosequences = manager.getBioSQLXT().getBioSequences(manager, read_id);
-		int v_high = -1;
-		for(BioSequence s : biosequences){
-			try{
-				if(s.rawDNACompare(record.getRead(read_numb))){
-					return s.getVersion();
-				}
-			}
-			catch(Exception e){
-				logger.error("Problem with the reads, they day they're not actually DNA/RNA", e);
-			}
-			if(s.getVersion() > v_high){
-				v_high = s.getVersion();
-			}
-		}
-		v_high++;
-		manager.getBioSQL().addBiosequence(manager.getCon(), v_high, record.getRead(read_numb).getLength(), BioSQL.alphabet_DNA, record.getReadAsString(read_numb), read_id);
-		return v_high;
-	}
-	
+	}	
 	
 
 }
