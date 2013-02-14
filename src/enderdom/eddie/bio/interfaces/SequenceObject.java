@@ -62,12 +62,14 @@ public interface SequenceObject{
 	 * ->
 	 *     TGATG
 	 * @param i index at which to start sequence
+	 * @param base, 0 or 1 based
 	 * @return remaining size of sequence string size, not actual size
 	 */
 	public int leftTrim(int i, int base);
 	
 	/**
 	 * @param i distance from right side
+	 * @param base, 0 or 1 based
 	 * @return remaining size of sequence string size, not actual size
 	 */
 	public int rightTrim(int i, int base);
@@ -84,6 +86,7 @@ public interface SequenceObject{
 	 * 
 	 * @param start start to section
 	 * @param end of section
+	 * @param base, 0 or 1 based
 	 * @return the resulting two sequences produced by removing the region
 	 * there names will be the original sequence name plus an additional 
 	 * identifier ie Seq1 -> Seq1_A, Seq1_B 
@@ -99,6 +102,7 @@ public interface SequenceObject{
 	 *  would insert before any amino acids
 	 * @param s the sequence to insert, this obviously will need to
 	 * be checked by the subclass for sequence compatability using 
+	 * @param base, 0 or 1 based
 	 * @see getSequenceType()
 	 * @return 
 	 */

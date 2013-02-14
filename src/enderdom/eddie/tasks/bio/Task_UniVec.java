@@ -281,7 +281,7 @@ public class Task_UniVec extends TaskXTwIO{
 						alreadytrimmed.add(s);
 						o = seql.getSequence(s);
 						if(r.isLeftTerminal()){
-							o.leftTrim(r.getStop(0));
+							o.leftTrim(r.getStop(0),0);
 							if(o.getLength() >= trimlength){
 								seql.addSequenceObject(o);
 								lefttrims++;
@@ -292,7 +292,7 @@ public class Task_UniVec extends TaskXTwIO{
 							}
 						}
 						else if(r.isRightTerminal()){
-							o.rightTrim(o.getLength()-r.getStart(0));
+							o.rightTrim(o.getLength()-r.getStart(0),0);
 							if(o.getLength() >= trimlength){
 								seql.addSequenceObject(o);
 								righttrims++;
@@ -303,7 +303,7 @@ public class Task_UniVec extends TaskXTwIO{
 							}
 						}
 						else{
-							SequenceObject[] splits =  o.removeSection(r.getStart(0), r.getStop(0));
+							SequenceObject[] splits =  o.removeSection(r.getStart(0), r.getStop(0),0);
 							if(splits.length > 1){
 								//Remove, as when added, added with diff name
 								seql.removeSequenceObject(o.getName());

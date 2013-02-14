@@ -47,6 +47,9 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	private String identifier;
 	private String programname;
 	private int runid;
+	private double readcount;
+	private double readcounter;
+	private int perc;
 	
 	public Task_Assembly2DB(){
 		setHelpHeader("--This is the Help Message for the Assemby2DB Task--");
@@ -196,6 +199,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 						try{
 							ACEFileParser parser = new ACEFileParser(file);
 							ACERecord record = null;
+							this.readcount=parser.getReadsSize();
 							int count =1;
 							boolean mapping = true;
 							String[] done = null;
@@ -289,7 +293,9 @@ public class Task_Assembly2DB extends TaskXTwIO{
 					logger.error("Read mapping has failed");
 					return false;
 				}
-				System.out.print("\r"+"Mapping Read No.:"+i+" in Contig No.:"+count+"    ");
+				readcounter+=1;
+				perc = (int)((readcount/readcounter)*100);
+				System.out.print("\r"+"Contig No>:"+count+", mapping Read No.:"+i+" (Completion: "+perc+"%)  ");
 			}
 		}
 		return true;

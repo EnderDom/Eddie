@@ -81,8 +81,8 @@ public class GenericSequence implements SequenceObject{
 		while(i < sequence.length()){
 			if(sequence.charAt(i) == '-' || sequence.charAt(i) == '*') {
 				l--;
-				i++;
-			} 
+			}
+			i++;
 		}
 		return l;
 	}
@@ -125,17 +125,21 @@ public class GenericSequence implements SequenceObject{
 			if(this.quality != null) this.quality = this.quality.substring(start, end);
 		}
 		
-		if(this.quality.length() != this.sequence.length()){
-			Logger.getRootLogger().error("Quality Check Failed, Sequence and Quality not same length for " + this.name);
+		if(this.quality != null){
+			if(!qualCheck()){
+				Logger.getRootLogger().error("Quality Check Failed, Sequence and Quality not same length for " + this.name);
+			}
 		}
 	}
 
 	public SequenceObject[] removeSection(int start, int end, int base) {
+		start-=base;
+		end-=base;
 		GenericSequence[] seq = new GenericSequence[2];
 		seq[0] = this.replicate();
 		seq[1] = this.replicate();
 		seq[0].rightTrim(start, base);
-		seq[1].leftTrim(seq[1].getLength()-end, base);
+		seq[1].leftTrim(end, base);
 		seq[0].setName(this.name+"_0");
 		seq[1].setName(this.name+"_1");
 		return seq;

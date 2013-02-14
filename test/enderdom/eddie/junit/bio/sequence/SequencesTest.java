@@ -26,7 +26,7 @@ public class SequencesTest {
 	public void testLeftTrim() {
 		String s =  "CGATCGATAGC--ATCGATCGA";
 		GenericSequence seq = new GenericSequence("Test", s);
-		seq.rightTrim(3);
+		seq.rightTrim(3, 0);
 		String s2 = "CGATCGATAGC--ATCGAT";
 		assertEquals("Result", s2, seq.getSequence());
 	}
@@ -35,7 +35,7 @@ public class SequencesTest {
 	public void testRightTrim() {
 		String s =  "CGATCGATAGC--ATCGATCGA";
 		GenericSequence seq = new GenericSequence("Test", s);
-		seq.leftTrim(3);
+		seq.leftTrim(3, 0);
 		String s2 = "TCGATAGC--ATCGATCGA";
 		assertEquals("Result", s2, seq.getSequence());
 	}
@@ -48,7 +48,7 @@ public class SequencesTest {
 		GenericSequence seq = new GenericSequence("Test", s);
 		;
 		String[] s2 = new String[]{"CGATCGATAGC","ATCGATCGA"};
-		GenericSequence[] s3 = (GenericSequence[]) seq.removeSection(11, 13);
+		GenericSequence[] s3 = (GenericSequence[]) seq.removeSection(11, 13, 0);
 		assertEquals("Result", s2[0], s3[0].getSequence());
 		assertEquals("Result", s2[1], s3[1].getSequence());
 	}
@@ -58,7 +58,7 @@ public class SequencesTest {
 		String s = "CGATCGAT";
 		GenericSequence seq = new GenericSequence("Test", s);
 		GenericSequence seq2 = new GenericSequence("Test2", s);
-		seq.insert(0, seq2);
+		seq.insert(0, seq2, 0);
 		s= "CGATCGATCGATCGAT";
 		assertEquals("Result", s, seq.getSequence());
 	}
