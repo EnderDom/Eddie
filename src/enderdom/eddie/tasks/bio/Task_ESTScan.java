@@ -36,7 +36,6 @@ public class Task_ESTScan extends TaskXTwIO{
 		options.addOption(new Option("m", "matrix", true, "filepath to matrix file"));
 		options.getOption("i").setDescription("Input sequence file Fasta");
 		options.getOption("o").setDescription("Output folder");
-		
 	}
 	
 	
@@ -61,6 +60,7 @@ public class Task_ESTScan extends TaskXTwIO{
 				if(!new File(matrix).isFile())logger.error(matrix + " not a file");
 			}
 		}
+		
 		else{
 			logger.error("Please make sure each of these are set: input, output, ESTScan exe/bin, matrix filepath");
 		}

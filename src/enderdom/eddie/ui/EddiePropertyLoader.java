@@ -82,18 +82,12 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				mode = 6;
 			}
 			else{
-				if(cmd.hasOption("g")){ 
-					/* GUI */
-					mode = 4;					
-				}
-				else{
-					/*If Command Line iNterface*/
-					mode = 2;
-					/*
-					 * Store arguments for further parsing by CLI
-					 */
-					this.args=args;
-				}
+				/*If Command Line iNterface*/
+				mode = 2;
+				/*
+				 * Store arguments for further parsing by CLI
+				 */
+				this.args=args;
 			}
 			if(cmd.hasOption("l")){
 				String lev = cmd.getOptionValue("l");

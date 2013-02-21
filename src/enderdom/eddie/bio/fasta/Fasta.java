@@ -13,11 +13,11 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.bio.interfaces.BioFileType;
-import enderdom.eddie.bio.interfaces.SequenceList;
-import enderdom.eddie.bio.interfaces.SequenceObject;
-import enderdom.eddie.bio.interfaces.UnsupportedTypeException;
+import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.GenericSequence;
+import enderdom.eddie.bio.sequence.SequenceList;
+import enderdom.eddie.bio.sequence.SequenceObject;
+import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.tools.Tools_Math;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
 import enderdom.eddie.tools.bio.Tools_Fasta;
@@ -286,6 +286,32 @@ public class Fasta implements FastaHandler, SequenceList{
 		}
 		return i;
 	}
+	
+	public int trimNames(String s1){
+		LinkedHashMap<String, SequenceObject> seqs2 = new LinkedHashMap<String, SequenceObject>();
+		int i = 0;
+		for(String s : sequences.keySet()){
+			if(s.contains(s1)){
+				String n =s.substring(0,s.indexOf(s1)); 
+				SequenceObject o = sequences.get(s);
+				o.setName(n);
+				seqs2.put(n, o);
+				i++;
+			}
+			else{
+				seqs2.put(s, sequences.get(s));
+			}
+		}
+		if(this.sequences.size() != seqs2.size()){
+			logger.error("An error occured, for some reason the" +
+					" new hashmap is not the same size as the old one. No changes made.");
+		}
+		else{
+			sequences = seqs2;
+		}
+		return i;
+	}
+	
 	
 	/**
 	 * Renames the sequence to s1 + (start + count).

@@ -7,10 +7,10 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.bio.converters.Tools_Converters;
 
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_System;
+import enderdom.eddie.tools.bio.Tools_Converters;
 
 public class Task_Convert extends TaskXTwIO{
 	

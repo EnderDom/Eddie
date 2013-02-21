@@ -2,7 +2,6 @@ package enderdom.eddie.bio.sequence;
 
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.bio.interfaces.SequenceObject;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.bio.Tools_Fasta;
 import enderdom.eddie.tools.bio.Tools_Sequences;

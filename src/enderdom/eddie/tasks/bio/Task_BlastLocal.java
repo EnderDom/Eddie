@@ -17,7 +17,7 @@ import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.assembly.ACERecord;
 import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
-import enderdom.eddie.bio.interfaces.BioFileType;
+import enderdom.eddie.bio.sequence.BioFileType;
 
 import enderdom.eddie.tasks.Checklist;
 import enderdom.eddie.tasks.TaskXTwIO;

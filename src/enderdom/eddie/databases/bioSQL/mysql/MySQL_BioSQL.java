@@ -129,6 +129,7 @@ public class MySQL_BioSQL implements BioSQL{
 	}
 	
 	public boolean addSequence(Connection con, int biodatabase, Integer taxon_id, String name, String accession, String identifier, String division, String description, int version, String seq, String alphabet){
+		
 		boolean added = addBioEntry(con, biodatabase, taxon_id, name, accession, identifier, division, description, version);
 		if(added){
 			int bio_entry = getBioEntry(con, identifier, accession, biodatabase);

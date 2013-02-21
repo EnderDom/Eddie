@@ -1,7 +1,8 @@
-package enderdom.eddie.bio.interfaces;
+package enderdom.eddie.bio.sequence;
 
 import java.io.File;
 import java.util.Iterator;
+
 
 public interface SequenceList extends Iterator<SequenceObject>{
 	

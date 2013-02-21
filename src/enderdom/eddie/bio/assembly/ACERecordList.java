@@ -8,8 +8,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.bio.interfaces.Contig;
-import enderdom.eddie.bio.interfaces.ContigList;
+import enderdom.eddie.bio.sequence.Contig;
+import enderdom.eddie.bio.sequence.ContigList;
 
 public class ACERecordList implements ContigList{
 

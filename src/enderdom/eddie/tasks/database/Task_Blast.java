@@ -8,7 +8,7 @@ import org.apache.commons.cli.Options;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
-import enderdom.eddie.bio.blast.BlastxHelper;
+import enderdom.eddie.bio.homology.blast.BlastxHelper;
 
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_String;

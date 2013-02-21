@@ -8,7 +8,7 @@ import org.biojava3.ws.alignment.qblast.BlastProgramEnum;
 import org.biojava3.ws.alignment.qblast.NCBIQBlastAlignmentProperties;
 import org.biojava3.ws.alignment.qblast.NCBIQBlastOutputProperties;
 
-import enderdom.eddie.bio.blast.NCBIQBlastServiceXT;
+import enderdom.eddie.bio.homology.blast.NCBIQBlastServiceXT;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_System;

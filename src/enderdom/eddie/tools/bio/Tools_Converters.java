@@ -1,4 +1,4 @@
-package enderdom.eddie.bio.converters;
+package enderdom.eddie.tools.bio;
 
 import java.io.File;
 import java.util.Iterator;
@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.fasta.Fasta;
-import enderdom.eddie.bio.interfaces.Contig;
+import enderdom.eddie.bio.sequence.Contig;
 
 import net.sf.picard.io.IoUtil;
 import net.sf.picard.sam.SamFormatConverter;

@@ -126,6 +126,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			  	"program VARCHAR(40) BINARY NOT NULL, " +
 			  	"version VARCHAR(40) BINARY, " +
 			  	"dbname VARCHAR(40) BINARY, " +
+			  	"source VARCHAR(80) BINARY, " +
 			  	"params TEXT, " +
 			  	"comment TEXT, " +
 			 	"PRIMARY KEY (run_id)" +

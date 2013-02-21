@@ -8,8 +8,8 @@ import org.apache.commons.cli.Options;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
-import enderdom.eddie.bio.interfaces.SequenceObject;
 import enderdom.eddie.bio.sequence.GenericSequence;
+import enderdom.eddie.bio.sequence.SequenceObject;
 
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_File;

@@ -11,7 +11,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.tools.Tools_String;
-import enderdom.eddie.bio.interfaces.Contig;
+import enderdom.eddie.bio.sequence.Contig;
 
 
 /**

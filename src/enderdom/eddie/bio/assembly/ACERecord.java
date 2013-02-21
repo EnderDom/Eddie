@@ -6,12 +6,12 @@ import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.bio.interfaces.BioFileType;
-import enderdom.eddie.bio.interfaces.Contig;
-import enderdom.eddie.bio.interfaces.SequenceObject;
-import enderdom.eddie.bio.interfaces.UnsupportedTypeException;
 import enderdom.eddie.bio.sequence.BasicRegion;
+import enderdom.eddie.bio.sequence.BioFileType;
+import enderdom.eddie.bio.sequence.Contig;
 import enderdom.eddie.bio.sequence.GenericSequence;
+import enderdom.eddie.bio.sequence.SequenceObject;
+import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.tools.Tools_Math;
 
 

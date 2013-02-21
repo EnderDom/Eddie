@@ -13,11 +13,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import enderdom.eddie.bio.blast.MultiblastParser;
-import enderdom.eddie.bio.blast.UniVecBlastObject;
 import enderdom.eddie.bio.factories.SequenceListFactory;
-import enderdom.eddie.bio.interfaces.BioFileType;
-import enderdom.eddie.bio.interfaces.SequenceList;
+import enderdom.eddie.bio.homology.blast.MultiblastParser;
+import enderdom.eddie.bio.homology.blast.UniVecBlastObject;
+import enderdom.eddie.bio.sequence.BioFileType;
+import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.tasks.bio.Task_UniVec;
 import enderdom.eddie.ui.BasicPropertyLoader;
 

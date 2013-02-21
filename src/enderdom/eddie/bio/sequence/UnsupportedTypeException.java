@@ -1,4 +1,4 @@
-package enderdom.eddie.bio.interfaces;
+package enderdom.eddie.bio.sequence;
 
 public class UnsupportedTypeException extends Exception {
 

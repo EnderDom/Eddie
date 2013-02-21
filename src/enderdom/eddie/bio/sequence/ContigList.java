@@ -1,4 +1,4 @@
-package enderdom.eddie.bio.interfaces;
+package enderdom.eddie.bio.sequence;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;

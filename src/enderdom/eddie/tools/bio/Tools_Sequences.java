@@ -10,9 +10,9 @@ import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
-import enderdom.eddie.bio.interfaces.BioFileType;
-import enderdom.eddie.bio.interfaces.SequenceObject;
+import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.GenericSequence;
+import enderdom.eddie.bio.sequence.SequenceObject;
 
 import enderdom.eddie.tools.Tools_Math;
 import enderdom.eddie.tools.Tools_String;

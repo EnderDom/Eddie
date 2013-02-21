@@ -12,8 +12,8 @@ import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.assembly.ACERecord;
 import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
-import enderdom.eddie.bio.interfaces.BioFileType;
-import enderdom.eddie.bio.interfaces.SequenceObject;
+import enderdom.eddie.bio.sequence.BioFileType;
+import enderdom.eddie.bio.sequence.SequenceObject;
 
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQL;
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
@@ -50,6 +50,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	private double readcount;
 	private double readcounter;
 	private int perc;
+	private BioFileType type;
 	
 	public Task_Assembly2DB(){
 		setHelpHeader("--This is the Help Message for the Assemby2DB Task--");
@@ -107,7 +108,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 			if(uploadreads){
 				File file = new File(this.input);
 				if(file.exists()){
-					BioFileType type = Tools_Bio_File.detectFileType(input);
+					type = Tools_Bio_File.detectFileType(input);
 					boolean fastq = false;
 					if(type == BioFileType.FASTQ){
 						fastq=true;
@@ -217,6 +218,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 										if(bs.getBioEntry(manager.getCon(),  this.identifier+count,  this.identifier+count, biodatabase_id) <0){
 											String seq = record.getConsensus().getSequence();
 											if(unpad)seq.replaceAll("-", "");
+											//NOTE: Name is truncated here to fit in, this will need to be taken into account elsewhere!
+											if(name.length() > 35)name = name.substring(0, 30)+"..." + count;
 											if(!bs.addSequence(manager.getCon(), biodatabase_id, null, name, this.identifier+count, this.identifier+count, "CONTIG", record.getContigName(), 0, seq, BioSQL.alphabet_DNA))break;
 											if(mapcontigs && mapping){
 												mapping = mapReads(record, manager, this.identifier+count, biodatabase_id, runid, count);
@@ -245,7 +248,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 						}
 					}
 					else{
-						logger.warn("Sorry the filetype " + this.filetype + " is not supported yet.");
+						logger.warn("Sorry the filetype " + type.toString() + " is not supported yet. Should be ACE");
 					}
 				}
 				else{
@@ -294,7 +297,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 					return false;
 				}
 				readcounter+=1;
-				perc = (int)((readcount/readcounter)*100);
+				perc = (int)((readcounter/readcount)*100);
 				System.out.print("\r"+"Contig No>:"+count+", mapping Read No.:"+i+" (Completion: "+perc+"%)  ");
 			}
 		}

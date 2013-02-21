@@ -1,6 +1,6 @@
 package enderdom.eddie.databases.bioSQL.psuedoORM;
 
-import enderdom.eddie.bio.interfaces.SequenceObject;
+import enderdom.eddie.bio.sequence.SequenceObject;
 
 public class BioSequence {
 

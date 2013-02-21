@@ -1,4 +1,4 @@
-package enderdom.eddie.bio.blast;
+package enderdom.eddie.bio.homology.blast;
 
 import java.io.File;
 

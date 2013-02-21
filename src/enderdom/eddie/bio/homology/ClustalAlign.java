@@ -1,4 +1,4 @@
-package enderdom.eddie.bio.objects;
+package enderdom.eddie.bio.homology;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -8,11 +8,11 @@ import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.bio.interfaces.BioFileType;
-import enderdom.eddie.bio.interfaces.SequenceList;
-import enderdom.eddie.bio.interfaces.SequenceObject;
-import enderdom.eddie.bio.interfaces.UnsupportedTypeException;
+import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.GenericSequence;
+import enderdom.eddie.bio.sequence.SequenceList;
+import enderdom.eddie.bio.sequence.SequenceObject;
+import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.tools.Tools_Math;
 import enderdom.eddie.tools.bio.Tools_Sequences;
 

@@ -1,4 +1,4 @@
-package enderdom.eddie.bio.objects.maps;
+package enderdom.eddie.bio.maps;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package enderdom.eddie.bio.objects.maps;
+package enderdom.eddie.bio.maps;
 
 import java.io.File;
 import java.util.LinkedHashMap;
@@ -6,8 +6,8 @@ import java.util.LinkedHashMap;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.tools.Tools_String;
-import enderdom.eddie.bio.blast.BlastObject;
-import enderdom.eddie.bio.blast.BlastxDocumentParser;
+import enderdom.eddie.bio.homology.blast.BlastObject;
+import enderdom.eddie.bio.homology.blast.BlastxDocumentParser;
 
 public class Blast2BlastMap {
 

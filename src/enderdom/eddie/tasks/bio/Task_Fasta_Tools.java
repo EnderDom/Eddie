@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
-import enderdom.eddie.bio.interfaces.BioFileType;
+import enderdom.eddie.bio.sequence.BioFileType;
 
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_String;
@@ -35,6 +35,7 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 	private int offset;
 	private boolean replace;
 	private boolean convert;
+	private String trimAtString;
 	private String[] inputs;
 	private String[] quals;
 	private boolean shorttitles;
@@ -71,13 +72,13 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 				for(int i =0;i < inputs.length; i++){
 					logger.info("Parsing: " + FilenameUtils.getBaseName(inputs[i]));
 					parser.parseFasta(new File(inputs[i]));
-					if(quals.length > 0) parser.parseQual(new File(quals[i]));
+					if(quals != null) parser.parseQual(new File(quals[i]));
 				}
 				Logger.getRootLogger().debug("Fasta Parsed, saving...");
 				subRun();
 				if(!NoOut){
 					if(!convert){ 
-						if(quals.length > 0)fasta.save2FastaAndQual(output);
+						if(quals != null)fasta.save2FastaAndQual(output);
 						else fasta.save2Fasta(new File(output+".fasta"));
 					}
 					else fasta.save2Fastq(new File(output+".fastq"));
@@ -151,6 +152,11 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 			int u = this.fasta.renameSeqs(rename, offset);
 			logger.info(u+" Sequences renamed");
 		}
+		if(trimAtString != null){
+			logger.info(" Trimming Sequences...");
+			int u = this.fasta.trimNames(trimAtString);
+			logger.info(u+" Sequences renamed");
+		}
 		if(stats){
 			logger.info("Retrieving Statistics...");
 			System.out.println("Total No. of Sequences: 	" + this.fasta.getNoOfSequences());
@@ -186,6 +192,8 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 		options.addOption(new Option("replace", true, "Replace a with b in fasta names use " +
 				">< between find and replace, ie -replace \"Contig_><Contigous File\" would " +
 				"replace fasta names with >Contig_1 to >Contigous File1"));
+		options.addOption(new Option("trimAtString", true, "Trims the fasta name after the first occurance " +
+				"of string ie -trimAtString \">Contig\" would change >Contig2121 to >Contig"));
 		options.addOption(new Option("s","short", false, "Use Short titles, names are truncated to first space (Needed to match fasta qual)"));
 	}
 	
@@ -248,6 +256,9 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 			else{
 				logger.warn("Trim set, but is not a number");
 			}
+		}
+		if(cmd.hasOption("trimAtString")){
+			trimAtString = cmd.getOptionValue("trimAtString");
 		}
 		if(cmd.hasOption("stats")){
 			stats=true;

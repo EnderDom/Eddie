@@ -5,9 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import enderdom.eddie.bio.fasta.Fasta;
-import enderdom.eddie.bio.interfaces.BioFileType;
-import enderdom.eddie.bio.interfaces.SequenceList;
-import enderdom.eddie.bio.interfaces.UnsupportedTypeException;
+import enderdom.eddie.bio.sequence.BioFileType;
+import enderdom.eddie.bio.sequence.SequenceList;
+import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
 
 public class SequenceListFactory {

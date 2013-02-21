@@ -4,7 +4,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.bio.interfaces.BioFileType;
+import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.ui.UI;
 
 /*

@@ -13,7 +13,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.bio.interfaces.BioFileType;
+import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.cli.LazyPosixParser;
 
 import enderdom.eddie.tools.Tools_CLI;
