@@ -16,6 +16,8 @@ import enderdom.eddie.tools.Tools_Array;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Contig;
+import enderdom.eddie.bio.sequence.GenericSequence;
+import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
 import enderdom.eddie.databases.bioSQL.psuedoORM.BioSequence;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
@@ -637,6 +639,51 @@ public class MySQL_Extended implements BioSQLExtended{
 			logger.error("Failed to insert run", sq);
 			return false;
 		}
+	}
+
+	public String[] getContigNames(DatabaseManager manager, int r, int i) {
+		String sql = new String("SELECT bioentry.accession FROM assembly INNER JOIN bioentry ON " +
+				"bioentry.bioentry_id=assembly.contig_bioentry_id WHERE assembly.run_id="+r+" LIMIT 0,"+i);
+		Statement st;
+		String[] ress = new String[i];
+		try {
+			st = manager.getCon().createStatement();
+			set = st.executeQuery(sql);
+			int c =0;
+			while(set.next()){
+				ress[c] = set.getString(1);
+				c++;
+			}
+			st.close();
+		} 
+		catch (SQLException e) {
+			logger.error(e);
+		}
+		return ress;
+	}
+
+	public void getContigsAsFasta(DatabaseManager manager, SequenceList l, int i) {
+		String sql;
+		Statement st;
+		if( i < 0){
+			sql = "SELECT bioentry.bioentry_id, seq FROM biosequence INNER JOIN bioentry ON bioentry.bioentry_id=biosequence.bioentry_id WHERE division='CONTIG'";
+		}
+		else{
+			sql = "SELECT bioentry.bioentry_id, seq FROM biosequence INNER JOIN bioentry ON bioentry.bioentry_id=biosequence.bioentry_id " +
+					"INNER JOIN assembly ON bioentry_id.bioentry_id=assembly.contig_bioentry_id WHERE division='CONTIG' AND run_id="+i;
+		}
+		try {
+			st = manager.getCon().createStatement();
+			set = st.executeQuery(sql);
+			while(set.next()){
+				l.addSequenceObject(new GenericSequence(set.getString(1), set.getString(2)));
+			}
+			st.close();
+		} 
+		catch (SQLException e) {
+			logger.error(e);
+		}
+		
 	}
 
 }

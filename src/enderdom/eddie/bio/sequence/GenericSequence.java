@@ -47,7 +47,7 @@ public class GenericSequence implements SequenceObject{
 		this.name = name;
 		this.sequence = sequence;
 	}
-
+	
 	private GenericSequence replicate(){
 		if(this.quality !=null)
 			return new GenericSequence(new String(this.name), new String(this.sequence), new String(this.quality));
@@ -56,6 +56,21 @@ public class GenericSequence implements SequenceObject{
 	}
 	
 	public String getName() {
+		return this.name;
+	}
+	
+
+	/*
+	 * Returns a the name with any space characters right of the
+	 * main name removed, including other non space chars
+	 * ie Contig_232 232 323 ; ---> Contig_232
+	 * 
+	 */
+	public String getShortName(){
+		if(this.name.trim().contains(" ")){
+			String n = this.name.trim();
+			n=n.substring(0, this.name.indexOf(" "));
+		}
 		return this.name;
 	}
 

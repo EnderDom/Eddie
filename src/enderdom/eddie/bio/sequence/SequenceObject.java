@@ -15,6 +15,8 @@ public interface SequenceObject{
 	 */
 	public String getName();
 	
+	public String getShortName();
+	
 	/**
 	 * 
 	 * @return Sequence as a String

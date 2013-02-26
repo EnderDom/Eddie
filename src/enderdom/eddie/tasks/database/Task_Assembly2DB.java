@@ -65,7 +65,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		if(cmd.hasOption("mapcontigs"))mapcontigs=true;
 		if(cmd.hasOption("identifier"))this.identifier=cmd.getOptionValue("identifier");
 		if(cmd.hasOption("programname"))this.programname=cmd.getOptionValue("programid");
-		if(cmd.hasOption("unpad"))this.unpad = true;
+		if(cmd.hasOption("pad"))this.unpad = true;
 		if(cmd.hasOption("runid")){
 			Integer a = Tools_String.parseString2Int(cmd.getOptionValue("runid"));
 			if(a != null)runid=a.intValue();
@@ -77,6 +77,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	
 	public void buildOptions(){
 		super.buildOptions();
+		options.addOption(new Option("pad", false, "Leave padding characters in upload(*/-)"));
 		options.addOption(new Option("u","uploadreads", false, "Uploads a read Fasta or Fastq file"));
 		//options.addOption(new Option("r","remaploc", false, "Remap read Locations with ACE file (only if upload already run)"));
 		options.addOption(new Option("c","uploadcontigs", false, "Uploads a contigs from ACE (run separate from uploadreads)"));
@@ -198,6 +199,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 							}
 						}
 						try{
+							
 							ACEFileParser parser = new ACEFileParser(file);
 							ACERecord record = null;
 							this.readcount=parser.getReadsSize();
@@ -217,7 +219,10 @@ public class Task_Assembly2DB extends TaskXTwIO{
 									if(uploadcontigs){
 										if(bs.getBioEntry(manager.getCon(),  this.identifier+count,  this.identifier+count, biodatabase_id) <0){
 											String seq = record.getConsensus().getSequence();
-											if(unpad)seq.replaceAll("-", "");
+											if(!unpad){
+												seq=seq.replaceAll("-", "");
+												seq=seq.replaceAll("\\*", "");
+											}
 											//NOTE: Name is truncated here to fit in, this will need to be taken into account elsewhere!
 											if(name.length() > 35)name = name.substring(0, 30)+"..." + count;
 											if(!bs.addSequence(manager.getCon(), biodatabase_id, null, name, this.identifier+count, this.identifier+count, "CONTIG", record.getContigName(), 0, seq, BioSQL.alphabet_DNA))break;

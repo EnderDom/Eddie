@@ -186,7 +186,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				 };
 		defaultvalues = new String[]{
 				propfile.getParent(), "5", "1", 
-				"/usr/bin/", "/home/dominic/bioapps/blast/db/", "/usr/bin/",
+				"/usr/bin/", "/home/dominic/bioapps/blast/db/", "/usr/bin/ESTScan",
 				"null", defaultlnf, propfile.getParent()+slash+"test", 
 				"mysql","com.mysql.jdbc.Driver", "Localhost", 
 				DatabaseManager.default_database, "user", "","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec"

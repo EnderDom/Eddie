@@ -116,4 +116,9 @@ public class DNASequence implements NuclearSequence{
 		return false;
 	}
 
+	public String getShortName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
