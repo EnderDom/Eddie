@@ -47,6 +47,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
+		if(cmd.hasOption("remote"))remote=true;
 		if(cmd.hasOption("bdb"))blast_db=cmd.getOptionValue("bdb");
 		if(cmd.hasOption("bbb"))blast_bin=cmd.getOptionValue("bbb");
 		if(cmd.hasOption("bpr"))blast_prg=cmd.getOptionValue("bpr");
@@ -98,6 +99,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 		options.addOption(new Option("pf", "paramater file", true, "Additional blast Parameters in external file"));
 		options.addOption(new Option("filetype", true, "Specify filetype (rather then guessing from ext)"));
 		options.addOption(new Option("clip", false, "Clip output file name to whitespace in input"));
+		options.addOption(new Option("remote", false, "Run remote blasts in parallel with local (WARN: Will send NCBI blast jobs)"));
 	}
 	
 	public void runTest(){
