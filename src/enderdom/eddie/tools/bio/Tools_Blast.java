@@ -27,7 +27,10 @@ public abstract class Tools_Blast {
 			}
 		}
 		String exec = blastbin + blastprg+ " " + blastparams + " -db " + blastdb + 
-				" -num_threads "+ Tools_System.getCPUs() + " -query " + blastquery.getPath() + " -out " +output.getPath();
+				" -query " + blastquery.getPath() + " -out " +output.getPath();
+		if(!exec.contains("-num_threads")){
+			exec+=" -num_threads "+ Tools_System.getCPUs();
+		}
 		StringBuffer[] buffer = Tools_Task.runProcess(exec, true);
 		return buffer;
 	}

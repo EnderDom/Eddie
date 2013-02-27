@@ -11,11 +11,11 @@ public interface SequenceObject{
 	
 	/**
 	 * 
-	 * @return name of the sequence as String
+	 * @return Identifier of the sequence as String
 	 */
-	public String getName();
+	public String getIdentifier();
 	
-	public String getShortName();
+	public String getShortIdentifier();
 	
 	/**
 	 * 
@@ -33,7 +33,7 @@ public interface SequenceObject{
 	
 	public void setQuality(String quality);
 	
-	public void setName(String title);
+	public void setIdentifier(String title);
 	
 	/**
 	 * 
@@ -90,7 +90,7 @@ public interface SequenceObject{
 	 * @param end of section
 	 * @param base, 0 or 1 based
 	 * @return the resulting two sequences produced by removing the region
-	 * there names will be the original sequence name plus an additional 
+	 * there Identifiers will be the original sequence Identifier plus an additional 
 	 * identifier ie Seq1 -> Seq1_A, Seq1_B 
 	 */
 	public SequenceObject[] removeSection(int start, int end, int base);

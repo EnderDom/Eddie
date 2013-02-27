@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
@@ -178,10 +179,11 @@ public class Checklist {
 	 * @param Input to be saved
 	 * @return whether saved or not
 	 */
-	public boolean update(String line){
+	public synchronized boolean update(String line){
 		logger.trace("Checklist updated");
 		return Tools_File.quickWrite(line+Tools_System.getNewline(), task, true);
 	}
+	
 	
 	public boolean complete(){
 		/*

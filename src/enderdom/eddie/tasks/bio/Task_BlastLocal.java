@@ -99,7 +99,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 		options.addOption(new Option("bbb", "blast_bin", true, "Specify blast bin directory"));
 		options.addOption(new Option("bpr", "blast_prog", true, "Specify blast program"));
 		options.addOption(new Option("x", "outputformat", true, "Set Output Format, else defaults to xml"));
-		options.addOption(new Option("p", "params", true, "Additional Parameters separate with '/_' not space"));
+		options.addOption(new Option("p", "params", true, "Additional Parameters separate with '/_' not space, ie -num_threads/_3/_-evalue/_1e-3"));
 		options.addOption(new Option("pf", "paramater file", true, "Additional blast Parameters in external file"));
 		options.addOption(new Option("filetype", true, "Specify filetype (rather then guessing from ext)"));
 		options.addOption(new Option("clip", false, "Clip output file name to whitespace in input"));
@@ -152,6 +152,8 @@ public class Task_BlastLocal extends TaskXTwIO{
 							trimRecovered(checklist.getData());
 						}
 						logger.debug("About to start running blasts");
+						
+						
 						runAutoBlast(out, checklist);
 						int l = out.listFiles().length-start;
 						if(l == this.blastcomplete){

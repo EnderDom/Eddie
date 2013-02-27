@@ -104,7 +104,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		if(manager.open()){
 			//UPLOADING READS
 			if(this.identifier == null){
-				this.identifier = ui.requiresUserInput("Please Enter a unique identifier:", "Identifier required, maybe Digest_Read? or CAP3_Contig");
+				this.identifier = ui.requiresUserInput("Please Enter a unique identifier:", "Identifier required, maybe Digest_Read? or Mar12_CAP3_Contig?");
 			}
 			if(uploadreads){
 				File file = new File(this.input);
@@ -150,15 +150,15 @@ public class Task_Assembly2DB extends TaskXTwIO{
 						
 						while(fasta.hasNext()){
 							SequenceObject o = fasta.next();
-							if(!bs.addSequence(manager.getCon(), biodatabase_id, null, o.getName(), o.getName(),
+							if(!bs.addSequence(manager.getCon(), biodatabase_id, null, o.getIdentifier(), o.getIdentifier(),
 									this.identifier+count, "READ", null, 0, o.getSequence(), BioSQL.alphabet_DNA)){
-								logger.error("An error occured uploading " + o.getName());
+								logger.error("An error occured uploading " + o.getIdentifier());
 								break;
 								
 							}
 							count++;
 							System.out.print("\r"+(count) + " of " +size + "       ");
-							checklist.update(o.getName());
+							checklist.update(o.getIdentifier());
 						}
 						System.out.println();
 						if(count != size-1){
@@ -212,7 +212,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 							}
 							while(parser.hasNext()){
 								record = (ACERecord) parser.next();
-								String name = record.getConsensus().getName();
+								String name = record.getConsensus().getIdentifier();
 								boolean skip =false;
 								if(checklist.inRecovery())for(int i =0 ; i < done.length ; i ++){if(done[i].equals(name))skip=true;};
 								if(!skip){

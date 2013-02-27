@@ -99,8 +99,8 @@ public class Tools_Converters {
 			fasta.setFastq(true);
 			while(parser.hasNext()){
 				record = parser.next();
-				fasta.addSequence(record.getConsensus().getName(), record.getConsensus().getSequence());
-				fasta.addQuality(record.getConsensus().getName(), record.getConsensus().getQuality());
+				fasta.addSequence(record.getConsensus().getIdentifier(), record.getConsensus().getSequence());
+				fasta.addQuality(record.getConsensus().getIdentifier(), record.getConsensus().getQuality());
 			}
 			if(fasta.save2Fastq(output) != null){
 				logger.error("File was not successfully saved");

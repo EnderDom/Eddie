@@ -127,7 +127,7 @@ public class Task_WebInterPro extends TaskXT{
 				int c=0;
 				while(list.hasNext()){
 					SequenceObject o = list.next();
-					client.submitJobFromCli(cli, o.getSequence(), c, o.getName());
+					client.submitJobFromCli(cli, o.getSequence(), c, o.getIdentifier());
 					c++;
 				}
 			} 

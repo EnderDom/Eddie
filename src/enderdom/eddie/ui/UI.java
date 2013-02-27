@@ -1,5 +1,7 @@
 package enderdom.eddie.ui;
 
+import java.util.Stack;
+
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
@@ -72,5 +74,7 @@ public interface UI{
 	public void error(String message, Throwable t);
 
 	public void error(String message);
+	
+	public Stack<String> requisitionTasker();
 	
 }

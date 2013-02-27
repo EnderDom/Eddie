@@ -272,7 +272,7 @@ public class ACERecord implements Contig{
 	 * @return read at that index
 	 */
 	public String getReadName(int index){
-		return this.getRead(index).getName();
+		return this.getRead(index).getIdentifier();
 	}
 	
 	/**

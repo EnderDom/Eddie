@@ -36,6 +36,7 @@ public class TaskManager extends Thread{
 	private boolean started;
 	int taskcounter;
 	UI top;
+	public Stack<String> tasker;
 	
 	public TaskManager(UI ui, int i, int j){
 		this.corepoollimit = i;

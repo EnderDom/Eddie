@@ -16,62 +16,62 @@ import enderdom.eddie.tools.bio.Tools_Sequences;
 public class GenericSequence implements SequenceObject{
 	
 	private String sequence;
-	private String name;
+	private String Identifier;
 	private String quality; //QUALITY STORED AS FASTQ 
 	private int type = -1;
 	private int positioninlist = -1;
 	
-	public GenericSequence(String name){
-		this.name = name;
+	public GenericSequence(String Identifier){
+		this.Identifier = Identifier;
 	}
 	
-	public GenericSequence(String name, int position){
-		this.name = name;
+	public GenericSequence(String Identifier, int position){
+		this.Identifier = Identifier;
 		this.positioninlist = position;
 	}
 	
-	public GenericSequence(String name, String sequence, String quality, int postion){
-		this.name = name;
+	public GenericSequence(String Identifier, String sequence, String quality, int postion){
+		this.Identifier = Identifier;
 		this.sequence = sequence;
 		this.quality = quality;
 		this.positioninlist = -1;
 	}
 	
-	public GenericSequence(String name, String sequence, String quality){
-		this.name = name;
+	public GenericSequence(String Identifier, String sequence, String quality){
+		this.Identifier = Identifier;
 		this.sequence = sequence;
 		this.quality = quality;
 	}
 	
-	public GenericSequence(String name, String sequence){
-		this.name = name;
+	public GenericSequence(String Identifier, String sequence){
+		this.Identifier = Identifier;
 		this.sequence = sequence;
 	}
 	
 	private GenericSequence replicate(){
 		if(this.quality !=null)
-			return new GenericSequence(new String(this.name), new String(this.sequence), new String(this.quality));
+			return new GenericSequence(new String(this.Identifier), new String(this.sequence), new String(this.quality));
 		else 
-			return new GenericSequence(new String(this.name), new String(this.sequence));
+			return new GenericSequence(new String(this.Identifier), new String(this.sequence));
 	}
 	
-	public String getName() {
-		return this.name;
+	public String getIdentifier() {
+		return this.Identifier;
 	}
 	
 
 	/*
-	 * Returns a the name with any space characters right of the
-	 * main name removed, including other non space chars
+	 * Returns a the Identifier with any space characters right of the
+	 * main Identifier removed, including other non space chars
 	 * ie Contig_232 232 323 ; ---> Contig_232
 	 * 
 	 */
-	public String getShortName(){
-		if(this.name.trim().contains(" ")){
-			String n = this.name.trim();
-			n=n.substring(0, this.name.indexOf(" "));
+	public String getShortIdentifier(){
+		if(this.Identifier.trim().contains(" ")){
+			String n = this.Identifier.trim();
+			n=n.substring(0, this.Identifier.indexOf(" "));
 		}
-		return this.name;
+		return this.Identifier;
 	}
 
 	public String getSequence() {
@@ -108,7 +108,7 @@ public class GenericSequence implements SequenceObject{
 	public int leftTrim(int i, int base) {
 		i-=base;
 		if(i > this.sequence.length()){
-			Logger.getRootLogger().warn("Tried to Trim "+i+"bp from "+name+" shorter than actual length of "+getLength());
+			Logger.getRootLogger().warn("Tried to Trim "+i+"bp from "+Identifier+" shorter than actual length of "+getLength());
 			this.sequence = "";
 			this.quality = "";
 		}
@@ -121,7 +121,7 @@ public class GenericSequence implements SequenceObject{
 	public int rightTrim(int i, int base) {
 		i-=base;
 		if(i > this.sequence.length()){
-			Logger.getRootLogger().warn("Tried to Trim "+i+"bp from "+name+" shorter than actual length of "+getLength());
+			Logger.getRootLogger().warn("Tried to Trim "+i+"bp from "+Identifier+" shorter than actual length of "+getLength());
 			this.sequence = "";
 			this.quality = "";
 		}
@@ -141,7 +141,7 @@ public class GenericSequence implements SequenceObject{
 		
 		if(this.quality != null){
 			if(!qualCheck()){
-				Logger.getRootLogger().error("Quality Check Failed, Sequence and Quality not same length for " + this.name);
+				Logger.getRootLogger().error("Quality Check Failed, Sequence and Quality not same length for " + this.Identifier);
 			}
 		}
 	}
@@ -154,8 +154,8 @@ public class GenericSequence implements SequenceObject{
 		seq[1] = this.replicate();
 		seq[0].rightTrim(start, base);
 		seq[1].leftTrim(end, base);
-		seq[0].setName(this.name+"_0");
-		seq[1].setName(this.name+"_1");
+		seq[0].setIdentifier(this.Identifier+"_0");
+		seq[1].setIdentifier(this.Identifier+"_1");
 		return seq;
 	}
 	
@@ -211,8 +211,8 @@ public class GenericSequence implements SequenceObject{
 		this.quality = quality;
 	}
 
-	public void setName(String title) {
-		this.name = title;
+	public void setIdentifier(String title) {
+		this.Identifier = title;
 	}
 
 

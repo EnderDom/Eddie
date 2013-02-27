@@ -269,7 +269,7 @@ public class Fasta implements FastaHandler, SequenceList{
 			if(s.contains(s2)){
 				String n =s.replace(s1, s2); 
 				SequenceObject o = sequences.get(s);
-				o.setName(n);
+				o.setIdentifier(n);
 				seqs2.put(n, o);
 				i++;
 			}
@@ -294,7 +294,7 @@ public class Fasta implements FastaHandler, SequenceList{
 			if(s.contains(s1)){
 				String n =s.substring(0,s.indexOf(s1)); 
 				SequenceObject o = sequences.get(s);
-				o.setName(n);
+				o.setIdentifier(n);
 				seqs2.put(n, o);
 				i++;
 			}
@@ -524,7 +524,7 @@ public class Fasta implements FastaHandler, SequenceList{
 	}
 
 	public void addSequenceObject(SequenceObject obj) {
-		this.sequences.put(obj.getName(), obj);
+		this.sequences.put(obj.getIdentifier(), obj);
 	}
 
 	public void removeSequenceObject(String name) {

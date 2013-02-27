@@ -87,7 +87,7 @@ public class ClustalAlign implements SequenceList{
 
 	public SequenceObject getSequence(String s) {
 		for(int i=0;i < sequences.length;i++){
-			if(sequences[i].getName().equals(s))return sequences[i];
+			if(sequences[i].getIdentifier().equals(s))return sequences[i];
 		}
 		return null;
 	}
@@ -182,7 +182,7 @@ public class ClustalAlign implements SequenceList{
 		SequenceObject[] temp = new GenericSequence[this.sequences.length-1];
 		int j=0;
 		for(int i =0;i < temp.length;i++){
-			if(sequences[i].getName().equals(name)){
+			if(sequences[i].getIdentifier().equals(name)){
 				j=1;
 			}
 			temp[i] = sequences[i+j];		

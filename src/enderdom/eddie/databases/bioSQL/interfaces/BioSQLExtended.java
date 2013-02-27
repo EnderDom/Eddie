@@ -21,8 +21,6 @@ public interface BioSQLExtended {
 	public static String runtable = "run";
 
 	public boolean addEddie2Database(DatabaseManager dbman);
-
-	
 	
 	/**
 	 * Returns the database version from the 'info' tool
@@ -81,6 +79,6 @@ public interface BioSQLExtended {
 	 */
 	public String[] getContigNames(DatabaseManager manager, int r, int i);
 
-	public void getContigsAsFasta(DatabaseManager manager, SequenceList l, int i);
+	public SequenceList getContigsAsFasta(DatabaseManager manager, SequenceList l, int i);
 	
 }

@@ -287,7 +287,7 @@ public class Task_UniVec extends TaskXTwIO{
 								lefttrims++;
 							}
 							else{
-								seql.removeSequenceObject(o.getName());
+								seql.removeSequenceObject(o.getIdentifier());
 								removed++;
 							}
 						}
@@ -298,7 +298,7 @@ public class Task_UniVec extends TaskXTwIO{
 								righttrims++;
 							}
 							else{
-								seql.removeSequenceObject(o.getName());
+								seql.removeSequenceObject(o.getIdentifier());
 								removed++;
 							}
 						}
@@ -306,7 +306,7 @@ public class Task_UniVec extends TaskXTwIO{
 							SequenceObject[] splits =  o.removeSection(r.getStart(0), r.getStop(0),0);
 							if(splits.length > 1){
 								//Remove, as when added, added with diff name
-								seql.removeSequenceObject(o.getName());
+								seql.removeSequenceObject(o.getIdentifier());
 								if(splits[0].getLength() > trimlength){
 									seql.addSequenceObject(splits[0]);
 									if(splits[1].getLength() > trimlength){
@@ -324,7 +324,7 @@ public class Task_UniVec extends TaskXTwIO{
 								}
 							}
 							else if(splits.length > 0){
-								seql.removeSequenceObject(o.getName());
+								seql.removeSequenceObject(o.getIdentifier());
 								if(splits[0].getLength() > trimlength){
 									seql.addSequenceObject(splits[0]);
 									midtrims++;
@@ -348,7 +348,7 @@ public class Task_UniVec extends TaskXTwIO{
 						" XML iteration, with " +obj.getBlastTagContents("Iteration_query-def"));
 			}
 			if(o != null){
-				Logger.getRootLogger().error(" Last object was " + o.getName() + " of length " + o.getLength());
+				Logger.getRootLogger().error(" Last object was " + o.getIdentifier() + " of length " + o.getLength());
 			}
 			return null;
 		}
