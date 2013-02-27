@@ -1,12 +1,12 @@
 package enderdom.eddie.ui;
 
-import java.util.Stack;
-
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.tasks.Task;
+import enderdom.eddie.tasks.TaskLike;
+import enderdom.eddie.tasks.TaskStack;
 
 public interface UI{
 	
@@ -18,11 +18,13 @@ public interface UI{
 	
 	public void exit();
 	
+	public void addTaskLike(TaskLike task);
+	
 	public void addTask(Task task);
 	
 	public void buildTaskManager();
 	
-	public void update(Task task);
+	public void update(TaskLike task);
 	
 	public boolean isGUI();
 	
@@ -75,6 +77,6 @@ public interface UI{
 
 	public void error(String message);
 	
-	public Stack<String> requisitionTasker();
+	public TaskStack requisitionTasker();
 	
 }

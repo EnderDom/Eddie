@@ -6,7 +6,10 @@ import org.apache.log4j.Logger;
 
 import enderdom.eddie.databases.legacy.DBInterface;
 
+import enderdom.eddie.tasks.BasicTaskStack;
 import enderdom.eddie.tasks.Task;
+import enderdom.eddie.tasks.TaskLike;
+import enderdom.eddie.tasks.TaskStack;
 import enderdom.eddie.tools.Tools_Fun;
 
 /**
@@ -22,8 +25,8 @@ public class TaskManager extends Thread{
 	DBInterface db;
 	int corepoollimit;
 	int auxilpoollimit;
-	private Stack<Task> CoreTasks; // Holds Awaiting Tasks
-	private Stack<Task> AuxilTasks; // Holds Awaiting Tasks
+	private Stack<TaskLike> CoreTasks; // Holds Awaiting Tasks
+	private Stack<TaskLike> AuxilTasks; // Holds Awaiting Tasks
 	public Task[] coretasklist; // Holds Current running tasks
 	public Task[] auxiltasklist; //Holds Current running tasks
 	/*
@@ -36,18 +39,18 @@ public class TaskManager extends Thread{
 	private boolean started;
 	int taskcounter;
 	UI top;
-	public Stack<String> tasker;
+	public TaskStack tasker;
 	
 	public TaskManager(UI ui, int i, int j){
 		this.corepoollimit = i;
 		this.auxilpoollimit =j;
 		taskcounter = 0;
-		CoreTasks = new Stack<Task>();
-		AuxilTasks = new Stack<Task>();
+		CoreTasks = new Stack<TaskLike>();
+		AuxilTasks = new Stack<TaskLike>();
 		this.top = ui;
 	}
 	
-	public void addTask(Task task) {
+	public void addTask(TaskLike task) {
 		logger.debug("Task add to the task list");
 		if(task.isHelpmode()){
 			logger.debug("Task went to helpmode, not adding to Task Manager");
@@ -74,7 +77,7 @@ public class TaskManager extends Thread{
 		}
 	}
 	
-	private int pushTasks2Executor(ExtendedExecutor exe, Stack<Task> pops, Task[] currentTask, int limit){
+	private int pushTasks2Executor(ExtendedExecutor exe, Stack<TaskLike> pops, TaskLike[] currentTask, int limit){
 		//While Poollimit below number of working tasks
 		int submitted = 0;
 		for(int i =0; i < currentTask.length; i++){
@@ -100,7 +103,7 @@ public class TaskManager extends Thread{
 		return submitted;
 	}
 	
-	public void logTask(Task task){
+	public void logTask(TaskLike task){
 		/*
 		 * TODO
 		 * 
@@ -121,7 +124,7 @@ public class TaskManager extends Thread{
 	/*
 	 * Work in progress, not yet completely familiar with thread safety yet
 	 */
-	public synchronized void update(Task task){
+	public synchronized void update(TaskLike task){
 		top.update(task);
 	}
 	
@@ -153,6 +156,17 @@ public class TaskManager extends Thread{
 		Auxil.shutdown();
 		logger.debug("Task Manager has no more tasks, shutting down");
 		started = false;
+	}
+
+	public TaskStack getTasker() {
+		if(this.tasker == null){
+			this.tasker = new BasicTaskStack();
+		}
+		return this.tasker;	
+	}
+	
+	public void setTasker(TaskStack stack){
+		this.tasker = stack;
 	}
 	
 }

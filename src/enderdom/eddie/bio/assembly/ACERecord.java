@@ -3,6 +3,7 @@ package enderdom.eddie.bio.assembly;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -411,7 +412,7 @@ public class ACERecord implements Contig{
 		return this.getNoOfReads();
 	}
 
-	public SequenceObject getSequence(int i) {
+	public synchronized SequenceObject getSequence(int i) {
 		for(String s : sequences.keySet()){
 			if(sequences.get(s).getPositionInList()-1 == i){
 				return sequences.get(s);
@@ -496,6 +497,10 @@ public class ACERecord implements Contig{
 
 	public void removeSequenceObject(String name) {
 		logger.error("Currently no support for add sequences to ACERecord");
+	}
+
+	public Set<String> keySet() {
+		return this.sequences.keySet();
 	}
 
 	

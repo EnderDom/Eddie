@@ -2,7 +2,6 @@ package enderdom.eddie.tasks;
 
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -22,17 +21,12 @@ import enderdom.eddie.tools.bio.Tools_Bio_File;
 import enderdom.eddie.ui.TaskManager;
 import enderdom.eddie.ui.UI;
 
-public abstract class Task implements Runnable, Future<Object> {
+public abstract class Task implements TaskLike {
 
 	private int id;
 	private boolean core;
 	private TaskManager manager;
 	protected int complete;
-	public static int unstarted = -1;
-	public static int started = 0;
-	public static int finished = 1;
-	public static int cancelled = 2;
-	public static int error = 3;
 	public Options options;
 	public boolean helpmode;
 	protected boolean testmode;

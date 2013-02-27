@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -192,5 +194,14 @@ public class ClustalAlign implements SequenceList{
 			logger.warn("Sequence with name " + name + " doens't exist in SequenceList");
 		}
 	}
+
+	public Set<String> keySet() {
+		Set<String> s = new HashSet<String>();
+		for(int i =0; i < sequences.length;i++){
+			s.add(sequences[i].getIdentifier());
+		}
+		return s;
+	}
+	
 
 }

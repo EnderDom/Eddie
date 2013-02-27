@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashSet;
 import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
@@ -67,6 +66,7 @@ public class Checklist {
 	private File lasttask;
 	private String comment;
 	private boolean recover;
+	private boolean completed;
 	
 	public Checklist(String workspacea, String tasknamea){
 		this.taskname = tasknamea;
@@ -190,10 +190,14 @@ public class Checklist {
 		 * Probably not necessary, but in the event delete permissions
 		 * and write permissions are not equivalent.
 		 */
-		logger.debug("Checklist completed");
-		String write = "</DATA>"+Tools_System.getNewline()+"<END>"+Tools_System.getDateNow()+"</END>"+Tools_System.getNewline();
-		Tools_File.quickWrite(write, task, true);
-		return task.delete();
+		if(!completed){
+			logger.debug("Checklist completed");
+			String write = "</DATA>"+Tools_System.getNewline()+"<END>"+Tools_System.getDateNow()+"</END>"+Tools_System.getNewline();
+			Tools_File.quickWrite(write, task, true);
+			completed = true;
+			return task.delete();
+		}
+		return true;
 	}
 	
 	//TODO FIX ASAP!!

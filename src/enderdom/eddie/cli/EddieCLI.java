@@ -10,7 +10,9 @@ import org.apache.log4j.Logger;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.tasks.Task;
+import enderdom.eddie.tasks.TaskLike;
 import enderdom.eddie.tasks.TaskList;
+import enderdom.eddie.tasks.TaskStack;
 import enderdom.eddie.tools.Tools_CLI;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_UI;
@@ -102,6 +104,15 @@ public class EddieCLI implements UI {
 		task.parseOpts(this.load.getPropertyObject());
 		this.manager.addTask(task);
 	}
+	
+	public void addTaskLike(TaskLike task){
+		Logger.getRootLogger().debug("CLI recieve task, sending to task manager...");
+		if(this.manager == null){
+			buildTaskManager();
+		}
+		if(task.wantsUI())task.addUI(this);
+		this.manager.addTask(task);
+	}
 
 	public void buildTaskManager() {
 		Integer core = Tools_String.parseString2Int(load.getValueOrSet("CORETHREAD", "1"));
@@ -126,7 +137,7 @@ public class EddieCLI implements UI {
 		System.out.println();
 	}
 
-	public void update(Task task) {
+	public void update(TaskLike task) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -202,5 +213,12 @@ public class EddieCLI implements UI {
 	protected void finalize() throws Throwable {
 		super.finalize();
 		load.savePropertyFile(load.getPropertyFilePath(), load.getPropertyObject());
+	}
+
+	public TaskStack requisitionTasker() {
+		if(this.manager == null){
+			buildTaskManager();
+		}
+		return this.manager.getTasker();
 	}
 }

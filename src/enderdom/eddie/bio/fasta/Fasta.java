@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -211,7 +212,7 @@ public class Fasta implements FastaHandler, SequenceList{
 		return getNoOfSequences();
 	}
 	
-	public SequenceObject getSequence(int i){
+	public synchronized SequenceObject getSequence(int i){
 		for(String s : sequences.keySet()){
 			if(i==0){
 				return sequences.get(s);
@@ -534,6 +535,10 @@ public class Fasta implements FastaHandler, SequenceList{
 		else{
 			logger.warn("Attempting to remove sequence which does not exist " + name);
 		}
+	}
+
+	public Set<String> keySet() {
+		return this.sequences.keySet();
 	}
 
 		

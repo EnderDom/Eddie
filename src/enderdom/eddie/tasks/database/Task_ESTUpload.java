@@ -19,12 +19,18 @@ import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.ui.UI;
 
+@SuppressWarnings("unused")
 public class Task_ESTUpload extends TaskXT{
 	
 	private String input;
+
 	private String name;
 	private String prot;
 	private int runid;
+	
+	/* 
+	 * WIP
+	 */
 	
 	public Task_ESTUpload(){
 		setHelpHeader("--This is the Help Message for the Assemby2DB Task--");

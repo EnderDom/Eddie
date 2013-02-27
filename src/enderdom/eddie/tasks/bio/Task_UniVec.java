@@ -79,7 +79,7 @@ public class Task_UniVec extends TaskXTwIO{
 			* Actually run the blast program
 			* See http://www.ncbi.nlm.nih.gov/VecScreen/VecScreen_docs.html for specs on vecscreen
 			*/
-			StringBuffer[] arr = Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-import_search_strategy "+strat+" -outfmt 5 ", out);
+			StringBuffer[] arr = Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-import_search_strategy "+strat+" -outfmt 5 ", out, true);
 			if(arr[0].length() > 0){
 				logger.info("blastn output:"+Tools_System.getNewline()+arr[0].toString().trim());
 			}

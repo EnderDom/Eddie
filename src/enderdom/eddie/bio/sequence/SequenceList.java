@@ -2,6 +2,7 @@ package enderdom.eddie.bio.sequence;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.Set;
 
 
 public interface SequenceList extends Iterator<SequenceObject>{
@@ -115,5 +116,8 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	 * returns null
 	 */
 	public String getFilePath();
+	
+	
+	public Set<String> keySet();
 	
 }
