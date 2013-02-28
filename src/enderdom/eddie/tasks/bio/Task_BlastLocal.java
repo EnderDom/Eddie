@@ -109,7 +109,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 		File in =new File(input);
 		File out =  new File(output);
 		if(in.exists() && (out.exists() || overwrite)){
-			Tools_Blast.runLocalBlast(in, blast_prg, blast_bin, blast_db, blastparams, out, true);
+			Tools_Blast.runLocalBlast(in, blast_prg, blast_bin, blast_db, blastparams, out, false);
 		}
 		else if(!in.exists()){
 			logger.error("Input "+this.input+" does not exist! " );
@@ -140,8 +140,6 @@ public class Task_BlastLocal extends TaskXTwIO{
 				} catch (UnsupportedTypeException e) {
 					logger.error(e);
 				}
-					
-				
 			}
 			else{
 				logger.error("Check that in is file, out is directory and blast_bin/db/prg is set");
@@ -181,18 +179,18 @@ public class Task_BlastLocal extends TaskXTwIO{
 			stack.push(s);
 			i++;
 		}
-		logger.debug(i+" sequences to blast");
-		
-		SubTask_Blast blast = new SubTask_Blast(sequences, ui.requisitionTasker(), false, list, this.output, this.clipname);
+		logger.debug(i+" sequences to blast, adding to TaskManager");
+		ui.setTasker(stack);
+		SubTask_Blast blast = new SubTask_Blast(sequences, ui.getTasker(), false, list, this.output, this.clipname);
 		blast.setBlastDetails(blast_prg, blast_bin, blast_db, blastparams);
 		blast.setCore(true);
 		ui.addTaskLike(blast);
 		if(remote){
-			SubTask_Blast blast2 = new SubTask_Blast(sequences, ui.requisitionTasker(), false, list, this.output, this.clipname);
+			SubTask_Blast blast2 = new SubTask_Blast(sequences, ui.getTasker(), true, list, this.output, this.clipname);
 			String db = FilenameUtils.getBaseName(blast_db);
 			logger.info("Database was trimmed to " + blast_db + " for the remote");
-			blast.setBlastDetails(blast_prg, blast_bin, db, blastparams);
-			blast.setCore(false);
+			blast2.setBlastDetails(blast_prg, blast_bin, db, blastparams);
+			blast2.setCore(false);
 			ui.addTaskLike(blast2);
 		}
 	}

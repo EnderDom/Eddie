@@ -215,10 +215,19 @@ public class EddieCLI implements UI {
 		load.savePropertyFile(load.getPropertyFilePath(), load.getPropertyObject());
 	}
 
-	public TaskStack requisitionTasker() {
+	public TaskStack getTasker() {
 		if(this.manager == null){
 			buildTaskManager();
 		}
 		return this.manager.getTasker();
 	}
+	
+	public void setTasker(TaskStack stack){
+		if(this.manager == null){
+			buildTaskManager();
+		}
+		this.manager.setTasker(stack);
+	}
+	
+	
 }

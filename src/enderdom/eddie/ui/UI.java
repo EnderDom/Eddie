@@ -77,6 +77,8 @@ public interface UI{
 
 	public void error(String message);
 	
-	public TaskStack requisitionTasker();
+	public TaskStack getTasker();
+	
+	public void setTasker(TaskStack stack);
 	
 }
