@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
 import enderdom.eddie.databases.legacy.DBInterface;
 
 import enderdom.eddie.tasks.BasicTaskStack;
-import enderdom.eddie.tasks.Task;
 import enderdom.eddie.tasks.TaskLike;
 import enderdom.eddie.tasks.TaskStack;
 import enderdom.eddie.tools.Tools_Fun;
@@ -27,15 +26,15 @@ public class TaskManager extends Thread{
 	int auxilpoollimit;
 	private Stack<TaskLike> CoreTasks; // Holds Awaiting Tasks
 	private Stack<TaskLike> AuxilTasks; // Holds Awaiting Tasks
-	public Task[] coretasklist; // Holds Current running tasks
-	public Task[] auxiltasklist; //Holds Current running tasks
+	public TaskLike[] coretasklist; // Holds Current running tasks
+	public TaskLike[] auxiltasklist; //Holds Current running tasks
 	/*
 	 * Note make sure priority of Tasks is set to the correct pool, 
 	 * else will start too many intensive task
 	 */
 	ExtendedExecutor Core; // Pool for Core tasks liking running blasts, so not too many threads run at the same time
 	ExtendedExecutor Auxil; //Pool for Auxiliary tasks, things like database accession and waiting on web requests
-	Stack<Task> futures;
+	Stack<TaskLike> futures;
 	private boolean started;
 	int taskcounter;
 	UI top;
@@ -131,12 +130,12 @@ public class TaskManager extends Thread{
 	public void run(){
 		started = true;
 		logger.debug("Task Manager has been started");
-		coretasklist = new Task[corepoollimit];
-		auxiltasklist = new Task[auxilpoollimit];
+		coretasklist = new TaskLike[corepoollimit];
+		auxiltasklist = new TaskLike[auxilpoollimit];
 		Core = new ExtendedExecutor(corepoollimit, top);
 		Auxil = new ExtendedExecutor(auxilpoollimit, top);
 		
-		while(AuxilTasks.size() > 0 || CoreTasks.size() > 0){
+		while(AuxilTasks.size() > 0 || CoreTasks.size() > 0 || tasksUnfinished()){
 			int newsubmit = 0;
 			if(CoreTasks.size() > 0){
 				newsubmit = pushTasks2Executor(Core, CoreTasks, coretasklist, corepoollimit);
@@ -167,6 +166,24 @@ public class TaskManager extends Thread{
 	
 	public void setTasker(TaskStack stack){
 		this.tasker = stack;
+	}
+	
+	public boolean tasksUnfinished(){
+		for(int i =0; i < coretasklist.length;i++){
+			if(coretasklist[i] != null){
+				if(!coretasklist[i].isDone()){
+					return true;
+				}
+			}
+		}
+		for(int i =0; i < auxiltasklist.length;i++){
+			if(auxiltasklist[i] != null){
+				if(!auxiltasklist[i].isDone()){
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 }

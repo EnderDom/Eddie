@@ -43,12 +43,16 @@ public class SubTask_Blast extends SubTask{
 	}
 
 	public void run(){
+		setComplete(started);
+		logger.debug("Started running task @ "+Tools_System.getDateNow());
 		String id;
-		while((id=tasker.pop()) !=null){
+		while(!tasker.empty()){
+			id=tasker.pop();
 			FileWriter fstream = null;
 			BufferedWriter out = null;
 			File temp = null;
 			try{
+				logger.debug("Building temp file to blast " + id);
 				fstream = new FileWriter(temp, false);
 				out = new BufferedWriter(fstream);
 				temp = File.createTempFile("TempBlast", ".fasta");
@@ -59,6 +63,7 @@ public class SubTask_Blast extends SubTask{
 				else if (outname.indexOf(" ") != -1 && !clipname) outname = outname.replaceAll(" ", "_");
 				File ou = new File(outfolder+Tools_System.getFilepathSeparator()+outname+".xml");
 				Tools_Blast.runLocalBlast(temp, this.blast_prg, this.blast_bin, this.blast_db, this.blastparams,ou, this.remote);
+				check.update(id);
 			}
 			catch(IOException io){
 				logger.error("Error saving Fasta to temporary directory");
@@ -66,6 +71,8 @@ public class SubTask_Blast extends SubTask{
 			}
 		}
 		check.complete();
+		logger.debug("Finished running task @ "+Tools_System.getDateNow());
+	    setComplete(finished);
 	}
 	
 }

@@ -2,6 +2,7 @@ package enderdom.eddie.tasks.bio;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -11,6 +12,7 @@ import org.biojava3.ws.alignment.qblast.BlastProgramEnum;
 
 import enderdom.eddie.bio.factories.SequenceListFactory;
 import enderdom.eddie.bio.sequence.SequenceList;
+import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 
 import enderdom.eddie.tasks.BasicTaskStack;
 import enderdom.eddie.tasks.Checklist;
@@ -133,9 +135,13 @@ public class Task_BlastLocal extends TaskXTwIO{
 					logger.debug("About to start running blasts");
 					runAutoBlast(out, checklist);
 				}
-				catch(Exception e){
+				catch(IOException io){
+					logger.error(io);
+				} catch (UnsupportedTypeException e) {
 					logger.error(e);
 				}
+					
+				
 			}
 			else{
 				logger.error("Check that in is file, out is directory and blast_bin/db/prg is set");
@@ -170,10 +176,12 @@ public class Task_BlastLocal extends TaskXTwIO{
 		
 		//TODO add option to use central server, thus 'sort of' allow parallelisation
 		TaskStack stack = new BasicTaskStack();
-		
+		int i=0;
 		for(String s : sequences.keySet()){
 			stack.push(s);
+			i++;
 		}
+		logger.debug(i+" sequences to blast");
 		
 		SubTask_Blast blast = new SubTask_Blast(sequences, ui.requisitionTasker(), false, list, this.output, this.clipname);
 		blast.setBlastDetails(blast_prg, blast_bin, blast_db, blastparams);

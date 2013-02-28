@@ -6,4 +6,6 @@ public interface TaskStack {
 		
 	public String push(String o); 
 
+	public boolean empty();
+	
 }
