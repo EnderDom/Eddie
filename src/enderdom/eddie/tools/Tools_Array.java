@@ -31,11 +31,16 @@ public abstract class Tools_Array {
 	 * Eddie 3: some basic testing, 
 	 * as yets no bugs found
 	 */
-	/* replaceAll but for int[] arrays
+	/**
+	 * replaceAll but for int[] arrays
 	 * examples where i == 0 :
 	 * int[]{0,0,0,10,0,1} --> {10,1}
 	 * int[]{0,0,0}        --> {}
 	 * ...You get the idea.
+	 * @param arr array of integers
+	 * @param i the integer value to remove
+	 * @return removes all integers equal to i and contracts the array
+	 * the the remaining integers.
 	 */
 	public static int[] IntArrayTrimAll(int[] arr, int i) {
 		int k =0;

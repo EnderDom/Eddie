@@ -110,7 +110,7 @@ public class ACERecord implements Contig{
 	 * @param name
 	 */
 	public void setContigName(String name){
-		logger.trace("Contig name set as " + name);
+		//logger.trace("Contig name set as " + name);
 		this.contigname = name;
 	}
 	
@@ -121,7 +121,7 @@ public class ACERecord implements Contig{
 	 * @param i
 	 */
 	public void setNumberOfReads(int i){
-		logger.trace("Number of reads set to " + i);
+		//logger.trace("Number of reads set to " + i);
 		this.offset = new int[5][i];
 		this.compliments = new char[i];
 	}
@@ -148,7 +148,7 @@ public class ACERecord implements Contig{
 	 */
 	public void setReadName(String readname){
 		if(readname!=null){
-			sequences.put(readname, new GenericSequence(readname, position));	
+			sequences.put(readname, new GenericSequence(readname, sequencebuffer.toString(), position));	
 		}
 		sequencebuffer = new StringBuilder();
 		currentread=readname;
@@ -179,6 +179,7 @@ public class ACERecord implements Contig{
 				this.qualitybuffer.toString(),0));
 		sequences.get(currentread).setSequence(this.sequencebuffer.toString());
 		this.sequencebuffer = null;
+		this.contigbuffer = null;
 		setFinalised(true);
 	}
 
@@ -190,7 +191,7 @@ public class ACERecord implements Contig{
 	 * @param c expected to be 'C' or 'U'
 	 */
 	public void addOffSet(String name, int off, char c){
-		logger.trace("Set readname " + name + " @" + arraycount);
+		//logger.trace("Set readname " + name + " @" + arraycount);
 		offset[0][arraycount] = off-1;
 		compliments[arraycount] = c;
 		arraycount++;

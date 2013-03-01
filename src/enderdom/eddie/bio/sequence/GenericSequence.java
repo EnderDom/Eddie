@@ -30,11 +30,17 @@ public class GenericSequence implements SequenceObject{
 		this.positioninlist = position;
 	}
 	
-	public GenericSequence(String Identifier, String sequence, String quality, int postion){
+	public GenericSequence(String Identifier, String sequence, int position){
+		this.Identifier = Identifier;
+		this.positioninlist = position;
+		this.sequence = sequence;
+	}
+	
+	public GenericSequence(String Identifier, String sequence, String quality, int position){
 		this.Identifier = Identifier;
 		this.sequence = sequence;
 		this.quality = quality;
-		this.positioninlist = -1;
+		this.positioninlist = position;
 	}
 	
 	public GenericSequence(String Identifier, String sequence, String quality){
@@ -91,6 +97,7 @@ public class GenericSequence implements SequenceObject{
 
 	public int getActualLength() {
 		int l = this.getLength();
+		if(l == 0)return l;
 		int i =0;
 		while(i < sequence.length()){
 			if(sequence.charAt(i) == '-' || sequence.charAt(i) == '*') {
@@ -102,6 +109,7 @@ public class GenericSequence implements SequenceObject{
 	}
 	
 	public int getLength(){
+		if(this.sequence == null)Logger.getRootLogger().warn("Sequence is reporting 0 length as its not been set");
 		return (this.sequence == null) ? 0 :this.sequence.length();
 	}
 
