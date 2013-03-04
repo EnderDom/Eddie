@@ -1,8 +1,5 @@
 package enderdom.eddie.cli;
 
-import java.util.Scanner;
-
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Option;
@@ -13,9 +10,10 @@ import org.apache.log4j.Logger;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.tasks.Task;
+import enderdom.eddie.tasks.TaskLike;
 import enderdom.eddie.tasks.TaskList;
+import enderdom.eddie.tasks.TaskStack;
 import enderdom.eddie.tools.Tools_CLI;
-import enderdom.eddie.tools.Tools_Fun;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_UI;
 import enderdom.eddie.ui.PropertyLoader;
@@ -32,9 +30,9 @@ public class EddieCLI implements UI {
 	private String[] args;
 	private Options options;
 	
-	public EddieCLI(EddiePropertyLoader loader, boolean persist){
+	public EddieCLI(EddiePropertyLoader loader){
 		System.out.println("Eddie v" + (EddiePropertyLoader.engineversion+EddiePropertyLoader.subversion) + " by (S.C.Corp.)");
-		load = loader;
+		this.load = loader;
 		setArgs(loader.args);
 		/*
 		 * Builds basic options, primarily grabbing "-task"
@@ -47,36 +45,6 @@ public class EddieCLI implements UI {
          * Adds relevant stuff to the Object
          */
         parseFurther(args);
-        
-        if(persist){
-        	persist();
-        }
-	}
-	
-	private void persist(){
-		Logger.getRootLogger().debug("Eddie Persisting Command Line Interface");
-		System.out.println("/***********************/");
-		System.out.println("/    SHARE AND ENJOY    /");
-		System.out.println("/***********************/");
-		
-		System.out.println("Close at any time by inputing: exit");
-		System.out.println("Control-C will usually close command line programs if you run into trouble");
-		String response = "";
-		Scanner sc = new Scanner(System.in);
-		String user = System.getProperty("user.name");
-		System.out.print(user+">");
-		while(sc.hasNext()){
-			response = sc.next();
-			if(response.contentEquals("exit")){
-				System.out.println("Eddie>"+Tools_Fun.getFunnyMessage());
-				break;
-			}
-			else{
-				//TODO parse tasks
-				System.out.println("Eddie> err... hmm...");
-			}
-			System.out.print(user+">");
-		}
 	}
 	
 	private void parseFurther(String[] args) {
@@ -136,6 +104,15 @@ public class EddieCLI implements UI {
 		task.parseOpts(this.load.getPropertyObject());
 		this.manager.addTask(task);
 	}
+	
+	public void addTaskLike(TaskLike task){
+		Logger.getRootLogger().debug("CLI recieve task, sending to task manager...");
+		if(this.manager == null){
+			buildTaskManager();
+		}
+		if(task.wantsUI())task.addUI(this);
+		this.manager.addTask(task);
+	}
 
 	public void buildTaskManager() {
 		Integer core = Tools_String.parseString2Int(load.getValueOrSet("CORETHREAD", "1"));
@@ -160,7 +137,7 @@ public class EddieCLI implements UI {
 		System.out.println();
 	}
 
-	public void update(Task task) {
+	public void update(TaskLike task) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -237,4 +214,20 @@ public class EddieCLI implements UI {
 		super.finalize();
 		load.savePropertyFile(load.getPropertyFilePath(), load.getPropertyObject());
 	}
+
+	public TaskStack getTasker() {
+		if(this.manager == null){
+			buildTaskManager();
+		}
+		return this.manager.getTasker();
+	}
+	
+	public void setTasker(TaskStack stack){
+		if(this.manager == null){
+			buildTaskManager();
+		}
+		this.manager.setTasker(stack);
+	}
+	
+	
 }

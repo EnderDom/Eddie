@@ -66,24 +66,28 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 		try {
 			CommandLine cmd = parser.parse(options, args);
 			if(cmd.hasOption("h")){
-				mode = 1;
+				if(cmd.hasOption("task")){
+					for(int i =0; i < args.length; i++){					
+						if(args[i].equals("-h") || args[i].equals("--help")){
+							mode = 1;
+							break;
+						}
+						if(args[i].equals("-task")){
+							break;
+						}
+					}
+				}
 			}
 			else if(cmd.hasOption("about")){
 				mode = 6;
 			}
 			else{
-				if(cmd.hasOption("g")){ 
-					/* GUI */
-					mode = 4;					
-				}
-				else{
-					/*If Command Line iNterface*/
-					mode = 2;
-					/*
-					 * Store arguments for further parsing by CLI
-					 */
-					this.args=args;
-				}
+				/*If Command Line iNterface*/
+				mode = 2;
+				/*
+				 * Store arguments for further parsing by CLI
+				 */
+				this.args=args;
 			}
 			if(cmd.hasOption("l")){
 				String lev = cmd.getOptionValue("l");
@@ -182,7 +186,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				 };
 		defaultvalues = new String[]{
 				propfile.getParent(), "5", "1", 
-				"/usr/bin/", "/home/dominic/bioapps/blast/db/", "/usr/bin/",
+				"/usr/bin/", "/home/dominic/bioapps/blast/db/", "/usr/bin/ESTScan",
 				"null", defaultlnf, propfile.getParent()+slash+"test", 
 				"mysql","com.mysql.jdbc.Driver", "Localhost", 
 				DatabaseManager.default_database, "user", "","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec"

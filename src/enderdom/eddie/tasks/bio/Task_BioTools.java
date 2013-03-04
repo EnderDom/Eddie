@@ -8,13 +8,15 @@ import org.apache.commons.cli.Options;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
-import enderdom.eddie.bio.sequence.FourBitNuclear;
+import enderdom.eddie.bio.sequence.GenericSequence;
+import enderdom.eddie.bio.sequence.SequenceObject;
 
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Sequences;
+import enderdom.eddie.tools.bio.Tools_String_Bio;
 
 public class Task_BioTools extends TaskXT{
 	
@@ -24,7 +26,7 @@ public class Task_BioTools extends TaskXT{
 	private String input;
 	private String output;
 	private String contig;
-	private FourBitNuclear sequence;
+	private SequenceObject sequence;
 	private boolean strip;
 	
 	public Task_BioTools(){
@@ -40,7 +42,7 @@ public class Task_BioTools extends TaskXT{
 		if(cmd.hasOption("c"))contig = cmd.getOptionValue("c");
 		if(cmd.hasOption("f"))fuzzy = true;
 		if(cmd.hasOption("strip"))strip = true;
-		if(cmd.hasOption("s"))sequence = new FourBitNuclear(cmd.getOptionValue("s"));
+		if(cmd.hasOption("s"))sequence = new GenericSequence(cmd.getOptionValue("s"));
 		if(cmd.hasOption("xindex")){
 			Integer temp = Tools_String.parseString2Int(cmd.getOptionValue("xindex"));
 			if(temp != null)index = temp;
@@ -70,7 +72,7 @@ public class Task_BioTools extends TaskXT{
 		
 		if(sequence != null);
 		else{
-			sequence = (FourBitNuclear) Tools_Sequences.getSequenceFromSomewhere(logger, new DatabaseManager(this.ui, this.password), input, contig, index, fuzzy, strip);
+			sequence = Tools_Sequences.getSequenceFromSomewhere(logger, new DatabaseManager(this.ui, this.password), input, contig, index, fuzzy, strip);
 			if(sequence == null){
 				logger.error("Sequence returned was null, premature terminating");
 				return;
@@ -78,13 +80,13 @@ public class Task_BioTools extends TaskXT{
 		}
 		if(rc){
 			if(output == null){
-				String s = Tools_String.splitintolines(60, sequence.getAsStringRevComp());
+				String s = Tools_String.splitintolines(60, Tools_String_Bio.reverseComp(sequence.getSequence()));
 				System.out.println(s);
 			}
 			else{
 				if(contig == null)contig = "Sequence1";
 				contig = ">"+contig + " RC" + Tools_System.getNewline();
-				String s = contig + Tools_String.splitintolines(60, sequence.getAsStringRevComp());
+				String s = contig + Tools_String.splitintolines(60, Tools_String_Bio.reverseComp(sequence.getSequence()));
 				Tools_File.quickWrite(s, new File(output), false);
 			}
 		}

@@ -11,16 +11,23 @@ import org.apache.log4j.Logger;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.bio.Tools_Fasta;
 
+/**
+ * 
+ * @author dominic
+ *
+ * Whilst I'm sure biojava's FastaReader class
+ * does a much better job, I like the handler style 
+ * implementation which allows the Task calling the 
+ * Parser to potentially decide what to do with all the
+ * data (ie just pick out sequences wanted, drop quality,
+ * etc...)
+ */
 public class FastaParser{
 
 	FastaHandler handler;
 	boolean fastq;
 	private boolean shorttitles;
-	
-	/*
-	 * Eddie v3 class
-	 */
-			
+
 	public FastaParser(){
 		shorttitles =false;
 	}
@@ -29,6 +36,12 @@ public class FastaParser{
 		this.handler = handler;
 	}
 	
+	/**
+	 * 
+	 * @param fasta file containing fasta
+	 * @return
+	 * @throws IOException
+	 */
 	public int parseFastq(File fasta) throws IOException{
 		int count = 0;
 		int linecount = 0;
@@ -65,7 +78,7 @@ public class FastaParser{
 			}
 			else{
 				if(!qual){
-					sequence = sequence.append(line);
+					sequence = sequence.append(line.trim());
 				}
 				else{
 					quality = quality.append(line);
@@ -96,91 +109,16 @@ public class FastaParser{
 		return count;
 	}
 	
-	
-	/*
-	 * This method might be borked, //TODO fix
+	/**
 	 * 
+	 * @param fasta File containing fasta
+	 * @param qual boolean if the file is actually a quality file, 
+	 * this will then parse it as fasta but convert to Fastq style 
+	 * string and add to the handler through the FastaHandler.addQuality()
+	 * method
+	 * @return Number of individual sequences in the fasta
+	 * @throws IOException
 	 */
-	public int parseFastawQual(File fasta, File qual)  throws IOException{
-		Logger.getRootLogger().error("Using Borked Method!!");
-		int count = 0;
-		int count2=0;
-		int linecount=0;
-		int multi=0;
-		FileInputStream fis = new FileInputStream(fasta);
-		InputStreamReader in = new InputStreamReader(fis, "UTF-8");
-		BufferedReader reader = new BufferedReader(in);
-		
-		FileInputStream fis2 = new FileInputStream(qual);
-		InputStreamReader in2 = new InputStreamReader(fis2, "UTF-8");
-		BufferedReader reader2 = new BufferedReader(in2);
-		
-		String line = "";
-		StringBuilder sequence = new StringBuilder();
-		StringBuilder quality = new StringBuilder();
-		String title = "";
-		String qualtitle = "";
-		while(line != null){
-			while ((line = reader.readLine()) != null){
-				System.out.println(line);
-				if(line.startsWith(">")){
-					if(sequence.length() > 0){
-						handler.addSequence(title, sequence.toString());
-						sequence = new StringBuilder();
-						count++;
-					}
-					if(this.shorttitles && line.indexOf(" ") != 0){
-						title = line.substring(1, line.indexOf(" "));
-					}
-					else{
-						title= line.substring(1, line.length());
-					}
-				}
-				else{
-					sequence = sequence.append(line);
-				}
-			}
-			while ((line = reader2.readLine()) != null){
-				if(line.startsWith(">")){
-					if(quality.length() > 0){
-						handler.addQuality(qualtitle, Tools_Fasta.Qual2Fastq(quality.toString()));
-						sequence = new StringBuilder();
-						count2++;
-					}
-					if(this.shorttitles && line.indexOf(" ") != 0){
-						qualtitle = line.substring(1, line.indexOf(" "));
-					}
-					else{
-						qualtitle= line.substring(1, line.length());
-					}
-				}
-				else{
-					quality =quality.append(line);
-				}
-			}
-			if(multi==5000){
-				multi=0;
-				System.out.print("\rParsing Line: "+linecount);
-			}
-			multi++;
-			linecount++;
-		}
-		System.out.println();
-		if(sequence.length() > 0){
-			handler.addSequence(title, sequence.toString());
-			count++;
-		}
-		if(quality.length() > 0){
-			handler.addQuality(title, quality.toString());
-			count2++;
-		}
-	
-		if(count!=count2){
-			throw new IOException("Number of fasta sequence and Number of quality sequences do not match");
-		}
-		return count;
-	}
-	
 	public int parseFasta(File fasta, boolean qual)  throws IOException{
 		int count = 0;
 		int linecount=0;
@@ -204,11 +142,11 @@ public class FastaParser{
 					title = line.substring(1, line.indexOf(" "));
 				}
 				else{
-					title= line.substring(1, line.length());
+					title= line.substring(1);
 				}
 			}
 			else{
-				if(!qual)sequence = sequence.append(line);
+				if(!qual)sequence = sequence.append(line.trim());
 				else sequence = sequence.append(line + " "); /*Space is important as 
 				the quality string is broken into an int array based on spaces.
 				Without adding the space the last and first numbers on each line are
@@ -222,10 +160,10 @@ public class FastaParser{
 			multi++;
 			linecount++;
 		}
-		System.out.println();
+		if(linecount>5000)System.out.println();
 		if(sequence.length() > 0){
 			if(!qual)handler.addSequence(title, sequence.toString());
-			else handler.addQuality(title, sequence.toString());
+			else handler.addQuality(title, Tools_Fasta.Qual2Fastq(sequence.toString()));
 			count++;
 		}
 		return count;

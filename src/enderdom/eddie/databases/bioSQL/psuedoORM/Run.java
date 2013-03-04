@@ -148,7 +148,7 @@ public class Run {
 	}
 
 	public String list(DatabaseManager manager) {
-		String[] columns = new String[]{"runtype", "program", "version", "dbname"};
+		String[] columns = new String[]{"run_id","runtype", "program", "version", "dbname"};
 		String[][] fields = manager.getBioSQLXT().getUniqueStringFields(manager, columns, BioSQLExtended.runtable);
 		StringBuffer ret = new StringBuffer();
 		String newline = Tools_System.getNewline();
@@ -159,7 +159,7 @@ public class Run {
 			ret.append(newline);
 			ret.append(newline);
 			for(int j = 0; j < fields[i].length; j++){
-				ret.append(fields);
+				ret.append(fields[i][j]);
 				ret.append(newline);
 			}
 		}

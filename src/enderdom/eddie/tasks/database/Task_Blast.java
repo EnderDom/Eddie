@@ -8,7 +8,7 @@ import org.apache.commons.cli.Options;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
-import enderdom.eddie.bio.blast.BlastxHelper;
+import enderdom.eddie.bio.homology.blast.BlastxHelper;
 
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_String;
@@ -65,7 +65,7 @@ public class Task_Blast extends TaskXT{
 		logger.debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		File in=null;
 		if(input !=null)in = new File(input);
-		openChecklist();
+		this.checklist = openChecklist(ui);
 		if(in == null || !in.exists()){
 			ui.error("File "+input+" does not exists");
 			return;

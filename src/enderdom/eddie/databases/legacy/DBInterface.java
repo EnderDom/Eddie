@@ -1,7 +1,7 @@
 package enderdom.eddie.databases.legacy;
 
-import enderdom.eddie.bio.blast.BlastxDocumentParser;
-import enderdom.eddie.bio.objects.GOTermData;
+import enderdom.eddie.bio.homology.GOTermData;
+import enderdom.eddie.bio.homology.blast.BlastxDocumentParser;
 
 //Still To Finish
 

@@ -411,7 +411,7 @@ public class IPRScanClient extends uk.ac.ebi.webservices.AbstractWsToolClient {
 	 * @throws IOException
 	 * 
 	 * 
-	 * @author dominic
+	 * 
 	 * Added int num, as output files where being overwritten for each
 	 * loop when input was a multifasta. Not sure if this is a bug, or 
 	 * the parameters I am using are incorrect but this workaround seems
@@ -448,6 +448,48 @@ public class IPRScanClient extends uk.ac.ebi.webservices.AbstractWsToolClient {
 			}
 		}
 	}
+	
+	/**
+	 * As with other submitJobFromCli, but with specified outfile
+	 * 
+	 * @param cli
+	 * @param inputSeq
+	 * @param num
+	 * @param outfile
+	 * @throws ServiceException
+	 * @throws IOException
+	 */
+	public void submitJobFromCli(CommandLine cli, String inputSeq, int num, String outfile)
+			throws ServiceException, IOException{
+		// Create job submission parameters from command-line
+		InputParameters params = this.loadParams(cli);
+		params.setSequence(inputSeq);
+		// Submit the job
+		String email = null, title = null;
+		if (cli.hasOption("email"))
+			email = cli.getOptionValue("email");
+		if (cli.hasOption("title"))
+			title = cli.getOptionValue("title");
+		String jobid = this.runApp(email, title, params);
+		// For asynchronous mode
+		if (cli.hasOption("async")) {
+			System.out.println(jobid); // Output the job id.
+			System.err.println("To get " +
+				"status: java -jar IPRScan_Axis1.jar --status --jobid "+ jobid);
+		} else {
+			// In synchronous mode try to get the results
+			this.printProgressMessage(jobid, 1);
+			String[] resultFilenames = this
+					.getResults(jobid, outfile, cli
+							.getOptionValue("outformat"));
+			for (int i = 0; i < resultFilenames.length; i++) {
+				if (resultFilenames[i] != null) {
+					System.out.println("Wrote file: " + resultFilenames[i]);
+				}
+			}
+		}
+	}
+	
 
 	/**
 	 * Entry point for running as an application.

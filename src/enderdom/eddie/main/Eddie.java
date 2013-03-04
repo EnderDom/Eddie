@@ -22,12 +22,11 @@ public class Eddie {
 			EddiePropertyLoader loader = new EddiePropertyLoader(args);
 			retvalue = loader.mode;
 			if(retvalue == 2){
-				@SuppressWarnings("unused")
-				EddieCLI cli = new EddieCLI(loader, false);
+				EddieCLI cli = new EddieCLI(loader);
+				cli.exit();
 			}
 			else if(retvalue == 3){//Persisting CLI mode <-- currently not supported
-				@SuppressWarnings("unused")
-				EddieCLI cli = new EddieCLI(loader, true);
+				
 			}	
 			else if(retvalue == 4){
 				System.out.println(EddiePropertyLoader.edition+ " Edition does not include GUI modules ");

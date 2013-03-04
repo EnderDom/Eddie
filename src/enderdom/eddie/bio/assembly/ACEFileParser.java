@@ -11,7 +11,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.tools.Tools_String;
-import enderdom.eddie.bio.interfaces.Contig;
+import enderdom.eddie.bio.sequence.Contig;
 
 
 /**
@@ -186,7 +186,7 @@ public class ACEFileParser implements Iterator<Contig>{
 		switch(sw){
 			case 0: parseAS(line);break;//AS
 			case 1: parseFirstCO(line);break; //CO
-			case 2: this.currentrecord.addCurrentSequence(line);//CO_
+			case 2: this.currentrecord.addContigSequence(line);//CO_
 			case 3: this.currentrecord.addQuality(line);break;//BQ
 			case 4: parseFirstRD(line);break;//RD
 			case 5: this.currentrecord.addCurrentSequence(line);break;//RD_
@@ -209,7 +209,7 @@ public class ACEFileParser implements Iterator<Contig>{
 			this.currentrecord.setContigName(s[1]);
 			Integer l = Tools_String.parseString2Int(s[2]);
 			if(l != null){
-				this.currentrecord.setExpectedLength(l);
+				//Expected length, currently not used
 			}
 			else{
 				logger.error("Parse Abberation, number after contig name is NaN");
@@ -238,7 +238,7 @@ public class ACEFileParser implements Iterator<Contig>{
 			this.currentrecord.setReadName(s[1]);
 			Integer l = Tools_String.parseString2Int(s[2]);
 			if(l != null){
-				this.currentrecord.setExpectedLength(l);
+				//Expected Length currently not used
 			}
 			else{
 				logger.error("Parse Abberation, number after contig name is NaN");

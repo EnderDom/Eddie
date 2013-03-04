@@ -1,30 +1,28 @@
 package enderdom.eddie.tasks.bio;
 
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
-import org.apache.log4j.Logger;
+import org.apache.commons.io.FilenameUtils;
+import org.biojava3.ws.alignment.qblast.BlastProgramEnum;
 
-import enderdom.eddie.bio.assembly.ACEFileParser;
-import enderdom.eddie.bio.assembly.ACERecord;
-import enderdom.eddie.bio.fasta.Fasta;
-import enderdom.eddie.bio.fasta.FastaParser;
-import enderdom.eddie.bio.interfaces.BioFileType;
+import enderdom.eddie.bio.factories.SequenceListFactory;
+import enderdom.eddie.bio.sequence.SequenceList;
+import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 
+import enderdom.eddie.tasks.BasicTaskStack;
 import enderdom.eddie.tasks.Checklist;
+import enderdom.eddie.tasks.TaskStack;
 import enderdom.eddie.tasks.TaskXTwIO;
+import enderdom.eddie.tasks.subtasks.SubTask_Blast;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Blast;
-import enderdom.eddie.tools.bio.Tools_Fasta;
+import enderdom.eddie.ui.UI;
 
 public class Task_BlastLocal extends TaskXTwIO{
 	
@@ -32,13 +30,13 @@ public class Task_BlastLocal extends TaskXTwIO{
 	private String blast_bin;
 	private String blast_prg;
 	private String blastparams;
-	private String workspace;
 	protected boolean keepargs = true;
-	private HashMap<String, String> sequences;
+	SequenceList sequences;
 	int start;
 	int blastcomplete;
 	private boolean clipname;
 	boolean err;
+	private boolean remote;
 	
 	public Task_BlastLocal(){
 		/*
@@ -51,6 +49,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
+		if(cmd.hasOption("remote"))remote=true;
 		if(cmd.hasOption("bdb"))blast_db=cmd.getOptionValue("bdb");
 		if(cmd.hasOption("bbb"))blast_bin=cmd.getOptionValue("bbb");
 		if(cmd.hasOption("bpr"))blast_prg=cmd.getOptionValue("bpr");
@@ -87,7 +86,6 @@ public class Task_BlastLocal extends TaskXTwIO{
 		if(blast_bin == null){
 			blast_bin = props.getProperty("BLAST_BIN_DIR");
 		}
-		workspace = props.getProperty("WORKSPACE");
 		logger.trace("Parse Options From props");
 	}
 	
@@ -99,10 +97,11 @@ public class Task_BlastLocal extends TaskXTwIO{
 		options.addOption(new Option("bbb", "blast_bin", true, "Specify blast bin directory"));
 		options.addOption(new Option("bpr", "blast_prog", true, "Specify blast program"));
 		options.addOption(new Option("x", "outputformat", true, "Set Output Format, else defaults to xml"));
-		options.addOption(new Option("p", "params", true, "Additional Parameters separate with '/_' not space"));
+		options.addOption(new Option("p", "params", true, "Additional Parameters separate with '/_' not space, ie -num_threads/_3/_-evalue/_1e-3"));
 		options.addOption(new Option("pf", "paramater file", true, "Additional blast Parameters in external file"));
 		options.addOption(new Option("filetype", true, "Specify filetype (rather then guessing from ext)"));
 		options.addOption(new Option("clip", false, "Clip output file name to whitespace in input"));
+		options.addOption(new Option("remote", false, "Run remote blasts in parallel with local (WARN: Will send NCBI blast jobs)"));
 	}
 	
 	public void runTest(){
@@ -110,7 +109,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 		File in =new File(input);
 		File out =  new File(output);
 		if(in.exists() && (out.exists() || overwrite)){
-			Tools_Blast.runLocalBlast(in, blast_prg, blast_bin, blast_db, blastparams, out);
+			Tools_Blast.runLocalBlast(in, blast_prg, blast_bin, blast_db, blastparams, out, false);
 		}
 		else if(!in.exists()){
 			logger.error("Input "+this.input+" does not exist! " );
@@ -123,102 +122,31 @@ public class Task_BlastLocal extends TaskXTwIO{
 	public void run(){
 		setComplete(started);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
-		openChecklist();
+		this.checklist = openChecklist(ui);
 		if(input != null && output != null && !err){
 			File in = new File(input);
 			File out = new File(output);
 			if(in.isFile() && out.isDirectory() && this.blast_bin !=null && this.blast_db != null && this.blast_prg != null){
-				start = out.listFiles().length;
-				if(filetype == null)filetype = this.detectFileType(in.getName());
-				logger.debug("Filetype is set to " + this.filetype.toString());
-				if(filetype == BioFileType.FASTQ || filetype == BioFileType.FASTA){
-					//Load Fasta-->
-					Fasta fasta = new Fasta();
-					if(filetype== BioFileType.FASTQ)fasta.setFastq(true);
-					FastaParser parser = new FastaParser(fasta);
-					boolean cont = false;
-					try {
-						if(filetype == BioFileType.FASTQ)parser.parseFastq(in);
-						if(filetype == BioFileType.FASTA)parser.parseFasta(in);
-						Logger.getRootLogger().debug("File Parsed");
-						cont = true;
+				try{
+					this.sequences = SequenceListFactory.getSequenceList(input); 
+					if(checklist.inRecovery()){
+						trimRecovered(checklist.getData());
 					}
-					catch (Exception e) {
-						logger.error("Error parsing Fasta/q file", e);
-					}
-					if(cont){
-						this.sequences = fasta.getSequences();
-						if(checklist.inRecovery()){
-							trimRecovered(checklist.getData());
-						}
-						logger.debug("About to start running blasts");
-						runAutoBlast(out, checklist);
-						int l = out.listFiles().length-start;
-						if(l == this.blastcomplete){
-							logger.debug("Blast Output matches File increase within folder");
-						}
-						else{
-							logger.error("Post Check: The output folder has less files then estimated. Blasts Run: " + this.blastcomplete + " Change in outfolder since start: "+l);
-						}
-					}
-					checklist.complete();
+					logger.debug("About to start running blasts");
+					runAutoBlast(out, checklist);
 				}
-				else if(filetype == BioFileType.ACE){//TODO test new ACE File More thoroughly
-					boolean cont = false;
-					try {
-						ACEFileParser parser = new ACEFileParser(new FileInputStream(this.input));
-						while(parser.hasNext()){
-							ACERecord record = (ACERecord) parser.next();
-							this.sequences.put(record.getContigName(), record.getConsensus().getSequence());
-						}
-						Logger.getRootLogger().debug("File Parsed");
-						cont = true;
-					}
-					catch (Exception e) {
-						logger.error("Error parsing Fasta/q file", e);
-					}
-					if(cont){
-						
-						if(checklist.inRecovery()){
-							trimRecovered(checklist.getData());
-						}
-						logger.debug("About to start running blasts");
-						runAutoBlast(out, checklist);
-						int l = out.listFiles().length-start;
-						if(l == this.blastcomplete){
-							logger.debug("Blast Output matches File increase within folder");
-						}
-						else{
-							logger.error("Post Check: The output folder has less files then estimated. Blasts Run: " + this.blastcomplete + " Change in outfolder since start: "+l);
-						}
-					}
-					checklist.complete();
-				}
-				else{
-					logger.error("Filetype " + filetype + " not supported");
+				catch(IOException io){
+					logger.error(io);
+				} catch (UnsupportedTypeException e) {
+					logger.error(e);
 				}
 			}
 			else{
-				if(!in.isFile()){
-					logger.error("Input is not a file");
-				}
-				if(!out.isDirectory()){
-					logger.error("Output Should be a directory");
-				}
-				if(this.blast_bin == null){
-					logger.error("Blast Binary Directory not set");
-				}
-				if(this.blast_db == null){
-					logger.error("Blast database Directory not set");
-				}
-				if(this.blast_prg == null){
-					logger.error("Blast program not set");
-				}
+				logger.error("Check that in is file, out is directory and blast_bin/db/prg is set");
 			}
 		}
 		else{
 			logger.error("Null input/output");
-			this.printHelpMessage();
 		}
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
@@ -231,8 +159,8 @@ public class Task_BlastLocal extends TaskXTwIO{
 	private void trimRecovered(String[] data){
 		int j=0;
 		for(int i =0;i < data.length; i++){
-			if(sequences.containsKey(data[i])){
-				sequences.remove(data[i]);
+			if(sequences.getSequence(data[i]) != null){
+				sequences.removeSequenceObject(data[i]);
 				j++;
 			}
 		}
@@ -240,36 +168,39 @@ public class Task_BlastLocal extends TaskXTwIO{
 	}
 	
 	public void runAutoBlast(File output, Checklist list){
-		FileWriter fstream = null;
-		BufferedWriter out = null;
-		File temp = null;
-		try{
-			temp = File.createTempFile("TempBlast", ".fasta");
+		if(BlastProgramEnum.valueOf(blast_prg) == null){
+			logger.warn("Are you sure " + blast_prg + " is a program?");
+		}	
+		
+		//TODO add option to use central server, thus 'sort of' allow parallelisation
+		TaskStack stack = new BasicTaskStack();
+		int i=0;
+		for(String s : sequences.keySet()){
+			stack.push(s);
+			i++;
 		}
-		catch(IOException io){
-			logger.error("Error saving Fasta to temporary directory");
-			temp = new File(workspace +Tools_System.getFilepathSeparator()+"temp.fasta");
+		logger.debug(i+" sequences to blast, adding to TaskManager");
+		ui.setTasker(stack);
+		SubTask_Blast blast = new SubTask_Blast(sequences, ui.getTasker(), false, list, this.output, this.clipname);
+		blast.setBlastDetails(blast_prg, blast_bin, blast_db, blastparams);
+		blast.setCore(true);
+		ui.addTaskLike(blast);
+		if(remote){
+			SubTask_Blast blast2 = new SubTask_Blast(sequences, ui.getTasker(), true, list, this.output, this.clipname);
+			String db = FilenameUtils.getBaseName(blast_db);
+			logger.info("Database was trimmed to " + blast_db + " for the remote");
+			blast2.setBlastDetails(blast_prg, blast_bin, db, blastparams);
+			blast2.setCore(false);
+			ui.addTaskLike(blast2);
 		}
-		for(String seqname : sequences.keySet()){
-			try{
-				fstream = new FileWriter(temp, false);
-				out = new BufferedWriter(fstream);
-				Tools_Fasta.saveFasta(seqname,sequences.get(seqname),out);
-				out.close();
-				fstream.close();
-			}
-			catch(IOException io){
-				logger.error("Error saving Fasta to temporary directory");
-			}
-			logger.debug("Saved "+ seqname + " to tempfile");
-			String outname = seqname;
-			if(outname.indexOf(" ") != -1 && clipname)outname = outname.substring(0, outname.indexOf(" "));
-			else if (outname.indexOf(" ") != -1 && !clipname) outname = outname.replaceAll(" ", "_");
-			File ou = new File(output.getPath()+Tools_System.getFilepathSeparator()+outname+".xml");
-			Tools_Blast.runLocalBlast(temp, this.blast_prg, this.blast_bin, this.blast_db, this.blastparams,ou);
-			this.blastcomplete++;
-			list.update(seqname);
-		}
+	}
+	
+	public boolean wantsUI(){
+		return true;
+	}
+	
+	public void addUI(UI ui){
+		this.ui = ui;
 	}
 	
 }

@@ -68,6 +68,10 @@ public abstract class Tools_File {
 	}
 	
 	/**
+	 * Returns 1 line from a file. File is opened
+	 * line read and then closed and line is returned
+	 * obviously all the ioexceptions apply, but will
+	 * be caught within the method and logged
 	 * 
 	 * @param filepath path to a file
 	 * @param i the line which you want to return, 0-based
@@ -279,4 +283,15 @@ public abstract class Tools_File {
 		return f.renameTo(mov);
 	}
 	
+	
+	public static File getOutFileName(File directory, File filename, String fileending){
+		//Avoids overwriting previous stuff
+		String outname = filename.getName();
+		int e =-1;
+		if((e=outname.lastIndexOf(".")) != -1)outname = outname.substring(0, e);
+		e=0;
+		File out;
+		while((out=new File(directory.getPath()+Tools_System.getFilepathSeparator()+outname+e+fileending)).exists())e++;
+		return out;
+	}
 }

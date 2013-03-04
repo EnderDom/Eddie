@@ -13,11 +13,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import enderdom.eddie.bio.blast.MultiblastParser;
-import enderdom.eddie.bio.blast.UniVecBlastObject;
 import enderdom.eddie.bio.factories.SequenceListFactory;
-import enderdom.eddie.bio.interfaces.BioFileType;
-import enderdom.eddie.bio.interfaces.SequenceList;
+import enderdom.eddie.bio.homology.blast.MultiblastParser;
+import enderdom.eddie.bio.homology.blast.UniVecBlastObject;
+import enderdom.eddie.bio.sequence.BioFileType;
+import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.tasks.bio.Task_UniVec;
 import enderdom.eddie.ui.BasicPropertyLoader;
 
@@ -67,7 +67,7 @@ public class MultiblastParserTest {
 			while(parser.hasNext()){
 				i++;
 				UniVecBlastObject obj = (UniVecBlastObject)parser.next();
-				System.out.println("Region Count:"+obj.regionCount());
+				System.out.println(obj.get("Iteration_query-def")+": Region Count:"+obj.regionCount());
 				if(obj.getIterationNumber() == 6){
 					System.out.println("Comparing: CAAGGCACACAGGGGATAGG with " + obj.getHspTagContents("Hsp_qseq", 1, 1) );
 					assertEquals("CAAGGCACACAGGGGATAGG", obj.getHspTagContents("Hsp_qseq", 1, 1));
@@ -77,6 +77,12 @@ public class MultiblastParserTest {
 					assertEquals(1.10400757585036,obj.getLowestEValue(), 0.00001);
 					assertEquals(1, obj.regionCount());
 					assertEquals(110,obj.getRegion(0).getStart(1));
+				}
+				if(obj.getIterationNumber() == 7){
+					System.out.println("Comparing: CAAGGCACACAGGGGATAGG with " + obj.getHspTagContents("Hsp_qseq", 1, 1) );
+					assertEquals("CAAGGCACACAGGGGATAGG", obj.getHspTagContents("Hsp_qseq", 1, 1));
+					assertEquals(1, obj.regionCount());
+					assertEquals(56,obj.getRegion(0).getStart(1));
 				}
 				if(i > 10){
 					fail("Shouldn't parse this far");
@@ -99,8 +105,10 @@ public class MultiblastParserTest {
 			File outfolder = new File(in2).getParentFile();
 			if(!outfolder.isDirectory())fail("Outfolder should be a directory");
 			SequenceList seq = SequenceListFactory.getSequenceList(in2, in3);
+			String comp1 = seq.getSequence("GQYW8I402CYV16").getSequence();
+			String comp2 = seq.getSequence("GQYW8I402ET26S").getSequence();
 			int[] l1 = seq.getListOfLens();
-			String[] files = Task_UniVec.parseBlastAndTrim(new MultiblastParser(MultiblastParser.UNIVEC, in), seq, outfolder.getPath(), BioFileType.FAST_QUAL, 50);
+			String[] files = Task_UniVec.parseBlastAndTrim(new MultiblastParser(MultiblastParser.UNIVEC, in), seq, outfolder.getPath(), BioFileType.FAST_QUAL, 50, false);
 			assertNotNull(files);
 			assertEquals(2,files.length);
 			if(files != null && files.length == 2) {
@@ -108,7 +116,13 @@ public class MultiblastParserTest {
 				System.out.println(files[0] +", " + files[1]);
 				System.out.println("LIST OF MODDED LENGTHS");
 				int[] l2 = list.getListOfLens();
+				System.out.println("---");
 				System.out.println(list.getSequence("GQYW8I402ET26S").getSequence());
+				System.out.println(comp2);
+				System.out.println("---");
+				System.out.println(list.getSequence("GQYW8I402CYV16").getSequence());
+				System.out.println(comp1);
+				System.out.println("---");
 				for(int i =0; i < l1.length; i++){
 					System.out.println(l1[i] + " -> " +l2[i]);
 				}

@@ -85,7 +85,14 @@ public abstract class Tools_Task {
 	        outputGobbler.close();
         } 
         catch (Throwable t){
+        	
         	Logger.getRootLogger().error("Process Error", t);
+        	if (t.getMessage().contains("allocate memory")){
+        		Logger.getRootLogger().error("Note: Messages like this:" +
+        				"{ \"/bin/sh\": java.io.IOException: error=12, Cannot allocate memory}" +
+        				"can be due to runtime.exec() allocating same amount of memory as jvm." +
+        				"Try setting the -Xmx/s settings to below half of total system memory for this task run.");
+        	}
         }
         return output;
 	}

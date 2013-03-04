@@ -1,9 +1,18 @@
 package enderdom.eddie.tasks.bio;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import javax.xml.rpc.ServiceException;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
+import enderdom.eddie.bio.factories.SequenceListFactory;
+import enderdom.eddie.bio.sequence.SequenceList;
+import enderdom.eddie.bio.sequence.SequenceObject;
+import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_System;
 import uk.ac.ebi.webservices.axis1.IPRScanClient;
@@ -39,7 +48,7 @@ public class Task_WebInterPro extends TaskXT{
 	/**
 	 * Slimmed down version of the IPRScanClient main method
 	 */
-	public void run(){
+	public void runAlt(){
 		setComplete(started);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
 		client= new IPRScanClient();
@@ -104,6 +113,38 @@ public class Task_WebInterPro extends TaskXT{
         catch(Exception e){
             logger.error("Error running/parsing the file for Interpro",e);
         }
+		logger.debug("Finished running task @ "+Tools_System.getDateNow());
+	    setComplete(finished);
+	}
+	
+	public void run(){
+		setComplete(started);
+		logger.debug("Started running task @ "+Tools_System.getDateNow());
+		if(this.cli.hasOption("sequence")){
+			try {
+				client= new IPRScanClient();
+				SequenceList list = SequenceListFactory.getSequenceList(this.cli.getOptionValue("sequence"));
+				int c=0;
+				while(list.hasNext()){
+					SequenceObject o = list.next();
+					client.submitJobFromCli(cli, o.getSequence(), c, o.getIdentifier());
+					c++;
+				}
+			} 
+			catch (FileNotFoundException e) {
+				logger.error(e);
+			} catch (UnsupportedTypeException e) {
+				logger.error(e);
+			} catch (IOException e) {
+				logger.error(e);
+			} catch (ServiceException e) {
+				logger.error(e);
+			}
+			
+		}
+		else{
+			logger.error("No sequence file added with -sequence");
+		}
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
 	}

@@ -8,10 +8,10 @@ import java.util.Properties;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
-import enderdom.eddie.bio.blast.BlastObject;
-import enderdom.eddie.bio.blast.BlastxDocumentParser;
 import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
+import enderdom.eddie.bio.homology.blast.BlastObject;
+import enderdom.eddie.bio.homology.blast.BlastxDocumentParser;
 
 import enderdom.eddie.tasks.MapManager;
 import enderdom.eddie.tasks.TaskXTwIO;

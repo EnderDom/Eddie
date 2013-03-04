@@ -5,6 +5,8 @@ import org.apache.log4j.Logger;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.tasks.Task;
+import enderdom.eddie.tasks.TaskLike;
+import enderdom.eddie.tasks.TaskStack;
 
 public interface UI{
 	
@@ -13,14 +15,16 @@ public interface UI{
 	public static int YES =0;
 	public static int NO =1;
 	public static int CANCEL =2;
-
+	
 	public void exit();
+	
+	public void addTaskLike(TaskLike task);
 	
 	public void addTask(Task task);
 	
 	public void buildTaskManager();
 	
-	public void update(Task task);
+	public void update(TaskLike task);
 	
 	public boolean isGUI();
 	
@@ -72,5 +76,9 @@ public interface UI{
 	public void error(String message, Throwable t);
 
 	public void error(String message);
+	
+	public TaskStack getTasker();
+	
+	public void setTasker(TaskStack stack);
 	
 }

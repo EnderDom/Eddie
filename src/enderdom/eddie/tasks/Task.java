@@ -2,7 +2,6 @@ package enderdom.eddie.tasks;
 
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -13,7 +12,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.bio.interfaces.BioFileType;
+import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.cli.LazyPosixParser;
 
 import enderdom.eddie.tools.Tools_CLI;
@@ -22,17 +21,12 @@ import enderdom.eddie.tools.bio.Tools_Bio_File;
 import enderdom.eddie.ui.TaskManager;
 import enderdom.eddie.ui.UI;
 
-public abstract class Task implements Runnable, Future<Object> {
+public abstract class Task implements TaskLike {
 
 	private int id;
 	private boolean core;
 	private TaskManager manager;
 	protected int complete;
-	public static int unstarted = -1;
-	public static int started = 0;
-	public static int finished = 1;
-	public static int cancelled = 2;
-	public static int error = 3;
 	public Options options;
 	public boolean helpmode;
 	protected boolean testmode;
@@ -86,9 +80,7 @@ public abstract class Task implements Runnable, Future<Object> {
 		CommandLineParser parser = new LazyPosixParser();
 		try {
 			CommandLine cmd = parser.parse(getOptions(), args);
-			if(cmd.hasOption("test")){
-				testmode =true;
-			}
+
 			if(cmd.hasOption("p")){
 				this.password = cmd.getOptionValue("p");
 			}
@@ -207,7 +199,6 @@ public abstract class Task implements Runnable, Future<Object> {
 	public void buildOptions(){
 		options = new Options();
 		options.addOption(new Option("opts", false, "Help Menu for this specific task"));
-		options.addOption(new Option("test", false, "Runs any test for this task"));
 		options.addOption(new Option("p", "password", true, "Add a password to a task if it is needed"));
 	}
 	

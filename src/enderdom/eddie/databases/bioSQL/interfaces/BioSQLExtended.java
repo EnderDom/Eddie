@@ -3,6 +3,7 @@ package enderdom.eddie.databases.bioSQL.interfaces;
 import java.sql.Date;
 import java.util.HashMap;
 
+import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.databases.bioSQL.psuedoORM.BioSequence;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
 import enderdom.eddie.databases.manager.DatabaseManager;
@@ -20,8 +21,6 @@ public interface BioSQLExtended {
 	public static String runtable = "run";
 
 	public boolean addEddie2Database(DatabaseManager dbman);
-
-	
 	
 	/**
 	 * Returns the database version from the 'info' tool
@@ -70,5 +69,16 @@ public interface BioSQLExtended {
 	public BioSequence[] getBioSequences(DatabaseManager manager, int bioentry_id);
 	
 	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String version, String dbname, String params, String comment);
+
+	/**
+	 * Retrieve some contig names attached to the run of id 'r'
+	 * returns 'i' amount of names as a String[]
+	 * @param r
+	 * @param i
+	 * @return String[] of length i
+	 */
+	public String[] getContigNames(DatabaseManager manager, int r, int i);
+
+	public SequenceList getContigsAsFasta(DatabaseManager manager, SequenceList l, int i);
 	
 }

@@ -8,15 +8,12 @@ import org.apache.log4j.Logger;
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
-import enderdom.eddie.tasks.Task;
+import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.ui.EddiePropertyLoader;
-import enderdom.eddie.ui.UI;
 
-public class Task_BioSQLDB extends Task{
+public class Task_BioSQLDB extends TaskXT{
 
-	private UI ui;
-	private Logger logger = Logger.getRootLogger();
 	private boolean setup;
 	private String table;
 	
@@ -34,7 +31,6 @@ public class Task_BioSQLDB extends Task{
 		super.buildOptions();
 		options.addOption(new Option("setup", false, "Perform default setup"));
 		options.addOption(new Option("table", true,  "Add a specific non-biosql table or table mod, use -table list for list of tables"));
-		options.getOption("test").setDescription("Test the database connection");
 	}
 	
 	public Options getOptions(){
@@ -100,14 +96,7 @@ public class Task_BioSQLDB extends Task{
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
 	    setComplete(finished);
 	}
-	
-	public boolean wantsUI(){
-		return true;
-	}
-	
-	public void addUI(UI ui){
-		this.ui = ui;
-	}
+
 	
 	public static boolean canProceedwithSetup(DatabaseManager manager){
 		manager.createAndOpen();
@@ -186,29 +175,4 @@ public class Task_BioSQLDB extends Task{
 		return false;
 	}
 	
-	protected void runTest(){
-		System.out.println("");
-		System.out.println("--TEST MODE--");
-		System.out.println("");
-		System.out.println("Initialising Database Manager");
-		DatabaseManager manager = new DatabaseManager(ui, password);
-		System.out.println("Opening default connection...");
-		boolean com = manager.open();
-		if(!com)System.out.println("Failed to connect to the database");
-		if(com){
-			System.out.println("Successfully connected to database");
-			double d = manager.getBioSQLXT().getDatabaseVersion(manager);
-			if(d != -1){
-				System.out.println("Although connection established, the database version could not be ascertained");
-			}
-			else{
-				System.out.println("This database appears to be the correct version for eddie");
-			}
-			System.out.println("Closing database manager...");
-			com= manager.close();
-			if(com)System.out.println("Successfully closed the database manager");
-			if(!com)System.out.println("Failed to close manager?");
-		}
-		
-	}
 }

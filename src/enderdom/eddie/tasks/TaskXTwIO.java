@@ -4,7 +4,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.bio.interfaces.BioFileType;
+import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.ui.UI;
 
 /*
@@ -78,7 +78,7 @@ public class TaskXTwIO extends TaskXT{
 		super.buildOptions();
 		options.addOption(new Option("i", "input", true, "Input"));
 		options.addOption(new Option("o", "output", true, "Output"));
-		options.addOption(new Option("w", "overwrite", false, "Overwrite output if it exists"));
+		options.addOption(new Option("w", false, "Overwrite output if it exists"));
 		options.addOption(new Option("filetype", true, "Force specific filetype for Input"));
 	}
 	

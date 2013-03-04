@@ -8,8 +8,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.bio.interfaces.Contig;
-import enderdom.eddie.bio.interfaces.ContigList;
+import enderdom.eddie.bio.sequence.Contig;
+import enderdom.eddie.bio.sequence.ContigList;
 
 public class ACERecordList implements ContigList{
 
@@ -72,7 +72,7 @@ public class ACERecordList implements ContigList{
 
 	public Contig getContig(String name) {
 		for(int i=0; i < records.length; i++){
-			if(records[i].getConsensus().getName().contentEquals(name)){
+			if(records[i].getConsensus().getIdentifier().contentEquals(name)){
 				return records[i];
 			}
 		}
@@ -85,14 +85,14 @@ public class ACERecordList implements ContigList{
 
 	public String[] getContigNames() {
 		String[] names = new String[records.length];
-		for(int i =0; i < names.length ;i++)names[i]=records[i].getConsensus().getName();
+		for(int i =0; i < names.length ;i++)names[i]=records[i].getConsensus().getIdentifier();
 		return names;
 	}
 
 	public LinkedHashMap<String, String> getConsensusAsMap() {
 		LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
 		for(int i =0; i < records.length;i++){
-			map.put(records[i].getConsensus().getName(), records[i].getConsensus().getSequence());
+			map.put(records[i].getConsensus().getIdentifier(), records[i].getConsensus().getSequence());
 		}
 		return map;
 	}

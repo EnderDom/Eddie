@@ -16,7 +16,10 @@ import enderdom.eddie.tools.Tools_Array;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Contig;
+import enderdom.eddie.bio.sequence.GenericSequence;
+import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
+import enderdom.eddie.databases.bioSQL.psuedoORM.BasicBioSequence;
 import enderdom.eddie.databases.bioSQL.psuedoORM.BioSequence;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
 import enderdom.eddie.databases.manager.DatabaseManager;
@@ -126,6 +129,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			  	"program VARCHAR(40) BINARY NOT NULL, " +
 			  	"version VARCHAR(40) BINARY, " +
 			  	"dbname VARCHAR(40) BINARY, " +
+			  	"source VARCHAR(80) BINARY, " +
 			  	"params TEXT, " +
 			  	"comment TEXT, " +
 			 	"PRIMARY KEY (run_id)" +
@@ -476,7 +480,8 @@ public class MySQL_Extended implements BioSQLExtended{
 			else assemblySET.setInt(5, 0);
 			assemblySET.setInt(6, start);
 			assemblySET.setInt(7, stop);
-			return assemblySET.execute();
+			assemblySET.execute();
+			return true;
 		} 
 		catch(SQLException e){
 			logger.error("Failed to insert assembly data into database", e);
@@ -530,15 +535,15 @@ public class MySQL_Extended implements BioSQLExtended{
 	
 	public BioSequence[] getBioSequences(DatabaseManager manager, int bioentry_id){
 		String sql = "SELECT version, length, alphabet, seq FROM biosequence WHERE bioentry_id=?";
-		LinkedList<BioSequence> biosequences = new LinkedList<BioSequence>();
+		LinkedList<BasicBioSequence> biosequences = new LinkedList<BasicBioSequence>();
 		try {
 			bioSequenceGET = MySQL_BioSQL.init(manager.getCon(), bioSequenceGET, sql);
 			bioSequenceGET.setInt(1, bioentry_id);
 			set = bioSequenceGET.executeQuery();
 			while(set.next()){
-				biosequences.add(new BioSequence(bioentry_id, set.getInt(1), set.getInt(2), set.getString(3), set.getString(4)));
+				biosequences.add(new BasicBioSequence(bioentry_id, set.getInt(1), set.getInt(2), set.getString(3), set.getString(4)));
 			}
-			return biosequences.toArray(new BioSequence[0]);
+			return biosequences.toArray(new BasicBioSequence[0]);
 		} 
 		catch(SQLException e){
 			logger.error("Failed to insert assembly data into database", e);
@@ -602,7 +607,8 @@ public class MySQL_Extended implements BioSQLExtended{
 			else dbxrefGET.setNull(11, Types.INTEGER);
 			if(bioentry_frame != null) dbxrefGET.setInt(12, bioentry_frame);
 			else dbxrefGET.setNull(12, Types.INTEGER);
-			return dbxrefGET.execute();
+			dbxrefGET.execute();
+			return true;
 		} 
 		catch (SQLException e) {
 			logger.error("Failed to add bioentry_dbxref entry", e);
@@ -636,4 +642,53 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 	}
 
+	public String[] getContigNames(DatabaseManager manager, int r, int i) {
+		String sql = new String("SELECT bioentry.accession FROM assembly INNER JOIN bioentry ON " +
+				"bioentry.bioentry_id=assembly.contig_bioentry_id WHERE assembly.run_id="+r+" LIMIT 0,"+i);
+		Statement st;
+		String[] ress = new String[i];
+		try {
+			st = manager.getCon().createStatement();
+			set = st.executeQuery(sql);
+			int c =0;
+			while(set.next()){
+				ress[c] = set.getString(1);
+				c++;
+			}
+			st.close();
+		} 
+		catch (SQLException e) {
+			logger.error(e);
+		}
+		return ress;
+	}
+
+	public SequenceList getContigsAsFasta(DatabaseManager manager, SequenceList l, int i) {
+		String sql;
+		Statement st;
+		if( i < 0){
+			sql = "SELECT bioentry.bioentry_id, bioentry.identifier, seq FROM biosequence INNER JOIN bioentry ON bioentry.bioentry_id=biosequence.bioentry_id WHERE division='CONTIG'";
+		}
+		else{
+			sql = "SELECT bioentry.bioentry_id, bioentry.identifier, seq FROM biosequence INNER JOIN bioentry ON bioentry.bioentry_id=biosequence.bioentry_id " +
+					"INNER JOIN assembly ON bioentry.bioentry_id=assembly.contig_bioentry_id WHERE division='CONTIG' AND run_id="+i;
+		}
+		try {
+			st = manager.getCon().createStatement();
+			set = st.executeQuery(sql);
+			while(set.next()){
+				l.addSequenceObject(new GenericSequence(set.getString(2), set.getString(3)));
+			}
+			System.out.println();
+			st.close();
+		} 
+		catch (SQLException e) {
+			logger.error(e);
+		}
+		
+		return l;
+	}
+	
+	
+	
 }

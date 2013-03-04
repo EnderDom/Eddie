@@ -4,10 +4,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.fasta.Fasta;
-import enderdom.eddie.bio.interfaces.BioFileType;
-import enderdom.eddie.bio.interfaces.SequenceList;
-import enderdom.eddie.bio.interfaces.UnsupportedTypeException;
+import enderdom.eddie.bio.sequence.BioFileType;
+import enderdom.eddie.bio.sequence.SequenceList;
+import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
 
 public class SequenceListFactory {
@@ -55,6 +56,14 @@ public class SequenceListFactory {
 					f = new Fasta();
 					f.loadFile(i, filetype);
 					return f;
+				case ACE:
+					f = new Fasta();
+					ACEFileParser parser = new ACEFileParser(new File(input));
+					while(parser.hasNext()){
+						f.addSequenceObject(parser.next().getConsensus());
+					}
+					return f;
+				//case SAM://TODO this method	
 				default:
 				throw new UnsupportedTypeException("You are trying to get a sequence list from " 
 						+ filetype.toString() + " which is not yet supported");	

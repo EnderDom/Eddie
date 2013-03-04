@@ -66,6 +66,7 @@ public class Checklist {
 	private File lasttask;
 	private String comment;
 	private boolean recover;
+	private boolean completed;
 	
 	public Checklist(String workspacea, String tasknamea){
 		this.taskname = tasknamea;
@@ -178,20 +179,25 @@ public class Checklist {
 	 * @param Input to be saved
 	 * @return whether saved or not
 	 */
-	public boolean update(String line){
+	public synchronized boolean update(String line){
 		logger.trace("Checklist updated");
 		return Tools_File.quickWrite(line+Tools_System.getNewline(), task, true);
 	}
+	
 	
 	public boolean complete(){
 		/*
 		 * Probably not necessary, but in the event delete permissions
 		 * and write permissions are not equivalent.
 		 */
-		logger.debug("Checklist completed");
-		String write = "</DATA>"+Tools_System.getNewline()+"<END>"+Tools_System.getDateNow()+"</END>"+Tools_System.getNewline();
-		Tools_File.quickWrite(write, task, true);
-		return task.delete();
+		if(!completed){
+			logger.debug("Checklist completed");
+			String write = "</DATA>"+Tools_System.getNewline()+"<END>"+Tools_System.getDateNow()+"</END>"+Tools_System.getNewline();
+			Tools_File.quickWrite(write, task, true);
+			completed = true;
+			return task.delete();
+		}
+		return true;
 	}
 	
 	//TODO FIX ASAP!!

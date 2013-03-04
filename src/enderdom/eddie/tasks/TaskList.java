@@ -7,6 +7,7 @@ import enderdom.eddie.tasks.bio.Task_BioTools;
 import enderdom.eddie.tasks.bio.Task_BlastAnalysis;
 import enderdom.eddie.tasks.bio.Task_BlastLocal;
 import enderdom.eddie.tasks.bio.Task_Convert;
+import enderdom.eddie.tasks.bio.Task_ESTScan;
 import enderdom.eddie.tasks.bio.Task_Fasta_Tools;
 import enderdom.eddie.tasks.bio.Task_UniVec;
 import enderdom.eddie.tasks.bio.Task_WebInterPro;
@@ -83,10 +84,10 @@ public class TaskList {
 			tasks[1][6] = "blastanalysis";
 			tasks[2][6] = "analyse fasta and blast files";
 			
-			// Empty
-			//tasks[0][7] = 
-			//tasks[1][7] = 
-			//tasks[2][7] = 
+			// ESTScan
+			tasks[0][7] = Task_ESTScan.class.getName();
+			tasks[1][7] = "estscan";
+			tasks[2][7] = "Run external ESTScan application (if installed)";
 			
 			//SQL admin tools
 			tasks[0][8] = Task_BioSQLDB.class.getName();
@@ -165,6 +166,7 @@ public class TaskList {
 					try {
 						Task t = (Task) Class.forName(tasks[0][i]).getConstructor().newInstance();
 						if(t != null){
+							t.addUI(cli);
 							cli.addTask(t);
 							return true;
 						}

@@ -3,7 +3,6 @@ package enderdom.eddie.tools.bio;
 import java.io.File;
 
 import org.apache.log4j.Logger;
-import org.biojava3.ws.alignment.qblast.BlastProgramEnum;
 
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.Tools_Task;
@@ -11,10 +10,7 @@ import enderdom.eddie.tools.Tools_Task;
 public abstract class Tools_Blast {
 
 	/* This from Eddie3 */
-	public static StringBuffer[] runLocalBlast(File blastquery, String blastprg, String blastbin, String blastdb, String blastparams, File output){
-		if(BlastProgramEnum.valueOf(blastprg.toLowerCase()) == null){
-			Logger.getRootLogger().warn("Warning, " + blastprg + " is not a standard blast program");
-		}
+	public static StringBuffer[] runLocalBlast(File blastquery, String blastprg, String blastbin, String blastdb, String blastparams, File output,boolean remote){
 		if(Tools_System.isWindows()){
 			if(blastprg.toLowerCase().indexOf("exe") == -1){
 				blastprg = blastprg + ".exe"; /*
@@ -27,7 +23,14 @@ public abstract class Tools_Blast {
 			}
 		}
 		String exec = blastbin + blastprg+ " " + blastparams + " -db " + blastdb + 
-				" -num_threads "+ Tools_System.getCPUs() + " -query " + blastquery.getPath() + " -out " +output.getPath();
+				" -query " + blastquery.getPath() + " -out " +output.getPath();
+		if(!exec.contains("-num_threads") && !remote){
+			exec+=" -num_threads "+ Tools_System.getCPUs();
+		}
+		if(remote){
+			exec+=" -remote";
+		}
+
 		StringBuffer[] buffer = Tools_Task.runProcess(exec, true);
 		return buffer;
 	}
