@@ -146,10 +146,10 @@ public class GenericSequence implements SequenceObject{
 			this.sequence = this.sequence.substring(start, end);
 			if(this.quality != null) this.quality = this.quality.substring(start, end);
 		}
-		
 		if(this.quality != null){
 			if(!qualCheck()){
-				Logger.getRootLogger().error("Quality Check Failed, Sequence and Quality not same length for " + this.Identifier);
+				Logger.getRootLogger().error("Quality Check Failed, Sequence ("+sequence.length()+
+						"bp) and Quality ("+quality.length()+"bp) not same length for " + this.Identifier);
 			}
 		}
 	}
@@ -233,7 +233,21 @@ public class GenericSequence implements SequenceObject{
 	}
 
 	public boolean qualCheck(){
-		return quality.length() != sequence.length();
+		return quality.length() == sequence.length();
+	}
+
+	public int getLengthAtIndex(int index) {
+		if(index > this.getLength()){
+			Logger.getRootLogger().warn("Asking for index beyond length of sequence!");
+			return this.getActualLength();
+		}
+		int ret = index;
+		for(int i =0;i < index; i++){
+			if(this.sequence.charAt(i) == '*' || this.sequence.charAt(i) == '-' ){
+				ret--;
+			}
+		}
+		return ret;
 	}
 	
 }

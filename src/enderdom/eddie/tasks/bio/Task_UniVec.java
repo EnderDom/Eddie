@@ -18,6 +18,7 @@ import enderdom.eddie.bio.homology.blast.UniVecRegion;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.bio.sequence.SequenceObject;
+import enderdom.eddie.tasks.TaskLike;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_String;
@@ -56,12 +57,13 @@ public class Task_UniVec extends TaskXTwIO{
 		*/
 		File dir = checkOutput();
 		File file = checkInput();
-		if(file == null) return;
+		if(file == null){ this.setComplete(TaskLike.error); return;}
 		
 
 		if(xml == null){
 			if(!checkUniDB()){
 				logger.error("Failed to establish UniVec database");
+				this.setComplete(TaskLike.error);
 				return;
 			}
 			File out = Tools_File.getOutFileName(dir, file, ".xml");
@@ -91,6 +93,7 @@ public class Task_UniVec extends TaskXTwIO{
 			}
 			else{
 				logger.error("Search ran, but no outfile found at " + out.getPath());
+				this.setComplete(TaskLike.error);
 				return;
 			}
 		}
@@ -124,6 +127,7 @@ public class Task_UniVec extends TaskXTwIO{
 			}
 			else{
 				logger.error("Error loading XML file");
+				this.setComplete(TaskLike.error);
 			}
 		}
 		for(int i =0; i < outs.length ; i++){
