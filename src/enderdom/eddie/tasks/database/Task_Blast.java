@@ -45,7 +45,8 @@ public class Task_Blast extends TaskXT{
 				+Tools_System.getNewline()+"-- Share And Enjoy! --", this.options);
 	}
 	
-	public void parseArgsSub(CommandLine cmd){		
+	public void parseArgsSub(CommandLine cmd){
+		if(cmd.hasOption("db"))dbname=cmd.getOptionValue("db");
 		if(cmd.hasOption("db"))dbname=cmd.getOptionValue("db");
 		if(cmd.hasOption("i"))input=cmd.getOptionValue("i");
 		if(cmd.hasOption("f"))fuzzynames = true;
@@ -93,7 +94,7 @@ public class Task_Blast extends TaskXT{
 			return;
 		}
 		else{
-			manager = ui.getDatabaseManager();
+			manager = ui.getDatabaseManager(password);
 			try{
 				manager.open();
 				if(in.isDirectory()){

@@ -55,7 +55,7 @@ public class DatabaseManager {
 	public void setPassword(String pass){
 		this.password = pass;
 	}
-
+	
 	public boolean open() throws Exception{
 		if(openDefaultConnection(true) != null){
 			return true;
