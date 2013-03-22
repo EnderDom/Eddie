@@ -36,6 +36,17 @@ public abstract class Tools_String {
 		}
 	}
 	
+
+	public static Float parseString2Float(String sun) {
+		if(sun == null || sun.length() < 1)return null;
+		try{
+			return Float.parseFloat(sun.trim());
+		}
+		catch (NumberFormatException nfe){
+			return null;//Not a great solution
+		}
+	}
+	
 	//Splits a string into a lines of length splitsize
 	public static String splitintolines(int splitsize, String seq){
 		String newline = System.getProperty("line.separator");
@@ -218,5 +229,6 @@ public abstract class Tools_String {
 			return sb.toString();
 		}
 	}
+
 	
 }

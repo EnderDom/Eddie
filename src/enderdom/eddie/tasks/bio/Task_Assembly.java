@@ -14,6 +14,7 @@ import enderdom.eddie.bio.assembly.ACEObject;
 import enderdom.eddie.bio.assembly.ACEParser;
 import enderdom.eddie.bio.assembly.ACERecord;
 
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_Array;
 import enderdom.eddie.tools.Tools_String;
@@ -68,7 +69,7 @@ public class Task_Assembly extends TaskXTwIO{
 	}
 	
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		if(testmode)runTest();
 		else{
@@ -113,8 +114,12 @@ public class Task_Assembly extends TaskXTwIO{
 				}
 				catch (FileNotFoundException e) {
 					logger.error("No file called " + this.input,e);
+					setCompleteState(TaskState.ERROR);
+					return;
 				} catch (IOException e) {
 					logger.error("Could not parse " + this.input,e);
+					setCompleteState(TaskState.ERROR);
+					return;
 				}
 			}
 			else if(coverage){//TODO upgrade
@@ -140,10 +145,13 @@ public class Task_Assembly extends TaskXTwIO{
 					}
 					catch(Exception e){
 						logger.error("Out of Cheese Error...", e);
+						setCompleteState(TaskState.ERROR);
+						return;
 					}
 				}
 				else{
 					logger.info("Contig Name is null... not yet finished");
+					
 				}
 			}
 			else{
@@ -152,7 +160,7 @@ public class Task_Assembly extends TaskXTwIO{
 		}
 		
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 

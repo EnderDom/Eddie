@@ -14,12 +14,14 @@ import enderdom.eddie.bio.homology.blast.BlastObject;
 import enderdom.eddie.bio.homology.blast.BlastxDocumentParser;
 
 import enderdom.eddie.tasks.MapManager;
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.ui.UI;
 
+@SuppressWarnings("deprecation")
 public class Task_BlastAnalysis extends TaskXTwIO{
 	
 	private String blastfolders; //Path containing the blast files
@@ -71,7 +73,7 @@ public class Task_BlastAnalysis extends TaskXTwIO{
 	}
 	
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
 		if(contigblast){
 			init();
@@ -214,7 +216,7 @@ public class Task_BlastAnalysis extends TaskXTwIO{
 			printHelpMessage();
 		}
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 	public boolean wantsUI(){

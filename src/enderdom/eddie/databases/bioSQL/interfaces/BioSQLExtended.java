@@ -43,7 +43,7 @@ public interface BioSQLExtended {
 	
 	public boolean addAssemblyTable(DatabaseManager manager);
 	
-	public boolean addLegacyVersionTable(DatabaseManager dbman, String version, String dbversion);
+	public boolean addLegacyVersionTable(DatabaseManager dbman, String version, String dbversion) throws Exception;
 	
 	public HashMap<String, String>getContigNameNIdentifier(DatabaseManager dbman, int run_id);
 	
@@ -68,7 +68,7 @@ public interface BioSQLExtended {
 	
 	public BioSequence[] getBioSequences(DatabaseManager manager, int bioentry_id);
 	
-	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String version, String dbname, String params, String comment);
+	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String version, String dbname, String source, String params, String comment);
 
 	/**
 	 * Retrieve some contig names attached to the run of id 'r'

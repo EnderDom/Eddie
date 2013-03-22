@@ -9,6 +9,7 @@ import org.biojava3.ws.alignment.qblast.NCBIQBlastAlignmentProperties;
 import org.biojava3.ws.alignment.qblast.NCBIQBlastOutputProperties;
 
 import enderdom.eddie.bio.homology.blast.NCBIQBlastServiceXT;
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_System;
@@ -20,7 +21,7 @@ public class Task_BlastWeb extends TaskXTwIO{
 	}
 	
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
 		File in = new File(input);
 		if(in.isFile()){
@@ -31,7 +32,7 @@ public class Task_BlastWeb extends TaskXTwIO{
 			logger.error("File stated as input is not file");
 		}
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 	public void buildOptions(){

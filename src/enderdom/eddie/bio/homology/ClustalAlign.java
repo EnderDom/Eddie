@@ -25,7 +25,10 @@ import enderdom.eddie.bio.sequence.UnsupportedTypeException;
  */
 public class ClustalAlign extends BasicSequenceList{
 
+	//TODO implement contig
 	private String line;
+	public static int clustallen = 60;
+	public static int whitespace =6;
 	
 	public ClustalAlign(File file, BioFileType type) throws UnsupportedTypeException, Exception{
 		loadFile(file, type);
@@ -34,11 +37,19 @@ public class ClustalAlign extends BasicSequenceList{
 	public ClustalAlign(InputStream in, BioFileType type) throws UnsupportedTypeException, Exception{
 		loadFile(in, type);
 	}
+	
+	public ClustalAlign(){
+		
+	}
 
 	public String[] saveFile(File file, BioFileType filetype) throws Exception,
 			UnsupportedTypeException {
-		logger.error("Not yet implemented");
-		return null;
+		if(filetype == BioFileType.CLUSTAL_ALN){
+			return null;
+		}
+		else{
+			throw new Exception("Can't save Clustal as " + filetype.toString());
+		}
 	}
 
     private boolean lineIsRelevant() {

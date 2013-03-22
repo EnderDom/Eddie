@@ -55,13 +55,14 @@ public class MySQL_Extended implements BioSQLExtended{
 	 */ 
 	 /******************************************************************/
 	
-	/**
+	/*
 	 * Table for compatibility with previous versions of db
 	 * 
 	 * Yes I know storing versioning as a varchar is a bit of
 	 * a wtf.
+	 *
 	 */
-	public boolean addLegacyVersionTable(DatabaseManager manager, String version, String dbversion) {
+	public boolean addLegacyVersionTable(DatabaseManager manager, String version, String dbversion) throws Exception {
 		String info_table = "CREATE TABLE IF NOT EXISTS info ("+
 		  "Numb INT(11) NOT NULL auto_increment,"+
 		  "DerocerasVersion VARCHAR(30),"+
@@ -235,7 +236,9 @@ public class MySQL_Extended implements BioSQLExtended{
 				"ALTER TABLE bioentry_dbxref ADD COLUMN (bioentry_startpos INT);",
 				"ALTER TABLE bioentry_dbxref ADD COLUMN (bioentry_endpos INT);",
 				"ALTER TABLE bioentry_dbxref ADD COLUMN (bioentry_frame TINYINT);",
-				"CREATE INDEX bioentry_dbxref_evalue ON bioentry_dbxref(evalue);"
+				"CREATE INDEX bioentry_dbxref_evalue ON bioentry_dbxref(evalue);",
+				"ALTER TABLE bioentry_dbxref DROP PRIMARY KEY, ADD PRIMARY KEY (bioentry_id,dbxref_id,rank);",
+				"ALTER TABLE bioentry_dbxref ADD CONSTRAINT FKdbxref_bioentry_run FOREIGN KEY (run_id) REFERENCES run(run_id) ON DELETE CASCADE;"
 		};
 		try{
 			Statement st = manager.getCon().createStatement();
@@ -301,6 +304,10 @@ public class MySQL_Extended implements BioSQLExtended{
 			if(r.startsWith("v")){
 				b = Tools_String.parseString2Double(r.substring(1));
 			}
+			else{
+				b = Tools_String.parseString2Double(r);
+			}
+			
 			if(b == null){
 				return -1;
 			}
@@ -429,8 +436,9 @@ public class MySQL_Extended implements BioSQLExtended{
 			}
 		}
 		else{
-			logger.debug("Entry retrieved without fuzziness required");
+			logger.trace("Entry retrieved without fuzziness required");
 		}
+		if(entry==0)return -1;
 		return entry;
 	}
 	
@@ -580,11 +588,12 @@ public class MySQL_Extended implements BioSQLExtended{
 	 * @param bioentry_frame
 	 * @return boolean , false if execute failed or sql exception thrown 
 	 */
-	public boolean setDbxref(DatabaseManager manager, int bioentry_id, int run_id, int dbxref_id, int rank, Double evalue, Integer score, Integer dbxref_startpos,
+	public boolean setDbxref(DatabaseManager manager, int bioentry_id,  int dbxref_id, int run_id, int rank, Double evalue, Integer score, Integer dbxref_startpos,
 		Integer dbxref_endpos,Integer dbxref_frame, Integer bioentry_startpos,Integer bioentry_endpos,Integer bioentry_frame){
 		String sql = "INSERT INTO bioentry_dbxref (bioentry_id, dbxref_id, run_id, rank, evalue,score, dbxref_startpos,"+
 			"dbxref_endpos, dbxref_frame, bioentry_startpos, bioentry_endpos, bioentry_frame) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 		try {
+			//System.out.println(bioentry_id);
 			dbxrefGET = MySQL_BioSQL.init(manager.getCon(), dbxrefGET, sql);
 			dbxrefGET.setInt(1, bioentry_id);
 			dbxrefGET.setInt(2, dbxref_id);
@@ -617,9 +626,10 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 
 	
-	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String version, String dbname, String params, String comment){		
+	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String version, String dbname, String source, String params, String comment){		
 		try{
-			runSET = MySQL_BioSQL.init(manager.getCon(), runSET, "INSERT INTO run (run_date, runtype, program, version, dbname, params, comment) VALUES (?,?,?,?,?,?,?);");
+			runSET = MySQL_BioSQL.init(manager.getCon(), runSET, "INSERT INTO run " +
+					"(run_date, runtype, program, version, dbname, source, params, comment) VALUES (?,?,?,?,?,?,?,?);");
 			runSET.setDate(1, date);
 			runSET.setString(2, runtype);
 			runSET.setString(3, program);
@@ -627,10 +637,12 @@ public class MySQL_Extended implements BioSQLExtended{
 			else runSET.setString(4, version);
 			if(dbname == null)runSET.setNull(5, Types.VARCHAR);
 			else runSET.setString(5, dbname);
-			if(params == null)runSET.setNull(6, Types.VARCHAR);
-			else runSET.setString(6, params);
-			if(comment == null)runSET.setNull(7, Types.VARCHAR);
-			else runSET.setString(7, comment);
+			if(dbname == null)runSET.setNull(6, Types.VARCHAR);
+			else runSET.setString(6, source);
+			if(params == null)runSET.setNull(7, Types.VARCHAR);
+			else runSET.setString(7, params);
+			if(comment == null)runSET.setNull(8, Types.VARCHAR);
+			else runSET.setString(8, comment);
 			
 			logger.trace("Attempting to execute " + runSET.toString());
 			runSET.execute();

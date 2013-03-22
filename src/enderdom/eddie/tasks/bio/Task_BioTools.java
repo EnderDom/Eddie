@@ -11,6 +11,7 @@ import enderdom.eddie.databases.manager.DatabaseManager;
 import enderdom.eddie.bio.sequence.GenericSequence;
 import enderdom.eddie.bio.sequence.SequenceObject;
 
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_String;
@@ -67,7 +68,7 @@ public class Task_BioTools extends TaskXT{
 	}
 	
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		
 		if(sequence != null);
@@ -91,7 +92,7 @@ public class Task_BioTools extends TaskXT{
 			}
 		}
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 }

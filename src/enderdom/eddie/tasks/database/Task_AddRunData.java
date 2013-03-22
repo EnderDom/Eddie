@@ -6,6 +6,7 @@ import org.apache.commons.cli.Option;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_System;
 
@@ -52,14 +53,15 @@ public class Task_AddRunData extends TaskXT{
 	 */
 	
 	public void run(){
+		setCompleteState(TaskState.STARTED);
 		if(password == null){
 			manager = this.ui.getDatabaseManager();
 		}
 		else{
 			manager = this.ui.getDatabaseManager(password);
 		}
-		
-		if(manager.open()){
+		try{
+			manager.open();
 			if(this.list){
 				System.out.println(run.list(manager));
 			}
@@ -72,9 +74,11 @@ public class Task_AddRunData extends TaskXT{
 				}
 			}
 		}
-		else{
-			logger.error("Failed to open database connection");
+		catch(Exception e){
+			logger.error("Failed to open database " , e);
+			setCompleteState(TaskState.ERROR);
 		}
+		setCompleteState(TaskState.FINISHED);
 	}
 	
 	

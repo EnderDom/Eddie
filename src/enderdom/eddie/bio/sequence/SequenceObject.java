@@ -154,4 +154,5 @@ public interface SequenceObject{
 	 * @return integer representing the actual length here
 	 */
 	public int getLengthAtIndex(int index);
+	
 }

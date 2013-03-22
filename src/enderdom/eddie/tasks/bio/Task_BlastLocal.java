@@ -2,8 +2,8 @@ package enderdom.eddie.tasks.bio;
 
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Properties;
+import java.util.Stack;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -12,11 +12,9 @@ import org.biojava3.ws.alignment.qblast.BlastProgramEnum;
 
 import enderdom.eddie.bio.factories.SequenceListFactory;
 import enderdom.eddie.bio.sequence.SequenceList;
-import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 
-import enderdom.eddie.tasks.BasicTaskStack;
 import enderdom.eddie.tasks.Checklist;
-import enderdom.eddie.tasks.TaskStack;
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tasks.subtasks.SubTask_Blast;
 import enderdom.eddie.tools.Tools_File;
@@ -120,7 +118,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 	}
 
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
 		this.checklist = openChecklist(ui);
 		if(input != null && output != null && !err){
@@ -135,10 +133,8 @@ public class Task_BlastLocal extends TaskXTwIO{
 					logger.debug("About to start running blasts");
 					runAutoBlast(out, checklist);
 				}
-				catch(IOException io){
+				catch(Exception io){
 					logger.error(io);
-				} catch (UnsupportedTypeException e) {
-					logger.error(e);
 				}
 			}
 			else{
@@ -149,7 +145,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 			logger.error("Null input/output");
 		}
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 	public boolean isKeepArgs(){
@@ -172,21 +168,20 @@ public class Task_BlastLocal extends TaskXTwIO{
 			logger.warn("Are you sure " + blast_prg + " is a program?");
 		}	
 		
-		//TODO add option to use central server, thus 'sort of' allow parallelisation
-		TaskStack stack = new BasicTaskStack();
+		//Stack, shoud.... be synchronized
+		Stack<String> stack = new Stack<String>();
 		int i=0;
 		for(String s : sequences.keySet()){
 			stack.push(s);
 			i++;
 		}
 		logger.debug(i+" sequences to blast, adding to TaskManager");
-		ui.setTasker(stack);
-		SubTask_Blast blast = new SubTask_Blast(sequences, ui.getTasker(), false, list, this.output, this.clipname);
+		SubTask_Blast blast = new SubTask_Blast(sequences, stack, false, list, this.output, this.clipname);
 		blast.setBlastDetails(blast_prg, blast_bin, blast_db, blastparams);
 		blast.setCore(true);
 		ui.addTaskLike(blast);
 		if(remote){
-			SubTask_Blast blast2 = new SubTask_Blast(sequences, ui.getTasker(), true, list, this.output, this.clipname);
+			SubTask_Blast blast2 = new SubTask_Blast(sequences, stack, true, list, this.output, this.clipname);
 			String db = FilenameUtils.getBaseName(blast_db);
 			logger.info("Database was trimmed to " + blast_db + " for the remote");
 			blast2.setBlastDetails(blast_prg, blast_bin, db, blastparams);

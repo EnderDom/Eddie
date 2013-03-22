@@ -13,6 +13,7 @@ import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
 import enderdom.eddie.bio.sequence.BioFileType;
 
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
@@ -47,18 +48,20 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 	}
 	
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
 		/*
 		 * Convert Fasta&qual to Fastq
 		 */
 		if(input == null || output == null){
 			logger.error("No Input/output");
+			setCompleteState(TaskState.ERROR);
 			return;
 		}
 		output = FilenameUtils.removeExtension(output);
 		if(this.inputs == null || this.inputs.length  == 0){
 			logger.error("No input files included");
+			setCompleteState(TaskState.ERROR);
 			return;
 		}
 		
@@ -121,7 +124,7 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 		}
 
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 	//TODO replace with SequenceList methods

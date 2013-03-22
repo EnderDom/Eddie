@@ -9,11 +9,9 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 
 import enderdom.eddie.bio.homology.ClustalAlign;
 import enderdom.eddie.bio.sequence.BioFileType;
@@ -26,7 +24,7 @@ public class ClustalImage extends ClustalAlign {
 	
 	//Defaults for size of image and resolution
 	public static double wdefault = 210.0; //mm
-	public static double hdefault = 300.0; //mm
+	public static double hdefault = 400.0; //mm
 	public static double ppmmdefault = Tools_Image.convertDPI2DPMM(300);
 	
 	//Defaults for arrangement of sequence
@@ -40,6 +38,10 @@ public class ClustalImage extends ClustalAlign {
 	private double width;
 	private double height;
 	private double ppmm;
+	
+	//Padding for letters in box
+	private int internalpadside =7;
+	private int internalpadtop =13;
 	
 	//Etc
 	private Font font;
@@ -97,20 +99,36 @@ public class ClustalImage extends ClustalAlign {
 		g2.setFont(getFont(fontsize));
 		int len = this.getSequence(0).getLength();
 		int heightcount=1;
-		for(int l =0; l < len-defaultbp; l+=defaultbp){
+		for(int l =0; l < len; l+=defaultbp){
+			heightcount++;
 			for(String s : this.keySet()){
+				//Draw Sequence Name
 				g2.drawString(this.getSequence(s).getIdentifier(), 2,(heightcount*boxheight)-10);
+				//Draw a box for letter
 				for(int j =0; j < defaultbp+defaultgap+defaultword;j++){
 					g2.drawRect(j*boxwidth, (heightcount-1)*boxheight, boxwidth, boxheight);
 				}
+				//Draw Letter, if index outside length, don't draw
 				for(int j = 0;j < defaultbp;j++){
-					g2.drawString(this.getSequence(s).getSequence().substring(l+j, l+j+1), 
-							((j+defaultgap+defaultword)*boxwidth)+5, (heightcount*boxheight)-10);
+					if(this.getSequence(s).getSequence().length() > l+j+1){
+						
+						
+						g2.drawString(this.getSequence(s).getSequence().substring(l+j, l+j+1), 
+							((j+defaultgap+defaultword)*boxwidth)+internalpadside, (heightcount*boxheight)-internalpadtop);
+					}
 				}
-				g2.drawString(this.getSequence(s).getLengthAtIndex(l+defaultbp)+"", ((defaultbp+defaultgap+defaultword)*boxwidth)+(boxwidth/2),(heightcount*boxheight)-10);
+				//Draw Lengths at the end
+				if(this.getSequence(s).getSequence().length() > l+defaultbp){
+					g2.drawString(this.getSequence(s).getLengthAtIndex(l+defaultbp)+"", 
+							((defaultbp+defaultgap+defaultword)*boxwidth)+(boxwidth/2),(heightcount*boxheight)-10);
+				}
+				else{
+					g2.drawString(this.getSequence(s).getActualLength()+"", 
+							((defaultbp+defaultgap+defaultword)*boxwidth)+(boxwidth/2),(heightcount*boxheight)-10);
+				}
+				//Increase The row count
 				heightcount++;
 			}
-			heightcount++;
 		}
 		try {
 			Tools_Image.saveImageDPMM(f, image, ppmm);

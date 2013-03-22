@@ -161,7 +161,7 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 	protected boolean startLog() {
 		String slash = Tools_System.getFilepathSeparator();
 		File logfolder = new File(getValue("WORKSPACE")+ slash + "logs");
-		preLog("Initialising Log...");
+		preLog("Initialising Log at  "+logfolder+"...");
 		if (logfolder.isFile()) {
 			System.out.println("Failed To log is standard location!!");
 			int i = 0;

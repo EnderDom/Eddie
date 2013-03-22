@@ -469,7 +469,7 @@ public class MySQL_BioSQL implements BioSQL{
 	public int getDBxRef(Connection con, String dbname, String accession){
 		int i =-1;
 		try{
-			DBxrefGET = init(con, DBxrefSET, "SELECT dbxref_id FROM dbxref WHERE dbname=? AND accession=?)");
+			DBxrefGET = init(con, DBxrefGET, "SELECT dbxref_id FROM dbxref WHERE dbname=? AND accession=?");
 			DBxrefGET.setString(1, dbname);
 			DBxrefGET.setString(2, accession);
 			set = DBxrefGET.executeQuery();
@@ -479,7 +479,7 @@ public class MySQL_BioSQL implements BioSQL{
 			return i; 
 		} 
 		catch(SQLException sq){
-			logger.error("Failed to add location ", sq);
+			logger.error("Failed to get location "+DBxrefGET.toString(), sq);
 			return -1;
 		}
 	}

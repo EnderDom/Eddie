@@ -30,7 +30,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
      * though this one has been written from scratch
      */
     public static int engineversion = 4;
-    public static double subversion = 0.38;
+    public static double subversion = 0.41;
     public static String edition = "Development";
     public String[] actions;
 	
@@ -116,7 +116,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 			buildOptions();
 		}
 		HelpFormatter help = new HelpFormatter();
-		help.printHelp("ls", "-- Eddie v"+subversion+" Help Menu --", options, "-- Share And Enjoy! --");
+		help.printHelp("ls", "-- Eddie v"+engineversion+subversion+" Help Menu --", options, "-- Share And Enjoy! --");
 		System.out.println();
 		System.out.println("Use -task for list of command line tasks");
 		System.out.println("Use -task taskname -opts for that task's helpmenu");
@@ -182,14 +182,16 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				"BLAST_BIN_DIR","BLAST_DB_DIR", "ESTSCAN_BIN", 
 				"FILES_XML","PREFLNF","TESTDATADIR",
 				"DBTYPE","DBDRIVER","DBHOST", 
-				"DBNAME", "DBUSER","UNI_VEC_DB", "UNIVEC_URL"
+				"DBNAME", "DBUSER","UNI_VEC_DB", "UNIVEC_URL",
+				"MAXERRORPERC", "IPRSCAN_BIN"
 				 };
 		defaultvalues = new String[]{
 				propfile.getParent(), "5", "1", 
 				"/usr/bin/", "/home/dominic/bioapps/blast/db/", "/usr/bin/ESTScan",
 				"null", defaultlnf, propfile.getParent()+slash+"test", 
 				"mysql","com.mysql.jdbc.Driver", "Localhost", 
-				DatabaseManager.default_database, "user", "","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec"
+				DatabaseManager.default_database, "user", "","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec",
+				"0.1", "/usr/bin/iprscan"
 				};
 		defaulttooltips = new String[]{
 				"Default Workspace directory", "Number of threads for core tasks (High CPU)", 
@@ -197,7 +199,8 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				"Directory path containing blast databases", "Path for ESTscan binary", "Path for file to store file locations",
 				"Preferred Look & Feel", "Directory Path for test data", "Database type, ie mysql", "Database driver",
 				"Database host url", "Database name for Eddie", "Database user name", "Location of uni vec database",
-				"Default URL to download the fasta for univec data"
+				"Default URL to download the fasta for univec data", "Maxium percentage of errors before task cancelled (0<x<1)",
+				"Location of local iprscan binary"
 		};
 		
 		if(defaultkeys.length != defaultvalues.length)System.out.println("You're being derp Dominic :(");

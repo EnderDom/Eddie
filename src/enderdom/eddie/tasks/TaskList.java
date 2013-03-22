@@ -9,6 +9,7 @@ import enderdom.eddie.tasks.bio.Task_BlastLocal;
 import enderdom.eddie.tasks.bio.Task_Convert;
 import enderdom.eddie.tasks.bio.Task_ESTScan;
 import enderdom.eddie.tasks.bio.Task_Fasta_Tools;
+import enderdom.eddie.tasks.bio.Task_IprscanLocal;
 import enderdom.eddie.tasks.bio.Task_UniVec;
 import enderdom.eddie.tasks.bio.Task_WebInterPro;
 import enderdom.eddie.tasks.database.Task_AddRunData;
@@ -114,10 +115,10 @@ public class TaskList {
 			tasks[1][12] = "dbtools";
 			tasks[2][12] = "tools for downloading various data from database";
 	
-			// Empty
-			//tasks[0][13] = 
-			//tasks[1][13] = 
-			//tasks[2][13] =
+			//InterProLocak
+			tasks[0][13] = Task_IprscanLocal.class.getName(); 
+			tasks[1][13] = "iprscanlocal"; 
+			tasks[2][13] = "Run Iprscan, locally, with ability to split files and record progress";
 			
 			//Contig Comparison
 			tasks[0][14] = Task_UniVec.class.getName();

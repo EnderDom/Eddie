@@ -33,7 +33,6 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 	private boolean fastq;
 	int iteration =0;
 	
-	
 	public Fasta(){
 		sequences = new LinkedHashMap<String, SequenceObject>();
 	}
@@ -47,15 +46,13 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 			SequenceObject o = sequences.get(title);
 			o.setSequence(sequence);
 			sequences.put(title, o);
-			int l1 =0;int l2 =0;
-			if((l1=sequence.length()) != (l2=sequences.get(title).getQuality().length())){
-				logger.error("Sequence length "+l1+" and Quality lentgh "+l2+" don't match for " + title);
-			}
+			lengthCheck(title);
 		}
 		else{
 			sequences.put(title, new GenericSequence(title, sequence));
 		}
 	}
+
 
 	/**
 	 * Quality must be fastq
@@ -67,15 +64,27 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 			SequenceObject o = sequences.get(title);
 			o.setQuality(quality);
 			sequences.put(title, o);
-			int l1 =0;int l2=0;
-			if((l1=sequences.get(title).getSequence().length()) != (l2=quality.length())){
-				logger.error("Sequence length "+l1+" and Quality length "+l2+" don't match for " + title);
-			}
+			lengthCheck(title);
 		}
 		else{
 			SequenceObject o = new GenericSequence(title);
 			o.setQuality(quality);
 			sequences.put(title, o);
+		}
+	}
+	
+	/**
+	 * Checks that sequence length and quality are the same length, 
+	 * but doesn't throw an error, just logs an error
+	 * 
+	 * @param title
+	 */
+	private void lengthCheck(String title){
+		if(sequences.get(title).getQuality()!=null && sequences.get(title).getSequence() != null){
+			int l1 =0;int l2 =0;
+			if((l1=sequences.get(title).getSequence().length()) != (l2=sequences.get(title).getQuality().length())){
+				logger.error("Sequence length "+l1+" and Quality lentgh "+l2+" don't match for " + title);
+			}
 		}
 	}
 

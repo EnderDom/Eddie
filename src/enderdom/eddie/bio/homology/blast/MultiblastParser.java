@@ -3,6 +3,7 @@ package enderdom.eddie.bio.homology.blast;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Hashtable;
 import java.util.Iterator;
 
 import javax.xml.stream.XMLStreamException;
@@ -21,7 +22,7 @@ import org.codehaus.stax2.XMLStreamReader2;
  * 
  */
 
-public class MultiblastParser implements Iterator<BlastObject>{
+public class MultiblastParser implements Iterator<BlastObject>, BlastParser{
 
 	private Logger logger = RootLogger.getRootLogger();
 	private static String iteration = "Iteration";
@@ -37,8 +38,10 @@ public class MultiblastParser implements Iterator<BlastObject>{
 	public int blasttype = 0;
 	public static int BASICBLAST =0;
 	public static int UNIVEC =1;
+	public Hashtable<String, String> parserCache;
 	
 	public MultiblastParser(int blastype, File xml) throws Exception{
+		parserCache = new Hashtable<String, String>();
 		this.blasttype = blastype;
 		XMLInputFactory2 f = (XMLInputFactory2) XMLInputFactory2.newInstance();
 	    f.setProperty(XMLInputFactory2.SUPPORT_DTD, Boolean.FALSE);
@@ -80,11 +83,12 @@ public class MultiblastParser implements Iterator<BlastObject>{
 		try {
 			while(stream.hasNext()){
 			    i= stream.next();
+
 				if(stream.isStartElement()){
 					tag = stream.getName().toString();
 					if(tag.equals(iteration)){
-						if(this.blasttype == UNIVEC) current = new UniVecBlastObject();
-						else current = new BasicBlastObject();	
+						if(this.blasttype == UNIVEC) current = new UniVecBlastObject(this);
+						else current = new BasicBlastObject(this);	
 					}
 					else if(tag.startsWith("Hit")){
 						if(tag.equals("Hit"))hits++;
@@ -96,10 +100,16 @@ public class MultiblastParser implements Iterator<BlastObject>{
 						else if(this.checkElementHasText())current.putHspTag(hsps, hits, tag, getElementText());
 					}
 					else if(tag.startsWith("Statistics_")){
-						if(this.checkElementHasText())current.putIterationTag(tag, getElementText());
+						if(this.checkElementHasText())this.put(tag, getElementText());
 					}
-					else if(tag.equals("Iteration_iter-num") || tag.equals("Iteration_query-ID") || tag.equals("Iteration_query-def") || tag.equals("Iteration_query-len")){
-						if(this.checkElementHasText())current.putIterationTag(tag, getElementText());
+					else if(tag.equals("Iteration_iter-num") || tag.equals("Iteration_query-ID") 
+							|| tag.equals("Iteration_query-def") || tag.equals("Iteration_query-len")){
+						if(this.checkElementHasText())current.put(tag, getElementText());
+					}
+					else if(tag.startsWith("BlastOutput_") && !tag.startsWith("BlastOutput_param") && !tag.startsWith("BlastOutput_iterations")){
+						if(this.checkElementHasText()){
+							this.put(tag, this.getElementText());
+						}
 					}
 				}
 				if(stream.isEndElement()){
@@ -130,7 +140,8 @@ public class MultiblastParser implements Iterator<BlastObject>{
 		buffer = new String();
 		try{
 			buffer = stream.getElementText();
-			return true;
+			if(buffer == null) return false;
+			else return true;
 		}
 		catch(XMLStreamException e){
 			//nom nom nom
@@ -180,5 +191,13 @@ public class MultiblastParser implements Iterator<BlastObject>{
 				logger.warn("Failed to close XML stream",e);
 			}
 		}
+	}
+
+	public void put(String key, String value) {
+		this.parserCache.put(key, value);
+	}
+
+	public String get(String key) {
+		return this.parserCache.get(key);
 	}
 }

@@ -214,7 +214,8 @@ public class Tools_Sequences {
 		}
 		else if(contig != null){
 			logger.debug("Retrieving id for "+contig+" from database");
-			if(manager.open()){
+			try{
+				manager.open();
 				logger.debug("Database connection open...");
 				int bioentry = manager.getBioSQLXT().getBioEntryId(manager, contig, fuzzy, manager.getEddieDBID());
 				if(bioentry > 0){
@@ -228,8 +229,8 @@ public class Tools_Sequences {
 					logger.warn("Failed to retrieve sequence information for "+contig);
 				}
 			}
-			else{
-				logger.error("Failed to establish Database Connection");
+			catch(Exception e){
+				logger.error("Failed to establish Database Connection", e);
 			}
 		}
 		else{

@@ -22,11 +22,12 @@ public class Run {
 	private String runtype;
 	private String program;
 	private String dbname;
+	private String source;
 	private String params;
 	private String comment;
 	private String version;
 	private String[] validationErrors = {"","",""};
-	public static String[] runfields = new String[]{"run_date", "runtype", "program", "version", "dbname", "params", "comment"};
+	public static String[] runfields = new String[]{"run_date", "runtype", "program", "version", "dbname", "source", "params", "comment"};
 	
 	public Run(int r, Date t,String rt, String p, String v, String d, String a, String c){
 		run_id = r;
@@ -119,11 +120,19 @@ public class Run {
 	public String getVersion() {
 		return version;
 	}
+	
+	public String getSource(){
+		return source;
+	}
+	
+	public void setSource(String source){
+		this.source = source;
+	}
 
 	//Note, converts util.Date to sql.Date, see http://stackoverflow.com/questions/530012/how-to-convert-java-util-date-to-java-sql-date
 	public int uploadRun(DatabaseManager manager){
 		if(manager.getBioSQLXT().setRun(manager, Tools_System.util2sql(getDate()),
-				getRuntype(), getProgram(), getVersion(), getDbname(), getParams(), getComment())){
+				getRuntype(), getProgram(), getVersion(), getDbname(), getSource(), getParams(), getComment())){
 			this.run_id = manager.getLastInsert(); //This could get me into trouble.... :(
 			return run_id;
 		}
@@ -209,14 +218,15 @@ public class Run {
 	 */
 	public boolean parseRun(String inputs[]){
 		try{
-			//"run_date", "runtype", "program", "version", "dbname", "params", "comment"
+			//"run_date", "runtype", "program", "version", "dbname", "source", "params", "comment",
 			this.setDateValue(inputs[0],Tools_System.SQL_DATE_FORMAT);
 			this.setRuntype(inputs[1]);
 			this.setProgram(inputs[2]);
 			this.setVersion(inputs[3]);
 			this.setDbname(inputs[4]);
-			this.setParams(inputs[5]);
-			this.setComment(inputs[6]);
+			this.setSource(inputs[5]);
+			this.setParams(inputs[6]);
+			this.setComment(inputs[7]);
 			return this.validate();
 		}
 		catch(Exception  e){
