@@ -35,6 +35,8 @@ public class Task_BlastLocal extends TaskXTwIO{
 	private boolean clipname;
 	boolean err;
 	private boolean remote;
+	private String[] filter;
+	private int filterlen;
 	
 	public Task_BlastLocal(){
 		/*
@@ -70,6 +72,17 @@ public class Task_BlastLocal extends TaskXTwIO{
 		else if(!blastparams.contains("outfmt")){
 			blastparams +=" -outfmt 5";
 		}
+		if(cmd.hasOption("f")){
+			File f = new File(cmd.getOptionValue("f"));
+			if(f.exists()){
+				filterlen = Tools_File.countLines(f); 
+				filter = Tools_File.quickRead2Array(filterlen, f, true);
+			}
+			if(filter == null || filter.length == 0){
+				logger.error("Failed to parse filter list");
+				err = true;
+			}
+		}
 	}
 	
 	public void parseOpts(Properties props){
@@ -100,6 +113,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 		options.addOption(new Option("filetype", true, "Specify filetype (rather then guessing from ext)"));
 		options.addOption(new Option("clip", false, "Clip output file name to whitespace in input"));
 		options.addOption(new Option("remote", false, "Run remote blasts in parallel with local (WARN: Will send NCBI blast jobs)"));
+		options.addOption(new Option("-f", "-filter", true, "Blast only the sequences in this file, need to be the same as in fasta, 1 per line no spaces"));
 	}
 	
 	public void runTest(){
@@ -130,6 +144,13 @@ public class Task_BlastLocal extends TaskXTwIO{
 					if(checklist.inRecovery()){
 						trimRecovered(checklist.getData());
 					}
+					if(filter != null){
+						int j = trimRecovered(filter);
+						if(j != filterlen){
+							throw new Exception("Number of lines "
+									+"in filter file does not match the number of sequences removed");
+						}
+					}
 					logger.debug("About to start running blasts");
 					runAutoBlast(out, checklist);
 				}
@@ -152,7 +173,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 		return true;
 	}
 	
-	private void trimRecovered(String[] data){
+	private int trimRecovered(String[] data){
 		int j=0;
 		for(int i =0;i < data.length; i++){
 			if(sequences.getSequence(data[i]) != null){
@@ -161,14 +182,14 @@ public class Task_BlastLocal extends TaskXTwIO{
 			}
 		}
 		logger.debug("Removed "+j+" of "+ data.length + " from list, as previously run");
+		return j;
 	}
 	
 	public void runAutoBlast(File output, Checklist list){
 		if(BlastProgramEnum.valueOf(blast_prg) == null){
 			logger.warn("Are you sure " + blast_prg + " is a program?");
 		}	
-		
-		//Stack, shoud.... be synchronized
+		//Stack, should.... be synchronized
 		Stack<String> stack = new Stack<String>();
 		int i=0;
 		for(String s : sequences.keySet()){

@@ -69,7 +69,14 @@ public interface BioSQL {
 	 * @return if insert was successful
 	 */
 	public boolean addDBxref(Connection con, String dbname, String accession, int version);
-		
+	
+	/**
+	 * 
+	 * @param con
+	 * @param bioentry_id
+	 * @return string array with [0] = "name", [1] = "accession", [2] = "identifier"
+	 * 
+	 */
 	public String[] getBioEntryNames(Connection con, int bioentry_id);
 	
 	/**
@@ -101,8 +108,24 @@ public interface BioSQL {
 	
 	public int getLocation(Connection con, int seqfeature_id, int rank);
 	
+	/**
+	 * Retrieve bioentry_id with the name field only, this 
+	 * will return the first instance with this name only, 
+	 * whilst a warning is logged, no exception is thrown
+	 * 
+	 * @param con
+	 * @param name
+	 * @return
+	 */
 	public int getBioEntrywName(Connection con, String name);
 	
+	/**
+	 * 
+	 * @param con
+	 * @param bioentry_id
+	 * @return the 'seq' field from the biosequence table which
+	 * is attached to the bioentry_id
+	 */
 	public String getSequence(Connection con, int bioentry_id);
 	
 	public int getDBxRef(Connection con, String dbname, String accession);

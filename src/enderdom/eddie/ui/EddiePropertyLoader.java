@@ -13,6 +13,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
@@ -21,7 +22,6 @@ import enderdom.eddie.tools.Tools_System;
 
 public class EddiePropertyLoader extends BasicPropertyLoader{
 
-	//TODO hand over database properties to another class
     public static String propertyfilename = new String("eddie.properties");
     public static String infoFile = new String("eddie.info");
     public String rootfolder;
@@ -30,7 +30,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
      * though this one has been written from scratch
      */
     public static int engineversion = 4;
-    public static double subversion = 0.41;
+    public static double subversion = 0.42;
     public static String edition = "Development";
     public String[] actions;
 	
@@ -41,8 +41,6 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 	private String[] defaultkeys;
 	private String[] defaultvalues;
 	private String[] defaulttooltips;
-	
-	//These should be the index to defaultKeysUN	
 	
 	public EddiePropertyLoader(String[] args) {
 		this.props = new Properties();
@@ -56,6 +54,19 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 			parseArgs(args);
 			if(!startLog()){
 				mode = -1;
+			}
+			else{
+				Logger.getRootLogger().info("###_________NEW SESSION_________###");
+				
+				StringBuffer buffer = new StringBuffer();
+				boolean pass = false;
+				for(String s : args){
+					if(pass) s ="******";//Quick hack to not save passwords
+					pass =(s.equals("-password") || s.equals("-p"));
+					buffer.append(s+ " ");
+				}
+				//Log args because I keep forgetting where i leave folders when dumping them places
+				Logger.getRootLogger().info("ARGS: "+buffer.toString());
 			}
 		}
 	}
@@ -129,8 +140,6 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 	public boolean loadProperties(){
 		//Look first in the surrounding file
 		String slash = Tools_System.getFilepathSeparator();
-		//System.out.println(Tools_File.getEnvirons(this)+propertyfilename);
-		//System.out.println(System.getProperty("user.home")+slash+".tina"+slash+"tina.properties");
 		if(loadPropertiesFromFile(Tools_File.getEnvirons(this)+propertyfilename))return true;
 		//Then in the home directory
 		if(loadPropertiesFromFile(System.getProperty("user.home")+slash+".eddie"+slash+propertyfilename))return true;

@@ -56,8 +56,6 @@ public interface UI{
 	public DatabaseManager getDatabaseManager();
 	
 	public void setDatabaseManager(DatabaseManager manager);
-	
-	public void fireUIEvent(UIEvent evt);
 
 	
 	/**

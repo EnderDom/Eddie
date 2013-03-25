@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.Stack;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -53,6 +54,7 @@ public class Task_IprscanLocal extends TaskXTwIO{
 		setCore(true);
 		split = 1;
 		params = "-cli -iprlookup -goterms -nocrc -format xml -altjobs";
+		this.setHelpHeader("Task to help automate local iprscan-ing");
 	}
 	
 
@@ -89,6 +91,7 @@ public class Task_IprscanLocal extends TaskXTwIO{
 		options.addOption(new Option("b", "bin", true, "Set bin folder for local iprscan, else will use property file location"));
 		options.addOption(new Option("pa", "params", true, "Parameters if not using default"));
 		options.addOption(new Option("pf", "paramsfile", true, "File containing the parameters, !will overwrite anything in -params"));
+		options.addOption(new Option("s", "split", true, "Successively split file into this many sequences"));
 		options.getOption("i").setDescription("Input sequence file fasta");
 		options.getOption("o").setDescription("Output directory");
 		options.removeOption("p");
@@ -114,20 +117,21 @@ public class Task_IprscanLocal extends TaskXTwIO{
 						SequenceObject[] id = sequences.getNoOfSequences() > split ?
 								new SequenceObject[split] : new SequenceObject[sequences.getNoOfSequences()];
 						int c=0;
+						Stack<String> removes = new Stack<String>();
 						for(String s : sequences.keySet()){
 							if(c == split)break;
 							else{
 								id[c]=sequences.getSequence(s);
-								sequences.removeSequenceObject(s);
 							}
 							c++;
 						}
+						while(removes.size()!=0)sequences.removeSequenceObject(removes.pop());
 						runIPRScan(out, checklist, id);
 					}
 					
 				}
 				catch(Exception io){
-					logger.error(io);
+					logger.error("Failed to run iprscan",io);
 				}
 			}
 			else{
@@ -162,8 +166,8 @@ public class Task_IprscanLocal extends TaskXTwIO{
 		BufferedWriter out = null;
 		File temp = null;
 		try{
-			logger.debug("Building temp file to scan " + id);
 			temp = File.createTempFile("Tempscan", ".fasta");
+			logger.debug("Building temp file to scan ");
 			fstream = new FileWriter(temp, false);
 			out = new BufferedWriter(fstream);
 			for(int i =0; i < id.length; i++){
@@ -171,7 +175,7 @@ public class Task_IprscanLocal extends TaskXTwIO{
 			}
 			fstream.close();
 			
-			logger.trace("Saved to " + temp.getPath() + " stream closed");
+			logger.debug("Saved to " + temp.getPath() + " stream closed");
 			String exec = iprscanbin +" " + params+ " -i " + temp.getPath() + " -o " + output.getPath();
 			logger.trace("About to execute output: " + exec);
 			/****

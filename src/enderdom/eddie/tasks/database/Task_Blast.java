@@ -2,6 +2,7 @@ package enderdom.eddie.tasks.database;
 
 import java.io.File;
 import java.util.Properties;
+import java.util.Stack;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -9,12 +10,14 @@ import org.apache.commons.cli.Options;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
+import enderdom.eddie.bio.homology.blast.BlastObject;
 import enderdom.eddie.bio.homology.blast.BlastxHelper;
 import enderdom.eddie.bio.homology.blast.MultiblastParser;
 
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_CLI;
+import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 
@@ -31,11 +34,15 @@ public class Task_Blast extends TaskXT{
 	private double errorperc;
 	//filecount, fileerror, fileskip, hspcount-up, hspcount-skip, hspcount-error
 	private int[] counts;
+	Stack<String> errfiles;
+	Stack<String> errfilesmin;
 	
 	public Task_Blast(){
 		setHelpHeader("--This is the Help Message for the the blast Task--");
 		run_id =-1;
 		counts = new int[]{0,0,0,0,0,0};
+		errfiles = new Stack<String>();
+		errfilesmin = new Stack<String>();
 	}
 	
 	public void printHelpMessage(){
@@ -107,19 +114,13 @@ public class Task_Blast extends TaskXT{
 					for(;i < files.length; i++){
 						if(!ignore[i]){
 							try{
-								int[] vals = uploadBlastFile(manager, files[i], this.fuzzynames, this.dbname, run_id, date);
+								uploadBlastFile(files[i]);
 								counts[0]++;
-								if(vals[0] ==-1){
-									counts[5]++;
-								}
-								else{
-									counts[3]+=vals[0];
-									counts[4]+=vals[1];
-								}
 							}
 							catch(Exception e){
 								ui.error("Failed to parse file " + files[i].getName(),e);
 								counts[1]++;
+								errfiles.push(files[i].getName());
 							}
 							checklist.update(files[i].getName());
 							if(counts[1] > 5){
@@ -129,7 +130,6 @@ public class Task_Blast extends TaskXT{
 									this.setCompleteState(TaskState.ERROR);
 									return;
 								}
-								
 							}
 						}
 						else{
@@ -137,20 +137,24 @@ public class Task_Blast extends TaskXT{
 						}
 						System.out.print("\rFile No.: "+i+" 		");
 					}
-					System.out.println();
-					System.out.println("#####################################################");
+					dealErrors();
+					
+					
+					String s = Tools_System.getNewline();
+					System.out.println(s+"#####################################################");
 					System.out.println("--Blast Parsing--");
-					System.out.println("Parsed:"+counts[0]+" Skipped:"+counts[2]+" Errored:"+counts[1]);
-					System.out.println();
+					System.out.println("Parsed:"+counts[0]+" Skipped:"+counts[2]+" Errored:"+counts[1]+s);
 					System.out.println("--Blast Matches Upload--");
 					System.out.println("Uploaded:"+counts[3]+" Skipped:"+counts[4]+" Errored:"+counts[5]);
-					System.out.println("#####################################################");
-					System.out.println();
-					System.out.println();
+					System.out.println("#####################################################"+s+s);
+					//Also log this information, for nohup and whatnot
+					logger.info("Blast Parsing: " + "Parsed:"+counts[0]+" Skipped:"+counts[2]+" Errored:"+counts[1]);
+					logger.info("Uploaded:"+counts[3]+" Skipped:"+counts[4]+" Errored:"+counts[5]);
+
 				}
 				else{
 					try{
-						uploadBlastFile(manager, in, this.fuzzynames, this.dbname, run_id, date);
+						uploadBlastFile(in);
 					}
 					catch(Exception e){
 						ui.error("Failed to parse file " + in.getName(),e);
@@ -170,23 +174,32 @@ public class Task_Blast extends TaskXT{
 	    setCompleteState(TaskState.FINISHED);
 	}
 	
-	public static int[] uploadBlastFile(DatabaseManager manager, File file, boolean fuzzynames, String dbname, int run_id, String date) throws Exception{
-		//Values to return index 0=hsps up, 1 hsps skip, 2 blasts within the file
-		int[] values = new int[]{0,0,0};
+	public void uploadBlastFile(File file) throws Exception{
 		MultiblastParser parse = new MultiblastParser(MultiblastParser.BASICBLAST, file);
 		while(parse.hasNext()){
-			BlastxHelper helper = new BlastxHelper(parse.next());
-			if(dbname == null){
-				dbname = helper.getBlastDatabase();
+			BlastObject o = parse.next();
+			if(o != null){
+				BlastxHelper helper = new BlastxHelper(o);
+				if(dbname == null){
+					dbname = helper.getBlastDatabase();
+				}
+				helper.setRun_id(run_id);
+				helper.setDate(date);
+				int[] j = helper.upload2BioSQL(manager, fuzzynames, dbname);
+				if(j[0] == -1){
+					counts[5]++;
+					errfilesmin.push(file.getName());
+				}
+				else{
+					counts[3]+=j[0];
+					counts[4]+=j[1];
+				}
 			}
-			helper.setRun_id(run_id);
-			helper.setDate(date);
-			int[] j = helper.upload2BioSQL(manager, fuzzynames, dbname);
-			values[0]+=j[0];
-			values[1]+=j[1];
-			values[2]++;
+			else{
+				counts[1]++;
+				errfiles.push(file.getName());
+			}
 		}
-		return values;
 	}
 	
 	private void trimRecovered(String[] data){
@@ -197,6 +210,21 @@ public class Task_Blast extends TaskXT{
 					break;
 				}
 			}
+		}
+	}
+	
+	private void dealErrors(){
+		if(errfiles.size() == 0  && errfilesmin.size() == 0){
+			logger.info("No errors to deal wtih");
+		}
+		else{
+			File f = new File(ui.getPropertyLoader().getValue("WORKSPACE")+Tools_System.getFilepathSeparator()+"err.dump");
+			logger.warn("Errors in files, list dumped in the following location:"+f.getPath());
+			Tools_File.quickWrite(Tools_System.getNewline()+"Errors for Blast on " + Tools_System.getDateNow()+Tools_System.getNewline(), f, true);
+			Tools_File.quickWrite("Major File Errors:"+Tools_System.getNewline(),f, true);
+			while(errfiles.size() !=0)Tools_File.quickWrite(errfiles.pop()+Tools_System.getNewline(), f, true);
+			Tools_File.quickWrite("Minor Blast Errors:"+Tools_System.getNewline(),f, true);
+			while(errfilesmin.size() !=0)Tools_File.quickWrite(errfilesmin.pop()+Tools_System.getNewline(), f, true);
 		}
 	}
 }

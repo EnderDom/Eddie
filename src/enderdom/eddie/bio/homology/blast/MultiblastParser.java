@@ -39,8 +39,10 @@ public class MultiblastParser implements Iterator<BlastObject>, BlastParser{
 	public static int BASICBLAST =0;
 	public static int UNIVEC =1;
 	public Hashtable<String, String> parserCache;
+	String filename;
 	
 	public MultiblastParser(int blastype, File xml) throws Exception{
+		this.filename=xml.getName();
 		parserCache = new Hashtable<String, String>();
 		this.blasttype = blastype;
 		XMLInputFactory2 f = (XMLInputFactory2) XMLInputFactory2.newInstance();
@@ -80,49 +82,46 @@ public class MultiblastParser implements Iterator<BlastObject>, BlastParser{
 		current = null;
 		String tag = "";
 		hits=0;
-		try {
-			while(stream.hasNext()){
-			    i= stream.next();
 
-				if(stream.isStartElement()){
-					tag = stream.getName().toString();
-					if(tag.equals(iteration)){
-						if(this.blasttype == UNIVEC) current = new UniVecBlastObject(this);
-						else current = new BasicBlastObject(this);	
-					}
-					else if(tag.startsWith("Hit")){
-						if(tag.equals("Hit"))hits++;
-						else if(tag.equals("Hit_hsps"))hsps=0;//Do nothing, picked up by hsp
-						else if(this.checkElementHasText())current.putHitTag(hits, tag, getElementText());
-					}
-					else if(tag.startsWith("Hsp")){
-						if(tag.equals("Hsp"))hsps++;
-						else if(this.checkElementHasText())current.putHspTag(hsps, hits, tag, getElementText());
-					}
-					else if(tag.startsWith("Statistics_")){
-						if(this.checkElementHasText())this.put(tag, getElementText());
-					}
-					else if(tag.equals("Iteration_iter-num") || tag.equals("Iteration_query-ID") 
-							|| tag.equals("Iteration_query-def") || tag.equals("Iteration_query-len")){
-						if(this.checkElementHasText())current.put(tag, getElementText());
-					}
-					else if(tag.startsWith("BlastOutput_") && !tag.startsWith("BlastOutput_param") && !tag.startsWith("BlastOutput_iterations")){
-						if(this.checkElementHasText()){
-							this.put(tag, this.getElementText());
-						}
-					}
+		while(stream.hasNext()){
+		    i= stream.next();
+
+			if(stream.isStartElement()){
+				tag = stream.getName().toString();
+				if(tag.equals(iteration)){
+					if(this.blasttype == UNIVEC) current = new UniVecBlastObject(this);
+					else current = new BasicBlastObject(this);	
 				}
-				if(stream.isEndElement()){
-					if(stream.getName().toString().equals(iteration)){
-						itercount++;
-						return;
+				else if(tag.startsWith("Hit")){
+					if(tag.equals("Hit"))hits++;
+					else if(tag.equals("Hit_hsps"))hsps=0;//Do nothing, picked up by hsp
+					else if(this.checkElementHasText())current.putHitTag(hits, tag, getElementText());
+				}
+				else if(tag.startsWith("Hsp")){
+					if(tag.equals("Hsp"))hsps++;
+					else if(this.checkElementHasText())current.putHspTag(hsps, hits, tag, getElementText());
+				}
+				else if(tag.startsWith("Statistics_")){
+					if(this.checkElementHasText())this.put(tag, getElementText());
+				}
+				else if(tag.equals("Iteration_iter-num") || tag.equals("Iteration_query-ID") 
+						|| tag.equals("Iteration_query-def") || tag.equals("Iteration_query-len")){
+					if(this.checkElementHasText())current.put(tag, getElementText());
+				}
+				else if(tag.startsWith("BlastOutput_") && !tag.startsWith("BlastOutput_param") && !tag.startsWith("BlastOutput_iterations")){
+					if(this.checkElementHasText()){
+						this.put(tag, this.getElementText());
 					}
 				}
 			}
-		} 
-		catch (XMLStreamException e) {
-			logger.error("Failed to load XML as stream",e);
+			if(stream.isEndElement()){
+				if(stream.getName().toString().equals(iteration)){
+					itercount++;
+					return;
+				}
+			}
 		}
+
 	}
 	
 	/**
@@ -158,16 +157,24 @@ public class MultiblastParser implements Iterator<BlastObject>, BlastParser{
 		return current!=null;
 	}
 
+	/**
+	 * NOTE returns null if an error
+	 * as you can't throw error exception
+	 * 
+	 */
 	public BlastObject next(){
 		try {
 			parseNext();
 			return last;
 		} catch (GeneralBlastException e) {
-			logger.error(e);
+			logger.error("A general blast exception ",e);
 		} catch (BlastOneBaseException e) {
+			logger.error("A blast one base exception ",e);
+		} catch (XMLStreamException e) {
+			logger.error("XML can't be parsed ",e);
+		}
+		catch(Exception e){
 			logger.error(e);
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		return null;
 	}

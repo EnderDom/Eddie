@@ -19,7 +19,6 @@ import enderdom.eddie.ui.PropertyLoader;
 import enderdom.eddie.ui.EddiePropertyLoader;
 import enderdom.eddie.ui.TaskManager;
 import enderdom.eddie.ui.UI;
-import enderdom.eddie.ui.UIEvent;
 import enderdom.eddie.ui.UserResponse;
 
 public class EddieCLI implements UI {
@@ -194,10 +193,6 @@ public class EddieCLI implements UI {
 			logger.warn("This UI already has a manager, you know jsut warning you");
 		}
 		this.dbmanager = dbmanager;
-	}
-	
-	public void fireUIEvent(UIEvent evt){
-		logger.debug("Foo");
 	}
 		
 	public void throwError(String message, Throwable t){

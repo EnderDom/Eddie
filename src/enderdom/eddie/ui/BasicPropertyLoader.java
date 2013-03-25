@@ -107,7 +107,7 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 				System.out.println("[PRE-LOG] Saved Properties @ "+filepath);
 			}
 		}
-		if (!success) {
+		else {
 			if(isLogging()){
 				logger.error("Saved Properties @ "+filepath);
 			}
@@ -161,7 +161,7 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 	protected boolean startLog() {
 		String slash = Tools_System.getFilepathSeparator();
 		File logfolder = new File(getValue("WORKSPACE")+ slash + "logs");
-		preLog("Initialising Log at  "+logfolder+"...");
+		preLog("Initialising Log at  "+logfolder.getPath()+"...");
 		if (logfolder.isFile()) {
 			System.out.println("Failed To log is standard location!!");
 			int i = 0;

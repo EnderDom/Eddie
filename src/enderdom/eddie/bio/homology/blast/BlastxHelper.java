@@ -99,9 +99,24 @@ public class BlastxHelper {
 				"Hsp_query-from", "Hsp_query-to","Hsp_query-frame"};
 		for(int j =0; j < tags.length; j++){
 			String s = blastx.getHspTagContents(tags[j], hit_num, hsp_num);
-			Integer i = Tools_String.parseString2Int(s);
-			if(i != null)arr[j]=i;
-			else throw new Exception("Failed to parse tag " + tags[i] + " to integer, tag value: " +s);
+			if(s!=null){
+				Integer i = Tools_String.parseString2Int(s);
+				if(i != null){
+					arr[j]=i;
+				}
+				else throw new Exception("Failed to parse tag " + tags[j] + " to integer, tag value: " +s);
+			}
+			else{
+				if(this.getHitAccession(hit_num).equals("Unknown")){
+					logger.warn("Known issue were blast ouputs an Unknown for value, recommended to re-blast this sequence");
+					throw new Exception("Failed to parse tag " + tags[j] + " for HIT:"+hit_num+" HSP:" + hsp_num);
+				}
+				else{
+					throw new Exception("Failed to parse tag " + tags[j] + " for HIT:"+hit_num+" HSP:" + hsp_num);
+				}
+				
+			}
+		
 		}
 		return arr;
 	}
@@ -243,7 +258,9 @@ public class BlastxHelper {
 				return values;
 			}
 			catch(Exception e){
-				logger.error("Error retrieving data from blast file ", e );
+				String s = manager.getBioSQL().getBioEntryNames(manager.getCon(), this.getContig_id())[2];
+				if(s == null)s = "contig id: " + this.getContig_id();
+				logger.error("Error retrieving data from blast file, "+s, e );
 				values[0]=-1;
 				return values;
 			}
