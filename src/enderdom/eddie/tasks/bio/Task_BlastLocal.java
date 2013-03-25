@@ -11,6 +11,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.biojava3.ws.alignment.qblast.BlastProgramEnum;
 
 import enderdom.eddie.bio.factories.SequenceListFactory;
+import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.sequence.SequenceList;
 
 import enderdom.eddie.tasks.Checklist;
@@ -142,13 +143,13 @@ public class Task_BlastLocal extends TaskXTwIO{
 				try{
 					this.sequences = SequenceListFactory.getSequenceList(input); 
 					if(checklist.inRecovery()){
-						trimRecovered(checklist.getData());
+						removeSequences(checklist.getData());
 					}
 					if(filter != null){
-						int j = trimRecovered(filter);
+						int j = keepSequences(filter);
 						if(j != filterlen){
-							throw new Exception("Number of lines "
-									+"in filter file does not match the number of sequences removed");
+							throw new Exception("Number of lines "+filterlen
+									+" in filter file does not match the number of sequences removed " + j);
 						}
 					}
 					logger.debug("About to start running blasts");
@@ -173,7 +174,8 @@ public class Task_BlastLocal extends TaskXTwIO{
 		return true;
 	}
 	
-	private int trimRecovered(String[] data){
+	//TODO migrate these methids to the actual sequencelist
+	private int removeSequences(String[] data){
 		int j=0;
 		for(int i =0;i < data.length; i++){
 			if(sequences.getSequence(data[i]) != null){
@@ -182,6 +184,20 @@ public class Task_BlastLocal extends TaskXTwIO{
 			}
 		}
 		logger.debug("Removed "+j+" of "+ data.length + " from list, as previously run");
+		return j;
+	}
+	
+	private int keepSequences(String[] data){
+		int j=0;
+		SequenceList l2 = new Fasta();
+		for(int i =0;i < data.length; i++){
+			if(sequences.getSequence(data[i]) == null){
+				l2.addSequenceObject(sequences.getSequence(data[i]));
+				j++;
+			}
+		}
+		this.sequences=l2;
+		logger.debug("Kept "+j+" of "+ data.length + " from filter");
 		return j;
 	}
 	
