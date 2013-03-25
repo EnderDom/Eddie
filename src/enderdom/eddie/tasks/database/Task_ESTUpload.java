@@ -14,6 +14,7 @@ import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.bio.sequence.SequenceObject;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.databases.manager.DatabaseManager;
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
@@ -68,7 +69,7 @@ public class Task_ESTUpload extends TaskXT{
 		return this.options;
 	}
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		Logger.getRootLogger().debug("Started running ESTUploadTask @ "+Tools_System.getDateNow());
 		if(input != null){
 			File f = new File(input);
@@ -80,20 +81,15 @@ public class Task_ESTUpload extends TaskXT{
 						SequenceObject o = l.next();						
 					}
 					
-				} catch (FileNotFoundException e) {
-					logger.error(e);
-				} catch (UnsupportedTypeException e) {
-					logger.error(e);
-				} catch (IOException e) {
-					logger.error(e);
+				}catch (Exception e) {
+					logger.error("Failed to parse sequences ", e);
+					setCompleteState(TaskState.ERROR);
 				}
 				
 			}
 		}
-		
-		
 		Logger.getRootLogger().debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 	public boolean wantsUI(){

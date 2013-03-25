@@ -1,4 +1,4 @@
-package enderdom.eddie.tasks.subtasks;
+package enderdom.eddie.tasks;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -6,22 +6,17 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.tasks.TaskLike;
 import enderdom.eddie.ui.UI;
 
-public class SubTask implements TaskLike{
+public class BasicTask implements TaskLike {
 
-	boolean core;
-	private boolean try2Close;
-	protected int complete;
-	Logger logger = Logger.getRootLogger();
-	int id;
+	protected boolean core;
+	protected boolean try2Close;
+	protected TaskState state;
+	protected int futurehash;
+	protected Logger logger = Logger.getRootLogger();
+	protected int id;
 	
-	public void run() {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public boolean isCore(){
 		return core;
 	}
@@ -32,20 +27,6 @@ public class SubTask implements TaskLike{
 	public synchronized void update(){
 		
 	}
-	
-	public boolean isStart(){
-		if(complete == -1){
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-
-	public boolean cancel(boolean arg0) {
-		try2Close = arg0;
-		return false;
-	}
 
 	public Object get() throws InterruptedException, ExecutionException {
 		return (Object) this;
@@ -55,32 +36,31 @@ public class SubTask implements TaskLike{
 			ExecutionException, TimeoutException {
 		return (Object) this;
 	}
+	
+
+	public boolean isStart(){
+		return state != TaskState.UNSTARTED;
+	}
 
 	public boolean isCancelled() {
-		if(complete== 2){
-			return true;
-		}
-		else{
-			return false;
-		}
+		return state == TaskState.CANCELLED;
 	}
 
 	public boolean isDone() {
-		if(complete > 0){
-			return true;
+		if(state == TaskState.STARTED || state == TaskState.UNSTARTED){
+			return false;
 		}
 		else{
-			return false;
+			return true;
 		}
 	}
 	
-	public int getComplete() {
-		return complete;
+	public TaskState getCompleteState(){
+		return state;
 	}
-
-	protected void setComplete(int complete) {
-		this.complete = complete;
-		logger.info("Task was set to complete");
+	
+	public void setCompleteState(TaskState state){
+		this.state = state;
 	}
 
 	public boolean isTry2Close() {
@@ -97,18 +77,33 @@ public class SubTask implements TaskLike{
 	public int getID(){
 		return this.id;
 	}
-
-	public boolean wantsUI() {
-		return true;
+	
+	public boolean wantsUI(){
+		return false;
 	}
-
-	public void addUI(UI ui) {
+	
+	public void addUI(UI ui){
 		
 	}
 
-	public boolean isHelpmode() {
+	public void setFutureHash(int hash) {
+		this.futurehash = hash;
+	}
+
+	public int getFutureHash() {
+		return this.futurehash;
+	}
+
+	public void run() {
 		// TODO Auto-generated method stub
+	}
+
+	public boolean isHelpmode() {
 		return false;
 	}
 
+	public boolean cancel(boolean mayInterruptIfRunning) {
+		setCompleteState(TaskState.CANCELLED);
+		return false;
+	}
 }

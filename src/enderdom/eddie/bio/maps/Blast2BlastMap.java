@@ -9,6 +9,7 @@ import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.bio.homology.blast.BlastObject;
 import enderdom.eddie.bio.homology.blast.BlastxDocumentParser;
 
+@SuppressWarnings("deprecation")
 public class Blast2BlastMap {
 
 	
@@ -27,6 +28,7 @@ public class Blast2BlastMap {
 		this.xml2 = xml2;
 	}
 	
+	@Deprecated
 	public Blast2BlastMap(File xml1, File xml2) throws Exception{
 		this.xml1 = new BlastxDocumentParser(xml1).getBlastObject();
 		this.xml2 = new BlastxDocumentParser(xml2).getBlastObject();

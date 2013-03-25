@@ -14,6 +14,7 @@ import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_CLI;
 import enderdom.eddie.tools.Tools_String;
@@ -68,8 +69,9 @@ public class Task_dbTools extends TaskXT{
 	}
 	
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
+		try{
 		if(readsasfasta){
 			DBReadsAsFasta(contig, output, password, ui);
 		}
@@ -80,72 +82,71 @@ public class Task_dbTools extends TaskXT{
 			}
 			DBContigsAsFasta(output, run_id, password, ui);
 		}
-
+		}
+		catch(Exception e){
+			logger.error("Failed to establish database connection", e);
+			setCompleteState(TaskState.ERROR);
+			return;
+		}
 		Logger.getRootLogger().debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 	
-	public static void DBReadsAsFasta(String contig, String output, String password, UI ui){
+	public static void DBReadsAsFasta(String contig, String output, String password, UI ui) throws Exception{
 		DatabaseManager manager = ui.getDatabaseManager(password);
-		if(manager.open()){
-			if(contig != null && output != null){
-				int m = manager.getBioSQLXT().getBioEntryId(manager, contig, true, manager.getEddieDBID());
-				if(m == -1){
-					Logger.getRootLogger().error("Failed to retrieve the ID for contig " + contig);
-				}
-				else{
-					int[] reads = manager.getBioSQLXT().getReads(manager, m);
-					if(reads.length == 0){
-						Logger.getRootLogger().error("Failed to get any reads for contig " + contig + "(ID:"+m+")");
-						return;
-					}
-					else{
-						Fasta fasta = new Fasta();
-						for(int i : reads){
-							String[] names = manager.getBioSQL().getBioEntryNames(manager.getCon(), i);
-							String sequence = manager.getBioSQL().getSequence(manager.getCon(), i);
-							fasta.addSequence(names[0], sequence);
-						}
-						boolean success = false;
-						try {
-							 success = fasta.save2Fasta(new File(output)) != null;
-						} 
-						catch (IOException e) {
-							success = false;
-							Logger.getRootLogger().error("Failed to save fasta" , e);
-						}
-						if(success){
-							Logger.getRootLogger().info("Successfully saved fasta at " + output);
-						}
-					}
-				}
+	
+		manager.open();
+		if(contig != null && output != null){
+			int m = manager.getBioSQLXT().getBioEntryId(manager, contig, true, manager.getEddieDBID());
+			if(m == -1){
+				Logger.getRootLogger().error("Failed to retrieve the ID for contig " + contig);
 			}
 			else{
-				Logger.getRootLogger().error("No output/contig set");
+				int[] reads = manager.getBioSQLXT().getReads(manager, m);
+				if(reads.length == 0){
+					Logger.getRootLogger().error("Failed to get any reads for contig " + contig + "(ID:"+m+")");
+					return;
+				}
+				else{
+					Fasta fasta = new Fasta();
+					for(int i : reads){
+						String[] names = manager.getBioSQL().getBioEntryNames(manager.getCon(), i);
+						String sequence = manager.getBioSQL().getSequence(manager.getCon(), i);
+						fasta.addSequence(names[0], sequence);
+					}
+					boolean success = false;
+					try {
+						 success = fasta.save2Fasta(new File(output)) != null;
+					} 
+					catch (IOException e) {
+						success = false;
+						Logger.getRootLogger().error("Failed to save fasta" , e);
+					}
+					if(success){
+						Logger.getRootLogger().info("Successfully saved fasta at " + output);
+					}
+				}
 			}
 		}
 		else{
-			Logger.getRootLogger().error("Failed to connect to Database");
+			Logger.getRootLogger().error("No output/contig set");
 		}
 	}
 	
-	public static void DBContigsAsFasta(String output, int run_id, String password, UI ui){
+	public static void DBContigsAsFasta(String output, int run_id, String password, UI ui) throws Exception{
 		DatabaseManager manager = ui.getDatabaseManager(password);
-		if(manager.open()){
-			SequenceList list = new Fasta();
-			list = manager.getBioSQLXT().getContigsAsFasta(manager, list, run_id);
-			Logger.getRootLogger().info("Saving "+list.getNoOfSequences()+" Contigs to Fasta file " + output);
-			try {
-				list.saveFile(new File(output), BioFileType.FASTA);
-			} catch (UnsupportedTypeException e) {
-				Logger.getRootLogger().error(e);
-			} catch (Exception e) {
-				Logger.getRootLogger().error(e);
-			}
-		}
-		else{
-			Logger.getRootLogger().error("Failed to connect to Database");
+		
+		manager.open();
+		SequenceList list = new Fasta();
+		list = manager.getBioSQLXT().getContigsAsFasta(manager, list, run_id);
+		Logger.getRootLogger().info("Saving "+list.getNoOfSequences()+" Contigs to Fasta file " + output);
+		try {
+			list.saveFile(new File(output), BioFileType.FASTA);
+		} catch (UnsupportedTypeException e) {
+			Logger.getRootLogger().error(e);
+		} catch (Exception e) {
+			Logger.getRootLogger().error(e);
 		}
 	}
 }

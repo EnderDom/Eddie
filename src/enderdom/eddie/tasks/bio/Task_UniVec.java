@@ -18,6 +18,7 @@ import enderdom.eddie.bio.homology.blast.UniVecRegion;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.bio.sequence.SequenceObject;
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_String;
@@ -26,7 +27,7 @@ import enderdom.eddie.tools.Tools_Task;
 import enderdom.eddie.tools.Tools_Web;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
 import enderdom.eddie.tools.bio.Tools_Blast;
-import enderdom.eddie.ui.UI;
+import enderdom.eddie.ui.UserResponse;
 
 public class Task_UniVec extends TaskXTwIO{
 
@@ -49,19 +50,20 @@ public class Task_UniVec extends TaskXTwIO{
 	}
 	
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
 		/*
 		* Check IO
 		*/
 		File dir = checkOutput();
 		File file = checkInput();
-		if(file == null) return;
+		if(file == null){ this.setCompleteState(TaskState.ERROR); return;}
 		
 
 		if(xml == null){
 			if(!checkUniDB()){
 				logger.error("Failed to establish UniVec database");
+				this.setCompleteState(TaskState.ERROR);
 				return;
 			}
 			File out = Tools_File.getOutFileName(dir, file, ".xml");
@@ -91,6 +93,7 @@ public class Task_UniVec extends TaskXTwIO{
 			}
 			else{
 				logger.error("Search ran, but no outfile found at " + out.getPath());
+				this.setCompleteState(TaskState.ERROR);
 				return;
 			}
 		}
@@ -124,13 +127,14 @@ public class Task_UniVec extends TaskXTwIO{
 			}
 			else{
 				logger.error("Error loading XML file");
+				this.setCompleteState(TaskState.ERROR);
 			}
 		}
 		for(int i =0; i < outs.length ; i++){
 			logger.info("Saved file to " + outs[i]);
 		}
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
-		setComplete(finished);
+		setCompleteState(TaskState.FINISHED);
 	}
 
 	public void buildOptions(){
@@ -412,8 +416,8 @@ public class Task_UniVec extends TaskXTwIO{
 		}
 		else{
 			logger.warn("No uni-vec set, nor create is set.");
-			int value = ui.requiresUserYNI("Do you want to automatically create UniVec data?", "Create Univec Database?");
-			if(value == UI.YES){
+			UserResponse value = ui.requiresUserYNI("Do you want to automatically create UniVec data?", "Create Univec Database?");
+			if(value == UserResponse.YES){
 				if(createUniVecDb(this.workspace+Tools_System.getFilepathSeparator()+"data"+Tools_System.getFilepathSeparator()+"UniVec")){
 					uni_db = this.workspace+Tools_System.getFilepathSeparator()+"data"+Tools_System.getFilepathSeparator()+"UniVec";
 					return true;

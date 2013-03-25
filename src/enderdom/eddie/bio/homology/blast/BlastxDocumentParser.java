@@ -2,6 +2,7 @@ package enderdom.eddie.bio.homology.blast;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
@@ -21,7 +22,8 @@ import enderdom.eddie.tools.Tools_XML;
  * 
  * Eddie3 method, but works
  */
-public class BlastxDocumentParser{
+@Deprecated
+public class BlastxDocumentParser implements BlastParser{
 
 	Document blastdoc;
 	String filepath;
@@ -35,12 +37,14 @@ public class BlastxDocumentParser{
 		"Hsp_evalue" , "Hsp_query-from" , "Hsp_query-to" , "Hsp_hit-from" , "Hsp_hit-to" , "Hsp_query-frame" , 
 		"Hsp_hit-frame" , "Hsp_identity" , "Hsp_positive" , "Hsp_gaps" , "Hsp_align-len" , "Hsp_qseq" , "Hsp_hseq" , "Hsp_midline"};
 	private boolean dropDOM = true;
+	public Hashtable<String, String> parserCache;
 	
 	public BlastxDocumentParser(String filepath) throws Exception{
 		this(new File(filepath));
 	}
 	
 	public BlastxDocumentParser(File file) throws Exception{
+		parserCache = new Hashtable<String, String>();
 		this.filepath = file.getPath();
 		blastdoc = XMLHelper.loadXML(filepath);
 		obj = parse2Cache(blastdoc);
@@ -52,7 +56,7 @@ public class BlastxDocumentParser{
 	
 	public BlastObject parse2Cache(Document d){
 		
-		BlastObject blastcache = new BasicBlastObject();
+		BlastObject blastcache = new BasicBlastObject(this);
 		
 		ArrayList<Element> elementList = null;
 		try {
@@ -197,6 +201,14 @@ public class BlastxDocumentParser{
 	
 	public BlastObject getBlastObject(){
 		return this.obj;
+	}
+
+	public void put(String key, String value) {
+		this.parserCache.put(key, value);
+	}
+
+	public String get(String key) {
+		return this.parserCache.get(key);
 	}
 	
 }

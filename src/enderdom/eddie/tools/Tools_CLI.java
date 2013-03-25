@@ -5,7 +5,10 @@ import java.util.Scanner;
 
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+
+import enderdom.eddie.ui.UserResponse;
 
 public class Tools_CLI {
 	
@@ -23,7 +26,10 @@ public class Tools_CLI {
 		return answer;
 	}
 	
-	public static int showInternalConfirmDialog(String title, String message){
+	public static UserResponse showInternalConfirmDialog(String title, String message){
+		Logger l = Logger.getRootLogger();
+		Level reset = l.getLevel();
+		l.setLevel(Level.OFF);
 		System.out.println("--"+title+"--");
 		System.out.println();
 		System.out.println(message + " (yes/no/cancel)");
@@ -41,16 +47,19 @@ public class Tools_CLI {
 			answer = "c";
 		}
 		if(answer.toLowerCase().startsWith("y")){
+			l.setLevel(reset);
 			Logger.getRootLogger().trace("User answered yes");
-			return yes;
+			return UserResponse.YES;
 		}
 		if(answer.toLowerCase().startsWith("n")){
+			l.setLevel(reset);
 			Logger.getRootLogger().trace("User answered no");
-			return no;
+			return UserResponse.NO;
 		}
 		else{
+			l.setLevel(reset);
 			Logger.getRootLogger().trace("Cancelled");
-			return cancel;
+			return UserResponse.CANCEL;
 		}
 	}
 	

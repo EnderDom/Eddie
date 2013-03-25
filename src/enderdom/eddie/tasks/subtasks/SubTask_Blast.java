@@ -4,18 +4,20 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Stack;
 
 import enderdom.eddie.bio.sequence.SequenceList;
+import enderdom.eddie.tasks.BasicTask;
 import enderdom.eddie.tasks.Checklist;
-import enderdom.eddie.tasks.TaskStack;
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Blast;
 import enderdom.eddie.tools.bio.Tools_Fasta;
 
 
-public class SubTask_Blast extends SubTask{
+public class SubTask_Blast extends BasicTask{
 	
-	TaskStack tasker;
+	Stack<String> tasker;
 	boolean remote;
 	Checklist check;
 	String blast_prg; 
@@ -26,7 +28,7 @@ public class SubTask_Blast extends SubTask{
 	boolean clipname;
 	String outfolder;
 	
-	public SubTask_Blast(SequenceList list, TaskStack tasker, boolean remote, Checklist check, String outfolder, boolean clipname){
+	public SubTask_Blast(SequenceList list, Stack<String> tasker, boolean remote, Checklist check, String outfolder, boolean clipname){
 		this.tasker = tasker;
 		this.remote = remote;
 		this.check = check;
@@ -43,7 +45,7 @@ public class SubTask_Blast extends SubTask{
 	}
 
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
 		String id;
 		if(tasker.empty()){
@@ -71,16 +73,17 @@ public class SubTask_Blast extends SubTask{
 				else logger.debug("Running remote blast...");
 				Tools_Blast.runLocalBlast(temp, this.blast_prg, this.blast_bin, this.blast_db, this.blastparams,ou, this.remote);
 				check.update(id);
+				temp.delete();
 			}
 			catch(IOException io){
 				logger.error("Error saving Fasta to temporary directory");
-				setComplete(error);
+				setCompleteState(TaskState.ERROR);
 				return;
 			}
 		}
 		check.complete();
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 }

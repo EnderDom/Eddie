@@ -13,6 +13,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
@@ -21,7 +22,6 @@ import enderdom.eddie.tools.Tools_System;
 
 public class EddiePropertyLoader extends BasicPropertyLoader{
 
-	//TODO hand over database properties to another class
     public static String propertyfilename = new String("eddie.properties");
     public static String infoFile = new String("eddie.info");
     public String rootfolder;
@@ -30,7 +30,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
      * though this one has been written from scratch
      */
     public static int engineversion = 4;
-    public static double subversion = 0.38;
+    public static double subversion = 0.42;
     public static String edition = "Development";
     public String[] actions;
 	
@@ -41,8 +41,6 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 	private String[] defaultkeys;
 	private String[] defaultvalues;
 	private String[] defaulttooltips;
-	
-	//These should be the index to defaultKeysUN	
 	
 	public EddiePropertyLoader(String[] args) {
 		this.props = new Properties();
@@ -56,6 +54,19 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 			parseArgs(args);
 			if(!startLog()){
 				mode = -1;
+			}
+			else{
+				Logger.getRootLogger().info("###_________NEW SESSION_________###");
+				
+				StringBuffer buffer = new StringBuffer();
+				boolean pass = false;
+				for(String s : args){
+					if(pass) s ="******";//Quick hack to not save passwords
+					pass =(s.equals("-password") || s.equals("-p"));
+					buffer.append(s+ " ");
+				}
+				//Log args because I keep forgetting where i leave folders when dumping them places
+				Logger.getRootLogger().info("ARGS: "+buffer.toString());
 			}
 		}
 	}
@@ -116,7 +127,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 			buildOptions();
 		}
 		HelpFormatter help = new HelpFormatter();
-		help.printHelp("ls", "-- Eddie v"+subversion+" Help Menu --", options, "-- Share And Enjoy! --");
+		help.printHelp("ls", "-- Eddie v"+engineversion+subversion+" Help Menu --", options, "-- Share And Enjoy! --");
 		System.out.println();
 		System.out.println("Use -task for list of command line tasks");
 		System.out.println("Use -task taskname -opts for that task's helpmenu");
@@ -129,8 +140,6 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 	public boolean loadProperties(){
 		//Look first in the surrounding file
 		String slash = Tools_System.getFilepathSeparator();
-		//System.out.println(Tools_File.getEnvirons(this)+propertyfilename);
-		//System.out.println(System.getProperty("user.home")+slash+".tina"+slash+"tina.properties");
 		if(loadPropertiesFromFile(Tools_File.getEnvirons(this)+propertyfilename))return true;
 		//Then in the home directory
 		if(loadPropertiesFromFile(System.getProperty("user.home")+slash+".eddie"+slash+propertyfilename))return true;
@@ -182,14 +191,16 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				"BLAST_BIN_DIR","BLAST_DB_DIR", "ESTSCAN_BIN", 
 				"FILES_XML","PREFLNF","TESTDATADIR",
 				"DBTYPE","DBDRIVER","DBHOST", 
-				"DBNAME", "DBUSER","UNI_VEC_DB", "UNIVEC_URL"
+				"DBNAME", "DBUSER","UNI_VEC_DB", "UNIVEC_URL",
+				"MAXERRORPERC", "IPRSCAN_BIN"
 				 };
 		defaultvalues = new String[]{
 				propfile.getParent(), "5", "1", 
 				"/usr/bin/", "/home/dominic/bioapps/blast/db/", "/usr/bin/ESTScan",
 				"null", defaultlnf, propfile.getParent()+slash+"test", 
 				"mysql","com.mysql.jdbc.Driver", "Localhost", 
-				DatabaseManager.default_database, "user", "","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec"
+				DatabaseManager.default_database, "user", "","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec",
+				"0.1", "/usr/bin/iprscan"
 				};
 		defaulttooltips = new String[]{
 				"Default Workspace directory", "Number of threads for core tasks (High CPU)", 
@@ -197,7 +208,8 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				"Directory path containing blast databases", "Path for ESTscan binary", "Path for file to store file locations",
 				"Preferred Look & Feel", "Directory Path for test data", "Database type, ie mysql", "Database driver",
 				"Database host url", "Database name for Eddie", "Database user name", "Location of uni vec database",
-				"Default URL to download the fasta for univec data"
+				"Default URL to download the fasta for univec data", "Maxium percentage of errors before task cancelled (0<x<1)",
+				"Location of local iprscan binary"
 		};
 		
 		if(defaultkeys.length != defaultvalues.length)System.out.println("You're being derp Dominic :(");

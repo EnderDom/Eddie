@@ -21,8 +21,6 @@ public interface BlastObject {
 	
 	public String getHspTagContents(String tag, int hit_num, int hsp_num) throws Exception;
 	
-	public void putIterationTag(String tag, String value);
-	
 	public double getLowestEValue();
 	
 	public int getQueryLength();

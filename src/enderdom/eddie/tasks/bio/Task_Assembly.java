@@ -14,7 +14,9 @@ import enderdom.eddie.bio.assembly.ACEObject;
 import enderdom.eddie.bio.assembly.ACEParser;
 import enderdom.eddie.bio.assembly.ACERecord;
 
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
+import enderdom.eddie.tools.Tools_Array;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Sequences;
@@ -22,14 +24,15 @@ import enderdom.eddie.tools.bio.Tools_Sequences;
 @SuppressWarnings("deprecation")
 public class Task_Assembly extends TaskXTwIO{
 	
-	boolean coverage;
-	boolean getfasta;
-	boolean stats;
-	int range;
-	int contig;
-	String name;
+	private boolean coverage;
+	private boolean stats;
+	private int range;
+	private int contig;
+	private String name;
+	private int filter;
 	
 	public Task_Assembly(){
+		filter = 0;
 		contig =-1;
 		range =100;
 	}
@@ -39,12 +42,15 @@ public class Task_Assembly extends TaskXTwIO{
 		if(cmd.hasOption("coverage"))coverage =true;
 		if(cmd.hasOption("contig"))name=cmd.getOptionValue("contig");
 		if(cmd.hasOption("range"))range=Tools_String.parseString2Int(cmd.getOptionValue("range"));
-		if(cmd.hasOption("getfasta"))getfasta=true;
 		if(cmd.hasOption("stats"))stats=true;
 		if(range <1)range=100;
 		if(cmd.hasOption("numbcontig")){
 			Integer a = Tools_String.parseString2Int(cmd.getOptionValue("numbcontig"));
 			if(a!=null)contig=a;
+		}
+		if(cmd.hasOption("statlenfilter")){
+			Integer a = Tools_String.parseString2Int(cmd.getOptionValue("statlenfilter"));
+			if(a!=null)filter=a;
 		}
 	}
 	
@@ -59,10 +65,11 @@ public class Task_Assembly extends TaskXTwIO{
 		options.addOption(new Option("range", true, "Range Integer"));
 		options.addOption(new Option("numbcontig", true, "Contig Number to analyse"));
 		options.addOption(new Option("contig", true, "Contig Name to analyse"));
+		options.addOption(new Option("statlenfilter", true, "Filter out contigs smaller than arg bp in length"));
 	}
 	
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		if(testmode)runTest();
 		else{
@@ -77,13 +84,24 @@ public class Task_Assembly extends TaskXTwIO{
 						ACERecord record = (ACERecord) parse.next();
 						System.out.print("\r(No."+count+") : " + record.getContigName() + "        ");
 						lengths[count] = record.getConsensus().getActualLength();
+						if(lengths[count] < filter){
+							lengths[count]=-1;
+						}
+						else{
+							totalread+=record.getNoOfReads();
+							totalbp+=record.getTotalBpofReads();
+						}
 						count++;
-						totalread+=record.getNoOfReads();
-						totalbp+=record.getTotalBpofReads();
 					}
+					lengths = Tools_Array.IntArrayTrimAll(lengths, -1);
+					System.out.println();
+					System.out.println();
+					System.out.println(count-lengths.length+" contigs removed " +
+							"as they fell below the "+filter+"bp length");
+					
 					long[] stats = Tools_Sequences.SequenceStats(lengths);
 					System.out.println();
-					System.out.println("No. of Contigs: " + count);
+					System.out.println("No. of Contigs: " + lengths.length);
 					System.out.println("Total Contig Length: " + stats[0]+ "bp");
 					System.out.println("Min-Max Lengths: " + stats[1] +"-"+stats[2] + "bp");
 					System.out.println("n50: " + stats[3]);
@@ -96,8 +114,12 @@ public class Task_Assembly extends TaskXTwIO{
 				}
 				catch (FileNotFoundException e) {
 					logger.error("No file called " + this.input,e);
+					setCompleteState(TaskState.ERROR);
+					return;
 				} catch (IOException e) {
 					logger.error("Could not parse " + this.input,e);
+					setCompleteState(TaskState.ERROR);
+					return;
 				}
 			}
 			else if(coverage){//TODO upgrade
@@ -123,10 +145,13 @@ public class Task_Assembly extends TaskXTwIO{
 					}
 					catch(Exception e){
 						logger.error("Out of Cheese Error...", e);
+						setCompleteState(TaskState.ERROR);
+						return;
 					}
 				}
 				else{
 					logger.info("Contig Name is null... not yet finished");
+					
 				}
 			}
 			else{
@@ -135,7 +160,7 @@ public class Task_Assembly extends TaskXTwIO{
 		}
 		
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 

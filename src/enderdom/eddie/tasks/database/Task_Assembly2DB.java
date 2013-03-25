@@ -19,11 +19,13 @@ import enderdom.eddie.databases.bioSQL.interfaces.BioSQL;
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Assembly;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
+import enderdom.eddie.ui.UserResponse;
 
 /**
  * The idea here is to upload an entire ACE fileset of data  
@@ -97,11 +99,12 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	
 	//TODO implement use of the checklist
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		this.checklist = openChecklist(ui);
 		DatabaseManager manager = this.ui.getDatabaseManager(password);
-		if(manager.open()){
+		try{
+			manager.open();
 			//UPLOADING READS
 			if(this.identifier == null){
 				this.identifier = ui.requiresUserInput("Please Enter a unique identifier:", "Identifier required, maybe Digest_Read? or Mar12_CAP3_Contig?");
@@ -229,8 +232,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 											if(mapcontigs && mapping){
 												mapping = mapReads(record, manager, this.identifier+count, biodatabase_id, runid, count);
 												if(!mapping){
-													int j =ui.requiresUserYNI("Mapping failed for some reason, Continue uploading contigs without mapping to reads?", "Mapping Failure Message");
-													if(j != 0)return;
+													UserResponse j =ui.requiresUserYNI("Mapping failed for some reason, Continue uploading contigs without mapping to reads?", "Mapping Failure Message");
+													if(j != UserResponse.YES)return;
 												}
 											}
 										}
@@ -265,12 +268,14 @@ public class Task_Assembly2DB extends TaskXTwIO{
 			}
 			manager.close();
 		}
-		else{
-			logger.error("Failed to open Connection");
+		catch(Exception e){
+			logger.error("Failed to open Connection", e);
+			setCompleteState(TaskState.ERROR);
+			return;
 		}
 		
 		Logger.getRootLogger().debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 	public boolean mapReads(ACERecord record, DatabaseManager manager, String identifier, int biodatabase_id, int runid, int count){

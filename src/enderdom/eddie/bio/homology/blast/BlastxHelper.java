@@ -1,7 +1,9 @@
 package enderdom.eddie.bio.homology.blast;
 
 import java.io.File;
+import java.math.BigDecimal;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
@@ -36,11 +38,16 @@ public class BlastxHelper {
 	 * blast run had the same settings, lump these together,
 	 * alternatively -1 (settable by Task)    
 	 */
-	public int date_range = 14; 
+	public int date_range = 21; 
 	
+	@Deprecated
 	public BlastxHelper(File file) throws Exception{
 		blastx = new BlastxDocumentParser(file).getBlastObject();
 		this.contig_id = -1;
+	}
+	
+	public BlastxHelper(BlastObject o){
+		this.blastx = o;
 	}
 	
 	public BlastObject getBlastXML(){
@@ -56,7 +63,7 @@ public class BlastxHelper {
 	}
 	
 	public String getBlastDatabase(){
-			return new File(blastx.getBlastTagContents("BlastOutput_db")).getName();
+		 return FilenameUtils.getBaseName(blastx.getBlastTagContents("BlastOutput_db"));
 	}
 	
 	public String getHitAccession(int index) throws Exception{
@@ -65,13 +72,11 @@ public class BlastxHelper {
 	
 	public double getHspEvalue(int hit_num, int hsp_num)throws Exception{
 		String s = blastx.getHspTagContents("Hsp_evalue", hit_num, hsp_num);
-		Double d = Tools_String.parseString2Double(s);
-		if(d != null)return d;
-		else throw new Exception("An error occured attempting to parse the hsp evalue " +s );
+		return new BigDecimal(s).doubleValue();
 	}
 	
 	public int getHspScore(int hit_num, int hsp_num)throws Exception{
-		String s = blastx.getHspTagContents("Hsp_evalue", hit_num, hsp_num);
+		String s = blastx.getHspTagContents("Hsp_score", hit_num, hsp_num);
 		Integer d = Tools_String.parseString2Int(s);
 		if(d != null)return d;
 		else throw new Exception("An error occured attempting to parse the hsp score " +s );
@@ -94,9 +99,24 @@ public class BlastxHelper {
 				"Hsp_query-from", "Hsp_query-to","Hsp_query-frame"};
 		for(int j =0; j < tags.length; j++){
 			String s = blastx.getHspTagContents(tags[j], hit_num, hsp_num);
-			Integer i = Tools_String.parseString2Int(s);
-			if(i != null)arr[j]=i;
-			else throw new Exception("Failed to parse tag " + tags[i] + " to integer, tag value: " +s);
+			if(s!=null){
+				Integer i = Tools_String.parseString2Int(s);
+				if(i != null){
+					arr[j]=i;
+				}
+				else throw new Exception("Failed to parse tag " + tags[j] + " to integer, tag value: " +s);
+			}
+			else{
+				if(this.getHitAccession(hit_num).equals("Unknown")){
+					logger.warn("Known issue were blast ouputs an Unknown for value, recommended to re-blast this sequence");
+					throw new Exception("Failed to parse tag " + tags[j] + " for HIT:"+hit_num+" HSP:" + hsp_num);
+				}
+				else{
+					throw new Exception("Failed to parse tag " + tags[j] + " for HIT:"+hit_num+" HSP:" + hsp_num);
+				}
+				
+			}
+		
 		}
 		return arr;
 	}
@@ -156,32 +176,34 @@ public class BlastxHelper {
 	 * 
 	 * @param dbname ie genbank, swiss, uniprot, go, kegg, interpro etc...
 	 * 
-	 * @return true if script ran with 
-	 * no errors
+	 * @return -1 if failed, return 0 if uploaded successfully, return >0
+	 * if some sequences already uploaded, value represents how many
 	 */
-	public boolean upload2BioSQL(DatabaseManager manager, boolean fuzzy, String dbname){
-		if(run_id == -1){
+	public int[] upload2BioSQL(DatabaseManager manager, boolean fuzzy, String dbname){
+		int[] values = new int[]{-1,0};
+		if(run_id < 1){
 			Run run = new Run();
 			run.setRuntype("blast");
 			run.setProgram(this.getBlastProgram());
 			run.setVersion(this.getBlastVersion());
-			run.setDbname(this.getBlastDatabase());
+			run.setDbname(dbname);
 			run.setParams(this.getParametersAsString());
 			run.setDateValue(this.date, Tools_System.SQL_DATE_FORMAT);
 			if(run.validate()){
 				this.run_id = run.getSimilarRun(manager, this.date_range);
-				if(this.run_id != -1){
-					logger.debug("Similar Run was found and ID retrieved");
+				if(this.run_id > 0){
+					logger.trace("Similar Run was found and ID retrieved");
 				}
 				else{
-					logger.debug("No similar run, uploaded as new run");
+					logger.trace("No similar run, uploaded as new run");
 					this.run_id = run.uploadRun(manager);
 					if(this.run_id != -1){
-						logger.debug("Run was uploaded and ID retrieved");	
+						logger.trace("Run was uploaded and ID retrieved");	
 					}
 					else{
 						logger.error("Failed to retrieve a run id, cannot upload");
-						return false;
+						values[0]=-1;
+						return values;
 					}
 				}
 			}
@@ -190,49 +212,57 @@ public class BlastxHelper {
 				for(String s : run.getValidationErrors()){
 					if(s.length() > 0)logger.error(s);
 				}
-				return false;
+				return values;
 			}
 		}
-		if(run_id == -1){
+		if(run_id < 1){
 			logger.error("Run id was not correctly set");
-			return false;
+			return values;
 		}
-		if(contig_id == -1){
-			String nom = blastx.getBlastTagContents("BlastOutput_query-ID");
+		if(contig_id < 1){
+			String nom = blastx.getBlastTagContents("BlastOutput_query-def");
 			contig_id =  manager.getBioSQLXT().getBioEntryId(manager, nom, fuzzy, manager.getEddieDBID());
 		}
-		if(contig_id == -1){
-			logger.warn("Failed to upload to mysql as query-ID was not found in database");
-			return false;
+		if(contig_id < 1){
+			logger.error("Failed to upload to mysql as query-ID was not found in database");
+			return values;
 		}
 		else{
 			if(dbname == null){
-				logger.warn("Not Database name set, using default: 'genbank'");
-				dbname = "genbank";
+				logger.warn("Not Database name set, using default: 'unknown'");
+				dbname = "unknown";
 			}
 			try{
+				//Values set to 0 as no errors
+				values[0]=0;
 				for(int i =1; i < blastx.getNoOfHits(); i++){
 					String acc = getHitAccession(i);
 					int dbx_ref =  manager.getBioSQL().getDBxRef(manager.getCon(), dbname, acc);
-					if(dbx_ref == -1)manager.getBioSQL().addDBxref(manager.getCon(), dbname, acc, 0);
+					if(dbx_ref < 1)manager.getBioSQL().addDBxref(manager.getCon(), dbname, acc, 0);
 					dbx_ref =  manager.getBioSQL().getDBxRef(manager.getCon(), dbname, acc);
-					if(dbx_ref == -1){
+					if(dbx_ref < 1){
 						logger.error("Could not upload accession " + acc);
-						return false;
 					}
-					for(int j=1 ; j < blastx.getNoOfHsps(i); j++){
-						if(!manager.getBioSQLXT().existsDbxRefId(manager, contig_id, dbx_ref, run_id, j)){
-							int[] pos = this.getStartsStopsFrames(i, j);
-							manager.getBioSQLXT().setDbxref(manager, contig_id, dbx_ref, run_id, j, this.getHspEvalue(i, j), this.getHspScore(i, j), pos[0], pos[1], pos[2],
+					for(int rank=1 ; rank < blastx.getNoOfHsps(i); rank++){
+						if(!manager.getBioSQLXT().existsDbxRefId(manager, contig_id, dbx_ref, run_id, rank)){
+							int[] pos = this.getStartsStopsFrames(i, rank);
+							manager.getBioSQLXT().setDbxref(manager, contig_id, dbx_ref, run_id, rank, this.getHspEvalue(i, rank), this.getHspScore(i, rank), pos[0], pos[1], pos[2],
 									pos[3], pos[4], pos[5]);
+							values[0]++;
+						}
+						else{
+							values[1]++;
 						}
 					}
 				}
-				return true;
+				return values;
 			}
 			catch(Exception e){
-				logger.error("Error retrieving data from blast file ", e );
-				return false;
+				String s = manager.getBioSQL().getBioEntryNames(manager.getCon(), this.getContig_id())[2];
+				if(s == null)s = "contig id: " + this.getContig_id();
+				logger.error("Error retrieving data from blast file, "+s, e );
+				values[0]=-1;
+				return values;
 			}
 		}
 	}

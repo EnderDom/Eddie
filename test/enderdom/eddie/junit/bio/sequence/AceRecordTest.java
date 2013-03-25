@@ -33,9 +33,30 @@ public class AceRecordTest {
 			while(parser.hasNext()){
 				ACERecord record = parser.next();
 				String seq = record.getConsensus().getSequence();
+				
 				if(count == 0){
 					assertEquals(contig1.length(), seq.length());
 					assertEquals(contig1, seq);
+					assertEquals(5, record.getNoOfReads());
+					for(int total =0; total < record.getConsensus().getLength();total+=60){
+						System.out.print(record.getConsensus().getIdentifier() + "       ");
+						for(int j=0; j < 60; j++){
+							if(j+total < record.getConsensus().getLength()){
+								System.out.print(record.getConsensus().getSequence().charAt(j+total));
+							}
+						}
+						System.out.println();
+						for(int i =0;i < record.getNoOfReads(); i++){
+							System.out.print(record.getRead(i).getIdentifier() + "    ");
+							for(int j=0; j < 60; j++){
+								if(j+total < record.getConsensus().getLength()){
+									System.out.print(record.getCharAt(i, j+total, 0));
+								}
+							}
+							System.out.println();
+						}
+						System.out.println();
+					}
 				}
 				count++;
 			}
@@ -45,5 +66,7 @@ public class AceRecordTest {
 			fail("Failed to parse file");
 		}
 	}
+	
+	
 	
 }

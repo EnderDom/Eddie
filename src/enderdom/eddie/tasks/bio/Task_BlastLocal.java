@@ -2,8 +2,8 @@ package enderdom.eddie.tasks.bio;
 
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Properties;
+import java.util.Stack;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -12,11 +12,9 @@ import org.biojava3.ws.alignment.qblast.BlastProgramEnum;
 
 import enderdom.eddie.bio.factories.SequenceListFactory;
 import enderdom.eddie.bio.sequence.SequenceList;
-import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 
-import enderdom.eddie.tasks.BasicTaskStack;
 import enderdom.eddie.tasks.Checklist;
-import enderdom.eddie.tasks.TaskStack;
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tasks.subtasks.SubTask_Blast;
 import enderdom.eddie.tools.Tools_File;
@@ -37,6 +35,8 @@ public class Task_BlastLocal extends TaskXTwIO{
 	private boolean clipname;
 	boolean err;
 	private boolean remote;
+	private String[] filter;
+	private int filterlen;
 	
 	public Task_BlastLocal(){
 		/*
@@ -72,6 +72,17 @@ public class Task_BlastLocal extends TaskXTwIO{
 		else if(!blastparams.contains("outfmt")){
 			blastparams +=" -outfmt 5";
 		}
+		if(cmd.hasOption("f")){
+			File f = new File(cmd.getOptionValue("f"));
+			if(f.exists()){
+				filterlen = Tools_File.countLines(f); 
+				filter = Tools_File.quickRead2Array(filterlen, f, true);
+			}
+			if(filter == null || filter.length == 0){
+				logger.error("Failed to parse filter list");
+				err = true;
+			}
+		}
 	}
 	
 	public void parseOpts(Properties props){
@@ -102,6 +113,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 		options.addOption(new Option("filetype", true, "Specify filetype (rather then guessing from ext)"));
 		options.addOption(new Option("clip", false, "Clip output file name to whitespace in input"));
 		options.addOption(new Option("remote", false, "Run remote blasts in parallel with local (WARN: Will send NCBI blast jobs)"));
+		options.addOption(new Option("-f", "-filter", true, "Blast only the sequences in this file, need to be the same as in fasta, 1 per line no spaces"));
 	}
 	
 	public void runTest(){
@@ -120,7 +132,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 	}
 
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
 		this.checklist = openChecklist(ui);
 		if(input != null && output != null && !err){
@@ -132,13 +144,18 @@ public class Task_BlastLocal extends TaskXTwIO{
 					if(checklist.inRecovery()){
 						trimRecovered(checklist.getData());
 					}
+					if(filter != null){
+						int j = trimRecovered(filter);
+						if(j != filterlen){
+							throw new Exception("Number of lines "
+									+"in filter file does not match the number of sequences removed");
+						}
+					}
 					logger.debug("About to start running blasts");
 					runAutoBlast(out, checklist);
 				}
-				catch(IOException io){
+				catch(Exception io){
 					logger.error(io);
-				} catch (UnsupportedTypeException e) {
-					logger.error(e);
 				}
 			}
 			else{
@@ -149,14 +166,14 @@ public class Task_BlastLocal extends TaskXTwIO{
 			logger.error("Null input/output");
 		}
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 	public boolean isKeepArgs(){
 		return true;
 	}
 	
-	private void trimRecovered(String[] data){
+	private int trimRecovered(String[] data){
 		int j=0;
 		for(int i =0;i < data.length; i++){
 			if(sequences.getSequence(data[i]) != null){
@@ -165,28 +182,27 @@ public class Task_BlastLocal extends TaskXTwIO{
 			}
 		}
 		logger.debug("Removed "+j+" of "+ data.length + " from list, as previously run");
+		return j;
 	}
 	
 	public void runAutoBlast(File output, Checklist list){
 		if(BlastProgramEnum.valueOf(blast_prg) == null){
 			logger.warn("Are you sure " + blast_prg + " is a program?");
 		}	
-		
-		//TODO add option to use central server, thus 'sort of' allow parallelisation
-		TaskStack stack = new BasicTaskStack();
+		//Stack, should.... be synchronized
+		Stack<String> stack = new Stack<String>();
 		int i=0;
 		for(String s : sequences.keySet()){
 			stack.push(s);
 			i++;
 		}
 		logger.debug(i+" sequences to blast, adding to TaskManager");
-		ui.setTasker(stack);
-		SubTask_Blast blast = new SubTask_Blast(sequences, ui.getTasker(), false, list, this.output, this.clipname);
+		SubTask_Blast blast = new SubTask_Blast(sequences, stack, false, list, this.output, this.clipname);
 		blast.setBlastDetails(blast_prg, blast_bin, blast_db, blastparams);
 		blast.setCore(true);
 		ui.addTaskLike(blast);
 		if(remote){
-			SubTask_Blast blast2 = new SubTask_Blast(sequences, ui.getTasker(), true, list, this.output, this.clipname);
+			SubTask_Blast blast2 = new SubTask_Blast(sequences, stack, true, list, this.output, this.clipname);
 			String db = FilenameUtils.getBaseName(blast_db);
 			logger.info("Database was trimmed to " + blast_db + " for the remote");
 			blast2.setBlastDetails(blast_prg, blast_bin, db, blastparams);

@@ -7,19 +7,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
 
+import enderdom.eddie.bio.sequence.BasicSequenceList;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.GenericSequence;
-import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.bio.sequence.SequenceObject;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
-import enderdom.eddie.tools.Tools_Math;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
 import enderdom.eddie.tools.bio.Tools_Fasta;
 import enderdom.eddie.tools.bio.Tools_Sequences;
@@ -31,15 +28,10 @@ import enderdom.eddie.tools.bio.Tools_Sequences;
  * BioJava,  but I don't have time
  */
 
-public class Fasta implements FastaHandler, SequenceList{
+public class Fasta extends BasicSequenceList implements FastaHandler{
 
-	private LinkedHashMap<String, SequenceObject> sequences;
 	private boolean fastq;
-	Logger logger = Logger.getRootLogger();
 	int iteration =0;
-	private String filename;
-	private String filepath;
-	private BioFileType type;
 	
 	public Fasta(){
 		sequences = new LinkedHashMap<String, SequenceObject>();
@@ -54,15 +46,13 @@ public class Fasta implements FastaHandler, SequenceList{
 			SequenceObject o = sequences.get(title);
 			o.setSequence(sequence);
 			sequences.put(title, o);
-			int l1 =0;int l2 =0;
-			if((l1=sequence.length()) != (l2=sequences.get(title).getQuality().length())){
-				logger.error("Sequence length "+l1+" and Quality lentgh "+l2+" don't match for " + title);
-			}
+			lengthCheck(title);
 		}
 		else{
 			sequences.put(title, new GenericSequence(title, sequence));
 		}
 	}
+
 
 	/**
 	 * Quality must be fastq
@@ -74,15 +64,27 @@ public class Fasta implements FastaHandler, SequenceList{
 			SequenceObject o = sequences.get(title);
 			o.setQuality(quality);
 			sequences.put(title, o);
-			int l1 =0;int l2=0;
-			if((l1=sequences.get(title).getSequence().length()) != (l2=quality.length())){
-				logger.error("Sequence length "+l1+" and Quality length "+l2+" don't match for " + title);
-			}
+			lengthCheck(title);
 		}
 		else{
 			SequenceObject o = new GenericSequence(title);
 			o.setQuality(quality);
 			sequences.put(title, o);
+		}
+	}
+	
+	/**
+	 * Checks that sequence length and quality are the same length, 
+	 * but doesn't throw an error, just logs an error
+	 * 
+	 * @param title
+	 */
+	private void lengthCheck(String title){
+		if(sequences.get(title).getQuality()!=null && sequences.get(title).getSequence() != null){
+			int l1 =0;int l2 =0;
+			if((l1=sequences.get(title).getSequence().length()) != (l2=sequences.get(title).getQuality().length())){
+				logger.error("Sequence length "+l1+" and Quality lentgh "+l2+" don't match for " + title);
+			}
 		}
 	}
 
@@ -193,9 +195,6 @@ public class Fasta implements FastaHandler, SequenceList{
 		return l;
 	}
 	
-	public int getN50(){
-		return Tools_Sequences.n50(getListOfActualLens());
-	}
 	
 	/*
 	 * See Tool_Sequences static method for array values
@@ -203,29 +202,11 @@ public class Fasta implements FastaHandler, SequenceList{
 	public long[] getAllStats(){
 		return Tools_Sequences.SequenceStats(getListOfActualLens());
 	}
-	
-	public int getNoOfSequences(){
-		return this.sequences.size();
-	}
-	
+
 	public int size(){
 		return getNoOfSequences();
 	}
-	
-	public synchronized SequenceObject getSequence(int i){
-		for(String s : sequences.keySet()){
-			if(i==0){
-				return sequences.get(s);
-			}
-			i--;
-		}
-		return null;
-	}
-	
-	public SequenceObject getSequence(String key){
-		return this.sequences.get(key);
-	}
-	
+
 	public int trimSequences(int tr){
 		int trimcount = 0;
 		LinkedList<String> toremove = new LinkedList<String>();
@@ -369,47 +350,6 @@ public class Fasta implements FastaHandler, SequenceList{
 		return null;
 	}
 
-	public boolean hasNext() {	
-		return iteration < this.getNoOfSequences();
-	}
-
-	public SequenceObject next() {
-		iteration++;
-		return this.getSequence(iteration-1);
-	}
-
-	public void remove() {
-		this.remove(this.getSequenceName(iteration));
-	}
-
-	public int[] getListOfActualLens() {
-		int[] li = new int[this.getNoOfSequences()];
-		for(int i =0;i < li.length; i++){
-			li[i] = this.getSequence(i).getActualLength();
-		}
-		return li;
-	}
-	
-
-	public int[] getListOfLens() {
-		int[] li = new int[this.getNoOfSequences()];
-		for(int i =0;i < li.length; i++){
-			li[i] = this.getSequence(i).getActualLength();
-		}
-		return li;
-	}
-
-	public int getNoOfMonomers() {
-		return Tools_Math.sum(this.getListOfActualLens());
-	}
-	
-	public int getQuickMonomers(){
-		int i =0;
-		for(String o : this.sequences.keySet()){
-			i += this.sequences.get(o).getLength();
-		}
-		return i;
-	}
 
 	//TODO improve remove redundancy of saveFasta and saveFile
 	public String[] saveFile(File file, BioFileType filetype) throws UnsupportedTypeException, IOException {
@@ -508,38 +448,6 @@ public class Fasta implements FastaHandler, SequenceList{
 		return type;
 	}
 
-	public String getFileName() {
-		return this.filename;
-	}
-
-	public String getFilePath() {
-		return this.filepath;
-	}
-
-	public boolean canAddSequenceObjects() {
-		return true;
-	}
-	
-	public boolean canRemoveSequenceObjects() {
-		return true;
-	}
-
-	public void addSequenceObject(SequenceObject obj) {
-		this.sequences.put(obj.getIdentifier(), obj);
-	}
-
-	public void removeSequenceObject(String name) {
-		if(this.sequences.containsKey(name)){
-			this.sequences.remove(name);
-		}
-		else{
-			logger.warn("Attempting to remove sequence which does not exist " + name);
-		}
-	}
-
-	public Set<String> keySet() {
-		return this.sequences.keySet();
-	}
 
 		
 }

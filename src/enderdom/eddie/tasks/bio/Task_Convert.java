@@ -8,6 +8,7 @@ import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
 
 
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Converters;
@@ -44,10 +45,11 @@ public class Task_Convert extends TaskXTwIO{
 	}
 	
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		if(input ==null || output == null){
 			logger.error("Input/Output not set");
+			setCompleteState(TaskState.ERROR);
 			return;
 		}
 		File in = new File(input);
@@ -68,7 +70,7 @@ public class Task_Convert extends TaskXTwIO{
 			else logger.error("Input not a file");
 		}
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 
 }

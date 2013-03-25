@@ -1,9 +1,6 @@
 package enderdom.eddie.tasks;
 
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -19,14 +16,11 @@ import enderdom.eddie.tools.Tools_CLI;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
 import enderdom.eddie.ui.TaskManager;
-import enderdom.eddie.ui.UI;
 
-public abstract class Task implements TaskLike {
+public abstract class Task extends BasicTask {
 
-	private int id;
-	private boolean core;
 	private TaskManager manager;
-	protected int complete;
+	protected TaskState state;
 	public Options options;
 	public boolean helpmode;
 	protected boolean testmode;
@@ -34,29 +28,11 @@ public abstract class Task implements TaskLike {
 	protected String helpheader = "--This is the Help Message of the Default Task--";
 	protected String password =null;
 	Logger logger = Logger.getRootLogger();
-	
-	/*
-	 * complete note:
-	 * -1 == unstarted, but init
-	 * 0 == started
-	 * 1 == finished without error
-	 * 2 == cancelled
-	 * 3 == Error
-	 * >3 == Task-Specific Error
-	 */
-	
-	private boolean try2Close;
-	
-	public boolean isCore(){
-		return core;
-	}
-	
-	public void setCore(boolean core){
-		this.core = core;
-	}
+	protected int futurehash;
+
 	
 	public void run() {
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		Logger.getRootLogger().debug("Started running task @ "+Tools_System.getDateNow());
 		if(testmode){
 			runTest();
@@ -72,7 +48,7 @@ public abstract class Task implements TaskLike {
 		    		"class that has extended this Task class has not overwrote the default run()");
 		}
 		Logger.getRootLogger().debug("Finished running task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 	public void parseArgs(String[] args){
@@ -131,70 +107,6 @@ public abstract class Task implements TaskLike {
 		this.manager.update(this);
 	}
 	
-	public boolean isStart(){
-		if(complete == -1){
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-
-	public boolean cancel(boolean arg0) {
-		try2Close = arg0;
-		return false;
-	}
-
-	public Object get() throws InterruptedException, ExecutionException {
-		return (Object) this;
-	}
-
-	public Object get(long arg0, TimeUnit arg1) throws InterruptedException,
-			ExecutionException, TimeoutException {
-		return (Object) this;
-	}
-
-	public boolean isCancelled() {
-		if(complete== 2){
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-
-	public boolean isDone() {
-		if(complete > 0){
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-	
-	public int getComplete() {
-		return complete;
-	}
-
-	protected void setComplete(int complete) {
-		this.complete = complete;
-		logger.info("Task was set to complete");
-	}
-
-	public boolean isTry2Close() {
-		return try2Close;
-	}
-
-	public void setTry2Close(boolean try2Close) {
-		this.try2Close = try2Close;
-	}
-
-	public void setID(int taskcounter) {
-		this.id = taskcounter;
-	}
-	public int getID(){
-		return this.id;
-	}
 	
 	public void buildOptions(){
 		options = new Options();
@@ -223,14 +135,7 @@ public abstract class Task implements TaskLike {
 	public boolean isKeepArgs(){
 		return false;
 	}
-	
-	public boolean wantsUI(){
-		return false;
-	}
-	
-	public void addUI(UI ui){
-		
-	}
+
 	/*
 	 * Very basic File Type detection
 	 * 
