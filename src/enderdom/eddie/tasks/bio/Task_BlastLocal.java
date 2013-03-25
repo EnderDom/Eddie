@@ -113,7 +113,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 		options.addOption(new Option("filetype", true, "Specify filetype (rather then guessing from ext)"));
 		options.addOption(new Option("clip", false, "Clip output file name to whitespace in input"));
 		options.addOption(new Option("remote", false, "Run remote blasts in parallel with local (WARN: Will send NCBI blast jobs)"));
-		options.addOption(new Option("-f", "-filter", true, "Blast only the sequences in this file, need to be the same as in fasta, 1 per line no spaces"));
+		options.addOption(new Option("f", "filter", true, "Blast only the sequences in this file, need to be the same as in fasta, 1 per line no spaces"));
 	}
 	
 	public void runTest(){

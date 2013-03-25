@@ -56,7 +56,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				mode = -1;
 			}
 			else{
-				Logger.getRootLogger().info("###_________NEW SESSION_________###");
+				Logger.getRootLogger().info("##### NEW SESSION ######");
 				
 				StringBuffer buffer = new StringBuffer();
 				boolean pass = false;
