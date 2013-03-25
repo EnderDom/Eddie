@@ -149,18 +149,22 @@ public class Task_BlastLocal extends TaskXTwIO{
 						int j = keepSequences(filter);
 						if(j != filterlen){
 							throw new Exception("Number of lines "+filterlen
-									+" in filter file does not match the number of sequences removed " + j);
+									+" in filter file does not match the number of sequences kept " + j);
 						}
 					}
 					logger.debug("About to start running blasts");
 					runAutoBlast(out, checklist);
 				}
 				catch(Exception io){
-					logger.error(io);
+					logger.error("An error was thrown ", io);
 				}
 			}
 			else{
-				logger.error("Check that in is file, out is directory and blast_bin/db/prg is set");
+				if(!out.isDirectory())logger.error("Out should be a directory");
+				if(!in.isFile())logger.error("Input should at least be a file");
+				if(this.blast_bin == null)logger.error("Blast binary directory needs to be set, either in commands or in props file");
+				if(this.blast_db == null)logger.error("Blast Database should be set");
+				if(this.blast_prg == null)logger.error("Blast Prorgam should be set");
 			}
 		}
 		else{
@@ -191,7 +195,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 		int j=0;
 		SequenceList l2 = new Fasta();
 		for(int i =0;i < data.length; i++){
-			if(sequences.getSequence(data[i]) == null){
+			if(sequences.getSequence(data[i]) != null){
 				l2.addSequenceObject(sequences.getSequence(data[i]));
 				j++;
 			}
