@@ -134,7 +134,7 @@ public class Task_IprscanLocal extends TaskXTwIO{
 						long timecurrent = System.currentTimeMillis();
 						long rate = (timecurrent-timestart)/total;
 						long s = rate*sequences.getNoOfSequences();
-						System.out.println(total + " sequences run, Estimated Time Left "+ Tools_System.long2DayHourMin(s));
+						System.out.println(total + " sequences run with "+sequences.getNoOfSequences()+" left, Estimated Time Left "+ Tools_System.long2DayHourMin(s));
 					}
 				}
 				catch(Exception io){
