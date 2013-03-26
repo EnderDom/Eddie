@@ -38,14 +38,43 @@ public abstract class Tools_System{
     	Calendar now = Calendar.getInstance();
     	try {
 			Date then = sdf.parse(source);
-			return (int)((now.getTime().getTime()-then.getTime())/(3600*24*1000));
+			return (int)((now.getTime().getTime()-then.getTime())/(1000*3600*24));//millis*minutes*days
 		} 
     	catch (ParseException e) {
 			e.printStackTrace();
 			return 0;
 		}
     }
+    
+    public static String long2DayHourMin(long l){
+    	return String.format("%ddays %dhours %dmins",l/86400000, (l%86400000)/3600000, ((l%86400000)%3600000)/60000);
+    }
 
+    public static int getDeltaInHoursToNow(String source){
+    	SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
+    	Calendar now = Calendar.getInstance();
+    	try {
+			Date then = sdf.parse(source);
+			return (int)((now.getTime().getTime()-then.getTime())/(1000*3600));
+		} 
+    	catch (ParseException e) {
+			e.printStackTrace();
+			return 0;
+		}
+    }
+    
+    public static int getDeltaInMinutesToNow(String source){
+    	SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
+    	Calendar now = Calendar.getInstance();
+    	try {
+			Date then = sdf.parse(source);
+			return (int)((now.getTime().getTime()-then.getTime())/(1000*60));
+		} 
+    	catch (ParseException e) {
+			e.printStackTrace();
+			return 0;
+		}
+    }
     
     public static boolean isWindows(){
     	return SystemUtils.IS_OS_WINDOWS;
