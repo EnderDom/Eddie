@@ -38,4 +38,14 @@ public interface TaskLike extends Runnable, Future<Object> {
 	
 	public int getFutureHash();
 	
+	/**
+	 * 
+	 * @return returns true only when 
+	 * task has been programmed to shutdown
+	 * gracefully. Else when force shutdown occurs
+	 * this task will simply be killed.
+	 *  
+	 */
+	public boolean canBeShutdown();
+	
 }

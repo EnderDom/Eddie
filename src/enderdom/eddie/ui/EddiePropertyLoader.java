@@ -192,7 +192,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				"FILES_XML","PREFLNF","TESTDATADIR",
 				"DBTYPE","DBDRIVER","DBHOST", 
 				"DBNAME", "DBUSER","UNI_VEC_DB", "UNIVEC_URL",
-				"MAXERRORPERC", "IPRSCAN_BIN"
+				"MAXERRORPERC", "IPRSCAN_BIN", "GRACEFUL_SHUTDOWN"
 				 };
 		defaultvalues = new String[]{
 				propfile.getParent(), "5", "1", 
@@ -200,7 +200,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				"null", defaultlnf, propfile.getParent()+slash+"test", 
 				"mysql","com.mysql.jdbc.Driver", "Localhost", 
 				DatabaseManager.default_database, "user", "","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec",
-				"0.1", "/usr/bin/iprscan"
+				"0.1", "/usr/bin/iprscan", "FALSE"
 				};
 		defaulttooltips = new String[]{
 				"Default Workspace directory", "Number of threads for core tasks (High CPU)", 
@@ -209,7 +209,8 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				"Preferred Look & Feel", "Directory Path for test data", "Database type, ie mysql", "Database driver",
 				"Database host url", "Database name for Eddie", "Database user name", "Location of uni vec database",
 				"Default URL to download the fasta for univec data", "Maxium percentage of errors before task cancelled (0<x<1)",
-				"Location of local iprscan binary"
+				"Location of local iprscan binary", 
+				"For example set to true will lead to shutdown only after current batch of blasts, say, are completed"
 		};
 		
 		if(defaultkeys.length != defaultvalues.length)System.out.println("You're being derp Dominic :(");
@@ -229,8 +230,6 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 		for(int i =0; i < tempkeys.length; i++){
 				this.props.put(tempkeys[i], tempvalues[i]);
 		}
-		
-
 	}
 
 	public String[][] getChangableStats(){

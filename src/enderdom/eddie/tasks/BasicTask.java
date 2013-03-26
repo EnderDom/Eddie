@@ -106,4 +106,10 @@ public class BasicTask implements TaskLike {
 		setCompleteState(TaskState.CANCELLED);
 		return false;
 	}
+
+	public boolean canBeShutdown() {
+		return false;
+	}
+	
+	
 }

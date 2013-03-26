@@ -28,7 +28,7 @@ import enderdom.eddie.ui.UI;
 
 /**
  * 
- * @author EnderDom
+ * @author Dominic Wood
  * 
  * I wasn't originally going to make this,
  * but for some reason nobody ever makes programs
@@ -46,7 +46,6 @@ public class Task_IprscanLocal extends TaskXTwIO{
 	private String params;
 	SequenceList sequences;
 	private int split;
-	
 	
 	public Task_IprscanLocal(){
 		/*
@@ -108,11 +107,13 @@ public class Task_IprscanLocal extends TaskXTwIO{
 			File out = new File(output);
 			if(in.isFile() && out.isDirectory() && this.iprscanbin !=null){
 				try{
-					this.sequences = SequenceListFactory.getSequenceList(input); 
+					this.sequences = SequenceListFactory.getSequenceList(input);
+					int size = this.sequences.getNoOfSequences();
 					if(checklist.inRecovery()){
 						trimRecovered(checklist.getData());
 					}
-					logger.debug("About to start running blasts");
+					logger.debug("About to start running iprscans");
+					int total = 0;
 					while(this.sequences.getNoOfSequences() != 0){
 						SequenceObject[] id = sequences.getNoOfSequences() > split ?
 								new SequenceObject[split] : new SequenceObject[sequences.getNoOfSequences()];
@@ -127,12 +128,15 @@ public class Task_IprscanLocal extends TaskXTwIO{
 						}
 						while(removes.size()!=0)sequences.removeSequenceObject(removes.pop());
 						runIPRScan(out, checklist, id);
+						total+=c;
+						int perc = (int) Math.round(((double)sequences.getNoOfSequences() / (double)size)*100);
+						System.out.print("/r "+total + " sequences run, "+perc+"% complete");
 					}
-					
 				}
 				catch(Exception io){
 					logger.error("Failed to run iprscan",io);
 				}
+				System.out.println();
 			}
 			else{
 				logger.error("Check that in is file, out is directory and blast_bin/db/prg is set");
@@ -167,7 +171,6 @@ public class Task_IprscanLocal extends TaskXTwIO{
 		File temp = null;
 		try{
 			temp = File.createTempFile("Tempscan", ".fasta");
-			logger.debug("Building temp file to scan ");
 			fstream = new FileWriter(temp, false);
 			out = new BufferedWriter(fstream);
 			for(int i =0; i < id.length; i++){
@@ -175,24 +178,15 @@ public class Task_IprscanLocal extends TaskXTwIO{
 			}
 			fstream.close();
 			
-			logger.debug("Saved to " + temp.getPath() + " stream closed");
+			logger.trace("Saved to " + temp.getPath() + " stream closed");
 			String exec = iprscanbin +" " + params+ " -i " + temp.getPath() + " -o " + output.getPath();
 			logger.trace("About to execute output: " + exec);
-			/****
-			 * 
-			 * TODO REMOVE THIS BREAK
-			 */
-			System.exit(0);
-			/**
-			 * 
-			 */
 			StringBuffer[] buffer = Tools_Task.runProcess(exec, true);
-			logger.trace("Output:"+buffer[0].toString());			
+			logger.trace("Output:"+buffer[0].toString());
 			temp.delete();
 		}
 		catch(IOException io){
 			logger.error(io);
-			logger.info("GORDEN'S ALIVE!");
 		}
 	}
 	

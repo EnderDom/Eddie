@@ -6,8 +6,8 @@ import java.util.concurrent.Future;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.databases.legacy.DBInterface;
-
 import enderdom.eddie.tasks.TaskLike;
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tools.Tools_Fun;
 
 /**
@@ -117,8 +117,6 @@ public class TaskManager extends Thread{
 	public void setStarted(boolean started) {
 		this.started = started;
 	}
-
-	
 	
 	/*
 	 * Work in progress, not yet completely familiar with thread safety yet
@@ -196,6 +194,23 @@ public class TaskManager extends Thread{
 		}
 		return null;
 	}
-	
+
+	public Stack<TaskLike> getShutdowns() {
+		Stack<TaskLike> toshut = new Stack<TaskLike>();
+		for(int i =0; i < coretasklist.length;i++){
+			if(coretasklist[i] != null){
+				if(coretasklist[i].canBeShutdown())toshut.add(coretasklist[i]);
+				else coretasklist[i].setCompleteState(TaskState.CANCELLED);
+			}
+		}
+		for(int i =0; i < auxiltasklist.length;i++){
+			if(auxiltasklist[i] != null){
+				if(auxiltasklist[i].canBeShutdown())toshut.add(auxiltasklist[i]);
+				else auxiltasklist[i].setCompleteState(TaskState.CANCELLED);
+			}
+		}
+		return toshut;
+	}
+		
 
 }

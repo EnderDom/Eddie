@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
+import enderdom.eddie.tasks.ShutdownManager;
 import enderdom.eddie.tasks.Task;
 import enderdom.eddie.tasks.TaskLike;
 
@@ -26,7 +27,6 @@ public interface UI{
 	public String requiresUserInput(String message, String title);
 	
 	public String requiresUserPassword(String message, String title);
-	
 	
 	/**
 	 * 
@@ -71,5 +71,9 @@ public interface UI{
 	public void error(String message, Throwable t);
 
 	public void error(String message);
+	
+	public void initShutdown();
+	
+	public ShutdownManager getShutdownManager();
 	
 }
