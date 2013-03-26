@@ -187,7 +187,7 @@ public class Task_IprscanLocal extends TaskXTwIO{
 			
 			logger.trace("Saved to " + temp.getPath() + " stream closed");
 			String exec = iprscanbin +" " + params+ " -i " + temp.getPath() + " -o " 
-			+ output.getPath() + Tools_System.getNewline() + id[0].getIdentifier() +".xml";
+			+ output.getPath() + Tools_System.getFilepathSeparator()+ id[0].getIdentifier() +".xml";
 			logger.trace("About to execute output: " + exec);
 			StringBuffer[] buffer = Tools_Task.runProcess(exec, true);
 			logger.trace("Output:"+buffer[0].toString());
