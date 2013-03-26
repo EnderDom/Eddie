@@ -111,7 +111,6 @@ public class Task_IprscanLocal extends TaskXTwIO{
 			if(in.isFile() && out.isDirectory() && this.iprscanbin !=null){
 				try{
 					this.sequences = SequenceListFactory.getSequenceList(input);
-					int size = this.sequences.getNoOfSequences();
 					if(checklist.inRecovery()){
 						trimRecovered(checklist.getData());
 					}
@@ -125,6 +124,7 @@ public class Task_IprscanLocal extends TaskXTwIO{
 							if(c == split)break;
 							else{
 								id[c]=sequences.getSequence(s);
+								removes.add(s);
 							}
 							c++;
 						}
@@ -134,9 +134,7 @@ public class Task_IprscanLocal extends TaskXTwIO{
 						long timecurrent = System.currentTimeMillis();
 						long rate = (timecurrent-timestart)/total;
 						long s = rate*sequences.getNoOfSequences();
-						int perc = (int) Math.round(((double)size-sequences.getNoOfSequences() / (double)size)*100);
-						if(perc==100)perc=99;
-						System.out.println(total + " sequences run, "+perc+"% complete. Estimated Time Left "+ Tools_System.long2DayHourMin(s));
+						System.out.println(total + " sequences run, Estimated Time Left "+ Tools_System.long2DayHourMin(s));
 					}
 				}
 				catch(Exception io){
