@@ -87,7 +87,7 @@ public class Task_IprscanLocal extends TaskXTwIO{
 	
 	public void buildOptions(){
 		super.buildOptions();
-		options.addOption(new Option("b", "bin", true, "Set bin folder for local iprscan, else will use property file location"));
+		options.addOption(new Option("b", "bin", true, "Set executable for local iprscan, else will use property file location"));
 		options.addOption(new Option("pa", "params", true, "Parameters if not using default"));
 		options.addOption(new Option("pf", "paramsfile", true, "File containing the parameters, !will overwrite anything in -params"));
 		options.addOption(new Option("s", "split", true, "Successively split file into this many sequences"));
@@ -105,6 +105,7 @@ public class Task_IprscanLocal extends TaskXTwIO{
 		if(input != null && output != null){
 			File in = new File(input);
 			File out = new File(output);
+			int total = 0;
 			if(in.isFile() && out.isDirectory() && this.iprscanbin !=null){
 				try{
 					this.sequences = SequenceListFactory.getSequenceList(input);
@@ -113,7 +114,6 @@ public class Task_IprscanLocal extends TaskXTwIO{
 						trimRecovered(checklist.getData());
 					}
 					logger.debug("About to start running iprscans");
-					int total = 0;
 					while(this.sequences.getNoOfSequences() != 0){
 						SequenceObject[] id = sequences.getNoOfSequences() > split ?
 								new SequenceObject[split] : new SequenceObject[sequences.getNoOfSequences()];
@@ -129,7 +129,8 @@ public class Task_IprscanLocal extends TaskXTwIO{
 						while(removes.size()!=0)sequences.removeSequenceObject(removes.pop());
 						runIPRScan(out, checklist, id);
 						total+=c;
-						int perc = (int) Math.round(((double)sequences.getNoOfSequences() / (double)size)*100);
+						int perc = (int) Math.round(((double)size-sequences.getNoOfSequences() / (double)size)*100);
+						if(perc==100)perc=99;
 						System.out.print("/r "+total + " sequences run, "+perc+"% complete");
 					}
 				}
@@ -137,6 +138,7 @@ public class Task_IprscanLocal extends TaskXTwIO{
 					logger.error("Failed to run iprscan",io);
 				}
 				System.out.println();
+				System.out.println(" "+total + " sequences run, 100% complete");
 			}
 			else{
 				logger.error("Check that in is file, out is directory and blast_bin/db/prg is set");
@@ -179,7 +181,8 @@ public class Task_IprscanLocal extends TaskXTwIO{
 			fstream.close();
 			
 			logger.trace("Saved to " + temp.getPath() + " stream closed");
-			String exec = iprscanbin +" " + params+ " -i " + temp.getPath() + " -o " + output.getPath();
+			String exec = iprscanbin +" " + params+ " -i " + temp.getPath() + " -o " 
+			+ output.getPath() + Tools_System.getNewline() + id[0].getIdentifier() +".xml";
 			logger.trace("About to execute output: " + exec);
 			StringBuffer[] buffer = Tools_Task.runProcess(exec, true);
 			logger.trace("Output:"+buffer[0].toString());
