@@ -40,10 +40,19 @@ public class Task_DatabaseUpdate extends BasicTask{
 				try{
 					dbto24();
 				} catch (SQLException e) {
-					logger.error(e);
+					logger.error("Error updating ",e);
 					setCompleteState(TaskState.ERROR);
 					return;	
 				}	
+			}
+			else if(upfrom == 2.4){
+				try{
+					dbto25();
+				} catch (SQLException e) {
+					logger.error("Error updating ",e);
+					setCompleteState(TaskState.ERROR);
+					return;	
+				}
 			}
 			else{
 				logger.error("Can't update any further");
@@ -52,6 +61,15 @@ public class Task_DatabaseUpdate extends BasicTask{
 		setCompleteState(TaskState.FINISHED);
 	}
 	
+	public void dbto25() throws SQLException{
+		if(manager.getDBTYPE().equals("mysql"))  MySQL_Update.updbto25(manager);
+		else{
+			System.out.println("There was no support for none mysql before 2.5, eh?");
+		}
+		System.out.println("This update was due to a bug which lead to data such, " +
+				"as such all blast upload data will need to be re-uploaded");
+		upfrom=2.5;
+	}
 	
 	public void dbto24() throws SQLException{
 		if(manager.getDBTYPE().equals("mysql"))  MySQL_Update.updbto24(manager);

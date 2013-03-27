@@ -15,6 +15,7 @@ import java.net.URLEncoder;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -26,12 +27,80 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.codehaus.stax2.XMLInputFactory2;
+import org.codehaus.stax2.XMLStreamReader2;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 public class Tools_XML {
 	
 	public static int indent = 2;
+	
+	
+	//public static String[] getTagContentsfromURL(URL site, String[] listoftags){
+	//}
+	
+	/**
+	 * Very simple loads xml from URL
+	 * and spits out the first contents
+	 * of a tag which matches param tag
+	 * 
+	 * simples.
+	 * 
+	 * @param site
+	 * @param tag
+	 * @return
+	 * @throws XMLStreamException
+	 */
+	public static String getSingleTagFromURL(URL site, String tag) throws XMLStreamException{
+		XMLInputFactory2 f = (XMLInputFactory2) XMLInputFactory2.newInstance();
+	    f.setProperty(XMLInputFactory2.SUPPORT_DTD, Boolean.FALSE);
+	    XMLStreamReader2 stream = (XMLStreamReader2) f.createXMLStreamReader(site);
+		while(stream.hasNext()){
+		    stream.next();
+		    if(stream.isStartElement()){
+		    	String xmtag = stream.getName().toString();
+				if(xmtag.equals(tag)){
+					String ret = stream.getElementText();
+					stream.close();
+					return ret;
+				}
+		    }
+		}
+		return null;
+	}
+	
+	/**
+	 * Specify both tag, and a attribute value, though 
+	 * it will not discern the actual qname
+	 * 
+	 * @param site
+	 * @param tag
+	 * @param value
+	 * @return
+	 * @throws XMLStreamException
+	 */
+	public static String getSingleTagFromURL(URL site, String tag, String value) throws XMLStreamException{
+		XMLInputFactory2 f = (XMLInputFactory2) XMLInputFactory2.newInstance();
+	    f.setProperty(XMLInputFactory2.SUPPORT_DTD, Boolean.FALSE);
+	    XMLStreamReader2 stream = (XMLStreamReader2) f.createXMLStreamReader(site);
+		while(stream.hasNext()){
+		    stream.next();
+		    if(stream.isStartElement()){
+		    	String xmtag = stream.getName().toString();
+				if(xmtag.equals(tag)){
+					for(int i = 0; i < stream.getAttributeCount();i++){
+						if(stream.getAttributeValue(i).equals(value)){
+							String ret = stream.getElementText();
+							stream.close();
+							return ret;
+						}
+					}				
+				}
+		    }
+		}
+		return null;
+	}
 	
 	final public static Document inputStreamToDocument(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException{
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

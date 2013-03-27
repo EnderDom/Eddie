@@ -52,6 +52,8 @@ public class Task_BioSQLDB extends TaskXT{
 			System.out.println("xrefs");
 			System.out.println("assembly");
 			System.out.println("run");
+			System.out.println("dbxtax");
+			System.out.println("bioentry_run");
 			System.out.println("---								 ---");
 			return;
 		}
@@ -144,6 +146,8 @@ public class Task_BioSQLDB extends TaskXT{
 			//bsxt.addBioEntrySynonymTable(manager);
 			bsxt.addBioentryDbxrefCols(manager);
 			bsxt.addRunTable(manager);
+			bsxt.addRunBioentryTable(manager);
+			bsxt.addDbxTaxons(manager);
 			return bsxt.addAssemblyTable(manager);
 		}
 		else return false;
@@ -165,6 +169,11 @@ public class Task_BioSQLDB extends TaskXT{
 				return manager.getBioSQLXT().addBioentryDbxrefCols(manager);
 			}
 		}
+		else if(table.contentEquals("dbxtax")){
+			if(manager.isOpen()){
+				return manager.getBioSQLXT().addDbxTaxons(manager);
+			}
+		}
 		else if(table.contentEquals("assembly")){
 			if(manager.isOpen()){
 				return manager.getBioSQLXT().addAssemblyTable(manager);
@@ -173,6 +182,11 @@ public class Task_BioSQLDB extends TaskXT{
 		else if(table.contentEquals("run")){
 			if(manager.isOpen()){
 				return manager.getBioSQLXT().addRunTable(manager);
+			}
+		}
+		else if(table.contentEquals("bioentry_run")){
+			if(manager.isOpen()){
+				return manager.getBioSQLXT().addRunBioentryTable(manager);
 			}
 		}
 		else{

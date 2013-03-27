@@ -15,7 +15,6 @@ import enderdom.eddie.bio.factories.SequenceListFactory;
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.bio.sequence.SequenceObject;
 
-import enderdom.eddie.tasks.Checklist;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_File;
@@ -129,7 +128,8 @@ public class Task_IprscanLocal extends TaskXTwIO{
 							c++;
 						}
 						while(removes.size()!=0)sequences.removeSequenceObject(removes.pop());
-						runIPRScan(out, checklist, id);
+						runIPRScan(out, id);
+						
 						total+=c;
 						long timecurrent = System.currentTimeMillis();
 						long rate = (timecurrent-timestart)/total;
@@ -169,7 +169,7 @@ public class Task_IprscanLocal extends TaskXTwIO{
 		logger.debug("Removed "+j+" of "+ data.length + " from list, as previously run");
 	}
 	
-	public void runIPRScan(File output, Checklist list, SequenceObject[] id){
+	public void runIPRScan(File output, SequenceObject[] id){
 		
 		FileWriter fstream = null;
 		BufferedWriter out = null;
@@ -190,6 +190,7 @@ public class Task_IprscanLocal extends TaskXTwIO{
 			StringBuffer[] buffer = Tools_Task.runProcess(exec, true);
 			logger.trace("Output:"+buffer[0].toString());
 			temp.delete();
+			for(int i=0;i<id.length;i++)checklist.update(id[i].getIdentifier());
 		}
 		catch(IOException io){
 			logger.error(io);

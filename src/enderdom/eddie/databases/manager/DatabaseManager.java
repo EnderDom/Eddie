@@ -38,7 +38,7 @@ public class DatabaseManager {
 	private BioSQL biosql;
 	private BioSQLExtended biosqlext;
 	private int biodatabase_id =-1;
-	private static double databaseversion =2.4;
+	private static double databaseversion =2.5;
 	private boolean isOpen;
 	
 	public DatabaseManager(UI ui){

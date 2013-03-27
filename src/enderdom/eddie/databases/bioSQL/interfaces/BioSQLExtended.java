@@ -41,7 +41,11 @@ public interface BioSQLExtended {
 	
 	public boolean addRunTable(DatabaseManager dbman);
 	
+	public boolean addRunBioentryTable(DatabaseManager manager);
+	
 	public boolean addAssemblyTable(DatabaseManager manager);
+	
+	public boolean addDbxTaxons(DatabaseManager manager);
 	
 	public boolean addLegacyVersionTable(DatabaseManager dbman, String version, String dbversion) throws Exception;
 	

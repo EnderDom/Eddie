@@ -152,6 +152,62 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 	
 	/**
+	 * Yet another extra table, this is to link different sequences
+	 * to different source tissues, upload a sequencing run to 
+	 * run database and thus link this to the bioentry, allowing 
+	 * you to block grab data from one sequencing run
+	 */
+	public boolean addRunBioentryTable(DatabaseManager manager){
+		String table = 	"CREATE TABLE bioentry_run ( "+
+						"bioentry_id        INT(10) UNSIGNED NOT NULL,"+
+						"run_id          INT(10) UNSIGNED NOT NULL,"+
+						"rank  		   SMALLINT,"+
+						"PRIMARY KEY (bioentry_id,run_id)"+
+						") TYPE=INNODB;";
+		String key1 = 	"ALTER TABLE bioentry_run ADD CONSTRAINT FKrun_id_biorun"+
+		       			"FOREIGN KEY (run_id) REFERENCES run(run_id)"+
+						"ON DELETE CASCADE;";
+		String key2 =	"ALTER TABLE bioentry_run ADD CONSTRAINT FKbioentry_id_biorun"+
+		       			"FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id)"+
+						"ON DELETE CASCADE;"; 
+		try{
+			Statement st = manager.getCon().createStatement();
+			logger.debug("Building assembly table....");
+			st.executeUpdate(table);
+			st.executeUpdate(key1);
+			st.executeUpdate(key2);
+			st.close();
+			return true;
+		}
+		catch(SQLException e){
+			logger.error("Failed to create bioentry_run table", e);
+			return false;
+		}
+	}
+	
+	/**
+	 * This could be done by adding the full dbxref
+	 * as a bioentry, but I really don't want half the 
+	 * ncbi database in here when I want even use the data
+	 */
+	public boolean addDbxTaxons(DatabaseManager manager){
+		String alters[] = new String[]{
+				"ALTER TABLE dbxref ADD COLUMN (taxon_id INT(10) UNSIGNED);",
+				"CREATE INDEX dbxref_tax  ON dbxref(taxon_id);"
+		};
+		try{
+			Statement st = manager.getCon().createStatement();
+			for(String s: alters)st.executeUpdate(s);
+			st.close();
+			return true;
+		}
+		catch(SQLException se){
+			logger.error("Failed to alter bioentry_dbxref table", se);
+			return false;
+		}
+	}
+	
+	/**
 	 * After several different attempts at jamming assembly data 
 	 * into the biosql database, this is my latest attempt.
 	 * 
