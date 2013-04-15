@@ -157,7 +157,10 @@ public class Task_Assembly2DB extends TaskXTwIO{
 									this.identifier+count, "READ", null, 0, o.getSequence(), BioSQL.alphabet_DNA)){
 								logger.error("An error occured uploading " + o.getIdentifier());
 								break;
-								
+							}
+							if(runid > 0){
+								int bioentry = bs.getBioEntry(manager.getCon(), o.getIdentifier(), this.identifier+count, biodatabase_id);
+								manager.getBioSQLXT().addRunBioentry(manager, bioentry, this.runid);
 							}
 							count++;
 							System.out.print("\r"+(count) + " of " +size + "       ");

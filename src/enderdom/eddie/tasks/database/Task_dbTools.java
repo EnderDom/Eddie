@@ -28,6 +28,7 @@ public class Task_dbTools extends TaskXT{
 	private String output;
 	private boolean all;
 	private int run_id = -1;
+
 	
 	public Task_dbTools(){
 		setHelpHeader("--Database Tools--");
@@ -72,16 +73,19 @@ public class Task_dbTools extends TaskXT{
 		setCompleteState(TaskState.STARTED);
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		try{
-		if(readsasfasta){
-			DBReadsAsFasta(contig, output, password, ui);
-		}
-		else if(all){
-			if(this.output == null){
-				logger.error("Please set output");
-				return;
+			if(readsasfasta){
+				DBReadsAsFasta(contig, output, password, ui);
 			}
-			DBContigsAsFasta(output, run_id, password, ui);
-		}
+			else if(all){
+				if(this.output == null){
+					logger.error("Please set output");
+					return;
+				}
+				DBContigsAsFasta(output, run_id, password, ui);
+			}
+			else{
+				logger.info("No option selected");
+			}
 		}
 		catch(Exception e){
 			logger.error("Failed to establish database connection", e);

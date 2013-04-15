@@ -15,6 +15,10 @@ import java.sql.Types;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQL;
+import enderdom.eddie.databases.bioSQL.psuedoORM.Ontology;
+import enderdom.eddie.databases.bioSQL.psuedoORM.Term;
+import enderdom.eddie.databases.bioSQL.psuedoORM.TermRelationship;
+import enderdom.eddie.tools.Tools_String;
 
 /**
  * @author Dominic Wood
@@ -40,6 +44,9 @@ public class MySQL_BioSQL implements BioSQL{
 	private PreparedStatement SeqFeatureSET;
 	private PreparedStatement LocationSET;
 	private PreparedStatement DBxrefSET;
+	private PreparedStatement TaxonNameSET;
+	private PreparedStatement TermRelationshipSET;
+	private PreparedStatement DbxrefTermSET;
 	
 	//Gets
 	private PreparedStatement BioEntryGET1;
@@ -48,8 +55,12 @@ public class MySQL_BioSQL implements BioSQL{
 	private PreparedStatement BioEntryRelationshipGET;
 	private PreparedStatement LocationGET;
 	private PreparedStatement DBxrefGET;
+	private PreparedStatement TermRelationshipGET;
+	private PreparedStatement TaxonGET;
 	
 	private ResultSet set; 
+	
+	public static String innodb = "ENGINE";
 	
 	
 	public void clearStatements(){
@@ -62,6 +73,11 @@ public class MySQL_BioSQL implements BioSQL{
 		SeqfeatureGET = null;
 		BioEntryRelationshipGET = null;
 		LocationGET = null;
+		TaxonGET = null;
+		TaxonNameSET = null;
+		TermRelationshipSET = null;
+		DbxrefTermSET = null;
+		TermRelationshipGET = null;
 	}
 	
 	/* Method checks if the PreparedStatement has been initialised,
@@ -76,6 +92,36 @@ public class MySQL_BioSQL implements BioSQL{
 			ment = con.prepareStatement(sql);
 		}
 		return ment;
+	}
+	
+	/**
+	 * Check to see if mysql version is 4 or greater
+	 * because they change syntax from Type to Engine 
+	 * >3.3 and completely removed at 5.5 so this checks to
+	 * see if its 4 or higher 
+	 * for tables
+	 * @param con
+	 * @return
+	 * @throws SQLException 
+	 */
+	public static boolean useEngine(Connection con) throws SQLException{
+		Statement st = con.createStatement();
+		ResultSet set = st.executeQuery("SHOW VARIABLES LIKE \"%version%\";");
+		String v = null;
+		while(set.next())v=set.getString(1);
+		if(v.indexOf(".") !=-1){
+			Integer i = Tools_String.parseString2Int(v.substring(0, v.indexOf(".")));
+			if(i != null){
+				System.out.println(v + " of " + i);
+				if(i > 3)return true;
+				else{
+					innodb="TYPE";
+					return false;
+				}
+			}
+			else return true;
+		}
+		return true;
 	}
 	
 	public boolean addBiosequence(Connection con, Integer version, Integer length, String alphabet, String seq,  int bioentry_id) {
@@ -123,7 +169,7 @@ public class MySQL_BioSQL implements BioSQL{
 			return true;
 		}
 		catch(SQLException sq){
-			logger.error("Failed to add Biosequence ", sq);
+			logger.error("Failed to add Bioentry ", sq);
 			return false;
 		}
 	}
@@ -160,7 +206,7 @@ public class MySQL_BioSQL implements BioSQL{
 		}
 	}
 
-	public boolean addTerm(Connection con, String name, String definition, String identifier, Character is_obsolete, int ontology_id){
+	public boolean addTerm(Connection con, String name, String definition, String identifier, String is_obsolete, int ontology_id){
 		try{
 			PreparedStatement st = con.prepareStatement("INSERT INTO term (name, definition, identifier, is_obsolete, ontology_id) VALUES (?,?,?,?,?)");
 			st.setString(1, name);
@@ -169,13 +215,13 @@ public class MySQL_BioSQL implements BioSQL{
 			if(identifier == null)st.setNull(3, Types.VARCHAR);
 			else st.setString(3, identifier);
 			if(is_obsolete == null)st.setNull(4, Types.CHAR);
-			else st.setString(4, new String(is_obsolete.toString()));
+			else st.setString(4, is_obsolete);
 			st.setInt(5, ontology_id);
 			st.execute();
 			return true;
 		}
 		catch(SQLException sq){
-			logger.error("Failed to add Ontology with name " + name, sq);
+			logger.error("Failed to add Term with name " + name, sq);
 			return false;
 		}
 	}
@@ -262,6 +308,52 @@ public class MySQL_BioSQL implements BioSQL{
 	/*																   */
 	/*																   */
 	/*******************************************************************/
+	
+	
+	public String[][] getGenericResults(Connection con, String[] fields,
+			String table, String[] wheres, String[] wherevalues) {
+		StringBuffer sql = new StringBuffer("SELECT ");
+		for(int i =0; i < fields.length; i++){
+			sql.append(fields[i]);
+			if(i != fields.length-1) sql.append(",");
+			sql.append(" ");
+		}
+		sql.append("FROM ");sql.append(table);sql.append(" ");
+		if(wheres !=null){
+			if(wheres.length != wherevalues.length){
+				logger.warn("Where filter values array and filter array should be same but is not!");
+			}
+			sql.append("WHERE ");
+			for(int i =0; i < wheres.length; i++){
+				sql.append(wheres[i]);
+				sql.append("=\"");
+				sql.append(wherevalues[i]);
+				sql.append("\" ");
+				if(i != wheres.length-1) sql.append("AND ");
+			}
+		}
+		try{
+			Statement st = con.createStatement();
+			ResultSet set = st.executeQuery(sql.toString());
+			int size=0;
+			while(set.next())size++;
+			String[][] result = new String[size][fields.length];
+			set.first();
+			int i=0;
+			do{
+				for(int j =0; j < fields.length; j++){
+					result[i][j] = (set.getObject(fields[j])!=null) ? set.getObject(fields[j]).toString() : "NULL";
+				}
+				i++;
+			}
+			while(set.next());
+			return result;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to run generic BioSQL query with "+sql, sq);
+			return null;
+		}
+	}
 	
 	public String[] getBioEntryNames(Connection con, int bioentry_id){
 		try{
@@ -357,61 +449,87 @@ public class MySQL_BioSQL implements BioSQL{
 		return entry;
 	}
 	
-	public int getOntology(Connection con, String name){
+	public Ontology getOntology(Connection con, String name){
 		try{
-			int id=-1;
-			PreparedStatement stmt = con.prepareStatement("SELECT ontology_id FROM ontology WHERE name=?");
+			PreparedStatement stmt = con.prepareStatement("SELECT ontology.* FROM ontology WHERE name=?");
 			stmt.setString(1, name);
 			set = stmt.executeQuery();
+			Ontology o = null;
 			while(set.next()){
-				id = set.getInt("ontology_id");
+				o = new Ontology();
+				o.setOntology_id(set.getInt("ontology_id"));
+				o.setName(set.getString("name"));
+				o.setDefinition(set.getString("definition"));
 			}
-			return id;
+			return o;
 		}
 		catch(SQLException se){
 			logger.error("Failed to retrieve ontology id for " + name, se);
-			return -2;
+			return null;
 		}
 	}
-	/**
-	 * 
-	 * @param con
-	 * @param name
-	 * @param identifier
-	 * @return id if either name or identifier exists,
-	 * @return -1 if term_id doesn't exists
-	 * @return -2 if error
-	 */
 	
-	public int getTerm(Connection con, String name, String identifier){
+	public Term getTerm(Connection con, String name, String identifier, int ontology_id){
 		PreparedStatement stmt = null;
 		try{
-			int id=-1;
-			stmt = con.prepareStatement("SELECT term_id FROM term WHERE name=?");
+			Term t = null;
+			stmt = con.prepareStatement("SELECT term.* FROM term WHERE name=? AND ontology_id=?");
 			if(name == null){
 				name = identifier;
-				stmt = con.prepareStatement("SELECT term_id FROM term WHERE identifier=?");
+				stmt = con.prepareStatement("SELECT term.* FROM term WHERE identifier=? AND ontology_id=?");
 			}
 			stmt.setString(1, name);
+			stmt.setInt(2, ontology_id);
 			set = stmt.executeQuery();
 			while(set.next()){
-				id = set.getInt("term_id");
+				t = new Term(set.getInt("ontology_id"), set.getInt("term_id"), set.getString("name"),
+						set.getString("definition"), set.getString("identifier"),set.getString("is_obsolete"));
 			}
-			if(id < 0 && identifier != null){
-				stmt = con.prepareStatement("SELECT term_id FROM term WHERE identifier=?");
+			if(t == null && identifier != null){
+				stmt = con.prepareStatement("SELECT term.* FROM term WHERE identifier=? AND ontology_id=?");
 				stmt.setString(1, identifier);
+				stmt.setInt(2, ontology_id);
 				set = stmt.executeQuery();
 				while(set.next()){
-					id = set.getInt("term_id");
+					t = new Term(set.getInt("ontology_id"), set.getInt("term_id"), set.getString("name"),
+							set.getString("definition"), set.getString("identifier"),set.getString("is_obsolete"));
 				}
-			}
-			return id;
+			}			
+			return t;
 		}
 		catch(SQLException se){
 			logger.error("Failed to retrieve term id for "+ name, se);
-			return -2;
+			return null;
 		}
 	}
+	
+	public TermRelationship getTermRelationship(Connection con, int subject_id,
+			int object_id, int predicate_id, int ontology_id) {
+		try{
+			TermRelationshipGET = init(con, TermRelationshipGET, "SELECT term_relationship.* FROM term_relationship " +
+					"WHERE subject_term_id=? AND predicate_term_id=? AND object_term_id=? AND ontology_id=?");
+			TermRelationshipGET.setInt(1, subject_id);
+			TermRelationshipGET.setInt(2, predicate_id);
+			TermRelationshipGET.setInt(3, object_id);
+			TermRelationshipGET.setInt(4, ontology_id);
+			set = TermRelationshipGET.executeQuery();
+			TermRelationship t = null;
+			while(set.next()){
+				t = new TermRelationship();
+				t.setSubject_id(set.getInt("subject_term_id"));
+				t.setPredicate_id(set.getInt("predicate_term_id"));
+				t.setObject_id(set.getInt("object_term_id"));
+				t.setOntology_id(set.getInt("ontology_id"));
+				t.setTermRel_id(set.getInt("term_relationship_id"));
+			}
+			return t;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to get Term relationship", sq);
+			return null;
+		}
+	}
+
 	
 	public int getSeqFeature(Connection con, int bioentry_id, int type_term_id, int source_term_id, int rank){
 		try{
@@ -491,12 +609,17 @@ public class MySQL_BioSQL implements BioSQL{
 	 */
 	public boolean buildDatabase(Connection con){
 		try{
+			boolean engine = useEngine(con);
+			if(engine){
+				logger.debug("mysql version is 4 or greater switching INNODB from TYPE to ENGINE");
+			}
 			String[] sarr = getStatements(mysqldb);
 			Statement st = con.createStatement();
 			int i =0;
 			System.out.print("Building Tables...");
 			for(String s : sarr){
 				if(s.trim().length() > 0){
+					if(engine)s = s.replaceAll("TYPE=INNODB", "ENGINE=INNODB");
 					i +=st.executeUpdate(s);
 					System.out.print(".");
 				}
@@ -530,6 +653,126 @@ public class MySQL_BioSQL implements BioSQL{
 		return currentstate.toString().split(";");
 	}
 
+	public int addTaxon(Connection con, Integer ncbi_id, Integer parent_id,
+			String node_rank, Integer gencode, Integer mitocode, Integer leftvalue,
+			Integer rightvalue, int taxon_id) {
+		try{
+			PreparedStatement TaxonSET;
+			if(taxon_id < 1){
+				TaxonSET = con.prepareStatement("INSERT INTO taxon (ncbi_taxon_id, parent_taxon_id, node_rank, " +
+						"genetic_code, mito_genetic_code, left_value, right_value) VALUES (?,?,?,?,?,?,?)");
+			}
+			else{
+				TaxonSET = con.prepareStatement("UPDATE taxon SET ncbi_taxon_id=?, parent_taxon_id=?," +
+						" node_rank=?, genetic_code=?, mito_genetic_code=?, left_value=?, right_value=? " +
+						"WHERE taxon_id=?");
+				TaxonSET.setInt(8, taxon_id);
+			}
+			//Values that cannot be null
+			if(ncbi_id == null || ncbi_id==0)TaxonSET.setNull(1, Types.INTEGER);
+			else TaxonSET.setInt(1, ncbi_id);
+			if(parent_id == null || parent_id==0)TaxonSET.setNull(2, Types.INTEGER);
+			else TaxonSET.setInt(2, parent_id);
+			if(node_rank == null)TaxonSET.setNull(3, Types.VARCHAR);
+			else TaxonSET.setString(3, node_rank);
+			if(gencode == null)TaxonSET.setNull(4, Types.INTEGER);
+			else TaxonSET.setInt(4, gencode);
+			if(mitocode == null)TaxonSET.setNull(5, Types.INTEGER);
+			else TaxonSET.setInt(5, mitocode);
+			if(leftvalue == null)TaxonSET.setNull(6, Types.INTEGER);
+			else TaxonSET.setInt(6, leftvalue);
+			if(rightvalue == null)TaxonSET.setNull(7, Types.INTEGER);
+			else TaxonSET.setInt(7, rightvalue);
+			TaxonSET.execute();
+			
+			if(ncbi_id == null){
+				logger.warn("Should upload a taxid without something unique");
+				return -1;
+			}
+			else{
+				if(taxon_id < 1) return getTaxonIdwNCBI(con, ncbi_id);
+				else return taxon_id;
+			}
+		}
+		catch(SQLException sq){
+			logger.error("Failed to add Taxon id ", sq);
+			return -1;
+		}
+	}
+	
+	public int getTaxonIdwNCBI(Connection con, int ncbi_id){
+		try{
+			TaxonGET = init(con, TaxonGET, "SELECT taxon_id FROM taxon WHERE ncbi_taxon_id=?");
+			TaxonGET.setInt(1, ncbi_id);
+			set = TaxonGET.executeQuery();
+			int ret = -1;
+			while(set.next())ret=set.getInt("taxon_id");
+			return ret;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to add Taxon id ", sq);
+			return -1;
+		}
+	}
+	
+	public boolean addTaxonName(Connection con, int taxon_id, String name, String name_class){
+		try{
+			TaxonNameSET = init(con, TaxonNameSET, "INSERT INTO taxon_name (taxon_id, name, name_class)" +
+					"VALUES (?,?,?)");
+			
+			TaxonNameSET.setInt(1, taxon_id);
+			TaxonNameSET.setString(2, name);
+			TaxonNameSET.setString(3, name_class);
+			TaxonNameSET.execute(); 
+			return true;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to add Taxon name ", sq);
+			return false;
+		}
+	}
+
+	public boolean addTermRelationship(Connection con, int subject_id,
+			int object_id, int predicate_id, int ontology_id) {
+		try{
+			TermRelationshipSET = init(con, TermRelationshipSET, "INSERT INTO term_relationship (subject_term_id, predicate_term_id, " +
+					"object_term_id, ontology_id) VALUES (?,?,?,?)");
+			
+			
+			
+			TermRelationshipSET.setInt(1, subject_id);
+			TermRelationshipSET.setInt(2, predicate_id);
+			TermRelationshipSET.setInt(3, object_id);
+			TermRelationshipSET.setInt(4, ontology_id);
+			TermRelationshipSET.execute(); 
+			return true;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to add Term relationship", sq);
+			return false;
+		}
+	}
+
+	public boolean addDbxrefTermPath(Connection con, int dbxref_id, int term_id,
+			int rank, String value) {
+		try{
+			DbxrefTermSET = init(con, DbxrefTermSET, "INSERT IGNORE INTO dbxref_qualifier_value (dbxref_id, term_id, " +
+					"rank, value) VALUES (?,?,?, ?)");
+			
+			DbxrefTermSET.setInt(1, dbxref_id);
+			DbxrefTermSET.setInt(2, term_id);
+			DbxrefTermSET.setInt(3, rank);
+			if(value == null)DbxrefTermSET.setNull(4, Types.VARCHAR);
+			else DbxrefTermSET.setString(4, value);
+			DbxrefTermSET.execute(); 
+			return true;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to add Term dbxref path ", sq);
+			return false;
+		}
+	}
 }
+
 
 

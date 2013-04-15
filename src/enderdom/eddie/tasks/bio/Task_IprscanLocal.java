@@ -136,6 +136,7 @@ public class Task_IprscanLocal extends TaskXTwIO{
 						long s = rate*sequences.getNoOfSequences();
 						System.out.println(total + " sequences run with "+sequences.getNoOfSequences()+" left, Estimated Time Left "+ Tools_System.long2DayHourMin(s));
 					}
+					checklist.complete();
 				}
 				catch(Exception io){
 					logger.error("Failed to run iprscan",io);

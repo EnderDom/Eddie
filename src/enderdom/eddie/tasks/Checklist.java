@@ -18,7 +18,8 @@ import enderdom.eddie.tools.Tools_System;
  * receives messages to save
  * to file with the idea that
  * Tasks can then recover unfinished
- * runs
+ * runs. Pretty fucking horrible, but
+ * it kind of works.
  * 
  * * Note;
 	 * All information about what the 
@@ -118,6 +119,11 @@ public class Checklist {
 		}
 	}
 	
+	/**
+	 * 
+	 * @return returns the last task as a string
+	 * including the task date and info
+	 */
 	public String getLast(){
 		String[] lastinfo = null;
 		logger.debug("Loading data from previous task");
@@ -133,6 +139,11 @@ public class Checklist {
 		return bui.toString();
 	}
 	
+	/**
+	 * 
+	 * @return true if there were open tasks
+	 * when the checklist was first initialised
+	 */
 	public boolean check(){
 		return opentasks;
 	}
@@ -175,6 +186,13 @@ public class Checklist {
 		return success;
 	}
 	/**
+	 * Add a parameter to be saved. Note
+	 * this will be returned as is when checklist is
+	 * called. So the idea is your task is supposed to 
+	 * know what to do with it. Ie update(NameOfSequence)
+	 * when a task is restarted from a checklist
+	 * the checklist will return as list of NameOfSequence 
+	 * that were added by update
 	 *
 	 * @param Input to be saved
 	 * @return whether saved or not
@@ -184,7 +202,11 @@ public class Checklist {
 		return Tools_File.quickWrite(line+Tools_System.getNewline(), task, true);
 	}
 	
-	
+	/**
+	 * Set checklist to complete, should be deleted next
+	 * time started
+	 * @return
+	 */
 	public boolean complete(){
 		/*
 		 * Probably not necessary, but in the event delete permissions
@@ -200,9 +222,7 @@ public class Checklist {
 		return true;
 	}
 	
-	//TODO FIX ASAP!!
-	//TODO FIX ASAP!!
-	//TODO FIX ASAP!!
+	//TODO FIX !
 	private String[] loadHeadFromFile(File file){
 		String[] data = new String[3];
 		logger.debug("Reading Data from checklist file");
@@ -237,6 +257,7 @@ public class Checklist {
 		}
 		return data;
 	}
+	
 	
 	public String[] getData(){
 		LinkedList<String> strs = new LinkedList<String>();

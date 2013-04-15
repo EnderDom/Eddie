@@ -37,16 +37,20 @@ public abstract class BasicSequenceList implements SequenceList{
 
 	public int[] getListOfLens() {
 		int[] li = new int[this.getNoOfSequences()];
-		for(int i =0;i < li.length; i++){
-			li[i] = this.getSequence(i).getActualLength();
+		int i =0;
+		for(String s : sequences.keySet()){
+			li[i] = sequences.get(s).getLength();
+			i++;
 		}
 		return li;
 	}
 	
 	public int[] getListOfActualLens() {
 		int[] li = new int[this.getNoOfSequences()];
-		for(int i =0;i < li.length; i++){
-			li[i] = this.getSequence(i).getActualLength();
+		int i =0;
+		for(String s : sequences.keySet()){
+			li[i] = sequences.get(s).getActualLength();
+			i++;
 		}
 		return li;
 	}

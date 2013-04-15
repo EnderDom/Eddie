@@ -61,11 +61,8 @@ public class Task_BioSQLDB extends TaskXT{
 			DatabaseManager manager = this.ui.getDatabaseManager(password);
 			try{
 				if(!manager.open()){
-					logger.warn("Failed to open database, this could be because it doesn't exist, attempting to create...");
-					if(!manager.createAndOpen()){
-						logger.error("Failed to create Database...Terminating.");
-						return;
-					}	
+					logger.error("Failed to create Database...Terminating.");
+					return;
 				}
 				if(setup){
 					logger.debug("Setting up database...");
@@ -108,7 +105,7 @@ public class Task_BioSQLDB extends TaskXT{
 
 	
 	public static boolean canProceedwithSetup(DatabaseManager manager) throws Exception{
-		manager.createAndOpen();
+		manager.open();
 		int j = manager.getTableCount();
 		Logger.getRootLogger().debug("Database contains " + j + " tables");
 		if(j > 0){
@@ -140,7 +137,7 @@ public class Task_BioSQLDB extends TaskXT{
 	
 	public static boolean setup(DatabaseManager manager) throws Exception{
 		if(canProceedwithSetup(manager)){
-			Logger.getRootLogger().debug("Setting up database...");
+			Logger.getRootLogger().debug("Extending database with Eddie additions");
 			BioSQLExtended bsxt = manager.getBioSQLXT();
 			bsxt.addLegacyVersionTable(manager,new String(EddiePropertyLoader.getFullVersion()+""), new String(DatabaseManager.getDatabaseversion()+""));
 			//bsxt.addBioEntrySynonymTable(manager);

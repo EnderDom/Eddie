@@ -34,13 +34,14 @@ public class Task_Blast extends TaskXT{
 	private double errorperc;
 	//filecount, fileerror, fileskip, hspcount-up, hspcount-skip, hspcount-error
 	private int[] counts;
+	private boolean force;
 	Stack<String> errfiles;
 	Stack<String> errfilesmin;
 	
 	public Task_Blast(){
 		setHelpHeader("--This is the Help Message for the the blast Task--");
 		run_id =-1;
-		counts = new int[]{0,0,0,0,0,0};
+		counts = new int[]{0,0,0,0,0,0,0};
 		errfiles = new Stack<String>();
 		errfilesmin = new Stack<String>();
 	}
@@ -54,9 +55,9 @@ public class Task_Blast extends TaskXT{
 	
 	public void parseArgsSub(CommandLine cmd){
 		if(cmd.hasOption("db"))dbname=cmd.getOptionValue("db");
-		if(cmd.hasOption("db"))dbname=cmd.getOptionValue("db");
 		if(cmd.hasOption("i"))input=cmd.getOptionValue("i");
-		if(cmd.hasOption("f"))fuzzynames = true;
+		if(cmd.hasOption("fuzzy"))fuzzynames = true;
+		if(cmd.hasOption("force"))force = true;
 		if(cmd.hasOption("run_id")){
 			Integer g = Tools_String.parseString2Int(cmd.getOptionValue("run_id"));
 			if(g !=  null)run_id =g;
@@ -70,8 +71,9 @@ public class Task_Blast extends TaskXT{
 		options.addOption(new Option("r","run_id", true, "Force set run id"));
 		options.addOption(new Option("date", true, "Set date when blast was run*, use format "+Tools_System.SQL_DATE_FORMAT+", [RECOMMENDED]"));
 		options.addOption(new Option("i","input", true, "Input folder or file"));
+		options.addOption(new Option("force", false, "Force blast records to be updated"));
 		options.addOption(new Option("db","dbname", true, "Default database name, such as nr, swiss-prot etc. If not set, will attempt to get from blast file"));
-		options.addOption(new Option("f","fuzzy", false, "Check for fuzzy names before failing, " +
+		options.addOption(new Option("fuzzy", false, "Check for fuzzy names before failing, " +
 				"may be help if blast query-id is different from database id. May lead to incorrect uploads though "));
 	}
 	
@@ -92,7 +94,7 @@ public class Task_Blast extends TaskXT{
 
 	public void run(){
 		setCompleteState(TaskState.STARTED);
-		logger.debug("Started running Assembly Task @ "+Tools_System.getDateNow());
+		logger.debug("Started running Blast Upload Task @ "+Tools_System.getDateNow());
 		File in=null;
 		if(input !=null)in = new File(input);
 		this.checklist = openChecklist(ui);
@@ -145,11 +147,11 @@ public class Task_Blast extends TaskXT{
 					System.out.println("--Blast Parsing--");
 					System.out.println("Parsed:"+counts[0]+" Skipped:"+counts[2]+" Errored:"+counts[1]+s);
 					System.out.println("--Blast Matches Upload--");
-					System.out.println("Uploaded:"+counts[3]+" Skipped:"+counts[4]+" Errored:"+counts[5]);
+					System.out.println("Uploaded:"+counts[3]+" Updated:"+counts[6]+" Skipped:"+counts[4]+" Errored:"+counts[5]);
 					System.out.println("#####################################################"+s+s);
 					//Also log this information, for nohup and whatnot
 					logger.info("Blast Parsing: " + "Parsed:"+counts[0]+" Skipped:"+counts[2]+" Errored:"+counts[1]);
-					logger.info("Uploaded:"+counts[3]+" Skipped:"+counts[4]+" Errored:"+counts[5]);
+					logger.info("Uploaded:"+counts[3]+" Updated:"+counts[6]+" Skipped:"+counts[4]+" Errored:"+counts[5]);
 
 				}
 				else{
@@ -170,7 +172,7 @@ public class Task_Blast extends TaskXT{
 				return;
 			}
 		}
-		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
+		logger.debug("Finished running Blast Upload Task @ "+Tools_System.getDateNow());
 	    setCompleteState(TaskState.FINISHED);
 	}
 	
@@ -184,8 +186,8 @@ public class Task_Blast extends TaskXT{
 					dbname = helper.getBlastDatabase();
 				}
 				helper.setRun_id(run_id);
-				helper.setDate(date);
-				int[] j = helper.upload2BioSQL(manager, fuzzynames, dbname);
+				if(run_id > 0)helper.setDate(date);
+				int[] j = helper.upload2BioSQL(manager, fuzzynames, dbname, force);
 				if(j[0] == -1){
 					counts[5]++;
 					errfilesmin.push(file.getName());
@@ -193,6 +195,7 @@ public class Task_Blast extends TaskXT{
 				else{
 					counts[3]+=j[0];
 					counts[4]+=j[1];
+					counts[6]+=j[2];
 				}
 			}
 			else{

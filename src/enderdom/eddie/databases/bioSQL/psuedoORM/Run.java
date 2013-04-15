@@ -18,6 +18,7 @@ public class Run {
 */
 	private Logger logger = Logger.getRootLogger();
 	private int run_id;
+	private int parent_id;
 	private Date date;
 	private String runtype;
 	private String program;
@@ -27,27 +28,37 @@ public class Run {
 	private String comment;
 	private String version;
 	private String[] validationErrors = {"","",""};
-	public static String[] runfields = new String[]{"run_date", "runtype", "program", "version", "dbname", "source", "params", "comment"};
+	public static String[] runfields = new String[]{"run_date", "runtype", "parent_id", "program", "version", "dbname", "source", "params", "comment"};
+	public static String RUNTYPE_ASSEMBLY = "ASSEMBLY";
+	public static String RUNTYPE_blast = "blast";
+	public static String RUNTYPE_454 = "454";
 	
-	public Run(int r, Date t,String rt, String p, String v, String d, String a, String c){
-		run_id = r;
-		date = t;
-		runtype = rt;
-		program =p;
-		version = v;
-		dbname = d;
-		params = a;
-		comment =c;
+	
+	public Run(int r, Date time, String runtype, int parent, String program,
+			String version, String dbname, String source, String params, String comment){
+		this.run_id = r;
+		this.date = time;
+		this.runtype = runtype;
+		this.parent_id = parent;
+		this.program =program;
+		this.version = version;
+		this.dbname = dbname;
+		this.source= source;
+		this.params = params;
+		this.comment =comment;
 	}
 	
-	public Run(Date t,String rt, String p, String v, String d, String a, String c){
-		date = t;
-		runtype = rt;
-		program =p;
-		version = v;
-		dbname = d;
-		params = a;
-		comment =c;
+	public Run(Date time, String runtype, int parent, String program,
+			String version, String dbname, String source, String params, String comment){
+		this.date = time;
+		this.runtype = runtype;
+		this.parent_id = parent;
+		this.program =program;
+		this.version = version;
+		this.dbname = dbname;
+		this.source= source;
+		this.params = params;
+		this.comment =comment;
 	}
 	
 	public Run(){
@@ -129,10 +140,18 @@ public class Run {
 		this.source = source;
 	}
 
+	public int getParent_id() {
+		return parent_id;
+	}
+
+	public void setParent_id(int parent_id) {
+		this.parent_id = parent_id;
+	}
+
 	//Note, converts util.Date to sql.Date, see http://stackoverflow.com/questions/530012/how-to-convert-java-util-date-to-java-sql-date
 	public int uploadRun(DatabaseManager manager){
 		if(manager.getBioSQLXT().setRun(manager, Tools_System.util2sql(getDate()),
-				getRuntype(), getProgram(), getVersion(), getDbname(), getSource(), getParams(), getComment())){
+				getRuntype(), getParent_id(), getProgram(), getVersion(), getDbname(), getSource(), getParams(), getComment())){
 			this.run_id = manager.getLastInsert(); //This could get me into trouble.... :(
 			return run_id;
 		}
@@ -157,20 +176,22 @@ public class Run {
 	}
 
 	public String list(DatabaseManager manager) {
-		String[] columns = new String[]{"run_id","runtype", "program", "version", "dbname"};
-		String[][] fields = manager.getBioSQLXT().getUniqueStringFields(manager, columns, BioSQLExtended.runtable);
+		String[] columns = new String[]{"run_id","runtype", "program", "version", "dbname", "source"};
+		String[][] fields = manager.getBioSQL().getGenericResults(manager.getCon(), columns, BioSQLExtended.runtable, null, null);
 		StringBuffer ret = new StringBuffer();
 		String newline = Tools_System.getNewline();
-		for(int i =0; i < fields.length; i++){
-			ret.append(" -- ");
+		for(int i =0; i < columns.length; i++){
 			ret.append(columns[i]);
-			ret.append(" -- ");
-			ret.append(newline);
-			ret.append(newline);
+			ret.append("\t\t");
+		}
+		ret.append(newline);
+		ret.append(newline);
+		for(int i =0; i < fields.length; i++){
 			for(int j = 0; j < fields[i].length; j++){
 				ret.append(fields[i][j]);
-				ret.append(newline);
+				ret.append("\t\t");
 			}
+			ret.append(newline);
 		}
 		return ret.toString();
 	}
@@ -179,6 +200,7 @@ public class Run {
 		return validationErrors;
 	}
 
+	//TODO move this to the mysql stuff
 	public int getSimilarRun(DatabaseManager manager, int date_range) {
 		int ret = -1;
 		long range =date_range;
@@ -206,33 +228,6 @@ public class Run {
 	public static String[] getRunInsertTips(){
 		return new String[]{"Date when run was started FORMAT MUST BE: DD-MM-YYYY","Runtype, ie assembly or blast",
 				"Name of the program run ie Blastx","Version","Database name ie nr (Can be left blank)","Parameters used, ie -word_size 10"," Any comments you want to add"};
-	}
-
-	
-	/**
-	 * Assumes input is the same length and corresponds to
-	 * the getRunFields method;
-	 * 
-	 * @param inputs
-	 * @return bool as to whether the Run can be uploaded
-	 */
-	public boolean parseRun(String inputs[]){
-		try{
-			//"run_date", "runtype", "program", "version", "dbname", "source", "params", "comment",
-			this.setDateValue(inputs[0],Tools_System.SQL_DATE_FORMAT);
-			this.setRuntype(inputs[1]);
-			this.setProgram(inputs[2]);
-			this.setVersion(inputs[3]);
-			this.setDbname(inputs[4]);
-			this.setSource(inputs[5]);
-			this.setParams(inputs[6]);
-			this.setComment(inputs[7]);
-			return this.validate();
-		}
-		catch(Exception  e){
-			logger.error("Failed to parse Run inputs from User", e);
-			return false;
-		}
 	}
 	
 }

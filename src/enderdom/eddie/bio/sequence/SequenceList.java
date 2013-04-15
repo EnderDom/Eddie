@@ -14,6 +14,8 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	public int getN50();
 	
 	/**
+	 * NOTE no guarentee that the list will match
+	 * the indexes of sequences
 	 * 
 	 * @return an array of length equal to length of list
 	 * containing the lengths of each internal sequence

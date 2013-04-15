@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
+import enderdom.eddie.databases.bioSQL.psuedoORM.Taxonomy;
 import enderdom.eddie.tools.bio.NCBI_DATABASE;
 import enderdom.eddie.tools.bio.Tools_NCBI;
 
@@ -36,4 +37,10 @@ public class NCBITest {
 		}		
 	}
 	
+	@Test
+	public void testTaxonomyLoad(){
+		Taxonomy t =  new Taxonomy("9940");
+		assertEquals(t.getCommonname(), "sheep");
+		assertEquals(t.getSciencename(), "Ovis aries");
+	}
 }

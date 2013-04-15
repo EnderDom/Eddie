@@ -16,6 +16,10 @@ import enderdom.eddie.tasks.database.Task_AddRunData;
 import enderdom.eddie.tasks.database.Task_Assembly2DB;
 import enderdom.eddie.tasks.database.Task_BioSQLDB;
 import enderdom.eddie.tasks.database.Task_Blast;
+import enderdom.eddie.tasks.database.Task_ESTUpload;
+import enderdom.eddie.tasks.database.Task_IPRupload;
+import enderdom.eddie.tasks.database.Task_Query;
+import enderdom.eddie.tasks.database.Task_Taxonomy;
 import enderdom.eddie.tasks.database.Task_dbTools;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.ui.UI;
@@ -102,8 +106,8 @@ public class TaskList {
 	
 			//Upload Run Info
 			tasks[0][10] = Task_AddRunData.class.getName();
-			tasks[1][10] = "uploadrun";
-			tasks[2][10] = "add Program run information to database, (needed for other data upload)";
+			tasks[1][10] = "runDatabase";
+			tasks[2][10] = "add/get run information to/from database, (needed for other data upload)";
 			
 			//Blast Upload
 			tasks[0][11] = Task_Blast.class.getName();
@@ -125,10 +129,24 @@ public class TaskList {
 			tasks[1][14] = "univec";
 			tasks[2][14] = "Run UniVec screen on dataset";
 			
-			//Empty
-			//tasks[0][15] = 
-			//tasks[1][15] = 
-			//tasks[2][15] = 
+			//Taxonomy
+			tasks[0][15] = Task_Taxonomy.class.getName(); 
+			tasks[1][15] = "taxonomy";
+			tasks[2][15] = "Taxonomy related tools";
+			
+			//Misc Queries
+			tasks[0][16] = Task_Query.class.getName(); 
+			tasks[1][16] = "queryMisc";
+			tasks[2][16] = "A selection of miscellaneous db queries";
+			
+			//Upload estSCAN stuff
+			tasks[0][17] = Task_ESTUpload.class.getName(); 
+			tasks[1][17] = "estUpload";
+			tasks[2][17] = "Upload estscan proteins";			
+			
+			tasks[0][18] = Task_IPRupload.class.getName(); 
+			tasks[1][18] = "iprUpload";
+			tasks[2][18] = "Upload IPR data";	
 			
 			return tasks;
 		}

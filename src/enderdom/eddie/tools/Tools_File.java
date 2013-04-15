@@ -93,6 +93,10 @@ public abstract class Tools_File {
 		}
 	}
 	
+	public static BufferedWriter getWriter(File file) throws IOException{
+		return new BufferedWriter(new FileWriter(file,false));
+	}
+	
 	/**
 	 * Returns 1 line from a file. File is opened
 	 * line read and then closed and line is returned

@@ -179,8 +179,8 @@ public class BlastxHelper {
 	 * @return -1 if failed, return 0 if uploaded successfully, return >0
 	 * if some sequences already uploaded, value represents how many
 	 */
-	public int[] upload2BioSQL(DatabaseManager manager, boolean fuzzy, String dbname){
-		int[] values = new int[]{-1,0};
+	public int[] upload2BioSQL(DatabaseManager manager, boolean fuzzy, String dbname, boolean force){
+		int[] values = new int[]{-1,0,0};
 		if(run_id < 1){
 			Run run = new Run();
 			run.setRuntype("blast");
@@ -244,11 +244,17 @@ public class BlastxHelper {
 						logger.error("Could not upload accession " + acc);
 					}
 					for(int rank=1 ; rank < blastx.getNoOfHsps(i); rank++){
-						if(!manager.getBioSQLXT().existsDbxRefId(manager, contig_id, dbx_ref, run_id, rank)){
+						if(!manager.getBioSQLXT().existsDbxRefId(manager, contig_id, dbx_ref, run_id, rank, i)){
 							int[] pos = this.getStartsStopsFrames(i, rank);
-							manager.getBioSQLXT().setDbxref(manager, contig_id, dbx_ref, run_id, rank, this.getHspEvalue(i, rank), this.getHspScore(i, rank), pos[0], pos[1], pos[2],
-									pos[3], pos[4], pos[5]);
+							manager.getBioSQLXT().setBioentry2Dbxref(manager, contig_id, dbx_ref, run_id, this.getHspEvalue(i, rank), this.getHspScore(i, rank), pos[0], pos[1], pos[2],
+									pos[3], pos[4], pos[5], i, rank);
 							values[0]++;
+						}
+						else if(force){
+							int[] pos = this.getStartsStopsFrames(i, rank);
+							manager.getBioSQLXT().updateDbxref(manager, contig_id, dbx_ref, run_id, this.getHspEvalue(i, rank), this.getHspScore(i, rank), pos[0], pos[1], pos[2],
+									pos[3], pos[4], pos[5], i, rank);
+							values[2]++;
 						}
 						else{
 							values[1]++;

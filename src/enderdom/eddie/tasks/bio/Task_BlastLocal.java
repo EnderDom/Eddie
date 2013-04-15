@@ -154,6 +154,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 					}
 					logger.debug("About to start running blasts");
 					runAutoBlast(out, checklist);
+					checklist.complete();
 				}
 				catch(Exception io){
 					logger.error("An error was thrown ", io);

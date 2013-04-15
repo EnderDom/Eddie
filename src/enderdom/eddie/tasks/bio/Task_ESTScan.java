@@ -59,14 +59,19 @@ public class Task_ESTScan extends TaskXT{
 			if(new File(matrix).isFile()){
 				if(bioen){
 					logger.info("Building Fasta File...");
-					DatabaseManager man = ui.getDatabaseManager();
+					DatabaseManager man = ui.getDatabaseManager(password);
 					try {
-						man.createAndOpen();
-						man.getBioSQLXT().getContigsAsFasta(man, new Fasta(), -1);
-						logger.debug("Writing as temporary file...");
-						File in = File.createTempFile("tempfasta", ".fasta");
-						input = in.getPath();
-						logger.debug("Writing as temporary file to "  + input);
+						if(man.open()){
+							man.getBioSQLXT().getContigsAsFasta(man, new Fasta(), -1);
+							logger.debug("Writing as temporary file...");
+							File in = File.createTempFile("tempfasta", ".fasta");
+							input = in.getPath();
+							logger.debug("Writing as temporary file to "  + input);
+						}
+						else{
+							logger.error("Failed to open databse");
+							return;
+						}
 					} catch (Exception e) {
 						logger.error(e);
 						setCompleteState(TaskState.ERROR);

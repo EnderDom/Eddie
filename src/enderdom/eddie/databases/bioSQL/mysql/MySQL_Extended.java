@@ -1,6 +1,9 @@
 package enderdom.eddie.databases.bioSQL.mysql;
 
-import java.sql.Connection;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,13 +18,16 @@ import org.apache.log4j.Logger;
 import enderdom.eddie.tools.Tools_Array;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
+import enderdom.eddie.tools.bio.NCBI_DATABASE;
 import enderdom.eddie.tools.bio.Tools_Contig;
+import enderdom.eddie.tools.bio.Tools_NCBI;
 import enderdom.eddie.bio.sequence.GenericSequence;
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
 import enderdom.eddie.databases.bioSQL.psuedoORM.BasicBioSequence;
 import enderdom.eddie.databases.bioSQL.psuedoORM.BioSequence;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
+import enderdom.eddie.databases.bioSQL.psuedoORM.Taxonomy;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
 /**
@@ -33,21 +39,33 @@ import enderdom.eddie.databases.manager.DatabaseManager;
  */
 public class MySQL_Extended implements BioSQLExtended{
 
-	Logger logger = Logger.getRootLogger();
-	ResultSet set;
+	private Logger logger = Logger.getRootLogger();
+	private ResultSet set;
 	
 	//GETS
-	PreparedStatement dbxrefGET;
-	PreparedStatement readFromContigGET;
-	PreparedStatement contigFromReadGET;
-	PreparedStatement bioSequenceGET;
+	private PreparedStatement dbxrefGET;
+	private PreparedStatement readFromContigGET;
+	private PreparedStatement contigFromReadGET;
+	private PreparedStatement bioSequenceGET;
 	
 	//SETS
-	PreparedStatement assemblySET;
-	PreparedStatement runSET;
+	private PreparedStatement assemblySET;
+	private PreparedStatement bioen_runSET;
+	private PreparedStatement runSET;
+	private PreparedStatement dbxrefUP;
 	
 	//EXISTS
-	PreparedStatement dbxrefEXIST;
+	private PreparedStatement dbxrefEXIST;
+	
+	//Taxon stuff
+	private PreparedStatement children;
+	private PreparedStatement setleft;
+	private PreparedStatement setright;
+	private int depthcount;
+	private int depthid;
+	//Taxon info stuff
+	private int layerdepth;
+	private int valuesize;
 	
 	/******************************************************************/
 	/* 
@@ -68,7 +86,7 @@ public class MySQL_Extended implements BioSQLExtended{
 		  "DerocerasVersion VARCHAR(30),"+
 		  "DatabaseVersion VARCHAR(30),"+
 		  "LastRevision DATE,"+
-		  "PRIMARY KEY (Numb)) TYPE=INNODB;";
+		  "PRIMARY KEY (Numb)) "+MySQL_BioSQL.innodb+"=INNODB;";
 		String insert = new String("INSERT INTO info (Numb, DerocerasVersion, DatabaseVersion, LastRevision) VALUES (1, 'v"+version+"', 'v"+dbversion+"', '"+Tools_System.getDateNow("yyyy-MM-dd")+"')"+
 				" ON DUPLICATE KEY UPDATE DerocerasVersion='v"+version+"', DatabaseVersion='v"+dbversion+"', LastRevision='"+Tools_System.getDateNow("yyyy-MM-dd")+"' ;");
 		try{
@@ -85,41 +103,7 @@ public class MySQL_Extended implements BioSQLExtended{
 		
 	}
 	
-//	public boolean addBioEntrySynonymTable(DatabaseManager manager) {
-//		String table = "CREATE TABLE IF NOT EXISTS bioentry_synonym (" +
-//				"bioentry_synonym_id INT(10) UNSIGNED NOT NULL auto_increment," +
-//				"bioentry_id INT(10) UNSIGNED NOT NULL," +
-//			  	"identifier   	VARCHAR(40) BINARY, " +
-//				"PRIMARY KEY (bioentry_synonym_id)," +
-//			 	"UNIQUE (identifier)," +
-//			 	"PRIMARY KEY(bioentry_synonym_id)" +
-//			") TYPE=INNODB;";
-//		try{
-//			Statement st = manager.getStatement();
-//			st.executeUpdate(table);
-//			String key1 = "ALTER TABLE bioentry_synonym ADD CONSTRAINT FKbioentry_synonym"+
-//			"FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id)";
-//			st.executeUpdate(key1);
-//
-//			return true;
-//		}
-//		catch(SQLException se){
-//			logger.error("Failed to create bioentry_synonym table", se);
-//			return false;
-//		}
-//	}
-	
-	/**
-	 * This table is supposed to store data of the specifics
-	 * of the program used on a specific bioentry which can then
-	 * be linked to tables like bioentry_dbxref. This is so the specifics of a run like
-	 * interpro scan or blast can be saved (like date, which is super important
-	 * as is need when citing)
-	 * 
-	 * 
-	 * @param manager
-	 * @return successfully created table
-	 */
+
 	public boolean addRunTable(DatabaseManager manager) {
 		//Should be run after bioentry_dbxref mods
 		logger.debug("Creating "+runtable+" table...");
@@ -127,6 +111,7 @@ public class MySQL_Extended implements BioSQLExtended{
 				"run_id INT(10) UNSIGNED NOT NULL auto_increment, " +
 				"run_date date NOT NULL, " +
 				"runtype VARCHAR(20) BINARY NOT NULL, " +
+				"parent_id INT(10) UNSIGNED, " +
 			  	"program VARCHAR(40) BINARY NOT NULL, " +
 			  	"version VARCHAR(40) BINARY, " +
 			  	"dbname VARCHAR(40) BINARY, " +
@@ -134,13 +119,15 @@ public class MySQL_Extended implements BioSQLExtended{
 			  	"params TEXT, " +
 			  	"comment TEXT, " +
 			 	"PRIMARY KEY (run_id)" +
-			 	") TYPE=INNODB;";
+			 	") "+MySQL_BioSQL.innodb+"=INNODB;";
 		try{
 			Statement st = manager.getCon().createStatement();
 			st.executeUpdate(table);
 			//Note, this will fail if addBioentryDbxrefsCols() has not been called previously
 			String key1 = "ALTER TABLE bioentry_dbxref ADD CONSTRAINT FKbioentry_dbxref_run "+
 			"FOREIGN KEY (run_id) REFERENCES "+runtable+"(run_id) ON DELETE CASCADE;";
+			st.executeUpdate(key1);
+			key1 = "ALTER TABLE "+BioSQLExtended.runtable+" ADD CONSTRAINT FKrun_parent FOREIGN KEY (parent_id) REFERENCES run(run_id) ON DELETE CASCADE";
 			st.executeUpdate(key1);
 			st.close();
 			return true;
@@ -163,19 +150,22 @@ public class MySQL_Extended implements BioSQLExtended{
 						"run_id          INT(10) UNSIGNED NOT NULL,"+
 						"rank  		   SMALLINT,"+
 						"PRIMARY KEY (bioentry_id,run_id)"+
-						") TYPE=INNODB;";
-		String key1 = 	"ALTER TABLE bioentry_run ADD CONSTRAINT FKrun_id_biorun"+
-		       			"FOREIGN KEY (run_id) REFERENCES run(run_id)"+
+						") "+MySQL_BioSQL.innodb+"=INNODB;";
+		String key1 = 	"ALTER TABLE bioentry_run ADD CONSTRAINT FKrun_id_biorun "+
+		       			"FOREIGN KEY (run_id) REFERENCES run(run_id) "+
 						"ON DELETE CASCADE;";
-		String key2 =	"ALTER TABLE bioentry_run ADD CONSTRAINT FKbioentry_id_biorun"+
-		       			"FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id)"+
+		String key2 =	"ALTER TABLE bioentry_run ADD CONSTRAINT FKbioentry_id_biorun "+
+		       			"FOREIGN KEY (bioentry_id) REFERENCES bioentry(bioentry_id) "+
 						"ON DELETE CASCADE;"; 
+		String key3 =   "ALTER TABLE bioentry_dbxref ADD CONSTRAINT FKdbxref_bioentry_run " +
+				"FOREIGN KEY (run_id) REFERENCES run(run_id) ON DELETE CASCADE;";
 		try{
 			Statement st = manager.getCon().createStatement();
-			logger.debug("Building assembly table....");
+			logger.debug("Building bioentry_run table....");
 			st.executeUpdate(table);
 			st.executeUpdate(key1);
 			st.executeUpdate(key2);
+			st.executeUpdate(key3);
 			st.close();
 			return true;
 		}
@@ -192,8 +182,8 @@ public class MySQL_Extended implements BioSQLExtended{
 	 */
 	public boolean addDbxTaxons(DatabaseManager manager){
 		String alters[] = new String[]{
-				"ALTER TABLE dbxref ADD COLUMN (taxon_id INT(10) UNSIGNED);",
-				"CREATE INDEX dbxref_tax  ON dbxref(taxon_id);"
+				"ALTER TABLE dbxref ADD COLUMN (ncbi_taxon_id INT(10) UNSIGNED);",
+				"CREATE INDEX dbxref_tax  ON dbxref(ncbi_taxon_id);"
 		};
 		try{
 			Statement st = manager.getCon().createStatement();
@@ -206,26 +196,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			return false;
 		}
 	}
-	
-	/**
-	 * After several different attempts at jamming assembly data 
-	 * into the biosql database, this is my latest attempt.
-	 * 
-	 * Originally used a convoluted method of using pseudo terms & ontologies
-	 * to style an assembly, but gave up and just created a new table, 
-	 * this may break the database more, but its just a lot simpler.
-	 * 
-	 * So contig is contig_bioentry_id and read is read_bioentry_id
-	 * version is the version of biosequence to use, so basically
-	 * you should upload the aligned trimmed read as another 'version'
-	 * of the read. This will mean you will have to check available version
-	 * numbers, or alternative link a version to an assembly. 
-	 * 
-	 * As it uses run_id, the run id table should be created first
-	 * 
-	 * @param manager
-	 * @return boolean succesfully created table
-	 */
+
 	public boolean addAssemblyTable(DatabaseManager manager){
 		logger.debug("Creating assembly table...");
 		String table = "CREATE TABLE IF NOT EXISTS assembly (" +
@@ -236,7 +207,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			"trimmed TINYINT,"+ //0 == not trimmed
 			"range_start INT(10),"+ //If trimmed this should just be the offset
 			"range_end INT(10)"+
-			")TYPE=INNODB;";
+			")"+MySQL_BioSQL.innodb+"=INNODB;";
 		try{
 			Statement st = manager.getCon().createStatement();
 			logger.debug("Building assembly table....");
@@ -262,27 +233,10 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 	}
 	
-	
-	/**
-	 * This table alteration was added to hold more detailed information
-	 * about the relationship between the external database reference and the
-	 * bioentry. Without this there is now way of ascertaining how strong or weak the
-	 * link between these two is. I have read several blogs lambasting the wholesale uploading of
-	 * xml into databases, so I realise that recreating the flat file data in the database
-	 * may be a bad mistake. However I see no alternative method or storing this data
-	 * so it can be accessed from multiple locations by both eddie and any websites easily.
-	 * 
-	 * I have not included the hit number in this. For two reasons, one is that without the specifics
-	 * of the blast run from perspective of the database are not known (for now). The second is that 
-	 * there is no actual need for this. Uploaded hsps as multiple rows and just using score or e-value
-	 * for ordering should suffice for recreating the pertinant data, IMHO.
-	 * 
-	 * @param manager
-	 * 
-	 * @return whether or not it succeeded
-	 */
+
 	public boolean addBioentryDbxrefCols(DatabaseManager manager) {
 		String alters[] = new String[]{
+				"ALTER TABLE bioentry_dbxref ADD COLUMN (hit_no INT(6) UNSIGNED);",
 				"ALTER TABLE bioentry_dbxref ADD COLUMN (run_id INT(10) UNSIGNED NOT NULL);",
 				"ALTER TABLE bioentry_dbxref ADD COLUMN (evalue DOUBLE PRECISION);",
 				"ALTER TABLE bioentry_dbxref ADD COLUMN (score MEDIUMINT);",
@@ -294,7 +248,6 @@ public class MySQL_Extended implements BioSQLExtended{
 				"ALTER TABLE bioentry_dbxref ADD COLUMN (bioentry_frame TINYINT);",
 				"CREATE INDEX bioentry_dbxref_evalue ON bioentry_dbxref(evalue);",
 				"ALTER TABLE bioentry_dbxref DROP PRIMARY KEY, ADD PRIMARY KEY (bioentry_id,dbxref_id,rank);",
-				"ALTER TABLE bioentry_dbxref ADD CONSTRAINT FKdbxref_bioentry_run FOREIGN KEY (run_id) REFERENCES run(run_id) ON DELETE CASCADE;"
 		};
 		try{
 			Statement st = manager.getCon().createStatement();
@@ -315,6 +268,7 @@ public class MySQL_Extended implements BioSQLExtended{
 	 * 
 	 ******************************************************************/
 
+	
 	public String[][] getUniqueStringFields(DatabaseManager manager, String[] fields, String table){
 		String[][] ret = new String[fields.length][0];
 		try{
@@ -349,6 +303,9 @@ public class MySQL_Extended implements BioSQLExtended{
 	public double getDatabaseVersion(DatabaseManager manager) {
 		String g = "SELECT DatabaseVersion FROM info WHERE NUMB=1";
 		try{
+			//JUST shoved this here as getDatabaseVersion is always called
+			//when database used
+			MySQL_BioSQL.useEngine(manager.getCon());
 			Statement st = manager.getCon().createStatement();
 			set = st.executeQuery(g);
 			String r ="";
@@ -372,7 +329,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			}
 		}
 		catch(SQLException sq){
-			logger.error("Failed to retrieve database index", sq);
+			logger.error("Failed to retrieve database index, this may be because database isn't created yet.", sq);
 			return -1;
 		}
 	}
@@ -408,11 +365,7 @@ public class MySQL_Extended implements BioSQLExtended{
 		return db;
 	}
 
-	
-	/**
-	 * Returns the local name (ie from the ACE record, like Contig_1)
-	 * and database identifier (ie CLCBio_Contig_0)
-	 */
+
 	public HashMap<String, String>getContigNameNIdentifier(DatabaseManager manager, int run_id){
 		HashMap<String, String> names = new HashMap<String, String>();
 		try{
@@ -498,42 +451,30 @@ public class MySQL_Extended implements BioSQLExtended{
 		return entry;
 	}
 	
-	public boolean existsDbxRefId(DatabaseManager manager, int bioentry_id, int dbxref_id, int run_id, int rank){
+	public boolean existsDbxRefId(DatabaseManager manager, int bioentry_id, int dbxref_id, int run_id, int rank, int hit_no){
 		
-		String sql = "SELECT COUNT(1) AS bool FROM bioentry_dbxref WHERE bioentry_id=? AND dbxref_id=? AND run_id=? AND rank=?";
+		String sql = "SELECT COUNT(1) AS bool FROM bioentry_dbxref WHERE bioentry_id=? AND dbxref_id=? AND run_id=? AND hit_no=? AND rank=?";
 		try {
 			dbxrefEXIST = MySQL_BioSQL.init(manager.getCon(), dbxrefEXIST, sql);
 			dbxrefEXIST.setInt(1, bioentry_id);
 			dbxrefEXIST.setInt(2, dbxref_id);
 			dbxrefEXIST.setInt(3, run_id);
-			dbxrefEXIST.setInt(4, rank);
+			dbxrefEXIST.setInt(4, hit_no);
+			dbxrefEXIST.setInt(5, rank);
 			set = dbxrefEXIST.executeQuery();
 			while(set.next()){
 				return (set.getInt(1) > 0);
 			}
 		} 
 		catch (SQLException e) {
-			logger.error("Failed to add bioentry_dbxref entry", e);
+			logger.error("Failed to get information for bioentry_dbxref entry with sql "+sql, e);
 		}
 		return false;
 	}
-	
-	/** INDEV function
-	 * 
-	 * 
-	 * @param manager database manager
-	 * @param contig_id to map to read, this should be a bioentry_id previously identified
-	 * @param read_id to map to contig, this should be a bioentry_id previously identified
-	 * @param runid
-	 * @param offset, where the read  
-	 * @param start of read alignment to contig relative to read, ie 4 = offset+4 for alignment
-	 * @param stop where the read stops alignment
-	 * @param trimmed whether or not the read was trimmed
-	 * 
-	 * @return successful or not
-	 */
+
 	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, int read_id, int read_version, int runid, int start, int stop, boolean trimmed){
 		String sql = "INSERT INTO assembly (contig_bioentry_id, read_bioentry_id, read_version, run_id, trimmed, range_start, range_end) VALUES (?,?,?,?,?,?,?)";
+		
 		try {
 			assemblySET = MySQL_BioSQL.init(manager.getCon(), assemblySET, sql);
 			assemblySET.setInt(1, contig_id);
@@ -545,7 +486,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			assemblySET.setInt(6, start);
 			assemblySET.setInt(7, stop);
 			assemblySET.execute();
-			return true;
+			return addRunBioentry(manager, contig_id, runid);
 		} 
 		catch(SQLException e){
 			logger.error("Failed to insert assembly data into database", e);
@@ -564,7 +505,8 @@ public class MySQL_Extended implements BioSQLExtended{
 	 *******************************************************************************************/
 
 	public int[] getRunId(DatabaseManager manager, String programname, String runtype){
-		String sql = new String("SELECT run_id FROM run WHERE program LIKE '"+programname+"' AND runtype='"+runtype+"'");
+		String sql = new String("SELECT run_id FROM run WHERE runtype='"+runtype+"'");
+		if(programname != null)sql+=" AND program LIKE '"+programname+"'"; 
 		LinkedList<Integer> ins = new LinkedList<Integer>();
 		try{
 			Statement st = manager.getCon().createStatement();
@@ -582,12 +524,12 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 
 	public Run getRun(DatabaseManager manager, int run_id){
-		String sql = new String("SELECT run_date, runtype, program, version, dbname,params, comment FROM run WHERE run_id="+run_id);
+		String sql = new String("SELECT run_date, runtype, parent_id, program, version, dbname,source, params, comment FROM run WHERE run_id="+run_id);
 		try{
 			Statement st = manager.getCon().createStatement();
 			set = st.executeQuery(sql);
 			while(set.next()){
-				return new Run(run_id, set.getDate(1),set.getString(2), set.getString(3), set.getString(4), set.getString(5), set.getString(6),set.getString(7));
+				return new Run(run_id, set.getDate(1) ,set.getString(2), set.getInt(3), set.getString(4), set.getString(5), set.getString(6), set.getString(7),set.getString(8), set.getString(9));
 			}
 			return null;
 		}
@@ -623,55 +565,36 @@ public class MySQL_Extended implements BioSQLExtended{
 	 * 
 	 *******************************************************************************************/
 	
-	/**
-	 * @see #addBioentryDbxrefCols(Connection)
-	 * 	 
-	 * rank is can actually be set as null, but as this will
-	 * often be use for blast hsp references, i am using it to denote
-	 * mutliple hsps between the same bioentry and dbx
-	 * 
-	 * @param con SQL Connection
-	 * @param bioentry_id
-	 * @param dbxref_id
-	 * @param rank
-	 * @param evalue
-	 * @param score
-	 * @param dbxref_startpos
-	 * @param dbxref_endpos
-	 * @param dbxref_frame
-	 * @param bioentry_startpos
-	 * @param bioentry_endpos
-	 * @param bioentry_frame
-	 * @return boolean , false if execute failed or sql exception thrown 
-	 */
-	public boolean setDbxref(DatabaseManager manager, int bioentry_id,  int dbxref_id, int run_id, int rank, Double evalue, Integer score, Integer dbxref_startpos,
-		Integer dbxref_endpos,Integer dbxref_frame, Integer bioentry_startpos,Integer bioentry_endpos,Integer bioentry_frame){
-		String sql = "INSERT INTO bioentry_dbxref (bioentry_id, dbxref_id, run_id, rank, evalue,score, dbxref_startpos,"+
-			"dbxref_endpos, dbxref_frame, bioentry_startpos, bioentry_endpos, bioentry_frame) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+
+	public boolean setBioentry2Dbxref(DatabaseManager manager, int bioentry_id,  int dbxref_id, int run_id, Double evalue, Integer score, Integer dbxref_startpos,
+		Integer dbxref_endpos,Integer dbxref_frame, Integer bioentry_startpos,Integer bioentry_endpos,Integer bioentry_frame, int hit, int hsp){
+		String sql = "INSERT IGNORE INTO bioentry_dbxref (bioentry_id, dbxref_id, run_id, hit_no, rank, evalue,score, dbxref_startpos,"+
+			"dbxref_endpos, dbxref_frame, bioentry_startpos, bioentry_endpos, bioentry_frame) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		try {
 			//System.out.println(bioentry_id);
 			dbxrefGET = MySQL_BioSQL.init(manager.getCon(), dbxrefGET, sql);
 			dbxrefGET.setInt(1, bioentry_id);
 			dbxrefGET.setInt(2, dbxref_id);
 			dbxrefGET.setInt(3, run_id);
-			dbxrefGET.setInt(4, rank);
+			dbxrefGET.setInt(4, hit);
+			dbxrefGET.setInt(5, hsp);
 			
-			if(evalue != null) dbxrefGET.setDouble(5, evalue);
-			else dbxrefGET.setNull(5, Types.DOUBLE);
-			if(score != null) dbxrefGET.setInt(6, score);
-			else dbxrefGET.setNull(6, Types.INTEGER);
-			if(dbxref_startpos != null) dbxrefGET.setInt(7, dbxref_startpos);
+			if(evalue != null) dbxrefGET.setDouble(6, evalue);
+			else dbxrefGET.setNull(6, Types.DOUBLE);
+			if(score != null) dbxrefGET.setInt(7, score);
 			else dbxrefGET.setNull(7, Types.INTEGER);
-			if(dbxref_endpos != null) dbxrefGET.setInt(8, dbxref_endpos);
+			if(dbxref_startpos != null) dbxrefGET.setInt(8, dbxref_startpos);
 			else dbxrefGET.setNull(8, Types.INTEGER);
-			if(dbxref_frame != null) dbxrefGET.setInt(9, dbxref_frame);
+			if(dbxref_endpos != null) dbxrefGET.setInt(9, dbxref_endpos);
 			else dbxrefGET.setNull(9, Types.INTEGER);
-			if(bioentry_startpos != null) dbxrefGET.setInt(10, bioentry_startpos);
+			if(dbxref_frame != null) dbxrefGET.setInt(10, dbxref_frame);
 			else dbxrefGET.setNull(10, Types.INTEGER);
-			if(bioentry_endpos != null) dbxrefGET.setInt(11, bioentry_endpos);
+			if(bioentry_startpos != null) dbxrefGET.setInt(11, bioentry_startpos);
 			else dbxrefGET.setNull(11, Types.INTEGER);
-			if(bioentry_frame != null) dbxrefGET.setInt(12, bioentry_frame);
+			if(bioentry_endpos != null) dbxrefGET.setInt(12, bioentry_endpos);
 			else dbxrefGET.setNull(12, Types.INTEGER);
+			if(bioentry_frame != null) dbxrefGET.setInt(13, bioentry_frame);
+			else dbxrefGET.setNull(13, Types.INTEGER);
 			dbxrefGET.execute();
 			return true;
 		} 
@@ -680,25 +603,68 @@ public class MySQL_Extended implements BioSQLExtended{
 			return false;
 		}
 	}
+	
+	public boolean updateDbxref(DatabaseManager manager, int bioentry_id,  int dbxref_id, int run_id, Double evalue, Integer score, Integer dbxref_startpos,
+		Integer dbxref_endpos,Integer dbxref_frame, Integer bioentry_startpos,Integer bioentry_endpos,Integer bioentry_frame, int hit, int hsp){
+
+		String sql = "UPDATE bioentry_dbxref SET evalue=?,score=?, dbxref_startpos=?,"+
+				" dbxref_endpos=?, dbxref_frame=?, bioentry_startpos=?, bioentry_endpos=?, bioentry_frame=?" +
+				" WHERE bioentry_id=? AND dbxref_id=? AND run_id=? AND rank=? AND hit_no=?";
+		
+		try {
+			//System.out.println(bioentry_id);
+			dbxrefUP = MySQL_BioSQL.init(manager.getCon(), dbxrefUP, sql);
+			dbxrefUP.setInt(9, bioentry_id);
+			dbxrefUP.setInt(10, dbxref_id);
+			dbxrefUP.setInt(11, run_id);
+			dbxrefUP.setInt(12, hsp);
+			dbxrefUP.setInt(13, hit);
+			
+			if(evalue != null) dbxrefUP.setDouble(1, evalue);
+			else dbxrefUP.setNull(1, Types.DOUBLE);
+			if(score != null) dbxrefUP.setInt(2, score);
+			else dbxrefUP.setNull(2, Types.INTEGER);
+			if(dbxref_startpos != null) dbxrefUP.setInt(3, dbxref_startpos);
+			else dbxrefUP.setNull(3, Types.INTEGER);
+			if(dbxref_endpos != null) dbxrefUP.setInt(4, dbxref_endpos);
+			else dbxrefUP.setNull(4, Types.INTEGER);
+			if(dbxref_frame != null) dbxrefUP.setInt(5, dbxref_frame);
+			else dbxrefUP.setNull(5, Types.INTEGER);
+			if(bioentry_startpos != null) dbxrefUP.setInt(6, bioentry_startpos);
+			else dbxrefUP.setNull(6, Types.INTEGER);
+			if(bioentry_endpos != null) dbxrefUP.setInt(7, bioentry_endpos);
+			else dbxrefUP.setNull(7, Types.INTEGER);
+			if(bioentry_frame != null) dbxrefUP.setInt(8, bioentry_frame);
+			else dbxrefUP.setNull(8, Types.INTEGER);
+			dbxrefUP.execute();
+			return true;
+		} 
+		catch (SQLException e) {
+			logger.error("Failed to update bioentry_dbxref entry", e);
+			return false;
+		}
+	}
 
 	
-	public boolean setRun(DatabaseManager manager, Date date, String runtype, String program, String version, String dbname, String source, String params, String comment){		
+	public boolean setRun(DatabaseManager manager, Date date, String runtype, int parent, String program, String version, String dbname, String source, String params, String comment){		
 		try{
 			runSET = MySQL_BioSQL.init(manager.getCon(), runSET, "INSERT INTO run " +
-					"(run_date, runtype, program, version, dbname, source, params, comment) VALUES (?,?,?,?,?,?,?,?);");
+					"(run_date, runtype, parent_id, program, version, dbname, source, params, comment) VALUES (?,?,?,?,?,?,?,?,?);");
 			runSET.setDate(1, date);
 			runSET.setString(2, runtype);
-			runSET.setString(3, program);
-			if(version == null)runSET.setNull(4, Types.VARCHAR);
-			else runSET.setString(4, version);
-			if(dbname == null)runSET.setNull(5, Types.VARCHAR);
-			else runSET.setString(5, dbname);
+			if(version == null)runSET.setNull(3, Types.INTEGER);
+			else runSET.setInt(3, parent);
+			runSET.setString(4, program);
+			if(version == null)runSET.setNull(5, Types.VARCHAR);
+			else runSET.setString(5, version);
 			if(dbname == null)runSET.setNull(6, Types.VARCHAR);
-			else runSET.setString(6, source);
-			if(params == null)runSET.setNull(7, Types.VARCHAR);
-			else runSET.setString(7, params);
-			if(comment == null)runSET.setNull(8, Types.VARCHAR);
-			else runSET.setString(8, comment);
+			else runSET.setString(6, dbname);
+			if(dbname == null)runSET.setNull(7, Types.VARCHAR);
+			else runSET.setString(7, source);
+			if(params == null)runSET.setNull(8, Types.VARCHAR);
+			else runSET.setString(8, params);
+			if(comment == null)runSET.setNull(9, Types.VARCHAR);
+			else runSET.setString(9, comment);
 			
 			logger.trace("Attempting to execute " + runSET.toString());
 			runSET.execute();
@@ -755,6 +721,469 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 		
 		return l;
+	}
+	
+	
+
+	public Taxonomy getTaxonomyFromSQL(DatabaseManager manager,
+			Integer biosql_id, Integer ncbi_id) {
+		Taxonomy T = new Taxonomy();
+		if(biosql_id == null && ncbi_id == null){
+			logger.error("Both biosql_id and ncbi_id set to null");
+		}
+		else if(ncbi_id != null){
+			biosql_id = manager.getBioSQL().getTaxonIdwNCBI(manager.getCon(), ncbi_id);
+		}
+		try{
+			Statement st = manager.getCon().createStatement();
+			set = st.executeQuery("SELECT * FROM taxon WHERE taxon_id='"+biosql_id+"'");
+			while(set.next()){
+				T.setNcbi_taxid(set.getInt("ncbi_taxon_id"));
+				T.setParent_taxid(set.getInt("parent_taxon_id"));
+				T.setNode_rank(set.getString("node_rank"));
+				T.setGenetic_code(set.getInt("genetic_code"));
+				T.setMitogenetic_code(set.getInt("mito_genetic_code"));
+				T.setRight_value(set.getInt("right_value"));
+				T.setLeft_value(set.getInt("left_value"));
+			}
+			set = st.executeQuery("SELECT * FROM taxon_name WHERE taxon_id='"+biosql_id+"'");
+			while(set.next()){
+				if(set.getString("name_class").equals("ScientificName")){
+					T.setSciencename(set.getString("name"));
+				}
+				else if (set.getString("name_class").equals("CommonName")){
+					T.setCommonname(set.getString("name"));
+				}
+			}
+		}
+		catch(SQLException sq){
+			logger.error("Failed to get taxon stuff",sq);
+		}
+		return T;
+	}
+	
+	public int[][] getTaxonPerAssembly(DatabaseManager manager, int[] listoftaxids, int assembly_run_id, int blast_run_id, double evalue, int hit_no){
+		int[][] retur = new int[][]{listoftaxids, new int[listoftaxids.length]};
+		try{
+			String sql = "SELECT COUNT(bioentry_id) AS COUNT FROM bioentry_dbxref INNER JOIN dbxref USING (dbxref_id)" +
+					" WHERE dbxref.ncbi_taxon_id IN (SELECT taxon.ncbi_taxon_id FROM taxon" +
+					" INNER JOIN taxon AS include ON (taxon.left_value BETWEEN include.left_value AND include.right_value)" +
+					" WHERE include.ncbi_taxon_id=?) AND bioentry_dbxref.run_id="+blast_run_id+
+					" AND bioentry_id IN (SELECT bioentry_id FROM bioentry_run" +
+					" WHERE bioentry_run.run_id="+assembly_run_id+")";
+			if(evalue != -1){
+				sql+= " AND bioentry_dbxref.evalue<"+evalue;
+			}
+			if(hit_no !=-1){
+				sql+= " AND bioentry_dbxref.hit_no<="+hit_no;
+			}
+			logger.info("Running: "+sql);
+			PreparedStatement st = manager.getCon().prepareStatement(sql);
+			int c=0;
+			for(int i : listoftaxids){
+				st.setInt(1,i);
+				set = st.executeQuery();
+				while(set.next()){
+					retur[1][c] = set.getInt("COUNT");
+				}
+				c++;
+				System.out.print("\r "+c + " of "+retur[0].length);
+			}
+			System.out.println();
+			return retur;
+		}
+		catch(SQLException s){
+			logger.error("Failed to get count for taxids", s);
+		}
+		return retur;
+		
+	}
+	
+	/**
+	 * 
+	 * @param manager
+	 * @return returns a hashmap 
+	 * of ncbi_taxon_id is key and name
+	 * of node_rank as value
+	 */
+	public HashMap<Integer, String> getNodeRank(DatabaseManager manager, String node_rank){
+		try{
+			Statement st = manager.getCon().createStatement();
+			set = st.executeQuery("SELECT ncbi_taxon_id, taxon_name.name FROM taxon INNER JOIN taxon_name USING(taxon_id) WHERE taxon.node_rank LIKE '"+node_rank+"';");
+			HashMap<Integer, String> map = new HashMap<Integer, String>();
+			while(set.next())map.put(set.getInt(1), set.getString(2));
+			return map;
+		}
+		catch(SQLException sq){
+			logger.error("Could not count fields",sq);
+			return null;
+		}
+	}
+	
+	public int[] subTaxons(DatabaseManager manager, int ncbi_taxon_id){
+		try{
+			Statement st = manager.getCon().createStatement();
+			set = st.executeQuery("SELECT ncbi_taxon_id FROM taxon INNER JOIN taxon AS include ON (taxon.left_value BETWEEN include.left_value AND"+
+	                " include.right_value) WHERE include.ncbi_taxon_id="+ncbi_taxon_id);
+			LinkedList<Integer> is = new LinkedList<Integer>();
+			while(set.next())is.add(set.getInt(1));
+			
+			return Tools_Array.ListInt2int(is);
+		}
+		catch(SQLException sq){
+			logger.error("Could not count fields",sq);
+			return null;
+		}
+	}
+	
+	/**
+	 * Return the number of accessions which have no taxid
+	 * attached to the databse
+	 * 
+	 * @param manager
+	 * @param database
+	 * @return
+	 */
+	private int getTaxonCount(DatabaseManager manager, String database){
+		try{
+			Statement st = manager.getCon().createStatement();
+			set = st.executeQuery("SELECT COUNT(dbxref_id) AS count FROM dbxref WHERE ncbi_taxon_id IS NULL AND dbname='"+database+"'");
+			int size=-1;
+			while(set.next())size=set.getInt(1);
+			return size;
+		}
+		catch(SQLException sq){
+			logger.error("Could not count fields",sq);
+			return -1;
+		}
+	}
+	
+	public boolean updateTaxonParents(DatabaseManager manager){
+		int size=1;
+		int records=1;
+		int iters=0;
+		try{
+			Statement st = manager.getCon().createStatement();
+	
+			int[] ids = null;
+			while((records>0 || size>0) && iters<4){
+				
+				//Deal with records missing parent_ids
+				ResultSet set = st.executeQuery("SELECT COUNT(ncbi_taxon_id) AS COUNT FROM taxon WHERE parent_taxon_id IS NULL");
+				while(set.next())size=set.getInt("COUNT");
+				logger.debug(size+" records found without ids");
+				if(size != 0){
+					set = st.executeQuery("SELECT ncbi_taxon_id FROM taxon WHERE parent_taxon_id IS NULL");
+					ids = new int[size+1];
+					logger.info("Retrieving IDs for "+ size+ " taxon records");
+					int c=0;
+					while(set.next()){
+						ids[c] = set.getInt("ncbi_taxon_id");
+						c++;
+					}
+					for(int i =0; i < ids.length;i++) {
+						if(ids[i] >1){//Quick hack because I ballsed up the array sizing for some reason
+							new Taxonomy(ids[i]).upload2DB(manager, true);
+							System.out.print("\r"+(i+1)+" of "+ids.length +" complete");
+						}
+						if(ids[i] == Tools_NCBI.ncbi_root_taxon){
+							logger.debug("NCBI ID "+Tools_NCBI.ncbi_root_taxon+" is assumed to be" +
+									" the root and has no parent, removing from list");
+							size--;
+						}
+					}
+					System.out.println();
+				}
+				
+				//Deal with missing records
+				set = st.executeQuery("SELECT COUNT(DISTINCT(`parent_taxon_id`)) AS COUNT FROM `taxon` WHERE `parent_taxon_id`" +
+						" NOT IN (SELECT `ncbi_taxon_id` FROM taxon);");
+				while(set.next())records=set.getInt("COUNT");
+				logger.debug(records+" ids found without records");
+				if(records != 0){
+					set = st.executeQuery("SELECT DISTINCT(`parent_taxon_id`) AS id FROM `taxon` WHERE `parent_taxon_id`" +
+							" NOT IN (SELECT `ncbi_taxon_id` FROM taxon);");
+					logger.info("Adding "+records+" missing records");
+					ids = new int[records+1];
+					int c=0;
+					while(set.next())ids[c++] = set.getInt("id");
+					
+					for(int i =0;i < ids.length; i++){
+						if(ids[i] > 0){
+							new Taxonomy(ids[i]).upload2DB(manager, true);
+							System.out.print("\r"+(i+1)+" of "+ids.length +" complete");
+						}
+					}
+				}
+				System.out.println();
+				iters++;
+			}
+			if(iters > 3){
+				logger.warn("Method re-iterated 4 times, cancelling..." +
+						" this may be a bug, if it isn't just rerun task again");
+			}
+		}
+		catch(SQLException e){
+			logger.error("Failed to populate parents");
+			return false;
+		}
+		
+		return true;
+	}
+	
+	public boolean updateAccs(DatabaseManager manager, String localdb, NCBI_DATABASE ncbidb){
+		int c=0;
+		int d =0;
+		int err=0;
+		try{
+			int size = getTaxonCount(manager, localdb);
+			if(size != 0){
+				Statement st = manager.getCon().createStatement();
+				set = st.executeQuery("SELECT accession, dbxref_id FROM dbxref WHERE ncbi_taxon_id IS NULL AND dbname='"+localdb+"'");
+				HashMap<Integer, String> map = new HashMap<Integer, String>();
+				logger.info("Retrieve the ncbi taxons from ncbi");
+				while(set.next()){
+					int id = set.getInt("dbxref_id");
+					String acc = set.getString("accession");
+					map.put(id, acc);
+					c++;
+					System.out.print("\r"+c+" of " + size*2 + "  phase 1      ");
+				}
+				System.out.println();
+				set.close();
+				logger.info("Updating database with ncbi taxons, any missing taxons will be added");
+				PreparedStatement pst = manager.getCon().prepareStatement("UPDATE dbxref SET ncbi_taxon_id=? WHERE dbxref_id=?");
+				for(Integer i : map.keySet()){
+					Integer p = null;
+					String s = Tools_NCBI.getTaxIDFromAccession(ncbidb, map.get(i));
+					if(s != null){
+						p = Tools_String.parseString2Int(s);
+					}
+					if(p != null){
+						boolean cont = true;
+						if(manager.getBioSQL().getTaxonIdwNCBI(manager.getCon(), p) < 1){
+							if(!new Taxonomy(s).upload2DB(manager, false)){
+								logger.error("Error failed to upload missing taxonomy for " + map.get(i));
+								cont=false;
+								err++;
+							}
+						}
+						if(cont){
+							pst.setInt(1, p);
+							pst.setInt(2, i);
+							pst.execute();
+							System.out.print("\r"+(c+d)+" of " + size*2 + "  phase 2      ");
+						d++;
+						}
+					}
+					else err++;
+				}
+				System.out.println();
+				System.out.println((c+d)-err*2+" tax ids updated, with " +err+ " errors where taxid not uploaded");
+				return true;
+			}
+			else{
+				logger.error("No references with null taxid for the database " + localdb);
+				
+			}
+		}
+		catch(Exception e){
+			logger.error("Failed to update accs with taxon ids", e);
+		}
+		return false;
+	}
+	
+
+	public boolean depthTraversalTaxon(DatabaseManager manager, int root_id){
+		try{
+			children = manager.getCon().prepareStatement("SELECT ncbi_taxon_id FROM taxon WHERE parent_taxon_id=?");
+			setleft = manager.getCon().prepareStatement("UPDATE taxon SET left_value=? WHERE ncbi_taxon_id=?");
+			setright = manager.getCon().prepareStatement("UPDATE taxon SET right_value=? WHERE ncbi_taxon_id=?");
+			valuesize=0;
+			set = manager.getCon().createStatement().executeQuery("SELECT COUNT(taxon_id) AS COUNT FROM taxon;");
+			while(set.next())valuesize=set.getInt(1)*2;
+			depthcount =1;
+			depthid = root_id;
+			layerdepth=1;
+			walktree();
+			System.out.println();
+			children=null;
+			setleft=null;
+			setright=null;
+			
+			return true;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to run depth traversal for taxons ", sq);
+			return false;
+		}
+		
+	}
+	
+	private void walktree(){
+		try{
+			System.out.print("\rCount: "+depthcount+" of "+valuesize+" at depth " + layerdepth);
+			layerdepth++;
+			int current = depthid;
+			setleft.setInt(1, depthcount++);
+			setleft.setInt(2, current);
+			setleft.execute();
+			children.setInt(1, current);
+			//I don't think we can execute another query
+			//before this is closed so will have to pop a list
+			set = children.executeQuery();
+			LinkedList<Integer> ins = new LinkedList<Integer>();
+			while(set.next()){
+				ins.add(set.getInt(1));
+			}
+			set.close();
+			for(Integer i : ins){
+				depthid=i;
+				walktree();
+			}
+			layerdepth--;
+			setright.setInt(1, depthcount++);
+			setright.setInt(2, current);
+			setright.execute();
+		}
+		catch(SQLException sq){
+			logger.error("Failed to run depth traversal for taxons ", sq);
+		}
+	}
+
+
+	public boolean addRunBioentry(DatabaseManager manager, int bioentry, int runid) {
+		String sql2 = "INSERT INTO bioentry_run (bioentry_id, run_id, rank) VALUES (?,?,?)";
+		try {
+			bioen_runSET = MySQL_BioSQL.init(manager.getCon(), bioSequenceGET, sql2);
+			bioen_runSET.setInt(1, bioentry);
+			bioen_runSET.setInt(2, runid);
+			bioen_runSET.setInt(3, 0);
+			bioen_runSET.execute();
+			return true;
+		} 
+		catch(SQLException e){
+			logger.error("Failed to insert assembly data into database", e);
+			return false;
+		}
+	}
+	
+//	public List<Dbxref> getDbxref(DatabaseManager manager, int dbxref, String accession, int taxid, String dbname){
+//		StringBuffer sql = new StringBuffer("SELECT dbxref_id, dbname, accession, version, ncbi_taxon_id FROM dbxref WHERE ");
+//		LinkedList<String> s =  new LinkedList<String>();
+//		if(dbxref > 0) s.add("dxref_id="+dbxref+ " ");
+//		if(accession != null)s.add("accession='"+accession+"' ");
+//		if(taxid > 0)s.add("ncbi_taxon_id="+taxid+" ");
+//		if(dbname!= null)s.add("dbname='"+dbname+"'");
+//		if(s.size() == 0)logger.error("No where statements added, will select everything");
+//		if(s.size() == 1){
+//			sql.append(s.get(0));
+//		}
+//		else{
+//			for(int i=0 ; i < s.size() ;i++){
+//				if(i != s.size()-1){
+//					sql.append(s);
+//					sql.append("AND ");
+//				}
+//				else{
+//					sql.append(s);
+//					sql.append(';');
+//				}
+//			}
+//		}		
+//		LinkedList<Dbxref> refs = new LinkedList<Dbxref>();
+//		try{
+//			Statement st = manager.getCon().createStatement();
+//			set = st.executeQuery(sql.toString());
+//			while(set.next()){
+//				Dbxref ref = new Dbxref();
+//				ref.setAccession(set.getString("accession"));
+//				ref.setDbname(set.getString("dbname"));
+//				ref.setDbxref_id(set.getInt("dbxref_id"));
+//				ref.setTaxon_id(set.getInt("ncbi_taxon_id"));
+//				ref.setVersion(set.getInt("version"));
+//			}
+//		}
+//		catch(SQLException sq){
+//			logger.error("Failed to execute " + sql.toString(), sq);
+//		}
+//		return refs;
+//	}
+	
+	/*
+	 * Equivalent to this, but java won't let me set local variable in database :(
+	 * 	SET @runtot:=0; SELECT q1.EVALUE, (@runtot := @runtot + COUNT) AS CUMULATIVE FROM (SELECT ...
+	 */
+ 
+	public boolean cumulativeCountQuery(DatabaseManager manager, File output, int blastRun, int AssemblyRun){
+		StringBuffer sql = new StringBuffer("SELECT bioentry_dbxref.evalue AS EVALUE, COUNT(bioentry_dbxref.evalue)" +
+				" AS COUNT FROM bioentry_dbxref INNER JOIN bioentry_run USING (bioentry_id)" +
+				" WHERE bioentry_dbxref.rank=1 AND bioentry_run.run_id=");
+		sql.append(AssemblyRun);
+		sql.append(" AND bioentry_dbxref.run_id=");
+		sql.append(blastRun);
+		sql.append(" GROUP BY bioentry_dbxref.evalue ORDER BY bioentry_dbxref.evalue;");
+		
+		try{
+			Statement st = manager.getCon().createStatement();
+			set = st.executeQuery(sql.toString());
+			FileWriter fstream = new FileWriter(output, false);
+			BufferedWriter out = new BufferedWriter(fstream);
+			String n = Tools_System.getNewline();
+			int cumulative=0;
+			while(set.next()){
+				cumulative+=set.getInt(2);
+				out.write(set.getDouble(1) + " " + cumulative + n);
+				out.flush();
+			}
+			out.close();
+			return true;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to execute " + sql.toString(), sq);
+			return false;
+		} catch (IOException e) {
+			if(output != null)logger.error("Failed to write to file " + output.getPath());
+			else logger.error("File output is null, can't write to null file");
+			return false;
+		}
+	}
+	
+	public boolean runSpeciesQuery(DatabaseManager manager, File output, int assRun, int blastRun, double evalue, int hit_no, boolean taxids){
+		String sql = "SELECT dbxref.ncbi_taxon_id AS taxid, taxon_name.name AS taxname," +
+				" COUNT(dbxref.ncbi_taxon_id) AS count FROM dbxref INNER JOIN taxon USING" +
+				" (ncbi_taxon_id) INNER JOIN taxon_name USING (taxon_id)" +
+				" INNER JOIN bioentry_dbxref USING (dbxref_id)" +
+				" INNER JOIN bioentry_run USING (bioentry_id)" +
+				" WHERE bioentry_dbxref.run_id="+blastRun+" AND bioentry_run.run_id=" +assRun;
+				if(hit_no > 0)sql+=" AND bioentry_dbxref.rank=1 AND bioentry_dbxref.hit_no="+hit_no;
+				if(evalue >0 )sql+=" AND bioentry_dbxref.evalue<"+evalue+"";
+				sql+=" AND taxon_name.name_class='ScientificName' GROUP BY taxid ORDER BY count DESC;";
+		try{
+			Statement st = manager.getCon().createStatement();
+			set = st.executeQuery(sql);
+			FileWriter fstream = new FileWriter(output, false);
+			BufferedWriter out = new BufferedWriter(fstream);
+			String n = Tools_System.getNewline();
+			String writ = (taxids) ?"TaxonID,Count"+n:"\"Species\",Count"+n; 
+			out.write(writ);
+			out.flush();
+			while(set.next()){
+				writ = taxids ? set.getInt(1) +",":"\""+set.getString(2)+"\",";
+				out.write(writ+set.getInt(3)+ n);
+				out.flush();
+			}
+			out.close();
+			return true;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to execute " + sql.toString(), sq);
+			return false;
+		} catch (IOException e) {
+			if(output != null)logger.error("Failed to write to file " + output.getPath());
+			else logger.error("File output is null, can't write to null file");
+			return false;
+		}
 	}
 	
 	

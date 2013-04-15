@@ -38,7 +38,7 @@ public class DatabaseManager {
 	private BioSQL biosql;
 	private BioSQLExtended biosqlext;
 	private int biodatabase_id =-1;
-	private static double databaseversion =2.5;
+	private static double databaseversion =2.7;
 	private boolean isOpen;
 	
 	public DatabaseManager(UI ui){
@@ -57,7 +57,7 @@ public class DatabaseManager {
 	}
 	
 	public boolean open() throws Exception{
-		if(openDefaultConnection(true) != null){
+		if(openDefaultConnection() != null){
 			return true;
 		}
 		else{
@@ -65,19 +65,24 @@ public class DatabaseManager {
 		}
 	}
 	
-	public synchronized Connection openConnection(String dbtype, String driver, String dbhost, String dbname, String dbuser, String dbpass, boolean dbnom) throws Exception{
+	public synchronized Connection openConnection(String dbtype, String driver, String dbhost, String dbname, String dbuser, String dbpass) throws Exception{
 		this.dbtype=dbtype;
 		Class.forName(driver).newInstance();
 		String mys = "jdbc:"+dbtype+"://"+dbhost;
-		if(dbnom){
-			mys = "jdbc:"+dbtype+"://"+dbhost+"/"+dbname+"";
-		}
-		logger.debug("About to run: " + mys);
-		logger.debug("Params{ DBTYPE:"+dbtype+" DBDRIVER:"+driver+" DBHOST:"+dbhost+" DBNAME:"+dbname+" DBUSER:" + dbuser +"}");
+		logger.debug("Using to check database "+dbname+" exists: " + mys);
 		this.con = DriverManager.getConnection(mys, dbuser, dbpass);
-		if(dbnom){
-			checkVersion();
+		boolean checkdb = true;
+		if(!dbExists(dbname)){
+			logger.info("Created new database at " + dbname+ " you will need to run -task sqladmin -setup");
+			createNewDatabase(dbname);
+			checkdb =false;
 		}
+		else logger.debug("Database does exist. Yay!");
+		mys = "jdbc:"+dbtype+"://"+dbhost+"/"+dbname+"";
+		logger.debug("Now using to run: " + mys);
+		logger.debug("Params{ DBTYPE="+dbtype+" DBDRIVER="+driver+" DBHOST="+dbhost+" DBNAME="+dbname+" DBUSER=" + dbuser +" PASS=******}");
+		this.con = DriverManager.getConnection(mys, dbuser, dbpass);
+		if(checkdb)checkVersion();
 		if(this.con !=null)isOpen=true;
 		else {
 			isOpen = false;
@@ -96,34 +101,27 @@ public class DatabaseManager {
 		return defaultsets;
 	}
 	
-	public Connection openDefaultConnection(boolean db) throws Exception{
-		return openDefaultConnection(getDatabaseSettings(this.loader), db);
+	public Connection openDefaultConnection() throws Exception{
+		return openDefaultConnection(getDatabaseSettings(this.loader));
 	}
 	
-	private Connection openDefaultConnection(String[] mydb, boolean db) throws Exception{
+	private Connection openDefaultConnection(String[] mydb) throws Exception{
 		if(password == null)password = ui.requiresUserPassword("Password for access to "+mydb[2] + " database for user " + mydb[4], "Password Request");
 		if(password != null && password.length() > 0){
-			return this.openConnection(mydb[0], mydb[1], mydb[2], mydb[3], mydb[4], password, db);
+			return this.openConnection(mydb[0], mydb[1], mydb[2], mydb[3], mydb[4], password);
 		}
 		else return null;
 	}
 	
 	public void setDatabase(String s) throws Exception{
 		this.database = s;
-		openDefaultConnection(true);
-	}
-	
-	public boolean createAndOpen() throws Exception{
-		String[] mydb = getDatabaseSettings(this.loader);
-		createNewDatabase(mydb[3]);
-		this.con = openDefaultConnection(mydb, true);
-		return (con != null);
+		openDefaultConnection();
 	}
 	
 	public Connection getCon(){
 		if(this.con == null){
 			try{
-				openDefaultConnection(true);
+				openDefaultConnection();
 			}
 			catch(Exception e){
 				logger.error("Failed to get connection",e);
@@ -133,7 +131,6 @@ public class DatabaseManager {
 	}
 	
 	public boolean createNewDatabase(String dbname) throws Exception{
-		openDefaultConnection(false);
 		try {
 			if(this.dbtype.equals("mysql")){
 				Statement st = con.createStatement();
@@ -146,6 +143,22 @@ public class DatabaseManager {
 			ui.error("Failed to create new database "+dbname, e);
 			return false;
 		}
+	}
+	
+	public boolean dbExists(String dbname) throws SQLException{
+		if(this.dbtype.equals("mysql")){
+			Statement st = this.con.createStatement();
+			ResultSet set = st.executeQuery("SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '"+dbname+"'");
+			String shema =null;
+			while(set.next())shema=set.getString(1);
+			if(shema == null){
+				return false;
+			}
+			else{
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public boolean close(){
@@ -240,7 +253,7 @@ public class DatabaseManager {
 	
 	public synchronized boolean checkVersion() throws Exception{
 		double vers = this.getBioSQLXT().getDatabaseVersion(this);
-		if(vers < databaseversion){
+		if(vers < databaseversion && vers != -1){
 			UserResponse i = ui.requiresUserYNI("Do you want to update this version of the database " +
 					"(y)es update, (n)o do not do anything or " +
 					"(c)ontinue and ignore this warning? (y/n/c)", "Database version is out of date");

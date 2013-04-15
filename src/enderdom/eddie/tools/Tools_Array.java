@@ -126,4 +126,10 @@ public abstract class Tools_Array {
 		}
 		return returned;
 	}
+
+	public static int[] sum(int[] count, int[] count1) {
+		if(count.length != count1.length)System.out.println("Arrays not same length!");
+		for(int i=0;i< count.length;i++)count[i]+=count1[i];
+		return count;
+	}
 }

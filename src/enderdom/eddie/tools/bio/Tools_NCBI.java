@@ -15,6 +15,8 @@ public class Tools_NCBI {
 	public static String eutils = "eutils.ncbi.nlm.nih.gov";
 	public static String esearch = "/entrez/eutils/esearch.fcgi";
 	public static String esummary = "/entrez/eutils/esummary.fcgi";
+	public static String efetch = "/entrez/eutils/efetch.fcgi";
+	public static int ncbi_root_taxon = 1;
 	
 	//Database can be such as
 	public static String getGIFromAccession(NCBI_DATABASE database, String accession)
@@ -29,6 +31,11 @@ public class Tools_NCBI {
 		URI uri = new URI("http", eutils, esummary, "db="+database.toString()+"&id="+gi, null);
 		URL site = uri.toURL();
 		return Tools_XML.getSingleTagFromURL(site, "Item", "TaxId");
+	}
+	
+	public static String getTaxIDFromAccession(NCBI_DATABASE database, String accession)
+			throws MalformedURLException, URISyntaxException, XMLStreamException{
+		return getTaxIDfromGI(database,getGIFromAccession(database,accession));
 	}
 	
 	

@@ -283,7 +283,7 @@ CREATE INDEX bioentryrel_trm   ON bioentry_relationship(term_id);
 CREATE INDEX bioentryrel_child ON bioentry_relationship(subject_bioentry_id);
 -- CONFIG: you may want to add this for mysql because MySQL often is broken
 -- with respect to using the composite index for the initial keys
--- CREATE INDEX bioentryrel_parent ON bioentry_relationship(object_bioentry_id);
+CREATE INDEX bioentryrel_parent ON bioentry_relationship(object_bioentry_id);
 
 -- for deep (depth > 1) bioentry relationship trees we need a transitive
 -- closure table too

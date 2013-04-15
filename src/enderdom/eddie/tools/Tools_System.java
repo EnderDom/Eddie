@@ -33,6 +33,12 @@ public abstract class Tools_System{
         return sdf.format(cal.getTime());
     }
     
+    //lulz
+    public static final Date getDateNowAsDate(){
+        Calendar cal = Calendar.getInstance();
+        return cal.getTime();
+    }
+    
     public static int getDeltaInDaysToNow(String source){
     	SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
     	Calendar now = Calendar.getInstance();
