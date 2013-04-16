@@ -56,13 +56,9 @@ public class Task_Blast extends TaskXT{
 	public void parseArgsSub(CommandLine cmd){
 		if(cmd.hasOption("db"))dbname=cmd.getOptionValue("db");
 		if(cmd.hasOption("i"))input=cmd.getOptionValue("i");
-		if(cmd.hasOption("fuzzy"))fuzzynames = true;
-		if(cmd.hasOption("force"))force = true;
-		if(cmd.hasOption("run_id")){
-			Integer g = Tools_String.parseString2Int(cmd.getOptionValue("run_id"));
-			if(g !=  null)run_id =g;
-			else ui.error("Run id should be integer only, crap in, crap out");
-		}
+		fuzzynames = cmd.hasOption("fuzzy");
+		force = cmd.hasOption("force");
+		run_id = this.getOption(cmd, "run_id", -1);
 		if(cmd.hasOption("date"))date=cmd.getOptionValue("date");
 	}
 	
@@ -147,7 +143,7 @@ public class Task_Blast extends TaskXT{
 					System.out.println("--Blast Parsing--");
 					System.out.println("Parsed:"+counts[0]+" Skipped:"+counts[2]+" Errored:"+counts[1]+s);
 					System.out.println("--Blast Matches Upload--");
-					System.out.println("Uploaded:"+counts[3]+" Updated:"+counts[6]+" Skipped:"+counts[4]+" Errored:"+counts[5]);
+					System.out.println("Hits Uploaded:"+counts[3]+" Updated:"+counts[6]+" Skipped:"+counts[4]+" Errored:"+counts[5]);
 					System.out.println("#####################################################"+s+s);
 					//Also log this information, for nohup and whatnot
 					logger.info("Blast Parsing: " + "Parsed:"+counts[0]+" Skipped:"+counts[2]+" Errored:"+counts[1]);

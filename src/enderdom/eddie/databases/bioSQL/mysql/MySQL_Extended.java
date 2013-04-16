@@ -963,7 +963,7 @@ public class MySQL_Extended implements BioSQLExtended{
 						boolean cont = true;
 						if(manager.getBioSQL().getTaxonIdwNCBI(manager.getCon(), p) < 1){
 							if(!new Taxonomy(s).upload2DB(manager, false)){
-								logger.error("Error failed to upload missing taxonomy for " + map.get(i));
+								logger.error("Error failed to upload missing taxonomy for protein with accession " + map.get(i));
 								cont=false;
 								err++;
 							}
@@ -1110,11 +1110,56 @@ public class MySQL_Extended implements BioSQLExtended{
 //		return refs;
 //	}
 	
+	public int getHitCount(DatabaseManager manager, int run_id,double evalue, int hit_no, int hsp_no, int score, boolean unique){
+		String field = unique ? "DISTINCT(dbxref_id)" : "dbxref_id" ;
+		StringBuffer sql = new StringBuffer("SELECT COUNT("+field+") AS COUNT FROM bioentry_dbxref WHERE ");
+		LinkedList<String> s =  new LinkedList<String>();
+		if(run_id > 0 )s.add("run_id="+run_id+" ");
+		if(evalue >=0 )s.add("evalue<"+evalue+" ");
+		if(hit_no > 0)s.add("hit_no<="+hit_no+" ");
+		if(hsp_no > 0)s.add("rank<="+hsp_no+" ");
+		if(score > 0)s.add("score<="+score+" ");
+		if(s.size() == 0)logger.warn("No where statements added, will select everything");
+		else sql.append(s.get(0));
+		for(int i =0; i < s.size(); i++) if(i!=0)sql.append("AND "+s.get(i));
+		try{
+			set = manager.getCon().createStatement().executeQuery(sql.toString());
+			while(set.next())return set.getInt("COUNT");
+		}
+		catch(SQLException sq){
+			logger.error("Failed to execute " + sql.toString(), sq);
+		}
+		return -1;
+	}
+	
+	public int getHitCountwReadCount(DatabaseManager manager, int run_id,double evalue, int hit_no, int hsp_no, int score){
+		StringBuffer sql = new StringBuffer("SELECT COUNT(read_bioentry_id) AS COUNT FROM bioentry_dbxref " +
+				"INNER JOIN assembly ON bioentry_dbxref.bioentry_id=assembly.contig_bioentry_id WHERE ");
+		LinkedList<String> s =  new LinkedList<String>();
+		if(run_id > 0 )s.add("bioentry_dbxref.run_id="+run_id+" ");
+		if(evalue >=0 )s.add("bioentry_dbxref.evalue<"+evalue+" ");
+		if(hit_no > 0)s.add("bioentry_dbxref.hit_no<="+hit_no+" ");
+		if(hsp_no > 0)s.add("bioentry_dbxref.rank<="+hsp_no+" ");
+		if(score > 0)s.add("bioentry_dbxref.score<="+score+" ");
+		if(s.size() == 0)logger.warn("No where statements added, will select everything");
+		else sql.append(s.get(0));
+		for(int i =0; i < s.size(); i++) if(i!=0)sql.append("AND "+s.get(i));
+		try{
+			logger.debug(sql);
+			set = manager.getCon().createStatement().executeQuery(sql.toString());
+			while(set.next())return set.getInt("COUNT");
+		}
+		catch(SQLException sq){
+			logger.error("Failed to execute " + sql.toString(), sq);
+		}
+		return -1;
+	}
+	
+	
 	/*
 	 * Equivalent to this, but java won't let me set local variable in database :(
 	 * 	SET @runtot:=0; SELECT q1.EVALUE, (@runtot := @runtot + COUNT) AS CUMULATIVE FROM (SELECT ...
 	 */
- 
 	public boolean cumulativeCountQuery(DatabaseManager manager, File output, int blastRun, int AssemblyRun){
 		StringBuffer sql = new StringBuffer("SELECT bioentry_dbxref.evalue AS EVALUE, COUNT(bioentry_dbxref.evalue)" +
 				" AS COUNT FROM bioentry_dbxref INNER JOIN bioentry_run USING (bioentry_id)" +
@@ -1184,6 +1229,19 @@ public class MySQL_Extended implements BioSQLExtended{
 			else logger.error("File output is null, can't write to null file");
 			return false;
 		}
+	}
+
+
+	public boolean resetDepth(DatabaseManager manager) {
+		String query = "UPDATE taxon SET left_value=NULL, right_value=NULL;";
+		try{
+			manager.getCon().createStatement().execute(query);
+			return true;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to execute " + query, sq);
+		}
+		return false;
 	}
 	
 	

@@ -12,8 +12,8 @@ import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
 import enderdom.eddie.databases.manager.DatabaseManager;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
+import enderdom.eddie.tools.Tools_CLI;
 import enderdom.eddie.tools.Tools_File;
-import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.NCBI_DATABASE;
 import enderdom.eddie.tools.bio.Tools_NCBI;
@@ -37,33 +37,19 @@ public class Task_Taxonomy extends TaskXT{
 	
 	public Task_Taxonomy(){
 		setHelpHeader("--This is the Help Message for the the Taxonomy Task--");
-		localdb = "nr";
 		ncbidb = NCBI_DATABASE.protein;
 		updateacc=false;
 		updatepar=false;
 		depth=false;
-		node_rank="phylum";
-		blastRunID=-1;
-		assRunID=-1;
-		evalue=-1;
-		hit_no=-1;
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		if(cmd.hasOption("OP_nd")){
-			ncbidb = NCBI_DATABASE.valueOf(cmd.getOptionValue("n").trim());
-			if(ncbidb == null){
-				logger.error(cmd.getOptionValue("n") + " is not a valid database");
-				StringBuffer b = new StringBuffer();
-				for(NCBI_DATABASE v : NCBI_DATABASE.values())b.append(v+", ");
-				logger.info("Select from: "+b.toString());
-			}
-		}
-		if(cmd.hasOption("OP_ld")){
+		
+		if(cmd.hasOption("ld")){
 			localdb = cmd.getOptionValue("ld");
 		}
-
+		if(cmd.hasOption("o"))this.output=cmd.getOptionValue("o");
 		if(cmd.hasOption("OP_ua"))updateacc=true;
 		if(cmd.hasOption("OP_up"))updatepar=true;
 		if(cmd.hasOption("OP_de"))depth=true;
@@ -72,45 +58,31 @@ public class Task_Taxonomy extends TaskXT{
 			speciesQuery=true;
 			taxids=true;
 		}
-		if(cmd.hasOption("OP_node")){
-			node_rank=cmd.getOptionValue("node");
-			if(node_rank != null & node_rank.length() >0){
-				node =true;
-			}
-			else{
-				node=true;
-				node_rank="phylum";
-				logger.warn("Node not set, defaulting to 'phylum'");
-			}
-		}
+		
+		if(cmd.hasOption("OP_node"))node=true;
 		if(cmd.hasOption("OP_spec"))speciesQuery=true;
-		if(cmd.hasOption("rb")){
-			Integer i = Tools_String.parseString2Int(cmd.getOptionValue("rb"));
-			if(i !=null)blastRunID=i;
-			else logger.error("Failed to parse rb" + cmd.getOptionValue("rb"));
+		node_rank = this.getOption(cmd, "OP_node", "phylum");
+		output = this.getOption(cmd, "o", null);
+		blastRunID = this.getOption(cmd, "rb", -1);
+		assRunID = this.getOption(cmd, "ra", -1);
+		hit_no = this.getOption(cmd, "no_hit", -1);
+		evalue = this.getOption(cmd, "evalue", -1);	
+		localdb = this.getOption(cmd, "ld", "nr");
+		if(cmd.hasOption("nd")){
+			ncbidb = NCBI_DATABASE.valueOf(cmd.getOptionValue("nd").trim());
+			if(ncbidb == null){
+				logger.error(cmd.getOptionValue("n") + " is not a valid database");
+				StringBuffer b = new StringBuffer();
+				for(NCBI_DATABASE v : NCBI_DATABASE.values())b.append(v+", ");
+				logger.info("Select from: "+b.toString());
+			}
 		}
-		if(cmd.hasOption("ra")){
-			Integer i = Tools_String.parseString2Int(cmd.getOptionValue("ra"));
-			if(i !=null)assRunID=i;
-			else logger.error("Failed to parse ra" + cmd.getOptionValue("ra"));
-		}
-		if(cmd.hasOption("no_hit")){
-			Integer i = Tools_String.parseString2Int(cmd.getOptionValue("no_hit"));
-			if(i !=null)hit_no=i;
-			else logger.error("Failed to parse hit" + cmd.getOptionValue("no_hit"));
-		}
-		if(cmd.hasOption("evalue")){
-			Double i = Tools_String.parseString2Double(cmd.getOptionValue("evalue"));
-			if(i !=null)evalue=i;
-			else logger.error("Failed to parse rb" + cmd.getOptionValue("evalue"));
-		}
-		if(cmd.hasOption("o"))this.output=cmd.getOptionValue("o");
 	}
 	
 	public void buildOptions(){
 		super.buildOptions();
-		options.addOption(new Option("OP_nd", "ncbidb", true,  "Name of nbci database (default protein)"));
-		options.addOption(new Option("OP_ld", "localdb", true,  "Name of as used in local biosql db (default nr)"));
+		options.addOption(new Option("nd", "ncbidb", true,  "Name of nbci database (default protein)"));
+		options.addOption(new Option("ld", "localdb", true,  "Name of as used in local biosql db (default nr)"));
 		options.addOption(new Option("OP_ua", "updateAcc", false,  "Update ncbi accessions with taxonomy information"));
 		options.addOption(new Option("OP_up", "updateParents", false,  "Update taxonomy with parent information"));
 		options.addOption(new Option("OP_de", "depthTravel", false,  "Run this after all updates to regenerate depth map"));
@@ -163,9 +135,12 @@ public class Task_Taxonomy extends TaskXT{
 				DatabaseManager manager = this.ui.getDatabaseManager(password);
 				if(manager.open()){
 					logger.info("About to run depth traversal");
-					if(!manager.getBioSQLXT().depthTraversalTaxon(manager, Tools_NCBI.ncbi_root_taxon)){
-						logger.error("An error occured trying to add depth");
+					if(manager.getBioSQLXT().resetDepth(manager)){
+						if(!manager.getBioSQLXT().depthTraversalTaxon(manager, Tools_NCBI.ncbi_root_taxon)){
+							logger.error("An error occured trying to add depth");
+						}
 					}
+					else logger.error("Failed to reset depth");
 				}
 			} catch (Exception e) {
 				logger.error("An error occured trying to run depth traversal", e);
@@ -246,6 +221,17 @@ public class Task_Taxonomy extends TaskXT{
 		}
 		logger.debug("Finished running Taxonomy Task @ "+Tools_System.getDateNow());
 		setCompleteState(TaskState.FINISHED);
+	}
+	
+	public void printHelpMessage(){
+		Tools_CLI.printHelpMessage(getHelpHeader(), "-- Share And Enjoy! --", this.options);
+		System.out.println("Database upload operations are designed to be run in a sequence:");
+		System.out.println("1) -OP_ua   Updates all accessions " +
+				"with ncbi tax-ids");
+		System.out.println("2) -OP_up   Gets the taxonomy data " +
+				"for hierarchical groups such as order, clade phylum etc...");
+		System.out.println("3) -OP_de   Creates a new depth map " +
+				"(Needed after each update) which allows hierarchichal selection");
 	}
 
 }

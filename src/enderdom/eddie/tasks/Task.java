@@ -13,6 +13,7 @@ import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.cli.LazyPosixParser;
 
 import enderdom.eddie.tools.Tools_CLI;
+import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
 import enderdom.eddie.ui.TaskManager;
@@ -143,5 +144,65 @@ public abstract class Task extends BasicTask {
 	public BioFileType detectFileType(String filename){
 		return Tools_Bio_File.detectFileType(filename);
 	}
-
+	
+	/**
+	 * Tries to cut down the code a bit in the initial parsing of
+	 * args[]. But only so much can be done
+	 * 
+	 * @param cmd
+	 * @param opt
+	 * @param defaul
+	 * @return  either the value input by the commandline
+	 * or the default line if either the value is not set, or
+	 * it is not parsable. If unparseable logs a warning, but does
+	 * not throw exception
+	 */
+	protected String getOption(CommandLine cmd, String opt, String defaul){
+		if(cmd.hasOption(opt)){
+			String r = cmd.getOptionValue(opt);
+			if(r != null && r.length() != 0)return r;
+			else logger.warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as string");
+		}
+		return defaul;
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @param cmd
+	 * @param opt
+	 * @param defaul
+	 * @return either the value input by the commandline
+	 * or the default line if either the value is not set, or
+	 * it is not parsable. If unparseable logs a warning, but does
+	 * not throw exception
+	 */
+	protected int getOption(CommandLine cmd, String opt, int defaul){
+		if(cmd.hasOption(opt)){
+			Integer i = Tools_String.parseString2Int(cmd.getOptionValue(opt));
+			if(i != null)return i.intValue();
+			else logger.warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as integer");
+		}
+		return defaul;
+	}
+	
+	/**
+	 * 
+	 * @param cmd
+	 * @param opt
+	 * @param defaul
+	 * @return either the value input by the commandline
+	 * or the default line if either the value is not set, or
+	 * it is not parsable. If unparseable logs a warning, but does
+	 * not throw exception
+	 */
+	protected double getOption(CommandLine cmd, String opt, double defaul){
+		if(cmd.hasOption(opt)){
+			Double i = Tools_String.parseString2Double(cmd.getOptionValue(opt));
+			if(i != null)return i.doubleValue();
+			else logger.warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as double");
+		}
+		return defaul;
+	}
+	
 }

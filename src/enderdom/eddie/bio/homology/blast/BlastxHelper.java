@@ -181,6 +181,7 @@ public class BlastxHelper {
 	 */
 	public int[] upload2BioSQL(DatabaseManager manager, boolean fuzzy, String dbname, boolean force){
 		int[] values = new int[]{-1,0,0};
+		String nom = null;
 		if(run_id < 1){
 			Run run = new Run();
 			run.setRuntype("blast");
@@ -220,11 +221,11 @@ public class BlastxHelper {
 			return values;
 		}
 		if(contig_id < 1){
-			String nom = blastx.getBlastTagContents("BlastOutput_query-def");
+			nom = blastx.getBlastTagContents("BlastOutput_query-def");
 			contig_id =  manager.getBioSQLXT().getBioEntryId(manager, nom, fuzzy, manager.getEddieDBID());
 		}
 		if(contig_id < 1){
-			logger.error("Failed to upload to mysql as query-ID was not found in database");
+			logger.error("Failed to upload to mysql as query-ID for "+nom+", was not found in database");
 			return values;
 		}
 		else{
@@ -235,7 +236,7 @@ public class BlastxHelper {
 			try{
 				//Values set to 0 as no errors
 				values[0]=0;
-				for(int i =1; i < blastx.getNoOfHits(); i++){
+				for(int i =1; i < blastx.getNoOfHits()+1; i++){
 					String acc = getHitAccession(i);
 					int dbx_ref =  manager.getBioSQL().getDBxRef(manager.getCon(), dbname, acc);
 					if(dbx_ref < 1)manager.getBioSQL().addDBxref(manager.getCon(), dbname, acc, 0);
@@ -243,7 +244,7 @@ public class BlastxHelper {
 					if(dbx_ref < 1){
 						logger.error("Could not upload accession " + acc);
 					}
-					for(int rank=1 ; rank < blastx.getNoOfHsps(i); rank++){
+					for(int rank=1 ; rank < blastx.getNoOfHsps(i)+1; rank++){
 						if(!manager.getBioSQLXT().existsDbxRefId(manager, contig_id, dbx_ref, run_id, rank, i)){
 							int[] pos = this.getStartsStopsFrames(i, rank);
 							manager.getBioSQLXT().setBioentry2Dbxref(manager, contig_id, dbx_ref, run_id, this.getHspEvalue(i, rank), this.getHspScore(i, rank), pos[0], pos[1], pos[2],

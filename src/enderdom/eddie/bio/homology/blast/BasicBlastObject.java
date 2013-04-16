@@ -257,8 +257,11 @@ public class BasicBlastObject implements BlastObject{
 						if(to < e){
 							e=to;
 						}
-
-					}				
+					}
+					else{
+						logger.error("Fail");
+						System.exit(0);
+					}
 				} 
 				catch (Exception ex) {
 					logger.error("Format Error with blast data, could not convet hsp_evalue to double", ex);

@@ -16,6 +16,7 @@ import enderdom.eddie.tasks.database.Task_AddRunData;
 import enderdom.eddie.tasks.database.Task_Assembly2DB;
 import enderdom.eddie.tasks.database.Task_BioSQLDB;
 import enderdom.eddie.tasks.database.Task_Blast;
+import enderdom.eddie.tasks.database.Task_BlastAnalysis2;
 import enderdom.eddie.tasks.database.Task_ESTUpload;
 import enderdom.eddie.tasks.database.Task_IPRupload;
 import enderdom.eddie.tasks.database.Task_Query;
@@ -147,6 +148,12 @@ public class TaskList {
 			tasks[0][18] = Task_IPRupload.class.getName(); 
 			tasks[1][18] = "iprUpload";
 			tasks[2][18] = "Upload IPR data";	
+			
+			
+			tasks[0][19] = Task_BlastAnalysis2.class.getName(); 
+			tasks[1][19] = "blastanalysis2";
+			tasks[2][19] = "Analyse blast runs using database";	
+			
 			
 			return tasks;
 		}

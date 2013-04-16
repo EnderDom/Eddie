@@ -166,6 +166,16 @@ public interface BioSQLExtended {
 	
 	public boolean existsDbxRefId(DatabaseManager manager, int bioentry_id, int dbxref_id, int run_id, int rank, int hit_no);
 	
+	/**
+	 * Returns run ids for all runs with this runtype and
+	 * optionally with the programname, but programname can be
+	 * set to null. Runtype cannot be set to null
+	 * 
+	 * @param manager
+	 * @param programname
+	 * @param runtype
+	 * @return list of Run IDs
+	 */
 	public int[] getRunId(DatabaseManager manager, String programname, String runtype);
 	
 	public BioSequence[] getBioSequences(DatabaseManager manager, int bioentry_id);
@@ -256,6 +266,36 @@ public interface BioSQLExtended {
 	public boolean addRunBioentry(DatabaseManager manager, int bioentry, int runid);
 	
 	/**
+	 * Use unique to count the number of genes matched
+	 * 
+	 * @param manager
+	 * @param run_id
+	 * @param evalue
+	 * @param hit_no
+	 * @param hsp_no
+	 * @param score
+	 * @param unique
+	 * @return count representing number of hits for 
+	 * that blast run. Assumes the blast run is assembly specific
+	 * 
+	 */
+	public int getHitCount(DatabaseManager manager, int run_id,double evalue, int hit_no, int hsp_no, int score, boolean unique);
+	
+	/**
+	 * @see getHitCount(..)
+	 * as with getHitCount but totals reads rather than contig
+	 * 
+	 * @param manager
+	 * @param run_id
+	 * @param evalue
+	 * @param hit_no
+	 * @param hsp_no
+	 * @param score
+	 * @return
+	 */
+	public int getHitCountwReadCount(DatabaseManager manager, int run_id,double evalue, int hit_no, int hsp_no, int score);
+	
+	/**
 	 * A relatively specific query, takes blast run and assembly run 
 	 * parameters and prints out a cumulative total for the number of
 	 * records below the evalue. So the output will be something like
@@ -305,5 +345,15 @@ public interface BioSQLExtended {
 	 * @return
 	 */
 	public boolean runSpeciesQuery(DatabaseManager manager, File output, int assRun, int blastRun, double evalue, int hit_no, boolean taxids);
+
+	/**
+	 * Resets left and right values
+	 *  in the taxonomy table so you 
+	 *  can rerun the depth traversel after
+	 *  adding more taxonomy data
+	 * @param manager
+	 * @return
+	 */
+	public boolean resetDepth(DatabaseManager manager);
 	
 }
