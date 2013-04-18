@@ -1,7 +1,5 @@
 package enderdom.eddie.databases.bioSQL.psuedoORM;
 
-import org.apache.log4j.Logger;
-
 import enderdom.eddie.databases.manager.DatabaseManager;
 
 public class TermRelationship {
@@ -67,9 +65,6 @@ public class TermRelationship {
 					this.getObject_id(), this.getPredicate_id(), this.getOntology_id());
 		}
 		this.setTermRel_id(ship.getTermRel_id());
-		System.out.println(ship.getTermRel_id());
-		Logger.getRootLogger().error("Exiting...");
-		System.exit(0);
 		return this.getTermRel_id();
 	}
 	

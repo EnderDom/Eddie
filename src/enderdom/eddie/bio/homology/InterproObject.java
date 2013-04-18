@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Term;
 import enderdom.eddie.databases.bioSQL.psuedoORM.custom.IPRPredicates;
 import enderdom.eddie.databases.bioSQL.psuedoORM.custom.IPRTermRelationship;
+import enderdom.eddie.databases.bioSQL.psuedoORM.custom.IPRTypes;
 import enderdom.eddie.databases.bioSQL.psuedoORM.custom.InterproOntologyFactory;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
@@ -87,15 +88,25 @@ public class InterproObject extends Term{
 			this.setOntology_id(factory.getIpr_ont());
 			this.setIs_obselete("n");
 			super.upload(manager);
+			this.uploadType(manager, factory);
 			//TODO work out how to get names as well as identifiers
 			//for(IPRTermRelationship ship : rels)ship.upload(manager, this);
-			for(InterproMatch match : matches)match.upload(manager, this);
+			for(InterproMatch match : matches)match.upload(manager, this);			
 			return this.getTerm_id();
 		}
 		catch(Exception e){
 			logger.error("Failed to upload interpro", e);
 			return -1;
 		}
+	}
+
+	private void uploadType(DatabaseManager manager, InterproOntologyFactory factory) {
+		IPRTermRelationship ship = new IPRTermRelationship(this.getOntology_id());
+		ship.setIPRsubject_id(this.getIdentifier());
+		IPRTypes t = factory.getIPRType(type);
+		ship.setObject_id(factory.getIPRType(t));
+		ship.setIPRPredicate(IPRPredicates.IS_A);
+		if(t != null && t != IPRTypes.unintegrated)ship.upload(manager, this);
 	}
 
 	public InterproOntologyFactory getIPROntology() {

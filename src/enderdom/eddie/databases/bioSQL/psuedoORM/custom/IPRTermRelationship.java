@@ -12,6 +12,15 @@ public class IPRTermRelationship extends TermRelationship{
 	private String IPRobject_id;
 	
 	public IPRTermRelationship(){
+		init();
+	}
+	
+	public IPRTermRelationship(int ontology){
+		init();
+		this.setObject_id(ontology);
+	}
+	
+	private void init(){
 		this.setSubject_id(-1);
 		this.setObject_id(-1);
 		this.setPredicate_id(-1);

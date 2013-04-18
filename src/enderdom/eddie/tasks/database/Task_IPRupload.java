@@ -71,7 +71,7 @@ public class Task_IPRupload extends TaskXT {
 						int[] ids = manager.getBioSQLXT().getRunId(manager, "iprscan", Run.RUNTYPE_INTERPRO);
 						for(int i=0;i<ids.length;i++){
 							Run r = manager.getBioSQLXT().getRun(manager, ids[i]);
-							if(r.getParent_id() == this.runid)actrun=r.getParent_id();
+							if(r.getParent_id() == this.runid)actrun=r.getRun_id();
 						}
 						if(actrun == -1){
 							logger.debug("No interpro run id already for this protein translate");

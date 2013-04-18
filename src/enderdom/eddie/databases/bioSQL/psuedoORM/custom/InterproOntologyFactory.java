@@ -58,7 +58,7 @@ public class InterproOntologyFactory {
 		 * new  
 		 */
 		IPRtypes = new IPRTypes[]{IPRTypes.Family, IPRTypes.Domain, IPRTypes.Repeat, 
-				IPRTypes.PTM, IPRTypes.Active_site, IPRTypes.Binding_site};
+				IPRTypes.PTM, IPRTypes.Active_site, IPRTypes.Binding_site, IPRTypes.Conserved_site};
 		iprtype_id = new int[IPRtypes.length];
 		for(int i =0;i < IPRtypes.length; i++){
 			String name = IPRtypes[i].toString();
@@ -79,6 +79,11 @@ public class InterproOntologyFactory {
 		}
 		return -1;
 	}
+	
+	public IPRTypes getIPRType(String type){
+		if(type.startsWith("post"))return IPRTypes.PTM;
+		else return IPRTypes.valueOf(type);
+	}
 
 	public int getIPRType(IPRTypes t){
 		for(int i=0; i < IPRtypes.length; i++){
@@ -86,7 +91,6 @@ public class InterproOntologyFactory {
 		}
 		return -1;
 	}
-
 	/**
 	 * 
 	 * 

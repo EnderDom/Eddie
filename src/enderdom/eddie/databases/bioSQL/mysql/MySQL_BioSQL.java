@@ -849,7 +849,7 @@ public class MySQL_BioSQL implements BioSQL {
 			TermRelationshipSET = init(con, TermRelationshipSET,
 					"INSERT INTO term_relationship (subject_term_id, predicate_term_id, "
 							+ "object_term_id, ontology_id) VALUES (?,?,?,?)");
-
+			
 			TermRelationshipSET.setInt(1, subject_id);
 			TermRelationshipSET.setInt(2, predicate_id);
 			TermRelationshipSET.setInt(3, object_id);
@@ -857,7 +857,7 @@ public class MySQL_BioSQL implements BioSQL {
 			TermRelationshipSET.execute();
 			return true;
 		} catch (SQLException sq) {
-			logger.error("Failed to add Term relationship", sq);
+			logger.error("Failed to add Term relationship with subject " + subject_id +" and object "+ object_id, sq);
 			return false;
 		}
 	}

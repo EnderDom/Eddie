@@ -6,5 +6,7 @@ public enum IPRTypes {
 	Repeat, 
 	PTM,
 	Active_site, 
-	Binding_site
+	Binding_site,
+	unintegrated,
+	Conserved_site
 }
