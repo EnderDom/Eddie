@@ -762,22 +762,20 @@ public class MySQL_Extended implements BioSQLExtended{
 		return T;
 	}
 	
-	public int[][] getTaxonPerAssembly(DatabaseManager manager, int[] listoftaxids, int assembly_run_id, int blast_run_id, double evalue, int hit_no){
+	public int[][] getTaxonPerAssembly(DatabaseManager manager, int[] listoftaxids, int blast_run_id, double evalue, int hit_no){
 		int[][] retur = new int[][]{listoftaxids, new int[listoftaxids.length]};
 		try{
 			String sql = "SELECT COUNT(bioentry_id) AS COUNT FROM bioentry_dbxref INNER JOIN dbxref USING (dbxref_id)" +
 					" WHERE dbxref.ncbi_taxon_id IN (SELECT taxon.ncbi_taxon_id FROM taxon" +
 					" INNER JOIN taxon AS include ON (taxon.left_value BETWEEN include.left_value AND include.right_value)" +
-					" WHERE include.ncbi_taxon_id=?) AND bioentry_dbxref.run_id="+blast_run_id+
-					" AND bioentry_id IN (SELECT bioentry_id FROM bioentry_run" +
-					" WHERE bioentry_run.run_id="+assembly_run_id+")";
+					" WHERE include.ncbi_taxon_id=?) AND bioentry_dbxref.run_id="+blast_run_id;
 			if(evalue != -1){
 				sql+= " AND bioentry_dbxref.evalue<"+evalue;
 			}
 			if(hit_no !=-1){
 				sql+= " AND bioentry_dbxref.hit_no<="+hit_no;
 			}
-			logger.info("Running: "+sql);
+
 			PreparedStatement st = manager.getCon().prepareStatement(sql);
 			int c=0;
 			for(int i : listoftaxids){
@@ -786,8 +784,8 @@ public class MySQL_Extended implements BioSQLExtended{
 				while(set.next()){
 					retur[1][c] = set.getInt("COUNT");
 				}
+				System.out.print("\r "+c + " of "+retur[0].length + " is    "+ retur[1][c] +"   " );
 				c++;
-				System.out.print("\r "+c + " of "+retur[0].length);
 			}
 			System.out.println();
 			return retur;
@@ -1160,13 +1158,16 @@ public class MySQL_Extended implements BioSQLExtended{
 	 * Equivalent to this, but java won't let me set local variable in database :(
 	 * 	SET @runtot:=0; SELECT q1.EVALUE, (@runtot := @runtot + COUNT) AS CUMULATIVE FROM (SELECT ...
 	 */
-	public boolean cumulativeCountQuery(DatabaseManager manager, File output, int blastRun, int AssemblyRun){
+	public boolean cumulativeCountQuery(DatabaseManager manager, File output, int blastRun, int hit_no, boolean header){
 		StringBuffer sql = new StringBuffer("SELECT bioentry_dbxref.evalue AS EVALUE, COUNT(bioentry_dbxref.evalue)" +
-				" AS COUNT FROM bioentry_dbxref INNER JOIN bioentry_run USING (bioentry_id)" +
-				" WHERE bioentry_dbxref.rank=1 AND bioentry_run.run_id=");
-		sql.append(AssemblyRun);
+				" AS COUNT FROM bioentry_dbxref " +
+				" WHERE bioentry_dbxref.rank=1");
 		sql.append(" AND bioentry_dbxref.run_id=");
 		sql.append(blastRun);
+		if(hit_no != -1){
+			sql.append(" AND hit_no<=");
+			sql.append(hit_no);
+		}
 		sql.append(" GROUP BY bioentry_dbxref.evalue ORDER BY bioentry_dbxref.evalue;");
 		
 		try{
@@ -1176,6 +1177,8 @@ public class MySQL_Extended implements BioSQLExtended{
 			BufferedWriter out = new BufferedWriter(fstream);
 			String n = Tools_System.getNewline();
 			int cumulative=0;
+			if(header)out.write("EVALUE HITS"+n);
+			out.flush();
 			while(set.next()){
 				cumulative+=set.getInt(2);
 				out.write(set.getDouble(1) + " " + cumulative + n);
@@ -1194,13 +1197,12 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 	}
 	
-	public boolean runSpeciesQuery(DatabaseManager manager, File output, int assRun, int blastRun, double evalue, int hit_no, boolean taxids){
+	public boolean runSpeciesQuery(DatabaseManager manager, File output, int blastRun, double evalue, int hit_no, boolean taxids){
 		String sql = "SELECT dbxref.ncbi_taxon_id AS taxid, taxon_name.name AS taxname," +
 				" COUNT(dbxref.ncbi_taxon_id) AS count FROM dbxref INNER JOIN taxon USING" +
 				" (ncbi_taxon_id) INNER JOIN taxon_name USING (taxon_id)" +
 				" INNER JOIN bioentry_dbxref USING (dbxref_id)" +
-				" INNER JOIN bioentry_run USING (bioentry_id)" +
-				" WHERE bioentry_dbxref.run_id="+blastRun+" AND bioentry_run.run_id=" +assRun;
+				" WHERE bioentry_dbxref.run_id="+blastRun;
 				if(hit_no > 0)sql+=" AND bioentry_dbxref.rank=1 AND bioentry_dbxref.hit_no="+hit_no;
 				if(evalue >0 )sql+=" AND bioentry_dbxref.evalue<"+evalue+"";
 				sql+=" AND taxon_name.name_class='ScientificName' GROUP BY taxid ORDER BY count DESC;";
@@ -1210,7 +1212,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			FileWriter fstream = new FileWriter(output, false);
 			BufferedWriter out = new BufferedWriter(fstream);
 			String n = Tools_System.getNewline();
-			String writ = (taxids) ?"TaxonID,Count"+n:"\"Species\",Count"+n; 
+			String writ = (taxids) ? "TaxonID,Count"+n:"\"Species\",Count"+n; 
 			out.write(writ);
 			out.flush();
 			while(set.next()){

@@ -38,6 +38,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 	private boolean remote;
 	private String[] filter;
 	private int filterlen;
+
 	
 	public Task_BlastLocal(){
 		/*
@@ -56,23 +57,11 @@ public class Task_BlastLocal extends TaskXTwIO{
 		if(cmd.hasOption("bpr"))blast_prg=cmd.getOptionValue("bpr");
 		if(cmd.hasOption("p"))blastparams=cmd.getOptionValue("p").replaceAll("/_", " ");
 		if(cmd.hasOption("clip"))clipname=true;
-		if(cmd.hasOption("pf")){
-			File fie = new File(cmd.getOptionValue("pf"));
-			if(fie.isFile()){
-				blastparams = Tools_File.quickRead(fie, false);
-			}
-			else{
-				logger.error("Blast parameter file does not exist");
-				blastparams = "";
-				err =true;
-			}
-		}
-		if(blastparams == null){
-			blastparams +=" -outfmt 5";
-		}
-		else if(!blastparams.contains("outfmt")){
-			blastparams +=" -outfmt 5";
-		}
+		blastparams = getOptionFromFile(cmd, "pf");
+		
+		if(blastparams == null)	blastparams +=" -outfmt 5";
+		else if(!blastparams.contains("outfmt"))blastparams +=" -outfmt 5";
+		
 		if(cmd.hasOption("f")){
 			File f = new File(cmd.getOptionValue("f"));
 			if(f.exists()){
@@ -84,6 +73,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 				err = true;
 			}
 		}
+		//quickblast = getOption(cmd, "q", null);
 	}
 	
 	public void parseOpts(Properties props){
@@ -115,6 +105,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 		options.addOption(new Option("clip", false, "Clip output file name to whitespace in input"));
 		options.addOption(new Option("remote", false, "Run remote blasts in parallel with local (WARN: Will send NCBI blast jobs)"));
 		options.addOption(new Option("f", "filter", true, "Blast only the sequences in this file, need to be the same as in fasta, 1 per line no spaces"));
+		//options.addOption(new Option("q", "quickBlast", true, "Pull a sequence from the bioSQL databse and blast it."));
 	}
 	
 	public void runTest(){
@@ -136,6 +127,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
 		this.checklist = openChecklist(ui);
+
 		if(input != null && output != null && !err){
 			File in = new File(input);
 			File out = new File(output);
@@ -153,7 +145,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 						}
 					}
 					logger.debug("About to start running blasts");
-					runAutoBlast(out, checklist);
+					runAutoBlast(out, sequences, checklist);
 					checklist.complete();
 				}
 				catch(Exception io){
@@ -206,7 +198,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 		return j;
 	}
 	
-	public void runAutoBlast(File output, Checklist list){
+	public void runAutoBlast(File output, SequenceList seqs, Checklist list){
 		if(BlastProgramEnum.valueOf(blast_prg) == null){
 			logger.warn("Are you sure " + blast_prg + " is a program?");
 		}	
@@ -218,12 +210,12 @@ public class Task_BlastLocal extends TaskXTwIO{
 			i++;
 		}
 		logger.debug(i+" sequences to blast, adding to TaskManager");
-		SubTask_Blast blast = new SubTask_Blast(sequences, stack, false, list, this.output, this.clipname);
+		SubTask_Blast blast = new SubTask_Blast(seqs, stack, false, list, this.output, this.clipname);
 		blast.setBlastDetails(blast_prg, blast_bin, blast_db, blastparams);
 		blast.setCore(true);
 		ui.addTaskLike(blast);
 		if(remote){
-			SubTask_Blast blast2 = new SubTask_Blast(sequences, stack, true, list, this.output, this.clipname);
+			SubTask_Blast blast2 = new SubTask_Blast(seqs, stack, true, list, this.output, this.clipname);
 			String db = FilenameUtils.getBaseName(blast_db);
 			logger.info("Database was trimmed to " + blast_db + " for the remote");
 			blast2.setBlastDetails(blast_prg, blast_bin, db, blastparams);

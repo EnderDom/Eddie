@@ -65,7 +65,7 @@ public class Task_Blast extends TaskXT{
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("r","run_id", true, "Force set run id"));
-		options.addOption(new Option("date", true, "Set date when blast was run*, use format "+Tools_System.SQL_DATE_FORMAT+", [RECOMMENDED]"));
+		//options.addOption(new Option("date", true, "Set date when blast was run*, use format "+Tools_System.SQL_DATE_FORMAT+", [RECOMMENDED]"));
 		options.addOption(new Option("i","input", true, "Input folder or file"));
 		options.addOption(new Option("force", false, "Force blast records to be updated"));
 		options.addOption(new Option("db","dbname", true, "Default database name, such as nr, swiss-prot etc. If not set, will attempt to get from blast file"));

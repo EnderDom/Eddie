@@ -30,7 +30,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
      * though this one has been written from scratch
      */
     public static int engineversion = 4;
-    public static double subversion = 0.46;
+    public static double subversion = 0.47;
     public static String edition = "Development";
     public String[] actions;
 	

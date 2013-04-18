@@ -336,7 +336,7 @@ public class ACERecord implements Contig{
 					int l = this.getReadOffset(j);
 					if(i >= l && i < this.getReadRange(j)[1]+l){
 						//TODO consider BS inclusion ranges <-- at the moment this is inaccurate without them						
-						if(this.getRead(j).getSequence().charAt(i+l) != '-'){
+						if(this.getRead(j).getSequence().charAt(i+l) != '-' && this.getRead(j).getSequence().charAt(i+l) != '*'){
 							depth++;
 						}
 					}
@@ -514,14 +514,16 @@ public class ACERecord implements Contig{
 	}
 
 	public char getCharAt(int sequencenumber, int position, int base) {
-		int offset = position-this.offset[0][sequencenumber]+base;
+		int offset = position-this.offset[0][sequencenumber]-base;
 		if(offset > -1 && offset < this.getSequence(sequencenumber).getSequence().length()){
-			return this.getSequence(sequencenumber).getSequence().charAt(position-this.offset[0][sequencenumber]+base);
+			return this.getSequence(sequencenumber).getSequence().charAt(position-this.offset[0][sequencenumber]-base);
 		}
 		else{
 			return '-';
 		}
 	}
+	
+	
 	
 }
 

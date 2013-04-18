@@ -30,7 +30,6 @@ public class Task_Taxonomy extends TaskXT{
 	private boolean taxids;
 	private String node_rank; 
 	private int blastRunID;
-	private int assRunID;
 	private double evalue;
 	private int hit_no;
 	private String output;
@@ -64,9 +63,8 @@ public class Task_Taxonomy extends TaskXT{
 		node_rank = this.getOption(cmd, "OP_node", "phylum");
 		output = this.getOption(cmd, "o", null);
 		blastRunID = this.getOption(cmd, "rb", -1);
-		assRunID = this.getOption(cmd, "ra", -1);
 		hit_no = this.getOption(cmd, "no_hit", -1);
-		evalue = this.getOption(cmd, "evalue", -1);	
+		evalue = this.getOption(cmd, "evalue", -1.0);	
 		localdb = this.getOption(cmd, "ld", "nr");
 		if(cmd.hasOption("nd")){
 			ncbidb = NCBI_DATABASE.valueOf(cmd.getOptionValue("nd").trim());
@@ -86,11 +84,10 @@ public class Task_Taxonomy extends TaskXT{
 		options.addOption(new Option("OP_ua", "updateAcc", false,  "Update ncbi accessions with taxonomy information"));
 		options.addOption(new Option("OP_up", "updateParents", false,  "Update taxonomy with parent information"));
 		options.addOption(new Option("OP_de", "depthTravel", false,  "Run this after all updates to regenerate depth map"));
-		options.addOption(new Option("OP_node", "nodeStats", true,  "Run statistics for node_rank, ie -ne phylum will output phylum count"));
-		options.addOption(new Option("OP_spec", "speciesQuery", false,  "Only hits with evalue will be used ie -evalue 1e-3 "));
+		options.addOption(new Option("OP_node", "nodeStats", true,  "Run statistics for node_rank, ie -OP_node phylum will output phylum count"));
+		options.addOption(new Option("OP_spec", "speciesQuery", false,  "Output csv files containing species counts"));
 		options.addOption(new Option("OP_spc_taxids", "speciesQueryTaxid", false,  "Output op_spec with taxon ids not species name"));
 		options.addOption(new Option("rb", "blastRunId", true,  "Run id for blast for -nd"));
-		options.addOption(new Option("ra", "assemblyRunId", true,  "Run id for assembly for -nd"));
 		options.addOption(new Option("o", "output", true,  "Output for stats if not wanting to print to console"));
 		options.addOption(new Option("no_hit", true,  "Set hit to filter by ie -hit 5 will only use hits 1-5"));
 		options.addOption(new Option("evalue", true,  "Only hits with evalue will be used ie -evalue 1e-3 "));
@@ -149,7 +146,7 @@ public class Task_Taxonomy extends TaskXT{
 		if(node){
 			try {
 				DatabaseManager manager = this.ui.getDatabaseManager(password);
-				if(assRunID < 1 || blastRunID < 1){
+				if(blastRunID < 1){
 					logger.error("Failed as assembly or blast run ids not set");
 					setCompleteState(TaskState.ERROR);
 					return;
@@ -163,7 +160,7 @@ public class Task_Taxonomy extends TaskXT{
 						m[c]=i;
 						c++;
 					}
-					int n[][] = manager.getBioSQLXT().getTaxonPerAssembly(manager, m, assRunID, blastRunID, evalue, hit_no);
+					int n[][] = manager.getBioSQLXT().getTaxonPerAssembly(manager, m, blastRunID, evalue, hit_no);
 					System.out.println("Outputting counts:");
 					StringBuffer b = new StringBuffer();
 					for(int i =0;i < m.length;i++){
@@ -173,7 +170,10 @@ public class Task_Taxonomy extends TaskXT{
 						else b.append(map.get(n[0][i])+" " + n[1][i]+Tools_System.getNewline());
 					}
 					if(this.output != null){
-						Tools_File.quickWrite(b.toString(), new File(this.output), false);
+						if(new File(this.output).isDirectory()){
+							Tools_File.quickWrite(b.toString(), new File(this.output+"out.dat"), false);
+						}
+						else Tools_File.quickWrite(b.toString(), new File(this.output), false);
 					}
 				}
 			} catch (Exception e) {
@@ -194,20 +194,22 @@ public class Task_Taxonomy extends TaskXT{
 				if(evalue < 0)logger.warn("Evalue not set will output all hits regardless of e");
 				File f= new File(FilenameUtils.getFullPath(output)+FilenameUtils.getBaseName(output)+".csv");
 				if(manager.open()){
-					if(assRunID > 0){
-						if(manager.getBioSQLXT().runSpeciesQuery(manager,f, assRunID, blastRunID, evalue, hit_no, taxids)){
+					if(blastRunID > 0){
+						if(manager.getBioSQLXT().runSpeciesQuery(manager,f, blastRunID, evalue, hit_no, taxids)){
 							logger.info("Appears to have succesfully run, output at " +f.getPath());
 						}
 						else logger.error("Error returned, please check logs");
 					}
 					else{
-						int[] asses = manager.getBioSQLXT().getRunId(manager, null, Run.RUNTYPE_ASSEMBLY);
-						for(int i=0;i < asses.length; i++){
-							Run run = manager.getBioSQLXT().getRun(manager, asses[i]);
-							String filename = run.getProgram().replaceAll(" ", "_") +"_"; 
-							filename += (run.getSource().indexOf(" ") != 1) ? run.getSource().split(" ")[0] : run.getSource();
+						int[] blasts = manager.getBioSQLXT().getRunId(manager, null, Run.RUNTYPE_blast);
+
+						for(int i=0;i < blasts.length; i++){
+							Run run = manager.getBioSQLXT().getRun(manager, blasts[i]);
+							Run parent = manager.getBioSQLXT().getRun(manager, run.getParent_id());
+							String filename = parent.getProgram().replaceAll(" ", "_") +"_"; 
+							filename += (parent.getSource().indexOf(" ") != 1) ? parent.getSource().split(" ")[0] : parent.getSource();
 							f = new File(FilenameUtils.getFullPath(output)+filename+".csv");
-							if(manager.getBioSQLXT().runSpeciesQuery(manager,f, asses[i], blastRunID, evalue, hit_no, taxids)){
+							if(manager.getBioSQLXT().runSpeciesQuery(manager,f, blasts[i], evalue, hit_no, taxids)){
 								logger.info("Appears to have succesfully run, output at " +f.getPath());
 							}
 							else logger.error("Error returned, please check logs");

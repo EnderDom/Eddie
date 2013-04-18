@@ -203,6 +203,9 @@ public class InterproXML implements Iterator<InterproObject>{
 		    		current.addInterproMatch(currentmatch);
 		    		currentmatch = null;
 		    	}
+		    	if(tag.equals("interpro")){
+		    		break;
+		    	}
 		    }
 		}
 	}

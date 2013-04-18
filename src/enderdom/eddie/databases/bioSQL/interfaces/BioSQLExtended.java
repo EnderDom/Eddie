@@ -260,7 +260,7 @@ public interface BioSQLExtended {
 	 * @param hit_no
 	 * @return
 	 */
-	public int[][] getTaxonPerAssembly(DatabaseManager manager, int[] listoftaxids, int assembly_run_id, int blast_run_id, double evalue, int hit_no);
+	public int[][] getTaxonPerAssembly(DatabaseManager manager, int[] listoftaxids, int blast_run_id, double evalue, int hit_no);
 
 	
 	public boolean addRunBioentry(DatabaseManager manager, int bioentry, int runid);
@@ -314,10 +314,11 @@ public interface BioSQLExtended {
 	 * @param manager
 	 * @param output
 	 * @param blastRun
-	 * @param AssemblyRun
+	 * @param hit_no
+	 * @param header
 	 * @return
 	 */
-	public boolean cumulativeCountQuery(DatabaseManager manager, File output, int blastRun, int AssemblyRun);
+	public boolean cumulativeCountQuery(DatabaseManager manager, File output, int blastRun, int hit_no, boolean header);
 	
 	/**
 	 * Outputs the top species for a blast run, limiting to hits less than evalue and
@@ -338,13 +339,12 @@ public interface BioSQLExtended {
      *
 	 * @param manager
 	 * @param output
-	 * @param assRun
 	 * @param blastRun
 	 * @param evalue
 	 * @param taxid
 	 * @return
 	 */
-	public boolean runSpeciesQuery(DatabaseManager manager, File output, int assRun, int blastRun, double evalue, int hit_no, boolean taxids);
+	public boolean runSpeciesQuery(DatabaseManager manager, File output, int blastRun, double evalue, int hit_no, boolean taxids);
 
 	/**
 	 * Resets left and right values

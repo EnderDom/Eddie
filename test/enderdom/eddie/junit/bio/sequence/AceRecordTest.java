@@ -57,6 +57,9 @@ public class AceRecordTest {
 						}
 						System.out.println();
 					}
+					System.out.println(record.getSequence(0).getIdentifier() +" : " + record.getCharAt(0, 0, 0));
+					System.out.println(record.getSequence(0).getIdentifier() +" : " + record.getCharAt(0, 1, 1));
+					assertEquals(record.getCharAt(0, 1, 1), 'T');
 				}
 				count++;
 			}

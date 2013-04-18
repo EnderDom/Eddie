@@ -1,5 +1,6 @@
 package enderdom.eddie.tasks;
 
+import java.io.File;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -13,6 +14,7 @@ import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.cli.LazyPosixParser;
 
 import enderdom.eddie.tools.Tools_CLI;
+import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
@@ -158,7 +160,7 @@ public abstract class Task extends BasicTask {
 	 * not throw exception
 	 */
 	protected String getOption(CommandLine cmd, String opt, String defaul){
-		if(cmd.hasOption(opt)){
+		if(cmd.hasOption(opt) && cmd.getOptionValue(opt) != null){
 			String r = cmd.getOptionValue(opt);
 			if(r != null && r.length() != 0)return r;
 			else logger.warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as string");
@@ -178,7 +180,7 @@ public abstract class Task extends BasicTask {
 	 * not throw exception
 	 */
 	protected int getOption(CommandLine cmd, String opt, int defaul){
-		if(cmd.hasOption(opt)){
+		if(cmd.hasOption(opt) &&  cmd.getOptionValue(opt) != null){
 			Integer i = Tools_String.parseString2Int(cmd.getOptionValue(opt));
 			if(i != null)return i.intValue();
 			else logger.warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as integer");
@@ -197,7 +199,7 @@ public abstract class Task extends BasicTask {
 	 * not throw exception
 	 */
 	protected double getOption(CommandLine cmd, String opt, double defaul){
-		if(cmd.hasOption(opt)){
+		if(cmd.hasOption(opt) && cmd.getOptionValue(opt) != null){
 			Double i = Tools_String.parseString2Double(cmd.getOptionValue(opt));
 			if(i != null)return i.doubleValue();
 			else logger.warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as double");
@@ -205,4 +207,25 @@ public abstract class Task extends BasicTask {
 		return defaul;
 	}
 	
+	/**
+	 * Quick and dirty pull strings from 
+	 * file
+	 * 
+	 * @param cmd
+	 * @param opt
+	 * @param f
+	 * @return
+	 */
+	protected String getOptionFromFile(CommandLine cmd, String opt){
+		String f = null;
+		String filename = cmd.getOptionValue(opt);
+		if(filename != null){
+			File fie = new File(filename);
+			if(fie.isFile()){
+				f = Tools_File.quickRead(fie, false);
+			}
+		}	
+		return f;
+	}
+
 }

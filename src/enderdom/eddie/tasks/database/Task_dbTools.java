@@ -9,9 +9,11 @@ import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.sequence.BioFileType;
+import enderdom.eddie.bio.sequence.GenericSequence;
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 
+import enderdom.eddie.databases.bioSQL.psuedoORM.BioSequence;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.tasks.TaskState;
@@ -48,9 +50,9 @@ public class Task_dbTools extends TaskXT{
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
 		if(cmd.hasOption("c"))contig = cmd.getOptionValue("c");
-		if(cmd.hasOption("readsasfasta"))readsasfasta = true;
+		readsasfasta = cmd.hasOption("readsasfasta");
 		if(cmd.hasOption("o"))output = cmd.getOptionValue("output");
-		if(cmd.hasOption("all"))all=true;
+		all=cmd.hasOption("all");
 		if(cmd.hasOption("run_id")){
 			all=true;
 			Integer run = Tools_String.parseString2Int(cmd.getOptionValue("run_id"));
@@ -62,7 +64,8 @@ public class Task_dbTools extends TaskXT{
 	
 	public void buildOptions(){
 		super.buildOptions();
-		options.addOption(new Option("c","contig", true, "Contig name, used with readsasfasta"));
+		options.addOption(new Option("c","contig", true, "Contig name, use with readsasfasta, " +
+				"to download reads rather than consensus"));
 		options.addOption(new Option("readsasfasta", false, "Pulls reads which make this contig as fasta"));
 		options.addOption(new Option("o","output", true, "Output file"));
 		options.addOption(new Option("all",false, "Batch download all contigs available"));
@@ -73,8 +76,11 @@ public class Task_dbTools extends TaskXT{
 		setCompleteState(TaskState.STARTED);
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		try{
-			if(readsasfasta){
+			if(readsasfasta && contig != null){
 				DBReadsAsFasta(contig, output, password, ui);
+			}
+			else if(contig != null){
+				ContigAsFasta(output, contig, password, ui);
 			}
 			else if(all){
 				if(this.output == null){
@@ -151,6 +157,20 @@ public class Task_dbTools extends TaskXT{
 			Logger.getRootLogger().error(e);
 		} catch (Exception e) {
 			Logger.getRootLogger().error(e);
+		}
+	}
+	
+	public static void ContigAsFasta(String output, String contig, String password, UI ui) throws Exception{
+		DatabaseManager manager = ui.getDatabaseManager(password);
+		if(manager.open()){
+			int bio = manager.getBioSQL().getBioEntry(manager.getCon(), contig, contig, manager.getEddieDBID());
+			BioSequence[] seq = manager.getBioSQLXT().getBioSequences(manager, bio);
+			Fasta fasta = new Fasta();
+			for(BioSequence b : seq)fasta.addSequenceObject(new GenericSequence(contig, b.getSequence()));
+			fasta.save2Fasta(new File(output));
+		}
+		else{
+			throw new Exception("Failed to open database");
 		}
 	}
 }

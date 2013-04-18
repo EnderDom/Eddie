@@ -19,7 +19,6 @@ import enderdom.eddie.tasks.database.Task_Blast;
 import enderdom.eddie.tasks.database.Task_BlastAnalysis2;
 import enderdom.eddie.tasks.database.Task_ESTUpload;
 import enderdom.eddie.tasks.database.Task_IPRupload;
-import enderdom.eddie.tasks.database.Task_Query;
 import enderdom.eddie.tasks.database.Task_Taxonomy;
 import enderdom.eddie.tasks.database.Task_dbTools;
 import enderdom.eddie.tools.Tools_String;
@@ -134,11 +133,6 @@ public class TaskList {
 			tasks[0][15] = Task_Taxonomy.class.getName(); 
 			tasks[1][15] = "taxonomy";
 			tasks[2][15] = "Taxonomy related tools";
-			
-			//Misc Queries
-			tasks[0][16] = Task_Query.class.getName(); 
-			tasks[1][16] = "queryMisc";
-			tasks[2][16] = "A selection of miscellaneous db queries";
 			
 			//Upload estSCAN stuff
 			tasks[0][17] = Task_ESTUpload.class.getName(); 

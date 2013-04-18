@@ -10,11 +10,11 @@ import org.apache.commons.cli.Option;
 
 import enderdom.eddie.bio.homology.InterproObject;
 import enderdom.eddie.bio.homology.InterproXML;
+import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
 import enderdom.eddie.databases.manager.DatabaseManager;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_Array;
-import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 
 public class Task_IPRupload extends TaskXT {
@@ -24,10 +24,11 @@ public class Task_IPRupload extends TaskXT {
 	private String suffix;
 	private DatabaseManager manager;
 	private int[] count;
+	private String params;
+	private String version;
 	
 	public Task_IPRupload(){
 		setHelpHeader("--This is the Help Message for the IPR upload Task--");
-		runid=-1;
 		count = new int[2];
 	}
 	
@@ -36,21 +37,19 @@ public class Task_IPRupload extends TaskXT {
 		if(cmd.hasOption("i")){
 			this.input = cmd.getOptionValue("i");
 		}	
-		if(cmd.hasOption("r")){
-			Integer r = Tools_String.parseString2Int(cmd.getOptionValue("r"));
-			if(r != null) runid = r;
-			else logger.warn("could not read " + cmd.getOptionValue("r") + " as number");
-		}
-		if(cmd.hasOption("suffix"))suffix=cmd.getOptionValue("suffix");
-
+		runid = this.getOption(cmd, "runid", -1);
+		suffix = this.getOption(cmd, "suffix", null);
+		version = this.getOption(cmd, "version", "4.8");
+		params = this.getOption(cmd, "params", "unknown");
 	}
 	
 	public void buildOptions(){
 		super.buildOptions();
-		options.addOption(new Option("i","input",true, "Input file from ESTscan containing proteins"));
+		options.addOption(new Option("i","input",true, "Input file/folder from interpro xmls"));
 		options.addOption("r", "runid", true, "Run id of the protein bioentry");
 		options.addOption("suffix",true, "Suffix for protein names, whatever was used in ESTupload");
-		
+		options.addOption("params",true, "Interpro parameters");
+		options.addOption("version",true, "Interpro version");
 	}
 	
 	public void run(){
@@ -67,9 +66,29 @@ public class Task_IPRupload extends TaskXT {
 				manager = ui.getDatabaseManager(password);
 				if(manager.open()){
 					if(f.isDirectory()){
-						File[] files = f.listFiles(); 
+						File[] files = f.listFiles();
+						int actrun = -1;
+						int[] ids = manager.getBioSQLXT().getRunId(manager, "iprscan", Run.RUNTYPE_INTERPRO);
+						for(int i=0;i<ids.length;i++){
+							Run r = manager.getBioSQLXT().getRun(manager, ids[i]);
+							if(r.getParent_id() == this.runid)actrun=r.getParent_id();
+						}
+						if(actrun == -1){
+							logger.debug("No interpro run id already for this protein translate");
+							Run r = new Run(Tools_System.getDateNowAsDate(), Run.RUNTYPE_INTERPRO,runid,"iprscan",
+									version, "interpro", null, params, null);
+							r.uploadRun(manager);
+							actrun = r.getRun_id();
+							if(actrun != -1)logger.debug("Interpro Run uploaded with id " + actrun);
+							else{
+								logger.error("Failed to upload interpro run details");
+								this.setCompleteState(TaskState.ERROR);
+								return;
+							}
+						}
+						else logger.debug("Acquired interpro Run id, no need to make new one");
 						for(int i =0; i < files.length;i++){
-							count = Tools_Array.sum(count, parseXML(manager, files[i], suffix, runid));
+							count = Tools_Array.sum(count, parseXML(manager, files[i], suffix, actrun));
 							System.out.print("\r"+i+" of " +files.length);
 						}
 						System.out.println();

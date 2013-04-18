@@ -32,6 +32,9 @@ public class Run {
 	public static String RUNTYPE_ASSEMBLY = "ASSEMBLY";
 	public static String RUNTYPE_blast = "blast";
 	public static String RUNTYPE_454 = "454";
+	public static String RUNTYPE_INTERPRO = "INTERPRO";
+	public static String RUNTYPE_TRANSLATE = "TRANSLATE";
+	
 	
 	
 	public Run(int r, Date time, String runtype, int parent, String program,
@@ -229,5 +232,14 @@ public class Run {
 		return new String[]{"Date when run was started FORMAT MUST BE: DD-MM-YYYY","Runtype, ie assembly or blast",
 				"Name of the program run ie Blastx","Version","Database name ie nr (Can be left blank)","Parameters used, ie -word_size 10"," Any comments you want to add"};
 	}
+
+	public Run getParent(DatabaseManager manager){
+		return manager.getBioSQLXT().getRun(manager, this.getParent_id());
+	}
 	
+	public Run getGrandParent(DatabaseManager manager) {
+		Run p = this.getParent(manager);
+		return p == null ? null : p.getParent(manager);
+	}
+
 }
