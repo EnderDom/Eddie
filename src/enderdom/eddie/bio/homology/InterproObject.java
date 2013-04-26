@@ -31,6 +31,7 @@ public class InterproObject extends Term{
 	private InterproOntologyFactory factory;
 	private int run_id;
 	Logger logger = Logger.getRootLogger();
+	private int hitcounter;
 	
 	public InterproObject(int run_id){
 		this.run_id = run_id;
@@ -45,6 +46,7 @@ public class InterproObject extends Term{
 		goterms = new LinkedList<GOTermData>();
 		rels = new LinkedList<IPRTermRelationship>();
 		matches = new LinkedList<InterproMatch>();
+		hitcounter=0;
 	}
 
 	public String getProtein() {
@@ -68,6 +70,8 @@ public class InterproObject extends Term{
 	}
 	
 	public void addInterproMatch(InterproMatch match){
+		hitcounter++;
+		match.setHit_no(hitcounter);
 		this.matches.add(match);
 	}
 	

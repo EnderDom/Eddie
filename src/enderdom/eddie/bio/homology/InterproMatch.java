@@ -20,6 +20,7 @@ public class InterproMatch{
 	private String dbname;
 	private LinkedList<InterproLocation> locations;
 	Logger logger = Logger.getRootLogger();
+	private int hit_no;
 	
 	public InterproMatch(){
 		locations =  new LinkedList<InterproLocation>();
@@ -61,6 +62,14 @@ public class InterproMatch{
 		this.locations.add(loc);
 	}
 
+	public int getHit_no() {
+		return hit_no;
+	}
+
+	public void setHit_no(int hit_no) {
+		this.hit_no = hit_no;
+	}
+
 	public void upload(DatabaseManager manager, InterproObject parent) {
 		int acc = manager.getBioSQL().getDBxRef(manager.getCon(), dbname, identifier);
 		if(acc < 1){
@@ -68,7 +77,7 @@ public class InterproMatch{
 			acc = manager.getBioSQL().getDBxRef(manager.getCon(), dbname, identifier);
 		}
 		if(acc > 0){
-			if(!manager.getBioSQL().addDbxrefTermPath(manager.getCon(), acc, parent.getTerm_id(), 0, null)){
+			if(!manager.getBioSQL().addDbxrefTerm(manager.getCon(), acc, parent.getTerm_id(), 0)){
 				logger.error("Failed to pair term name "+parent.getName() +
 						" (id:"+parent.getTerm_id()+") and dbxref for " + identifier +" id("+acc+")");
 			}
@@ -77,7 +86,7 @@ public class InterproMatch{
 				for(int i=0; i < locations.size(); i++){
 					InterproLocation loc = locations.get(i);
 					manager.getBioSQLXT().setBioentry2Dbxref(manager, bioen, acc, parent.getRuntID(), loc.getScore(), 0, loc.getStart(), loc.getEnd(),
-							0, loc.getStart(), loc.getEnd(), 0, i, 1);
+							0, loc.getStart(), loc.getEnd(), 0, hit_no, (i+1));
 				}
 			}
 			else{

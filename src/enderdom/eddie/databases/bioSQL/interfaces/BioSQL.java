@@ -178,4 +178,6 @@ public interface BioSQL {
 
 	public TermRelationship getTermRelationship(Connection con, int subject_id,
 			int object_id, int predicate_id, int ontology_id);
+
+	public boolean addDbxrefTerm(Connection con, int dbxref_id, int term_id, Integer rank);
 }

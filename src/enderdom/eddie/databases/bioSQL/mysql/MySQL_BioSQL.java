@@ -46,6 +46,7 @@ public class MySQL_BioSQL implements BioSQL {
 	private PreparedStatement TaxonNameSET;
 	private PreparedStatement TermRelationshipSET;
 	private PreparedStatement DbxrefTermSET;
+	private PreparedStatement DbxrefTermValueSET;
 
 	// Gets
 	private PreparedStatement BioEntryGET1;
@@ -76,6 +77,7 @@ public class MySQL_BioSQL implements BioSQL {
 		TermRelationshipSET = null;
 		DbxrefTermSET = null;
 		TermRelationshipGET = null;
+		DbxrefTermValueSET = null;
 	}
 
 	/*
@@ -865,17 +867,33 @@ public class MySQL_BioSQL implements BioSQL {
 	public boolean addDbxrefTermPath(Connection con, int dbxref_id,
 			int term_id, int rank, String value) {
 		try {
-			DbxrefTermSET = init(con, DbxrefTermSET,
+			DbxrefTermValueSET = init(con, DbxrefTermValueSET,
 					"INSERT IGNORE INTO dbxref_qualifier_value (dbxref_id, term_id, "
-							+ "rank, value) VALUES (?,?,?, ?)");
+							+ "rank, value) VALUES (?,?,?,?)");
 
+			DbxrefTermValueSET.setInt(1, dbxref_id);
+			DbxrefTermValueSET.setInt(2, term_id);
+			DbxrefTermValueSET.setInt(3, rank);
+			if (value == null)
+				DbxrefTermValueSET.setNull(4, Types.VARCHAR);
+			else
+				DbxrefTermValueSET.setString(4, value);
+			DbxrefTermValueSET.execute();
+			return true;
+		} catch (SQLException sq) {
+			logger.error("Failed to add Term dbxref path ", sq);
+			return false;
+		}
+	}
+
+	public boolean addDbxrefTerm(Connection con, int dbxref_id, int term_id, Integer rank) {
+		try {
+			DbxrefTermSET = init(con, DbxrefTermSET,
+					"INSERT IGNORE INTO term_dbxref (dbxref_id, term_id, rank) VALUES (?,?,?)");
 			DbxrefTermSET.setInt(1, dbxref_id);
 			DbxrefTermSET.setInt(2, term_id);
-			DbxrefTermSET.setInt(3, rank);
-			if (value == null)
-				DbxrefTermSET.setNull(4, Types.VARCHAR);
-			else
-				DbxrefTermSET.setString(4, value);
+			if(rank == null)DbxrefTermSET.setNull(3, Types.INTEGER);
+			else DbxrefTermSET.setInt(3, rank); 
 			DbxrefTermSET.execute();
 			return true;
 		} catch (SQLException sq) {
