@@ -184,11 +184,6 @@ public class Task_Taxonomy extends TaskXT{
 			try {
 				DatabaseManager manager = this.ui.getDatabaseManager(password);
 				logger.info("Running species query operation");
-				if(blastRunID < 1){
-					logger.error("Failed as blast run ids not set");
-					setCompleteState(TaskState.ERROR);
-					return;
-				}
 				if(output==null) throw new Exception("Output is null!");
 				if(hit_no < 1)logger.warn("Hit number not set, so stats will be for all hits attached to run");
 				if(evalue < 0)logger.warn("Evalue not set will output all hits regardless of e");

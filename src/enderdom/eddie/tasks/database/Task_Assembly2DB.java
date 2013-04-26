@@ -49,9 +49,6 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	private String identifier;
 	private String programname;
 	private int runid;
-	private double readcount;
-	private double readcounter;
-	private int perc;
 	private BioFileType type;
 	
 	public Task_Assembly2DB(){
@@ -204,11 +201,9 @@ public class Task_Assembly2DB extends TaskXTwIO{
 								return;
 							}
 						}
-						try{
-							
+						try{				
 							ACEFileParser parser = new ACEFileParser(file);
 							ACERecord record = null;
-							this.readcount=parser.getReadsSize();
 							int count =1;
 							boolean mapping = true;
 							String[] done = null;
@@ -266,6 +261,20 @@ public class Task_Assembly2DB extends TaskXTwIO{
 					logger.error("File " + this.input + " does not exist");
 				}
 			}
+			else if(mapcontigs){
+				this.checklist.complete();
+				ACEFileParser parser = new ACEFileParser(new File(input));
+				
+				int count=0;
+				while(parser.hasNext()){
+					count++;
+					ACERecord record = parser.next();
+					if(!mapReads(record, manager, this.identifier+count, manager.getEddieDBID(), this.runid, count)){
+						logger.error("Failed to upload "+ this.identifier+count);
+					}
+					
+				}
+			}
 			else{
 				logger.error("No option selected");
 			}
@@ -285,36 +294,37 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		BioSQL bs = manager.getBioSQL();
 		BioSQLExtended bsxt = manager.getBioSQLXT();
 		int bioentry_id = bs.getBioEntry(manager.getCon(), identifier, null, biodatabase_id);
-		for(int i =0; i < record.getNoOfReads() ; i++){
-			
-			String read = record.getReadName(i);
-			int read_id = bs.getBioEntry(manager.getCon(), read, read, biodatabase_id);
-			if(read_id < 0){
-				logger.error("Oh dear read "+ read + " does not seem to be in the database we cannot map reads not int the db");
-				return false;
-			}
-			else{
-				int offset = record.getReadOffset(i);
-				int start = offset;
-				int end = offset+record.getRead(i).getLength();
-				char c = record.getReadCompliment(i);
-				@SuppressWarnings("unused")
-				int comp = 0;
-				if(c == 'C'){
-					comp = 1;
-					//TODO add better strand info
-				}
-				//As ace isn't normally trimmed, assumes not trimmed
-				if(!bsxt.mapRead2Contig(manager, bioentry_id, read_id, 0, runid, start, end, false)){
-					logger.error("Read mapping has failed");
+		if(bioentry_id < 1)bs.getBioEntrywName(manager.getCon(), record.getConsensus().getIdentifier());
+		if(bioentry_id > 0){
+			for(int i =0; i < record.getNoOfReads() ; i++){
+				String read = record.getReadName(i);
+				int read_id = bs.getBioEntry(manager.getCon(), read, read, biodatabase_id);
+				if(read_id < 0){
+					logger.error("Oh dear read "+ read + " does not seem to be in the database we cannot map reads not int the db");
 					return false;
 				}
-				readcounter+=1;
-				perc = (int)((readcounter/readcount)*100);
-				System.out.print("\r"+"Contig No>:"+count+", mapping Read No.:"+i+" (Completion: "+perc+"%)  ");
+				else{
+					int offset = record.getReadOffset(i);
+					int start = offset;
+					int end = offset+record.getRead(i).getLength();				
+					char c = record.getReadCompliment(i);
+					@SuppressWarnings("unused")
+					int comp = 0;
+					if(c == 'C'){
+						comp = 1;
+						//TODO add better strand info
+					}
+					//As ace isn't normally trimmed, assumes not trimmed
+					if(!bsxt.mapRead2Contig(manager, bioentry_id, read_id, 0, runid, start, end, false)){
+						logger.error("Read mapping has failed");
+						return false;
+					}
+					System.out.print("\r"+"Contig No>:"+count+", mapping Read No.:"+i);
+				}
 			}
+			return true;
 		}
-		return true;
+		else return false;
 	}	
 	
 

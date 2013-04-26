@@ -473,7 +473,8 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 
 	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, int read_id, int read_version, int runid, int start, int stop, boolean trimmed){
-		String sql = "INSERT INTO assembly (contig_bioentry_id, read_bioentry_id, read_version, run_id, trimmed, range_start, range_end) VALUES (?,?,?,?,?,?,?)";
+		String sql = "INSERT INTO assembly (contig_bioentry_id, read_bioentry_id, read_version, run_id, trimmed, range_start, range_end)" +
+				" VALUES (?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE trimmed=?,range_start=?, range_end=?";
 		
 		try {
 			assemblySET = MySQL_BioSQL.init(manager.getCon(), assemblySET, sql);
@@ -481,20 +482,27 @@ public class MySQL_Extended implements BioSQLExtended{
 			assemblySET.setInt(2, read_id);
 			assemblySET.setInt(3, read_version);
 			assemblySET.setInt(4, runid);
-			if(trimmed) assemblySET.setInt(5, 1); 
-			else assemblySET.setInt(5, 0);
+			if(trimmed){ 
+				assemblySET.setInt(5, 1);
+				assemblySET.setInt(8, 1);
+			}
+			else{
+				assemblySET.setInt(5, 0);
+				assemblySET.setInt(8, 0);
+			}
 			assemblySET.setInt(6, start);
 			assemblySET.setInt(7, stop);
+			assemblySET.setInt(9, start);
+			assemblySET.setInt(10, stop);
 			assemblySET.execute();
 			return addRunBioentry(manager, contig_id, runid);
 		} 
 		catch(SQLException e){
-			logger.error("Failed to insert assembly data into database", e);
+			logger.error("Failed to insert assembly data into database with "+assemblySET.toString(), e);
 			return false;
 		}
 	}
-	
-	
+
 	
 	/* *****************************************************************************************
 	 * 
@@ -1051,7 +1059,7 @@ public class MySQL_Extended implements BioSQLExtended{
 
 
 	public boolean addRunBioentry(DatabaseManager manager, int bioentry, int runid) {
-		String sql2 = "INSERT INTO bioentry_run (bioentry_id, run_id, rank) VALUES (?,?,?)";
+		String sql2 = "INSERT IGNORE INTO bioentry_run (bioentry_id, run_id, rank) VALUES (?,?,?)";
 		try {
 			bioen_runSET = MySQL_BioSQL.init(manager.getCon(), bioSequenceGET, sql2);
 			bioen_runSET.setInt(1, bioentry);
