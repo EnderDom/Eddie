@@ -85,7 +85,6 @@ public class MultiblastParser implements Iterator<BlastObject>, BlastParser{
 
 		while(stream.hasNext()){
 		    i= stream.next();
-
 			if(stream.isStartElement()){
 				tag = stream.getName().toString();
 				if(tag.equals(iteration)){

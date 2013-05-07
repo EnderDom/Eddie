@@ -1,7 +1,10 @@
 package enderdom.eddie.tasks.bio;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -18,8 +21,11 @@ public class Task_Convert extends TaskXTwIO{
 	int conversiontype;
 	private static int BAM2SAM = 1;
 	private static int ACE2FNA = 2;
+	private static int XML2FASTA = 3;
 	//private static int FASTA2FASTQ = 3;
 	Logger logger = Logger.getLogger("Converterz");
+	String id_tag;
+	String seq_tag;
 	
 	
 	public Task_Convert(){
@@ -30,6 +36,10 @@ public class Task_Convert extends TaskXTwIO{
 		super.parseArgsSub(cmd);
 		if(cmd.hasOption("sam2bam"))conversiontype = BAM2SAM;
 		if(cmd.hasOption("ace2fna"))conversiontype = ACE2FNA;
+		if(cmd.hasOption("xml2fasta"))conversiontype = XML2FASTA;
+		id_tag = getOption(cmd, "name", "id");
+		seq_tag = getOption(cmd, "seq", "sequence");
+		
 	}
 	
 	public void parseOpts(Properties props){
@@ -40,6 +50,9 @@ public class Task_Convert extends TaskXTwIO{
 		super.buildOptions();
 		options.addOption(new Option("sam2bam", false, "Convert SAM/BAM to BAM/SAM"));
 		options.addOption(new Option("ace2fna", false, "Converts ACE"));
+		options.addOption(new Option("xml2fasta", false, "Grabs 2 tags in xml and makes fasta (-name and -seq)"));
+		options.addOption(new Option("name", true, "For sequence name tag in xml"));
+		options.addOption(new Option("seq", true, "For sequence tag in xml"));
 		//options.addOption(new Option("fasta2fastq", false, "Convert Fasta and Qual file to Fastq"));
 		//options.addOption(new Option("q","qual", true, "Quality file if needed"));
 	}
@@ -60,6 +73,16 @@ public class Task_Convert extends TaskXTwIO{
 			}
 			if(conversiontype==ACE2FNA){
 				logger.info("Converter Successful: "+Tools_Converters.ACE2FNA(in, out));
+			}
+			if(conversiontype==XML2FASTA){
+				try {
+					logger.info("ID tag is " + id_tag + " and " + " Seq tag is " + seq_tag);
+					logger.info("Converter Successful: "+Tools_Converters.XML2Fasta(in, out, id_tag, seq_tag));
+				} catch (XMLStreamException e) {
+					logger.error("Failed to convert xml to fasta!",e);
+				} catch (IOException e) {
+					logger.error("Failed to convert xml to fasta!",e);
+				}
 			}
 			else{
 				logger.warn("No Conversion Set");

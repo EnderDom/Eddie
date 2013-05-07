@@ -166,8 +166,11 @@ public class Task_dbTools extends TaskXT{
 			int bio = manager.getBioSQL().getBioEntry(manager.getCon(), contig, contig, manager.getEddieDBID());
 			BioSequence[] seq = manager.getBioSQLXT().getBioSequences(manager, bio);
 			Fasta fasta = new Fasta();
-			for(BioSequence b : seq)fasta.addSequenceObject(new GenericSequence(contig, b.getSequence()));
-			fasta.save2Fasta(new File(output));
+			if(seq.length == 0) Logger.getRootLogger().error("Failed to retrieve any sequences with contig name " + contig);
+			else{
+				for(BioSequence b : seq)fasta.addSequenceObject(new GenericSequence(contig, b.getSequence()));
+				fasta.save2Fasta(new File(output));
+			}
 		}
 		else{
 			throw new Exception("Failed to open database");
