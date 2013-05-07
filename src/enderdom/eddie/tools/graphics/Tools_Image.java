@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.Iterator;
 
 import javax.imageio.IIOImage;
@@ -27,6 +28,17 @@ import enderdom.eddie.tools.Tools_System;
 
 public class Tools_Image {
 
+	//From : http://stackoverflow.com/questions/3772098/how-does-java-awt-color-getcolorstring-colorname-work
+	//Doesn't seem to work???
+	public static Color getColor(String colorname){
+		try {
+			Field field = Color.class.getField(colorname);
+			return (Color)field.get(null);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
 	public static double convertDPI2DPMM(double dpi){
 		return dpi/25.4;
 	}
