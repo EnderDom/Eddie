@@ -19,7 +19,7 @@ import enderdom.eddie.databases.manager.DatabaseManager;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_CLI;
-import enderdom.eddie.tools.Tools_String;
+import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.ui.UI;
 
@@ -29,8 +29,8 @@ public class Task_dbTools extends TaskXT{
 	private boolean readsasfasta;
 	private String output;
 	private boolean all;
-	private int run_id = -1;
-
+	private String input;
+	private int run_id;
 	
 	public Task_dbTools(){
 		setHelpHeader("--Database Tools--");
@@ -49,23 +49,19 @@ public class Task_dbTools extends TaskXT{
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		if(cmd.hasOption("c"))contig = cmd.getOptionValue("c");
 		readsasfasta = cmd.hasOption("readsasfasta");
-		if(cmd.hasOption("o"))output = cmd.getOptionValue("output");
-		all=cmd.hasOption("all");
-		if(cmd.hasOption("run_id")){
-			all=true;
-			Integer run = Tools_String.parseString2Int(cmd.getOptionValue("run_id"));
-			if(run != null){
-				this.run_id = run; 
-			}
-		}
+		output = this.getOption(cmd, "o", null);
+		input = this.getOption(cmd, "i", null);
+		contig = this.getOption(cmd, "c", null);
+		run_id = this.getOption(cmd, "run_id", -1);
+		all=(cmd.hasOption("run_id") || cmd.hasOption("all"));
 	}
 	
 	public void buildOptions(){
 		super.buildOptions();
-		options.addOption(new Option("c","contig", true, "Contig name, use with readsasfasta, " +
+		options.addOption(new Option("c","contig", true, "Contig name, use with readsasfasta " +
 				"to download reads rather than consensus"));
+		options.addOption(new Option("i", true, "Bulk download input, input being a list of sequence names"));
 		options.addOption(new Option("readsasfasta", false, "Pulls reads which make this contig as fasta"));
 		options.addOption(new Option("o","output", true, "Output file"));
 		options.addOption(new Option("all",false, "Batch download all contigs available"));
@@ -79,8 +75,13 @@ public class Task_dbTools extends TaskXT{
 			if(readsasfasta && contig != null){
 				DBReadsAsFasta(contig, output, password, ui);
 			}
-			else if(contig != null){
-				ContigAsFasta(output, contig, password, ui);
+			else if(contig != null || (input != null)){
+				if(input != null){
+					ContigsAsFasta(output, Tools_File.quickRead2Array(new File(input)), password, ui);
+				}
+				else{
+					ContigAsFasta(output, contig, password, ui);
+				}
 			}
 			else if(all){
 				if(this.output == null){
@@ -161,14 +162,20 @@ public class Task_dbTools extends TaskXT{
 	}
 	
 	public static void ContigAsFasta(String output, String contig, String password, UI ui) throws Exception{
+		ContigsAsFasta(output, new String[]{contig}, password, ui);
+	}
+	
+	public static void ContigsAsFasta(String output, String[] contigs, String password, UI ui) throws Exception{
 		DatabaseManager manager = ui.getDatabaseManager(password);
 		if(manager.open()){
-			int bio = manager.getBioSQL().getBioEntry(manager.getCon(), contig, contig, manager.getEddieDBID());
-			BioSequence[] seq = manager.getBioSQLXT().getBioSequences(manager, bio);
 			Fasta fasta = new Fasta();
-			if(seq.length == 0) Logger.getRootLogger().error("Failed to retrieve any sequences with contig name " + contig);
-			else{
+			for(String contig : contigs){
+				int bio = manager.getBioSQL().getBioEntry(manager.getCon(), contig, contig, manager.getEddieDBID());
+				BioSequence[] seq = manager.getBioSQLXT().getBioSequences(manager, bio);
 				for(BioSequence b : seq)fasta.addSequenceObject(new GenericSequence(contig, b.getSequence()));
+			}
+			if(fasta.getNoOfSequences() == 0) Logger.getRootLogger().error("Failed to retrieve any sequences with contig name");
+			else{
 				fasta.save2Fasta(new File(output));
 			}
 		}
@@ -176,5 +183,6 @@ public class Task_dbTools extends TaskXT{
 			throw new Exception("Failed to open database");
 		}
 	}
+	
 }
 

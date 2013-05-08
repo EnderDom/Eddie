@@ -7,6 +7,7 @@ import enderdom.eddie.tasks.bio.Task_BioTools;
 import enderdom.eddie.tasks.bio.Task_BlastAnalysis;
 import enderdom.eddie.tasks.bio.Task_BlastLocal;
 import enderdom.eddie.tasks.bio.Task_Convert;
+import enderdom.eddie.tasks.bio.Task_DataMiner;
 import enderdom.eddie.tasks.bio.Task_ESTScan;
 import enderdom.eddie.tasks.bio.Task_Fasta_Tools;
 import enderdom.eddie.tasks.bio.Task_IprscanLocal;
@@ -147,6 +148,10 @@ public class TaskList {
 			tasks[0][19] = Task_BlastAnalysis2.class.getName(); 
 			tasks[1][19] = "blastanalysis2";
 			tasks[2][19] = "Analyse blast runs using database";	
+			
+			tasks[0][20] = Task_DataMiner.class.getName(); 
+			tasks[1][20] = "dataminer";
+			tasks[2][20] = "Run data mining scripts";	
 			
 			
 			return tasks;

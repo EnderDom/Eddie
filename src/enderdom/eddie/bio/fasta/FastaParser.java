@@ -3,7 +3,9 @@ package enderdom.eddie.bio.fasta;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.apache.log4j.Logger;
@@ -42,11 +44,10 @@ public class FastaParser{
 	 * @return
 	 * @throws IOException
 	 */
-	public int parseFastq(File fasta) throws IOException{
+	public int parseFastq(InputStream fis) throws IOException{
 		int count = 0;
 		int linecount = 0;
 		int multi =0;
-		FileInputStream fis = new FileInputStream(fasta);
 		InputStreamReader in = new InputStreamReader(fis, "UTF-8");
 		BufferedReader reader = new BufferedReader(in);
 		
@@ -119,11 +120,11 @@ public class FastaParser{
 	 * @return Number of individual sequences in the fasta
 	 * @throws IOException
 	 */
-	public int parseFasta(File fasta, boolean qual)  throws IOException{
+	public int parseFasta(InputStream fis, boolean qual)  throws IOException{
 		int count = 0;
 		int linecount=0;
 		int multi =0;
-		FileInputStream fis = new FileInputStream(fasta);
+
 		InputStreamReader in = new InputStreamReader(fis, "UTF-8");
 		BufferedReader reader = new BufferedReader(in);
 		
@@ -168,9 +169,22 @@ public class FastaParser{
 		}
 		return count;
 	}
+
+	public int parseFastq(File fasta) throws FileNotFoundException, IOException{
+		return parseFastq(new FileInputStream(fasta));
+	}
+	
+	public int parseFasta(File fasta, boolean qual) throws FileNotFoundException, IOException{
+		return parseFasta(new FileInputStream(fasta), qual);
+	}
 	
 	public int parseFasta(File fasta)  throws IOException{
 		return parseFasta(fasta, false);
+	}
+	
+	public int parseQual(InputStream fasta)  throws IOException{
+		if(handler.isFastq())handler.setFastq(false);
+		return parseFasta(fasta, true);
 	}
 	
 	public int parseQual(File fasta)  throws IOException{

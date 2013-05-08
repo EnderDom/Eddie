@@ -18,16 +18,15 @@ import org.apache.log4j.Logger;
 
 public class Tools_Web {
 	
-	public static String urlReader(String url){
+	public static String urlReader(String url) throws MalformedURLException{
+		URL site = new URL(url);
+		return urlReader(site);
+	}
+	
+	public static String urlReader(URL site){
 		StringBuilder text = new StringBuilder("");
 		try{
-			URLEncoder.encode(url, "UTF-8");
-		}
-		catch(UnsupportedEncodingException encod){
-			Logger.getRootLogger().error("Encoding Exception in method urlReader.", encod);
-		}
-		try{
-			URL site = new URL(url);
+			
 			BufferedReader in = new BufferedReader(new InputStreamReader(site.openStream()));
 			String inputLine;
 			while ((inputLine = in.readLine()) != null){
@@ -36,9 +35,9 @@ public class Tools_Web {
 			in.close();
 		}
 		catch(IOException iox){
-			Logger.getRootLogger().error("IO Issue: " + url, iox);
+			Logger.getRootLogger().error("IO Issue: " + site.toString(), iox);
 		}
-		return text.toString();	
+		return text.toString();
 	}
 	
 	public static String[] stripImages(String website){

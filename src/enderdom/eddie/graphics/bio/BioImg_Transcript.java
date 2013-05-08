@@ -69,7 +69,7 @@ public class BioImg_Transcript implements BioImg_Object{
 		int linewidth = (int)(linewid*dpmm);
 		linewidth += linewidth%2;
 		int lw = linewidth/2;
-		logger.debug("Penicl width is " + linewidth);
+		logger.debug("Pencil width is " + linewidth);
 		wit = (double)wit*dpmm;
 		heit = (double)heit*dpmm;
 		
@@ -112,10 +112,8 @@ public class BioImg_Transcript implements BioImg_Object{
 		int xf = (w/2)-(metr.stringWidth(titl)/2)-2;
 		g.drawString(titl, xf, yf);
 		for(int i =0; i < 3 ;i++)g.drawLine(xf, yf+5+i, xf+metr.stringWidth(titl), yf+5+i);
-		
-		
-		//Draw Region
-		
+
+		//Draw Region	
 		int l =barx;
 		for(int j =0; j < lw; j++){
 			g.drawLine(l-(lw/2)+j, mid-(int)((double)barheit*0.25), l-(lw/2)+j, mid+(int)((double)barheit*0.25));

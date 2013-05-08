@@ -2,9 +2,11 @@ package enderdom.eddie.bio.fasta;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
@@ -364,27 +366,33 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 				throw new UnsupportedTypeException("Fasta(q) cannot be saved as this filetype");
 		}
 	}
-
+	
 	public int loadFile(File file, BioFileType filetype) throws UnsupportedTypeException, IOException {
 		if(file.isFile()){
 			filename = file.getName();
 			filepath = file.getPath();
-			FastaParser parser = new FastaParser(this);
-			switch(filetype){
-				case QUAL:
-					return parser.parseQual(file);
-				case FASTA:
-					return parser.parseFasta(file);
-				case FASTQ:
-					return parser.parseFastq(file);
-				default:
-					throw new UnsupportedTypeException("Cannot load this filetype into fasta object"); 
-			}
+			return loadFile(new FileInputStream(file), filetype);
 		}
 		else{
 			throw new FileNotFoundException("File is not a file");
 		}
 	}
+	
+	public int loadFile(InputStream file, BioFileType filetype) throws UnsupportedTypeException, IOException {
+			FastaParser parser = new FastaParser(this);
+			switch(filetype){
+				case QUAL:
+					return parser.parseQual(file);
+				case FASTA:
+					return parser.parseFasta(file, false);
+				case FASTQ:
+					return parser.parseFastq(file);
+				default:
+					throw new UnsupportedTypeException("Cannot load this filetype into fasta object"); 
+			}
+		
+	}
+
 
 	public int removeSequencesWithNs(int Ns){
 		int i=0;
