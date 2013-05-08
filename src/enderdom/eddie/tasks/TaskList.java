@@ -7,14 +7,20 @@ import enderdom.eddie.tasks.bio.Task_BioTools;
 import enderdom.eddie.tasks.bio.Task_BlastAnalysis;
 import enderdom.eddie.tasks.bio.Task_BlastLocal;
 import enderdom.eddie.tasks.bio.Task_Convert;
+import enderdom.eddie.tasks.bio.Task_DataMiner;
 import enderdom.eddie.tasks.bio.Task_ESTScan;
 import enderdom.eddie.tasks.bio.Task_Fasta_Tools;
+import enderdom.eddie.tasks.bio.Task_IprscanLocal;
 import enderdom.eddie.tasks.bio.Task_UniVec;
 import enderdom.eddie.tasks.bio.Task_WebInterPro;
 import enderdom.eddie.tasks.database.Task_AddRunData;
 import enderdom.eddie.tasks.database.Task_Assembly2DB;
 import enderdom.eddie.tasks.database.Task_BioSQLDB;
 import enderdom.eddie.tasks.database.Task_Blast;
+import enderdom.eddie.tasks.database.Task_BlastAnalysis2;
+import enderdom.eddie.tasks.database.Task_ESTUpload;
+import enderdom.eddie.tasks.database.Task_IPRupload;
+import enderdom.eddie.tasks.database.Task_Taxonomy;
 import enderdom.eddie.tasks.database.Task_dbTools;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.ui.UI;
@@ -101,8 +107,8 @@ public class TaskList {
 	
 			//Upload Run Info
 			tasks[0][10] = Task_AddRunData.class.getName();
-			tasks[1][10] = "uploadrun";
-			tasks[2][10] = "add Program run information to database, (needed for other data upload)";
+			tasks[1][10] = "runDatabase";
+			tasks[2][10] = "add/get run information to/from database, (needed for other data upload)";
 			
 			//Blast Upload
 			tasks[0][11] = Task_Blast.class.getName();
@@ -114,20 +120,39 @@ public class TaskList {
 			tasks[1][12] = "dbtools";
 			tasks[2][12] = "tools for downloading various data from database";
 	
-			// Empty
-			//tasks[0][13] = 
-			//tasks[1][13] = 
-			//tasks[2][13] =
+			//InterProLocak
+			tasks[0][13] = Task_IprscanLocal.class.getName(); 
+			tasks[1][13] = "iprscanlocal"; 
+			tasks[2][13] = "Run Iprscan, locally, with ability to split files and record progress";
 			
 			//Contig Comparison
 			tasks[0][14] = Task_UniVec.class.getName();
 			tasks[1][14] = "univec";
 			tasks[2][14] = "Run UniVec screen on dataset";
 			
-			//Empty
-			//tasks[0][15] = 
-			//tasks[1][15] = 
-			//tasks[2][15] = 
+			//Taxonomy
+			tasks[0][15] = Task_Taxonomy.class.getName(); 
+			tasks[1][15] = "taxonomy";
+			tasks[2][15] = "Taxonomy related tools";
+			
+			//Upload estSCAN stuff
+			tasks[0][17] = Task_ESTUpload.class.getName(); 
+			tasks[1][17] = "estUpload";
+			tasks[2][17] = "Upload estscan proteins";			
+			
+			tasks[0][18] = Task_IPRupload.class.getName(); 
+			tasks[1][18] = "iprUpload";
+			tasks[2][18] = "Upload IPR data";	
+			
+			
+			tasks[0][19] = Task_BlastAnalysis2.class.getName(); 
+			tasks[1][19] = "blastanalysis2";
+			tasks[2][19] = "Analyse blast runs using database";	
+			
+			tasks[0][20] = Task_DataMiner.class.getName(); 
+			tasks[1][20] = "dataminer";
+			tasks[2][20] = "Run data mining scripts";	
+			
 			
 			return tasks;
 		}

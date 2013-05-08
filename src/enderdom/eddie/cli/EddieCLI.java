@@ -9,10 +9,10 @@ import org.apache.log4j.Logger;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
+import enderdom.eddie.tasks.ShutdownManager;
 import enderdom.eddie.tasks.Task;
 import enderdom.eddie.tasks.TaskLike;
 import enderdom.eddie.tasks.TaskList;
-import enderdom.eddie.tasks.TaskStack;
 import enderdom.eddie.tools.Tools_CLI;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_UI;
@@ -20,15 +20,17 @@ import enderdom.eddie.ui.PropertyLoader;
 import enderdom.eddie.ui.EddiePropertyLoader;
 import enderdom.eddie.ui.TaskManager;
 import enderdom.eddie.ui.UI;
-import enderdom.eddie.ui.UIEvent;
+import enderdom.eddie.ui.UserResponse;
 
 public class EddieCLI implements UI {
 
 	private EddiePropertyLoader load;
 	private TaskManager manager;
 	private DatabaseManager dbmanager;
+	private ShutdownManager shutdown;
 	private String[] args;
 	private Options options;
+	
 	
 	public EddieCLI(EddiePropertyLoader loader){
 		System.out.println("Eddie v" + (EddiePropertyLoader.engineversion+EddiePropertyLoader.subversion) + " by (S.C.Corp.)");
@@ -128,6 +130,13 @@ public class EddieCLI implements UI {
 		this.manager = Tools_UI.buildTaskManager(this, core, auxil);
 	}
 	
+	public TaskManager getTaskManager(){
+		if(this.manager == null){
+			buildTaskManager();
+		}
+		return this.manager;
+	}
+	
 	public void buildOptions(){
 		options.addOption(new Option("task", true, "Select a task to run"));
 	}
@@ -159,7 +168,7 @@ public class EddieCLI implements UI {
 		return Tools_CLI.showInternalPasswordDialog(message,title);
 	}
 
-	public int requiresUserYNI(String message, String title) {
+	public UserResponse requiresUserYNI(String message, String title) {
 		return Tools_CLI.showInternalConfirmDialog(title, message);
 	}
 
@@ -188,10 +197,6 @@ public class EddieCLI implements UI {
 		}
 		this.dbmanager = dbmanager;
 	}
-	
-	public void fireUIEvent(UIEvent evt){
-		logger.debug("Foo");
-	}
 		
 	public void throwError(String message, Throwable t){
 		logger.error(message,t);
@@ -215,19 +220,16 @@ public class EddieCLI implements UI {
 		load.savePropertyFile(load.getPropertyFilePath(), load.getPropertyObject());
 	}
 
-	public TaskStack getTasker() {
-		if(this.manager == null){
-			buildTaskManager();
-		}
-		return this.manager.getTasker();
+	public void initShutdown() {
+		// TODO Auto-generated method stub
+		
 	}
-	
-	public void setTasker(TaskStack stack){
-		if(this.manager == null){
-			buildTaskManager();
+
+	public ShutdownManager getShutdownManager() {
+		if(this.shutdown == null){
+			initShutdown();
 		}
-		this.manager.setTasker(stack);
+		return shutdown;
 	}
-	
 	
 }

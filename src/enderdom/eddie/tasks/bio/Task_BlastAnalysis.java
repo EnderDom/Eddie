@@ -12,14 +12,17 @@ import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.fasta.FastaParser;
 import enderdom.eddie.bio.homology.blast.BlastObject;
 import enderdom.eddie.bio.homology.blast.BlastxDocumentParser;
+import enderdom.eddie.bio.homology.blast.MultiblastParser;
 
 import enderdom.eddie.tasks.MapManager;
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.ui.UI;
 
+@SuppressWarnings("deprecation")
 public class Task_BlastAnalysis extends TaskXTwIO{
 	
 	private String blastfolders; //Path containing the blast files
@@ -31,7 +34,7 @@ public class Task_BlastAnalysis extends TaskXTwIO{
 	private boolean blastonly;
 	
 	public Task_BlastAnalysis(){
-		e = 1e-6;
+		e = 1e-3;
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
@@ -71,7 +74,7 @@ public class Task_BlastAnalysis extends TaskXTwIO{
 	}
 	
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
 		if(contigblast){
 			init();
@@ -176,34 +179,42 @@ public class Task_BlastAnalysis extends TaskXTwIO{
 			}
 		}
 		else if(blastonly){
-			BlastObject xml = null;
 			File blastfolder = new File(blastfolders);
 			int c =0;
 			int c2=0;
 			int l=0;
+			int hsps = 0;
+			int hits =0;
 			if(blastfolder.isDirectory()){
 				File[] files = blastfolder.listFiles();
 				l = files.length;
 				for(File file : files){
 					try{
-						xml = new BlastxDocumentParser(file).getBlastObject();
-						double ee = xml.getLowestEValue();
-						if(ee < this.e){
-							c2++;
+						MultiblastParser parser = new MultiblastParser(MultiblastParser.BASICBLAST, file);
+						while (parser.hasNext()){
+							BlastObject xml = parser.next();
+							double ee = xml.getLowestEValue();
+							if(ee < this.e && ee != -1){
+								c2++;
+							}
+							else{
+								c++;
+							}
+							hits+=xml.getNoOfHits();
+							for(int i=1;i < xml.getNoOfHits()+1;i++)hsps+=xml.getNoOfHsps(i);
+							System.out.print("\r"+ (c2+c) + " of " +l);
 						}
-						else{
-							c++;
-						}
-						System.out.print("\r"+ (c2+c) + " of " +l);
 					}
 					catch(Exception e){
-						logger.error("Failed to parse blast file", e);
+						logger.error("Failed to parse blast file '"+ file.getName()+"'", e);
 					}
 				}
 				System.out.println("");
 				System.out.println("--STATS--");
 				System.out.println("Blast below " +this.e+": " + c2);
 				System.out.println("Blast above " +this.e+": " + c);
+				System.out.println("Hits Total " +hits);
+				System.out.println("Hsps Total " +hsps);
 			}
 			else{
 				logger.error("Blast folder should be a directory");
@@ -214,7 +225,7 @@ public class Task_BlastAnalysis extends TaskXTwIO{
 			printHelpMessage();
 		}
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 	public boolean wantsUI(){

@@ -21,7 +21,8 @@ import enderdom.eddie.tools.Tools_XML;
  * 
  * Eddie3 method, but works
  */
-public class BlastxDocumentParser{
+@Deprecated
+public class BlastxDocumentParser implements BlastParser{
 
 	Document blastdoc;
 	String filepath;
@@ -52,7 +53,7 @@ public class BlastxDocumentParser{
 	
 	public BlastObject parse2Cache(Document d){
 		
-		BlastObject blastcache = new BasicBlastObject();
+		BlastObject blastcache = new BasicBlastObject(this);
 		
 		ArrayList<Element> elementList = null;
 		try {
@@ -197,6 +198,14 @@ public class BlastxDocumentParser{
 	
 	public BlastObject getBlastObject(){
 		return this.obj;
+	}
+
+	public void put(String key, String value) {
+		this.obj.put(key, value);
+	}
+
+	public String get(String key) {
+		return this.obj.get(key);
 	}
 	
 }

@@ -1,14 +1,13 @@
 package enderdom.eddie.ui;
 
 import java.util.Stack;
+import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.databases.legacy.DBInterface;
-
-import enderdom.eddie.tasks.BasicTaskStack;
 import enderdom.eddie.tasks.TaskLike;
-import enderdom.eddie.tasks.TaskStack;
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tools.Tools_Fun;
 
 /**
@@ -34,11 +33,9 @@ public class TaskManager extends Thread{
 	 */
 	ExtendedExecutor Core; // Pool for Core tasks liking running blasts, so not too many threads run at the same time
 	ExtendedExecutor Auxil; //Pool for Auxiliary tasks, things like database accession and waiting on web requests
-	Stack<TaskLike> futures;
 	private boolean started;
 	int taskcounter;
 	UI top;
-	public TaskStack tasker;
 	
 	public TaskManager(UI ui, int i, int j){
 		this.corepoollimit = i;
@@ -82,7 +79,8 @@ public class TaskManager extends Thread{
 		for(int i =0; i < currentTask.length; i++){
 			if(currentTask[i] == null){
 				currentTask[i] = pops.pop();
-				exe.submit(currentTask[i]);
+				Future<?> t = exe.submit(currentTask[i]);
+				currentTask[i].setFutureHash(t.hashCode());
 				submitted++;
 			}
 			else{
@@ -92,8 +90,8 @@ public class TaskManager extends Thread{
 					//Add new task
 					currentTask[i] = pops.pop();
 					//Submit
-					exe.submit(currentTask[i]);
-					
+					Future<?> t = exe.submit(currentTask[i]);
+					currentTask[i].setFutureHash(t.hashCode());
 					submitted++;
 				}
 			}
@@ -119,7 +117,7 @@ public class TaskManager extends Thread{
 	public void setStarted(boolean started) {
 		this.started = started;
 	}
-
+	
 	/*
 	 * Work in progress, not yet completely familiar with thread safety yet
 	 */
@@ -145,7 +143,7 @@ public class TaskManager extends Thread{
 			}
 			if(newsubmit==0){
 				try {
-					sleep(10000);
+					sleep(2000);
 				} catch (InterruptedException e) {
 					logger.error("Interrupt",e);
 				}
@@ -155,17 +153,6 @@ public class TaskManager extends Thread{
 		Auxil.shutdown();
 		logger.debug("Task Manager has no more tasks, shutting down");
 		started = false;
-	}
-
-	public TaskStack getTasker() {
-		if(this.tasker == null){
-			this.tasker = new BasicTaskStack();
-		}
-		return this.tasker;	
-	}
-	
-	public void setTasker(TaskStack stack){
-		this.tasker = stack;
 	}
 	
 	public boolean tasksUnfinished(){
@@ -185,5 +172,45 @@ public class TaskManager extends Thread{
 		}
 		return false;
 	}
-	
+
+	/**
+	 * Attempts to retrieve a task based on hashcode of runnable
+	 * @param hashCode
+	 */
+	public TaskLike getTaskWithFuture(int hashCode) {
+		for(int i =0; i < coretasklist.length;i++){
+			if(coretasklist[i] != null){
+				if(coretasklist[i].getFutureHash() == hashCode){
+					return coretasklist[i];
+				}
+			}
+		}
+		for(int i =0; i < auxiltasklist.length;i++){
+			if(auxiltasklist[i] != null){
+				if(auxiltasklist[i].getFutureHash() == hashCode){
+					return auxiltasklist[i];
+				}
+			}
+		}
+		return null;
+	}
+
+	public Stack<TaskLike> getShutdowns() {
+		Stack<TaskLike> toshut = new Stack<TaskLike>();
+		for(int i =0; i < coretasklist.length;i++){
+			if(coretasklist[i] != null){
+				if(coretasklist[i].canBeShutdown())toshut.add(coretasklist[i]);
+				else coretasklist[i].setCompleteState(TaskState.CANCELLED);
+			}
+		}
+		for(int i =0; i < auxiltasklist.length;i++){
+			if(auxiltasklist[i] != null){
+				if(auxiltasklist[i].canBeShutdown())toshut.add(auxiltasklist[i]);
+				else auxiltasklist[i].setCompleteState(TaskState.CANCELLED);
+			}
+		}
+		return toshut;
+	}
+		
+
 }

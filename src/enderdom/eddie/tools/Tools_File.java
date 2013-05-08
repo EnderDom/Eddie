@@ -67,6 +67,36 @@ public abstract class Tools_File {
 		}
 	}
 	
+	public static String[] quickRead2Array(File file){
+		return quickRead2Array(64, file, false);
+	}
+	
+	public static String[] quickRead2Array(int l, File file, boolean trim){
+		ArrayList<String> s = new ArrayList<String>(l);
+		try{
+			FileInputStream fis = new FileInputStream(file);
+			InputStreamReader in = new InputStreamReader(fis, "UTF-8");
+			BufferedReader reader = new BufferedReader(in);
+			String line = "";
+			while((line = reader.readLine()) != null){
+				if(trim)line=line.trim();
+				s.add(line);
+			}
+			reader.close();
+			in.close();
+			fis.close();
+			return s.toArray(new String[0]);
+		}
+		catch(IOException io){
+			logger.warn(io);
+			return s.toArray(new String[0]);
+		}
+	}
+	
+	public static BufferedWriter getWriter(File file) throws IOException{
+		return new BufferedWriter(new FileWriter(file,false));
+	}
+	
 	/**
 	 * Returns 1 line from a file. File is opened
 	 * line read and then closed and line is returned

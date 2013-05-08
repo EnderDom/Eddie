@@ -68,6 +68,7 @@ public abstract class Tools_Array {
 		}
 		return ints2;
 	}
+
 	
 	/* Hax warning!
 	 * 
@@ -124,5 +125,11 @@ public abstract class Tools_Array {
 			returned[1][i] = depss;
 		}
 		return returned;
+	}
+
+	public static int[] sum(int[] count, int[] count1) {
+		if(count.length != count1.length)System.out.println("Arrays not same length!");
+		for(int i=0;i< count.length;i++)count[i]+=count1[i];
+		return count;
 	}
 }

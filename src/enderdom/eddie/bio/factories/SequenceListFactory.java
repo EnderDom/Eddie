@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.fasta.Fasta;
+import enderdom.eddie.bio.homology.ClustalAlign;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
@@ -32,7 +33,7 @@ public class SequenceListFactory {
 	 * @throws UnsupportedTypeException
 	 * @throws IOException
 	 */
-	public static SequenceList getSequenceList(String input) throws FileNotFoundException, UnsupportedTypeException, IOException{
+	public static SequenceList getSequenceList(String input) throws FileNotFoundException, UnsupportedTypeException, IOException, Exception{
 		File i = new File(input);
 		if(!i.exists()){
 			throw new FileNotFoundException("File: " + input + " does not exist");
@@ -63,6 +64,9 @@ public class SequenceListFactory {
 						f.addSequenceObject(parser.next().getConsensus());
 					}
 					return f;
+				case CLUSTAL_ALN:
+					ClustalAlign a = new ClustalAlign(new File(input), BioFileType.CLUSTAL_ALN);
+					return a;
 				//case SAM://TODO this method	
 				default:
 				throw new UnsupportedTypeException("You are trying to get a sequence list from " 

@@ -3,6 +3,7 @@ package enderdom.eddie.tasks;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.ui.UI;
+import enderdom.eddie.ui.UserResponse;
 
 /*
  * Task with additional tools as I'm lazy
@@ -14,6 +15,7 @@ public class TaskXT extends Task{
 	protected Checklist checklist;
 	protected UI ui;
 	
+	
 	public void buildOptions(){
 		super.buildOptions();
 	}
@@ -22,8 +24,8 @@ public class TaskXT extends Task{
 		checklist = new Checklist(ui.getPropertyLoader().getValue("WORKSPACE"), this.getClass().getName());
 		if(checklist.check()){
 			logger.trace("Moved to recovering past Task");
-			int userinput = ui.requiresUserYNI("There is an unfinished task, Details: "+checklist.getLast()+" Would you like to recover it (yes), delete it (no) or ignore it (cancel)?","Recovered Unfinished Task...");
-			if(userinput == 1){
+			UserResponse userinput = ui.requiresUserYNI("There is an unfinished task, Details: "+checklist.getLast()+" Would you like to recover it (yes), delete it (no) or ignore it (cancel)?","Recovered Unfinished Task...");
+			if(userinput == UserResponse.NO){
 				if(!checklist.closeLastTask()){
 					logger.error("Failed to delete last task");
 				}
@@ -32,7 +34,7 @@ public class TaskXT extends Task{
 				}
 				checklist.start(this.args);
 			}
-			if(userinput == 0){
+			if(userinput == UserResponse.YES){
 				args = checklist.getArgs();
 				if(args != null){
 					super.parseArgs(args.split(" "));
@@ -67,4 +69,6 @@ public class TaskXT extends Task{
 	public boolean isKeepArgs(){
 		return true;
 	}
+	
+
 }

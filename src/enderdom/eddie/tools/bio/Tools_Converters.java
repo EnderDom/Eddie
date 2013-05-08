@@ -1,9 +1,15 @@
 package enderdom.eddie.tools.bio;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Iterator;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.apache.log4j.Logger;
+import org.codehaus.stax2.XMLInputFactory2;
+import org.codehaus.stax2.XMLStreamReader2;
 
 import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.fasta.Fasta;
@@ -117,4 +123,31 @@ public class Tools_Converters {
 		}
 	}
 	
+	
+	public static boolean XML2Fasta(File in, File output, String id, String seq) throws XMLStreamException, IOException{
+		XMLInputFactory2 f = (XMLInputFactory2) XMLInputFactory2.newInstance();
+	    f.setProperty(XMLInputFactory2.SUPPORT_DTD, Boolean.FALSE);
+	    XMLStreamReader2 stream = (XMLStreamReader2) f.createXMLStreamReader(new FileInputStream(in));
+	    
+	    Fasta fasta = new Fasta();
+	    String tag = new String();
+	    String id_ = new String();
+	    while(stream.hasNext()){
+		    stream.next();
+			if(stream.isStartElement()){
+				tag = stream.getName().toString();
+				if(tag.equals(id)){
+					id_ = stream.getElementText();
+				}
+				else if(tag.equals(seq)){
+					fasta.addSequence(id_, stream.getElementText());
+					id_=null;
+				}
+			}
+	    }
+	    output.delete();
+	    fasta.save2Fasta(output);
+	    if(output.isFile())return true;
+	    else return false;
+	}
 }

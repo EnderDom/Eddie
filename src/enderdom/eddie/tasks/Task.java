@@ -1,9 +1,7 @@
 package enderdom.eddie.tasks;
 
+import java.io.File;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -16,17 +14,16 @@ import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.cli.LazyPosixParser;
 
 import enderdom.eddie.tools.Tools_CLI;
+import enderdom.eddie.tools.Tools_File;
+import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
 import enderdom.eddie.ui.TaskManager;
-import enderdom.eddie.ui.UI;
 
-public abstract class Task implements TaskLike {
+public abstract class Task extends BasicTask {
 
-	private int id;
-	private boolean core;
 	private TaskManager manager;
-	protected int complete;
+	protected TaskState state;
 	public Options options;
 	public boolean helpmode;
 	protected boolean testmode;
@@ -34,29 +31,11 @@ public abstract class Task implements TaskLike {
 	protected String helpheader = "--This is the Help Message of the Default Task--";
 	protected String password =null;
 	Logger logger = Logger.getRootLogger();
-	
-	/*
-	 * complete note:
-	 * -1 == unstarted, but init
-	 * 0 == started
-	 * 1 == finished without error
-	 * 2 == cancelled
-	 * 3 == Error
-	 * >3 == Task-Specific Error
-	 */
-	
-	private boolean try2Close;
-	
-	public boolean isCore(){
-		return core;
-	}
-	
-	public void setCore(boolean core){
-		this.core = core;
-	}
+	protected int futurehash;
+
 	
 	public void run() {
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		Logger.getRootLogger().debug("Started running task @ "+Tools_System.getDateNow());
 		if(testmode){
 			runTest();
@@ -72,7 +51,7 @@ public abstract class Task implements TaskLike {
 		    		"class that has extended this Task class has not overwrote the default run()");
 		}
 		Logger.getRootLogger().debug("Finished running task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 	public void parseArgs(String[] args){
@@ -131,70 +110,6 @@ public abstract class Task implements TaskLike {
 		this.manager.update(this);
 	}
 	
-	public boolean isStart(){
-		if(complete == -1){
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-
-	public boolean cancel(boolean arg0) {
-		try2Close = arg0;
-		return false;
-	}
-
-	public Object get() throws InterruptedException, ExecutionException {
-		return (Object) this;
-	}
-
-	public Object get(long arg0, TimeUnit arg1) throws InterruptedException,
-			ExecutionException, TimeoutException {
-		return (Object) this;
-	}
-
-	public boolean isCancelled() {
-		if(complete== 2){
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-
-	public boolean isDone() {
-		if(complete > 0){
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-	
-	public int getComplete() {
-		return complete;
-	}
-
-	protected void setComplete(int complete) {
-		this.complete = complete;
-		logger.info("Task was set to complete");
-	}
-
-	public boolean isTry2Close() {
-		return try2Close;
-	}
-
-	public void setTry2Close(boolean try2Close) {
-		this.try2Close = try2Close;
-	}
-
-	public void setID(int taskcounter) {
-		this.id = taskcounter;
-	}
-	public int getID(){
-		return this.id;
-	}
 	
 	public void buildOptions(){
 		options = new Options();
@@ -223,20 +138,94 @@ public abstract class Task implements TaskLike {
 	public boolean isKeepArgs(){
 		return false;
 	}
-	
-	public boolean wantsUI(){
-		return false;
-	}
-	
-	public void addUI(UI ui){
-		
-	}
+
 	/*
 	 * Very basic File Type detection
 	 * 
 	 */
 	public BioFileType detectFileType(String filename){
 		return Tools_Bio_File.detectFileType(filename);
+	}
+	
+	/**
+	 * Tries to cut down the code a bit in the initial parsing of
+	 * args[]. But only so much can be done
+	 * 
+	 * @param cmd
+	 * @param opt
+	 * @param defaul
+	 * @return  either the value input by the commandline
+	 * or the default line if either the value is not set, or
+	 * it is not parsable. If unparseable logs a warning, but does
+	 * not throw exception
+	 */
+	protected String getOption(CommandLine cmd, String opt, String defaul){
+		if(cmd.hasOption(opt) && cmd.getOptionValue(opt) != null){
+			String r = cmd.getOptionValue(opt);
+			if(r != null && r.length() != 0)return r;
+			else logger.warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as string");
+		}
+		return defaul;
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @param cmd
+	 * @param opt
+	 * @param defaul
+	 * @return either the value input by the commandline
+	 * or the default line if either the value is not set, or
+	 * it is not parsable. If unparseable logs a warning, but does
+	 * not throw exception
+	 */
+	protected int getOption(CommandLine cmd, String opt, int defaul){
+		if(cmd.hasOption(opt) &&  cmd.getOptionValue(opt) != null){
+			Integer i = Tools_String.parseString2Int(cmd.getOptionValue(opt));
+			if(i != null)return i.intValue();
+			else logger.warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as integer");
+		}
+		return defaul;
+	}
+	
+	/**
+	 * 
+	 * @param cmd
+	 * @param opt
+	 * @param defaul
+	 * @return either the value input by the commandline
+	 * or the default line if either the value is not set, or
+	 * it is not parsable. If unparseable logs a warning, but does
+	 * not throw exception
+	 */
+	protected double getOption(CommandLine cmd, String opt, double defaul){
+		if(cmd.hasOption(opt) && cmd.getOptionValue(opt) != null){
+			Double i = Tools_String.parseString2Double(cmd.getOptionValue(opt));
+			if(i != null)return i.doubleValue();
+			else logger.warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as double");
+		}
+		return defaul;
+	}
+	
+	/**
+	 * Quick and dirty pull strings from 
+	 * file
+	 * 
+	 * @param cmd
+	 * @param opt
+	 * @param f
+	 * @return
+	 */
+	protected String getOptionFromFile(CommandLine cmd, String opt){
+		String f = null;
+		String filename = cmd.getOptionValue(opt);
+		if(filename != null){
+			File fie = new File(filename);
+			if(fie.isFile()){
+				f = Tools_File.quickRead(fie, false);
+			}
+		}	
+		return f;
 	}
 
 }

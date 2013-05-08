@@ -24,8 +24,8 @@ public class UniVecBlastObject extends BasicBlastObject implements Comparator<Un
 	LinkedList<UniVecRegion> regions;
 	boolean reversed = false;
 	
-	public UniVecBlastObject() throws Exception{
-		super();
+	public UniVecBlastObject(BlastParser parser) throws Exception{
+		super(parser);
 	}
 	
 	public boolean requiresTrim() throws Exception{
@@ -125,6 +125,10 @@ public class UniVecBlastObject extends BasicBlastObject implements Comparator<Un
 		}
 	}
 	
+	/**
+	 * Inverts the order of regions
+	 * @throws Exception
+	 */
 	public void reverseOrder() throws Exception{
 		if(regions == null)generateRegions();
 		reversed = true;

@@ -6,12 +6,6 @@ import enderdom.eddie.ui.UI;
 
 public interface TaskLike extends Runnable, Future<Object> {
 
-	public static int unstarted = -1;
-	public static int started = 0;
-	public static int finished = 1;
-	public static int cancelled = 2;
-	public static int error = 3;
-	
 	public void setCore(boolean core);
 	
 	public boolean isCore();
@@ -20,17 +14,11 @@ public interface TaskLike extends Runnable, Future<Object> {
 	
 	public boolean isStart();
 	
-	public boolean cancel(boolean arg0);
-	
 	public boolean isCancelled();
 	
 	public boolean isDone();
 	
-	public int getComplete();
-	
-	public boolean isTry2Close();
-
-	public void setTry2Close(boolean try2Close);
+	public TaskState getCompleteState();
 
 	public void setID(int taskcounter);
 	
@@ -41,5 +29,23 @@ public interface TaskLike extends Runnable, Future<Object> {
 	public void addUI(UI ui);
 	
 	public boolean isHelpmode();
+	
+	public void setCompleteState(TaskState state);
+	
+	//What fresh madness have I started here? 
+	//Returning were as tedious going
+	public void setFutureHash(int hash);
+	
+	public int getFutureHash();
+	
+	/**
+	 * 
+	 * @return returns true only when 
+	 * task has been programmed to shutdown
+	 * gracefully. Else when force shutdown occurs
+	 * this task will simply be killed.
+	 *  
+	 */
+	public boolean canBeShutdown();
 	
 }

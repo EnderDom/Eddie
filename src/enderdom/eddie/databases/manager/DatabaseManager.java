@@ -15,8 +15,10 @@ import enderdom.eddie.databases.bioSQL.mysql.MySQL_Extended;
 import enderdom.eddie.databases.general.mysql.Tools_SQL_MySQL;
 //import databases.bioSQL.pgsql.PgSQL_BioSQL;
 //import databases.bioSQL.pgsql.PgSQL_Extended;
+import enderdom.eddie.tasks.internal.Task_DatabaseUpdate;
 import enderdom.eddie.ui.PropertyLoader;
 import enderdom.eddie.ui.UI;
+import enderdom.eddie.ui.UserResponse;
 
 /**
  *
@@ -36,7 +38,7 @@ public class DatabaseManager {
 	private BioSQL biosql;
 	private BioSQLExtended biosqlext;
 	private int biodatabase_id =-1;
-	private static double databaseversion =2.3;
+	private static double databaseversion =2.7;
 	private boolean isOpen;
 	
 	public DatabaseManager(UI ui){
@@ -53,9 +55,9 @@ public class DatabaseManager {
 	public void setPassword(String pass){
 		this.password = pass;
 	}
-
-	public boolean open(){
-		if(openDefaultConnection(true) != null){
+	
+	public boolean open() throws Exception{
+		if(openDefaultConnection() != null){
 			return true;
 		}
 		else{
@@ -63,33 +65,24 @@ public class DatabaseManager {
 		}
 	}
 	
-	public Connection openConnection(String dbtype, String driver, String dbhost, String dbname, String dbuser, String dbpass, boolean dbnom){
-		try{
-			this.dbtype=dbtype;
-			Class.forName(driver).newInstance();
-			String mys = "jdbc:"+dbtype+"://"+dbhost;
-			if(dbnom){
-				mys = "jdbc:"+dbtype+"://"+dbhost+"/"+dbname+"";
-			}
-			logger.debug("About to run: " + mys);
-			this.con = DriverManager.getConnection(mys, dbuser, dbpass);
+	public synchronized Connection openConnection(String dbtype, String driver, String dbhost, String dbname, String dbuser, String dbpass) throws Exception{
+		this.dbtype=dbtype;
+		Class.forName(driver).newInstance();
+		String mys = "jdbc:"+dbtype+"://"+dbhost;
+		logger.debug("Using to check database "+dbname+" exists: " + mys);
+		this.con = DriverManager.getConnection(mys, dbuser, dbpass);
+		boolean checkdb = true;
+		if(!dbExists(dbname)){
+			logger.info("Created new database at " + dbname+ " you will need to run -task sqladmin -setup");
+			createNewDatabase(dbname);
+			checkdb =false;
 		}
-		catch (InstantiationException e) {
-			ui.error("Could not create driver "+driver+" sql class instance ",e);
-			this.con = null;
-		} 
-		catch (IllegalAccessException e) {
-			ui.error("Could not access sql class",e);
-			this.con = null;
-		} 
-		catch (ClassNotFoundException e) {
-			ui.error("Could not create sql class",e);
-			this.con = null;
-		}
-		catch (SQLException e) {
-			ui.error("Params{ DBTYPE:"+dbtype+" DBDRIVER:"+driver+" DBHOST:"+dbhost+" DBNAME:"+dbname+" DBUSER:" + dbuser +"}",e);
-			this.con = null;
-		} 
+		else logger.debug("Database does exist. Yay!");
+		mys = "jdbc:"+dbtype+"://"+dbhost+"/"+dbname+"";
+		logger.debug("Now using to run: " + mys);
+		logger.debug("Params{ DBTYPE="+dbtype+" DBDRIVER="+driver+" DBHOST="+dbhost+" DBNAME="+dbname+" DBUSER=" + dbuser +" PASS=******}");
+		this.con = DriverManager.getConnection(mys, dbuser, dbpass);
+		if(checkdb)checkVersion();
 		if(this.con !=null)isOpen=true;
 		else {
 			isOpen = false;
@@ -108,39 +101,36 @@ public class DatabaseManager {
 		return defaultsets;
 	}
 	
-	public Connection openDefaultConnection(boolean db){
-		return openDefaultConnection(getDatabaseSettings(this.loader), db);
+	public Connection openDefaultConnection() throws Exception{
+		return openDefaultConnection(getDatabaseSettings(this.loader));
 	}
 	
-	private Connection openDefaultConnection(String[] mydb, boolean db){
+	private Connection openDefaultConnection(String[] mydb) throws Exception{
 		if(password == null)password = ui.requiresUserPassword("Password for access to "+mydb[2] + " database for user " + mydb[4], "Password Request");
 		if(password != null && password.length() > 0){
-			return this.openConnection(mydb[0], mydb[1], mydb[2], mydb[3], mydb[4], password, db);
+			return this.openConnection(mydb[0], mydb[1], mydb[2], mydb[3], mydb[4], password);
 		}
 		else return null;
 	}
 	
-	public void setDatabase(String s){
+	public void setDatabase(String s) throws Exception{
 		this.database = s;
-		openDefaultConnection(true);
-	}
-	
-	public boolean createAndOpen(){
-		String[] mydb = getDatabaseSettings(this.loader);
-		createNewDatabase(mydb[3]);
-		this.con = openDefaultConnection(mydb, true);
-		return (con != null);
+		openDefaultConnection();
 	}
 	
 	public Connection getCon(){
 		if(this.con == null){
-			openDefaultConnection(true);
+			try{
+				openDefaultConnection();
+			}
+			catch(Exception e){
+				logger.error("Failed to get connection",e);
+			}
 		}
 		return this.con;
 	}
 	
-	public boolean createNewDatabase(String dbname){
-		openDefaultConnection(false);
+	public boolean createNewDatabase(String dbname) throws Exception{
 		try {
 			if(this.dbtype.equals("mysql")){
 				Statement st = con.createStatement();
@@ -153,6 +143,22 @@ public class DatabaseManager {
 			ui.error("Failed to create new database "+dbname, e);
 			return false;
 		}
+	}
+	
+	public boolean dbExists(String dbname) throws SQLException{
+		if(this.dbtype.equals("mysql")){
+			Statement st = this.con.createStatement();
+			ResultSet set = st.executeQuery("SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '"+dbname+"'");
+			String shema =null;
+			while(set.next())shema=set.getString(1);
+			if(shema == null){
+				return false;
+			}
+			else{
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public boolean close(){
@@ -196,6 +202,7 @@ public class DatabaseManager {
 		}
 		return this.biosqlext;
 	}
+
 	
 	/** Automatically adds Eddie if not already added
 	 * @return Eddies Id from the bioSQL table
@@ -215,7 +222,7 @@ public class DatabaseManager {
 		return databaseversion;
 	}
 	
-	public int getTableCount(){
+	public int getTableCount() throws Exception{
 		if(this.dbtype.equals("mysql")){
 			return Tools_SQL_MySQL.getTableCount(getCon());
 		}
@@ -244,6 +251,41 @@ public class DatabaseManager {
 		}
 	}
 	
+	public synchronized boolean checkVersion() throws Exception{
+		double vers = this.getBioSQLXT().getDatabaseVersion(this);
+		if(vers < databaseversion && vers != -1){
+			UserResponse i = ui.requiresUserYNI("Do you want to update this version of the database " +
+					"(y)es update, (n)o do not do anything or " +
+					"(c)ontinue and ignore this warning? (y/n/c)", "Database version is out of date");
+			if(i == UserResponse.YES){
+				Task_DatabaseUpdate update = new Task_DatabaseUpdate(vers, databaseversion, this);
+				ui.getTaskManager().addTask(update);
+				int timeout = 60000;
+				while(!update.isDone()){
+					this.wait(3000);
+					timeout-=3000;
+					if(timeout <0){
+						UserResponse s = ui.requiresUserYNI("Update has timed out. Continue waiting? (y/n)", "Update timeout");
+						if(s == UserResponse.YES) timeout = 120000;
+						else {
+							throw new Exception("Timeout expired error thrown");
+						}
+					}
+				}
+			}
+			if(i == UserResponse.NO){
+				throw new Exception("User chose not continue the task, error thrown to break thread");
+			}
+			else{
+				logger.warn("User chose to ignore warnings. Problems may ensue");
+			}
+		}
+		else if(vers > databaseversion){
+			logger.warn("This version of Eddie does not support databases > " + databaseversion);
+		}
+		return false;
+	}
+	
 	public boolean isOpen(){
 		return this.isOpen;
 	}
@@ -265,6 +307,10 @@ public class DatabaseManager {
 	}
 	
 	public String getDBTYPE(){
+		if(this.dbtype ==null){
+			this.dbtype =loader.getValue("DBTYPE");
+			System.out.println(this.dbtype);
+		}
 		return this.dbtype;
 	}
 }

@@ -147,13 +147,12 @@ public class ACERecord implements Contig{
 	 * @param readname
 	 */
 	public void setReadName(String readname){
-		if(readname!=null){
-			sequences.put(readname, new GenericSequence(readname, sequencebuffer.toString(), position));	
+		if(currentread!=null){
+			sequences.put(currentread, new GenericSequence(currentread, sequencebuffer.toString(), position));
+			position++;
 		}
 		sequencebuffer = new StringBuilder();
 		currentread=readname;
-		position++;
-		
 	}
 
 	
@@ -177,7 +176,7 @@ public class ACERecord implements Contig{
 	public void finalise(){
 		sequences.put(contigname, new GenericSequence(this.contigname, this.contigbuffer.toString(), 
 				this.qualitybuffer.toString(),0));
-		sequences.get(currentread).setSequence(this.sequencebuffer.toString());
+		setReadName(currentread);
 		this.sequencebuffer = null;
 		this.contigbuffer = null;
 		setFinalised(true);
@@ -337,7 +336,7 @@ public class ACERecord implements Contig{
 					int l = this.getReadOffset(j);
 					if(i >= l && i < this.getReadRange(j)[1]+l){
 						//TODO consider BS inclusion ranges <-- at the moment this is inaccurate without them						
-						if(this.getRead(j).getSequence().charAt(i+l) != '-'){
+						if(this.getRead(j).getSequence().charAt(i+l) != '-' && this.getRead(j).getSequence().charAt(i+l) != '*'){
 							depth++;
 						}
 					}
@@ -503,7 +502,28 @@ public class ACERecord implements Contig{
 	public Set<String> keySet() {
 		return this.sequences.keySet();
 	}
+	
+	public int getCoverageAtBp(int position, int base) {
+		int coverage = 0;
+		for(int i =0; i < this.getNoOfReads(); i++){
+			char c = this.getCharAt(i, position, base);
+			if(c == '-' || c=='*');
+			else coverage++;
+		}
+		return coverage;
+	}
 
+	public char getCharAt(int sequencenumber, int position, int base) {
+		int offset = position-this.offset[0][sequencenumber]-base;
+		if(offset > -1 && offset < this.getSequence(sequencenumber).getSequence().length()){
+			return this.getSequence(sequencenumber).getSequence().charAt(position-this.offset[0][sequencenumber]-base);
+		}
+		else{
+			return '-';
+		}
+	}
+	
+	
 	
 }
 

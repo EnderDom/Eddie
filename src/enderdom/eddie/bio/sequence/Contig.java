@@ -23,4 +23,9 @@ public interface Contig extends SequenceList {
 	
 	public Contig[] removeSectionAllContig(int opts);
 	
+	public int getCoverageAtBp(int i, int base);
+	
+	//Gets char based on underlying file, ie includes '*' in consensuse
+	public char getCharAt(int sequencenumber, int position, int base);
+	
 }

@@ -2,7 +2,6 @@ package enderdom.eddie.tasks.bio;
 
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -10,6 +9,7 @@ import org.apache.commons.cli.Option;
 
 import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.databases.manager.DatabaseManager;
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.Tools_Task;
@@ -53,28 +53,35 @@ public class Task_ESTScan extends TaskXT{
 	
 	
 	public void run() {
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
 		if(ESTScanBin != null && matrix != null && output != null){
 			if(new File(matrix).isFile()){
 				if(bioen){
 					logger.info("Building Fasta File...");
-					DatabaseManager man = ui.getDatabaseManager();
-					man.createAndOpen();
-					man.getBioSQLXT().getContigsAsFasta(man, new Fasta(), -1);
+					DatabaseManager man = ui.getDatabaseManager(password);
 					try {
-						logger.debug("Writing as temporary file...");
-						File in = File.createTempFile("tempfasta", ".fasta");
-						input = in.getPath();
-						logger.debug("Writing as temporary file to "  + input);
-					} catch (IOException e) {
+						if(man.open()){
+							man.getBioSQLXT().getContigsAsFasta(man, new Fasta(), -1);
+							logger.debug("Writing as temporary file...");
+							File in = File.createTempFile("tempfasta", ".fasta");
+							input = in.getPath();
+							logger.debug("Writing as temporary file to "  + input);
+						}
+						else{
+							logger.error("Failed to open databse");
+							return;
+						}
+					} catch (Exception e) {
 						logger.error(e);
+						setCompleteState(TaskState.ERROR);
 						return;
 					}
 				}
 				else{
 					if(input == null){
 						logger.error("Input file isn't a file and database settings not set");
+						setCompleteState(TaskState.ERROR);
 						return;
 					}
 				}
@@ -98,7 +105,7 @@ public class Task_ESTScan extends TaskXT{
 			logger.error("Please make sure each of these are set: output, ESTScan exe/bin, matrix filepath");
 		}
 	    logger.debug("Finished running task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 	public String getESTScanBin(){

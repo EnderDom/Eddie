@@ -15,10 +15,11 @@ public class BasicBlastObject implements BlastObject{
 	protected Logger logger = Logger.getRootLogger();
 	protected static String hit_id = "HIT";
 	protected static String hsp_id = "HSP";
-	
+	private BlastParser parent;
 	private Hashtable<String, String> cache;
 	
-	public BasicBlastObject(){
+	public BasicBlastObject(BlastParser parser){
+		parent = parser;
 		cache = new Hashtable<String, String>();
 	}
 	
@@ -38,16 +39,7 @@ public class BasicBlastObject implements BlastObject{
 		}
 		else return a.intValue();
 	}
-	
-	/**
-	 * Same as just put
-	 * 
-	 * @param tag ie Iteration_iter-num, Iteration_query-ID etc...
-	 * @param iteration
-	 */
-	public void putIterationTag(String tag, String value){
-		this.put(tag, value);
-	}
+
 	
 	public void initHits(int size){
 		if(hits !=null){
@@ -131,15 +123,13 @@ public class BasicBlastObject implements BlastObject{
 	}
 	
 	/**
-	 * See XML_Blastx.recordtags static string array for the
-	 * tags that have been cached
 	 * @param Blast Record Tag
 	 * @return Contents of Tag
 	 */
 	public String getBlastTagContents(String tag){
-		return this.get(tag);
+		return this.parent.get(tag);
 	}
-	
+
 	/**
 	 * 
 	 * @param tag the XML tag exactly as written in the  xml
@@ -267,8 +257,11 @@ public class BasicBlastObject implements BlastObject{
 						if(to < e){
 							e=to;
 						}
-
-					}				
+					}
+					else{
+						logger.error("Fail");
+						System.exit(0);
+					}
 				} 
 				catch (Exception ex) {
 					logger.error("Format Error with blast data, could not convet hsp_evalue to double", ex);

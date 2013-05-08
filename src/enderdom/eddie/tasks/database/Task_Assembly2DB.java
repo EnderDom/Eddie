@@ -19,11 +19,13 @@ import enderdom.eddie.databases.bioSQL.interfaces.BioSQL;
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
+import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Assembly;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
+import enderdom.eddie.ui.UserResponse;
 
 /**
  * The idea here is to upload an entire ACE fileset of data  
@@ -47,9 +49,6 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	private String identifier;
 	private String programname;
 	private int runid;
-	private double readcount;
-	private double readcounter;
-	private int perc;
 	private BioFileType type;
 	
 	public Task_Assembly2DB(){
@@ -97,11 +96,12 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	
 	//TODO implement use of the checklist
 	public void run(){
-		setComplete(started);
+		setCompleteState(TaskState.STARTED);
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		this.checklist = openChecklist(ui);
 		DatabaseManager manager = this.ui.getDatabaseManager(password);
-		if(manager.open()){
+		try{
+			manager.open();
 			//UPLOADING READS
 			if(this.identifier == null){
 				this.identifier = ui.requiresUserInput("Please Enter a unique identifier:", "Identifier required, maybe Digest_Read? or Mar12_CAP3_Contig?");
@@ -154,7 +154,10 @@ public class Task_Assembly2DB extends TaskXTwIO{
 									this.identifier+count, "READ", null, 0, o.getSequence(), BioSQL.alphabet_DNA)){
 								logger.error("An error occured uploading " + o.getIdentifier());
 								break;
-								
+							}
+							if(runid > 0){
+								int bioentry = bs.getBioEntry(manager.getCon(), o.getIdentifier(), this.identifier+count, biodatabase_id);
+								manager.getBioSQLXT().addRunBioentry(manager, bioentry, this.runid);
 							}
 							count++;
 							System.out.print("\r"+(count) + " of " +size + "       ");
@@ -198,11 +201,9 @@ public class Task_Assembly2DB extends TaskXTwIO{
 								return;
 							}
 						}
-						try{
-							
+						try{				
 							ACEFileParser parser = new ACEFileParser(file);
 							ACERecord record = null;
-							this.readcount=parser.getReadsSize();
 							int count =1;
 							boolean mapping = true;
 							String[] done = null;
@@ -229,8 +230,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 											if(mapcontigs && mapping){
 												mapping = mapReads(record, manager, this.identifier+count, biodatabase_id, runid, count);
 												if(!mapping){
-													int j =ui.requiresUserYNI("Mapping failed for some reason, Continue uploading contigs without mapping to reads?", "Mapping Failure Message");
-													if(j != 0)return;
+													UserResponse j =ui.requiresUserYNI("Mapping failed for some reason, Continue uploading contigs without mapping to reads?", "Mapping Failure Message");
+													if(j != UserResponse.YES)return;
 												}
 											}
 										}
@@ -260,53 +261,70 @@ public class Task_Assembly2DB extends TaskXTwIO{
 					logger.error("File " + this.input + " does not exist");
 				}
 			}
+			else if(mapcontigs){
+				this.checklist.complete();
+				ACEFileParser parser = new ACEFileParser(new File(input));
+				
+				int count=0;
+				while(parser.hasNext()){
+					count++;
+					ACERecord record = parser.next();
+					if(!mapReads(record, manager, this.identifier+count, manager.getEddieDBID(), this.runid, count)){
+						logger.error("Failed to upload "+ this.identifier+count);
+					}
+					
+				}
+			}
 			else{
 				logger.error("No option selected");
 			}
 			manager.close();
 		}
-		else{
-			logger.error("Failed to open Connection");
+		catch(Exception e){
+			logger.error("Failed to open Connection", e);
+			setCompleteState(TaskState.ERROR);
+			return;
 		}
 		
 		Logger.getRootLogger().debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
-	    setComplete(finished);
+	    setCompleteState(TaskState.FINISHED);
 	}
 	
 	public boolean mapReads(ACERecord record, DatabaseManager manager, String identifier, int biodatabase_id, int runid, int count){
 		BioSQL bs = manager.getBioSQL();
 		BioSQLExtended bsxt = manager.getBioSQLXT();
 		int bioentry_id = bs.getBioEntry(manager.getCon(), identifier, null, biodatabase_id);
-		for(int i =0; i < record.getNoOfReads() ; i++){
-			
-			String read = record.getReadName(i);
-			int read_id = bs.getBioEntry(manager.getCon(), read, read, biodatabase_id);
-			if(read_id < 0){
-				logger.error("Oh dear read "+ read + " does not seem to be in the database we cannot map reads not int the db");
-				return false;
-			}
-			else{
-				int offset = record.getReadOffset(i);
-				int start = offset;
-				int end = offset+record.getRead(i).getLength();
-				char c = record.getReadCompliment(i);
-				@SuppressWarnings("unused")
-				int comp = 0;
-				if(c == 'C'){
-					comp = 1;
-					//TODO add better strand info
-				}
-				//As ace isn't normally trimmed, assumes not trimmed
-				if(!bsxt.mapRead2Contig(manager, bioentry_id, read_id, 0, runid, start, end, false)){
-					logger.error("Read mapping has failed");
+		if(bioentry_id < 1)bs.getBioEntrywName(manager.getCon(), record.getConsensus().getIdentifier());
+		if(bioentry_id > 0){
+			for(int i =0; i < record.getNoOfReads() ; i++){
+				String read = record.getReadName(i);
+				int read_id = bs.getBioEntry(manager.getCon(), read, read, biodatabase_id);
+				if(read_id < 0){
+					logger.error("Oh dear read "+ read + " does not seem to be in the database we cannot map reads not int the db");
 					return false;
 				}
-				readcounter+=1;
-				perc = (int)((readcounter/readcount)*100);
-				System.out.print("\r"+"Contig No>:"+count+", mapping Read No.:"+i+" (Completion: "+perc+"%)  ");
+				else{
+					int offset = record.getReadOffset(i);
+					int start = offset;
+					int end = offset+record.getRead(i).getLength();				
+					char c = record.getReadCompliment(i);
+					@SuppressWarnings("unused")
+					int comp = 0;
+					if(c == 'C'){
+						comp = 1;
+						//TODO add better strand info
+					}
+					//As ace isn't normally trimmed, assumes not trimmed
+					if(!bsxt.mapRead2Contig(manager, bioentry_id, read_id, 0, runid, start, end, false)){
+						logger.error("Read mapping has failed");
+						return false;
+					}
+					System.out.print("\r"+"Contig No>:"+count+", mapping Read No.:"+i);
+				}
 			}
+			return true;
 		}
-		return true;
+		else return false;
 	}	
 	
 

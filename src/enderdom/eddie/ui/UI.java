@@ -4,17 +4,13 @@ import org.apache.log4j.Logger;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
+import enderdom.eddie.tasks.ShutdownManager;
 import enderdom.eddie.tasks.Task;
 import enderdom.eddie.tasks.TaskLike;
-import enderdom.eddie.tasks.TaskStack;
 
 public interface UI{
 	
 	Logger logger = Logger.getLogger("UILogger");
-	
-	public static int YES =0;
-	public static int NO =1;
-	public static int CANCEL =2;
 	
 	public void exit();
 	
@@ -32,7 +28,6 @@ public interface UI{
 	
 	public String requiresUserPassword(String message, String title);
 	
-	
 	/**
 	 * 
 	 * @param message
@@ -42,11 +37,13 @@ public interface UI{
 	 * 1 = no
 	 * 2 = cancel
 	 */
-	public int requiresUserYNI(String message, String title);
+	public UserResponse requiresUserYNI(String message, String title);
 	
 	public void sendAlert(String alert);
 	
 	public PropertyLoader getPropertyLoader();
+	
+	public TaskManager getTaskManager();
 	
 	/**
 	 * 
@@ -59,8 +56,6 @@ public interface UI{
 	public DatabaseManager getDatabaseManager();
 	
 	public void setDatabaseManager(DatabaseManager manager);
-	
-	public void fireUIEvent(UIEvent evt);
 
 	
 	/**
@@ -77,8 +72,8 @@ public interface UI{
 
 	public void error(String message);
 	
-	public TaskStack getTasker();
+	public void initShutdown();
 	
-	public void setTasker(TaskStack stack);
+	public ShutdownManager getShutdownManager();
 	
 }

@@ -11,18 +11,42 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.util.Iterator;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.metadata.IIOInvalidTreeException;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
+import javax.imageio.stream.ImageOutputStream;
 
 import enderdom.eddie.tools.Tools_System;
 
 public class Tools_Image {
 
+	//From : http://stackoverflow.com/questions/3772098/how-does-java-awt-color-getcolorstring-colorname-work
+	//Doesn't seem to work???
+	public static Color getColor(String colorname){
+		try {
+			Field field = Color.class.getField(colorname);
+			return (Color)field.get(null);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	public static double convertDPI2DPMM(double dpi){
+		return dpi/25.4;
+	}
+	
+	
 	/* Sticks two images together, one on top of the other
 	 * As yet negative padding not supported
-	 */
-	
-	
+	 */	
 	public static BufferedImage simpleMerge(BufferedImage one, int xpad, BufferedImage two, int xpad2, int ymargin, Color background, int BGRTYPE){
 		
 		int width = Math.max(one.getWidth()+xpad,two.getWidth()+xpad2);
@@ -134,4 +158,54 @@ public class Tools_Image {
 		return image;
 	}
 	
+	
+	public static void saveImageDPI(File output, BufferedImage image, double dpi)throws IOException {
+		double dpmm = dpi /25.4;
+		saveImageDPMM(output, image, dpmm);
+	}
+	
+	public static void saveImageDPMM(File output, BufferedImage image, double dpmm) throws IOException {
+	    output.delete();
+
+	    final String formatName = "png";
+
+	    for (Iterator<ImageWriter> iw = ImageIO.getImageWritersByFormatName(formatName); iw.hasNext();) {
+	       ImageWriter writer = iw.next();
+	       ImageWriteParam writeParam = writer.getDefaultWriteParam();
+	       ImageTypeSpecifier typeSpecifier = ImageTypeSpecifier.createFromBufferedImageType(image.getType());
+	   
+	       IIOMetadata metadata = writer.getDefaultImageMetadata(typeSpecifier, writeParam);
+	       if (metadata.isReadOnly() || !metadata.isStandardMetadataFormatSupported()) {
+	          continue;
+	       }
+
+	       setDPI(metadata, dpmm);
+
+	       final ImageOutputStream stream = ImageIO.createImageOutputStream(output);
+	       try {
+	          writer.setOutput(stream);
+	          writer.write(metadata, new IIOImage(image, null, metadata), writeParam);
+	       } finally {
+	          stream.close();
+	       }
+	       break;
+	    }
+	 }
+
+	 public static void setDPI(IIOMetadata metadata, double dpmm) throws IIOInvalidTreeException {
+	    IIOMetadataNode horiz = new IIOMetadataNode("HorizontalPixelSize");
+	    horiz.setAttribute("value", Double.toString(dpmm));
+
+	    IIOMetadataNode vert = new IIOMetadataNode("VerticalPixelSize");
+	    vert.setAttribute("value", Double.toString(dpmm));
+
+	    IIOMetadataNode dim = new IIOMetadataNode("Dimension");
+	    dim.appendChild(horiz);
+	    dim.appendChild(vert);
+
+	    IIOMetadataNode root = new IIOMetadataNode("javax_imageio_1.0");
+	    root.appendChild(dim);
+
+	    metadata.mergeTree("javax_imageio_1.0", root);
+	 }
 }

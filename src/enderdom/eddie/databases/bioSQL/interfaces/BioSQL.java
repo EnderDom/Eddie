@@ -2,6 +2,10 @@ package enderdom.eddie.databases.bioSQL.interfaces;
 
 import java.sql.Connection;
 
+import enderdom.eddie.databases.bioSQL.psuedoORM.Ontology;
+import enderdom.eddie.databases.bioSQL.psuedoORM.Term;
+import enderdom.eddie.databases.bioSQL.psuedoORM.TermRelationship;
+
 /**
  * This class should include only the bare essentials for inputting data  
  * into the bioSQL database, more complex, program specific methods
@@ -52,7 +56,7 @@ public interface BioSQL {
 	
 	public boolean addOntology(Connection con, String name, String definition);
 	
-	public boolean addTerm(Connection con, String name, String definition, String identifier, Character is_obsolete, int ontology_id);
+	public boolean addTerm(Connection con, String name, String definition, String identifier, String is_obsolete, int ontology_id);
 	
 	public boolean addBioEntryRelationship(Connection con, int object_bioentry_id, int subject_bioentry_id, int term_id, Integer rank);
 	
@@ -69,7 +73,50 @@ public interface BioSQL {
 	 * @return if insert was successful
 	 */
 	public boolean addDBxref(Connection con, String dbname, String accession, int version);
-		
+	
+	/**
+	 * 
+	 * @param con
+	 * @param ncbi_id
+	 * @param parent_id
+	 * @param node_rank
+	 * @param gencode
+	 * @param mitocode
+	 * @param leftvalue
+	 * @param rightvalue
+	 * @param taxon_id set this to -1 to INSERT, or use id for UPDATE
+	 * @return
+	 */
+	public int addTaxon(Connection con, Integer ncbi_id, Integer parent_id, String node_rank, Integer gencode,
+			Integer mitocode, Integer leftvalue, Integer rightvalue, int taxon_id);
+	
+	public boolean addTaxonName(Connection con, int taxon_id, String name, String name_class);
+	
+	public int getTaxonIdwNCBI(Connection con, int ncbi_id);
+	
+	
+	/**
+	 * Builds and executes a general SQL query and returns all results 
+	 * as strings.
+	 * Very basic simplisitc method that will probably break if you
+	 * try to do anything complicated
+	 *  
+	 * @param con
+	 * @param fields
+	 * @param table
+	 * @param wheres
+	 * @param wherevalues
+	 * @return String matrix String[ReturnedResults.size()][fields.length]
+	 */
+	public String[][] getGenericResults(Connection con, String[] fields, String table, String wheres[], String[] wherevalues);
+	
+	/**
+	 * 
+	 * @param con
+	 * @param bioentry_id
+	 * @return string array with [0] = "name", [1] = "accession", [2] = "identifier"
+	 * 
+	 */
 	public String[] getBioEntryNames(Connection con, int bioentry_id);
 	
 	/**
@@ -91,9 +138,9 @@ public interface BioSQL {
 	 */
 	public int getBioEntry(Connection con, String identifier, String accession, int biodatabase);
 	
-	public int getOntology(Connection con, String name);
+	public Ontology getOntology(Connection con, String name);
 	
-	public int getTerm(Connection con, String name, String identifier);
+	public Term getTerm(Connection con, String name, String identifier, int ontology_id);
 	
 	public int getSeqFeature(Connection con, int bioentry_id, int type_term_id, int source_term_id, int rank);
 	
@@ -101,9 +148,36 @@ public interface BioSQL {
 	
 	public int getLocation(Connection con, int seqfeature_id, int rank);
 	
+	/**
+	 * Retrieve bioentry_id with the name field only, this 
+	 * will return the first instance with this name only, 
+	 * whilst a warning is logged, no exception is thrown
+	 * 
+	 * @param con
+	 * @param name
+	 * @return
+	 */
 	public int getBioEntrywName(Connection con, String name);
 	
+	/**
+	 * 
+	 * @param con
+	 * @param bioentry_id
+	 * @return the 'seq' field from the biosequence table which
+	 * is attached to the bioentry_id
+	 */
 	public String getSequence(Connection con, int bioentry_id);
 	
 	public int getDBxRef(Connection con, String dbname, String accession);
+
+	public boolean addTermRelationship(Connection con, int subject_id,
+			int object_id, int predicate_id, int ontology_id);
+
+	public boolean addDbxrefTermPath(Connection con, int dbxref_id, int term_id, int rank,
+			String value);
+
+	public TermRelationship getTermRelationship(Connection con, int subject_id,
+			int object_id, int predicate_id, int ontology_id);
+
+	public boolean addDbxrefTerm(Connection con, int dbxref_id, int term_id, Integer rank);
 }
