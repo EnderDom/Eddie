@@ -9,7 +9,6 @@ import org.apache.log4j.Logger;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
-import enderdom.eddie.tasks.ShutdownManager;
 import enderdom.eddie.tasks.Task;
 import enderdom.eddie.tasks.TaskLike;
 import enderdom.eddie.tasks.TaskList;
@@ -27,7 +26,6 @@ public class EddieCLI implements UI {
 	private EddiePropertyLoader load;
 	private TaskManager manager;
 	private DatabaseManager dbmanager;
-	private ShutdownManager shutdown;
 	private String[] args;
 	private Options options;
 	
@@ -218,18 +216,6 @@ public class EddieCLI implements UI {
 	protected void finalize() throws Throwable {
 		super.finalize();
 		load.savePropertyFile(load.getPropertyFilePath(), load.getPropertyObject());
-	}
-
-	public void initShutdown() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public ShutdownManager getShutdownManager() {
-		if(this.shutdown == null){
-			initShutdown();
-		}
-		return shutdown;
 	}
 	
 }
