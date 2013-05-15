@@ -97,7 +97,6 @@ public class BioImg_Transcript implements BioImg_Object{
 		g.setFont(new Font("Arial", Font.BOLD, 16));
 		FontMetrics metr  = g.getFontMetrics();
 		
-		
 		//Draw Box
 		g.setColor(Color.white);
 		g.drawRect(0,0,w, h);
@@ -158,12 +157,11 @@ public class BioImg_Transcript implements BioImg_Object{
 		for(int j =0; j < lw; j++){
 			g.drawLine(w-barx-(lw/2)+j, mid-(int)((double)barheit*0.25), w-barx-(lw/2)+j, mid+(int)((double)barheit*0.25));
 		}
-		
 
 		return img;
 	}
 
-	public void parseLine(String line, int linenumb) throws BioImg_Exception {
+	public int parseLine(String line, int linenumb) throws BioImg_Exception {
 		if(line.startsWith(region)){
 			String[] s = line.substring(region.length(), line.length()).split(",");
 			if(s.length == 6){
@@ -239,6 +237,7 @@ public class BioImg_Transcript implements BioImg_Object{
 		else{
 			logger.warn("Unrecognised tag " + line + " at line " + linenumb);
 		}
+		return linenumb++;
 	}
 	
 }

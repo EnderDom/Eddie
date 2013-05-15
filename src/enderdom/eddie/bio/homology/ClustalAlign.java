@@ -29,8 +29,10 @@ public class ClustalAlign extends BasicSequenceList{
 	private String line;
 	public static int clustallen = 60;
 	public static int whitespace =6;
+	protected File file;
 	
 	public ClustalAlign(File file, BioFileType type) throws UnsupportedTypeException, Exception{
+		this.file=file;
 		loadFile(file, type);
 	}
 	
@@ -65,7 +67,7 @@ public class ClustalAlign extends BasicSequenceList{
 	
 	public int loadFile(InputStream fis, BioFileType filetype) throws Exception, UnsupportedTypeException {
 		int counter=0;
-
+		
 		LinkedList<String> nams = new LinkedList<String>();
 		LinkedList<String> seqs = new LinkedList<String>();
 		InputStreamReader in = new InputStreamReader(fis, "UTF-8");

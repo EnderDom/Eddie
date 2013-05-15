@@ -45,21 +45,16 @@ public class Task_Taxonomy extends TaskXT{
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
 		
-		if(cmd.hasOption("ld")){
-			localdb = cmd.getOptionValue("ld");
-		}
-		if(cmd.hasOption("o"))this.output=cmd.getOptionValue("o");
-		if(cmd.hasOption("OP_ua"))updateacc=true;
-		if(cmd.hasOption("OP_up"))updatepar=true;
-		if(cmd.hasOption("OP_de"))depth=true;
-		if(cmd.hasOption("OP_spec"))speciesQuery=true;
 		if(cmd.hasOption("OP_spec_taxids")){
 			speciesQuery=true;
 			taxids=true;
-		}
-		
-		if(cmd.hasOption("OP_node"))node=true;
-		if(cmd.hasOption("OP_spec"))speciesQuery=true;
+		}		
+		updateacc=cmd.hasOption("OP_ua");
+		updatepar=cmd.hasOption("OP_up");
+		depth=cmd.hasOption("OP_de");
+		speciesQuery=cmd.hasOption("OP_spec");
+		node=cmd.hasOption("OP_node");
+		speciesQuery=cmd.hasOption("OP_spec");
 		node_rank = this.getOption(cmd, "OP_node", "phylum");
 		output = this.getOption(cmd, "o", null);
 		blastRunID = this.getOption(cmd, "rb", -1);

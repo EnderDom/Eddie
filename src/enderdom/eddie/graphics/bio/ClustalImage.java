@@ -17,10 +17,11 @@ import enderdom.eddie.bio.homology.ClustalAlign;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.tools.Tools_String;
-import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.graphics.Tools_Image;
 
-public class ClustalImage extends ClustalAlign {
+//WIP
+
+public class ClustalImage extends ClustalAlign implements BioImg_Object{
 	
 	//Defaults for size of image and resolution
 	public static double wdefault = 210.0; //mm
@@ -79,7 +80,7 @@ public class ClustalImage extends ClustalAlign {
 		this.ppmm =dpmm;
 	}
 	
-	public void drawImage(File f){
+	public BufferedImage getBufferedImage(){
 		int w = (int)Math.round(this.width*ppmm);
 		int h = (int)Math.round(this.height*ppmm);
 		
@@ -130,12 +131,7 @@ public class ClustalImage extends ClustalAlign {
 				heightcount++;
 			}
 		}
-		try {
-			Tools_Image.saveImageDPMM(f, image, ppmm);
-		} catch (IOException e) {
-			logger.error("Failed to save, attempt to save again without metadata");
-			Tools_Image.image2File(f, image, "PNG");
-		}
+		return image;
 	}
 	
 	/**
@@ -171,55 +167,60 @@ public class ClustalImage extends ClustalAlign {
 	}
 	
 
-	public void loadSettings(File f) throws IOException{
+	public void loadSettings(File f) throws IOException, BioImg_Exception{
 	
 		FileInputStream fis = new FileInputStream(f);
 		InputStreamReader in = new InputStreamReader(fis, "UTF-8");
 		BufferedReader reader = new BufferedReader(in);
 		String line = "";
-		StringBuffer b = new StringBuffer();
 		int lino =1;
-		String n = Tools_System.getNewline();
 		while((line = reader.readLine()) != null){
-			if(line.startsWith("WIDTH:")){
-				Integer i = Tools_String.parseString2Int(line.substring(6));
-				if(i==null)b.append("Line:"+lino+" Width is not an integer"+n);
-				else this.width=i;
-			}
-			else if(line.startsWith("HEIGHT:")){
-				Integer i = Tools_String.parseString2Int(line.substring(7));
-				if(i==null)b.append("Line:"+lino+" Height is not an integer"+n);
-				else this.height=i;
-			}
-			else if(line.startsWith("PPMM:")){
-				Double i = Tools_String.parseString2Double(line.substring(6));
-				if(i==null)b.append("Line:"+lino+" PPMM is not a double"+n);
-				else this.ppmm=i;
-			}
-			else if(line.startsWith("FONTSIZE:")){
-				Integer i = Tools_String.parseString2Int(line.substring(9));
-				if(i==null)b.append("Line:"+lino+" Fontsize is not an integer"+n);
-				else this.fontsize=i;
-			}
-			else if(line.startsWith("FONTFILE:")){
-				String s = line.substring(9);
-				if(!loadFont(s)){
-					b.append("Line: "+lino+" Failed to load font file");
-				}
-			}
-			else if(line.startsWith("HGLITE:")){
-				
-			}
-			else if(line.startsWith("#")){
-				
-			}
-			else{
-				b.append("Line: "+ lino+" not recognised! LINE("+line+")");
-			}
-			lino++;
+			parseLine(line, lino);
 		}
 		fis.close();		
 	}
-	
+
+	public int parseLine(String line, int lino) throws BioImg_Exception {
+		if(line.startsWith("@WIDTH;")){
+			Integer i = Tools_String.parseString2Int(line.substring(6));
+			if(i==null)logger.warn("Line:"+lino+" Width is not an integer, "+line);
+			else this.width=i;
+		}
+		else if(line.startsWith("@HEIGHT;")){
+			Integer i = Tools_String.parseString2Int(line.substring(7));
+			if(i==null)logger.warn("Line:"+lino+" Height is not an integer"+line);
+			else this.height=i;
+		}
+		else if(line.startsWith("@PPMM;")){
+			Double i = Tools_String.parseString2Double(line.substring(6));
+			if(i==null)logger.warn("Line:"+lino+" PPMM is not a double"+line);
+			else this.ppmm=i;
+		}
+		else if(line.startsWith("@FONTSIZE;")){
+			Integer i = Tools_String.parseString2Int(line.substring(9));
+			if(i==null)logger.warn("Line:"+lino+" Fontsize is not an integer"+line);
+			else this.fontsize=i;
+		}
+		else if(line.startsWith("@FONTFILE;")){
+			String s = line.substring(9);
+			if(!loadFont(s)){
+				logger.warn("Line: "+lino+" Failed to load font file");
+			}
+		}
+		else if(line.startsWith("@HGLITE;")){
+			
+		}
+		else if(line.startsWith("#")){
+			
+		}
+		else{
+			logger.warn("Line: "+ lino+" not recognised! LINE("+line+")");
+		}
+		return lino++;
+	}
+
+	public double getDPMM(){
+		return this.ppmm;
+	}
 
 }
