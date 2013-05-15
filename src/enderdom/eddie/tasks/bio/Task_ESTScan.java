@@ -26,11 +26,11 @@ public class Task_ESTScan extends TaskXT{
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		if(cmd.hasOption("b"))this.ESTScanBin=cmd.getOptionValue("b");
-		if(cmd.hasOption("m"))this.matrix=cmd.getOptionValue("m");
-		if(cmd.hasOption("e"))this.bioen=true;
-		if(cmd.hasOption("i"))this.input = cmd.getOptionValue("i");
-		if(cmd.hasOption("o"))this.output = cmd.getOptionValue("o");
+		this.ESTScanBin=getOption(cmd, "b", null);
+		this.matrix=getOption(cmd, "m", null);
+		this.bioen=cmd.hasOption("e");
+		this.input = getOption(cmd, "i", null);
+		this.output = getOption(cmd, "o", null);
 	}
 	
 	public void parseOpts(Properties props){
