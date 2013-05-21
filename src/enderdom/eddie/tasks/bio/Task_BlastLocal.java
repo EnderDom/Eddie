@@ -11,7 +11,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.biojava3.ws.alignment.qblast.BlastProgramEnum;
 
 import enderdom.eddie.bio.factories.SequenceListFactory;
-import enderdom.eddie.bio.fasta.Fasta;
+import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.sequence.SequenceList;
 
 import enderdom.eddie.tasks.Checklist;

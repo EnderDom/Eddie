@@ -2,8 +2,8 @@ package enderdom.eddie.tasks.bio;
 
 import org.apache.commons.cli.CommandLine;
 
-import enderdom.eddie.bio.fasta.Fasta;
 import enderdom.eddie.bio.homology.PantherGene;
+import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_System;

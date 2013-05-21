@@ -1,19 +1,24 @@
-package enderdom.eddie.bio.homology;
+package enderdom.eddie.bio.lists;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-
 
 import enderdom.eddie.bio.sequence.BasicSequenceList;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.GenericSequence;
 import enderdom.eddie.bio.sequence.SequenceObject;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
+import enderdom.eddie.tools.Tools_Math;
+import enderdom.eddie.tools.Tools_String;
+import enderdom.eddie.tools.Tools_System;
 
 /**
  * 
@@ -41,13 +46,14 @@ public class ClustalAlign extends BasicSequenceList{
 	}
 	
 	public ClustalAlign(){
-		
+		sequences = new LinkedHashMap<String, SequenceObject>();
 	}
-
+	
 	public String[] saveFile(File file, BioFileType filetype) throws Exception,
 			UnsupportedTypeException {
 		if(filetype == BioFileType.CLUSTAL_ALN){
-			return null;
+			this.save(file, 60);
+			return new String[]{file.getPath()};
 		}
 		else{
 			throw new Exception("Can't save Clustal as " + filetype.toString());
@@ -128,5 +134,40 @@ public class ClustalAlign extends BasicSequenceList{
 		return BioFileType.CLUSTAL_ALN;
 	}
 
-
+	private void save(File file, int linelen) throws IOException{
+		logger.warn("Clustal output save is a quick fix, not really recommended");
+		FileWriter fstream = new FileWriter(file);
+		BufferedWriter out = new BufferedWriter(fstream);
+		String neline = Tools_System.getNewline();
+		out.write("CLUSTAL 2.1 multiple sequence alignment"+neline+neline+neline);
+		out.flush();
+		int count = 0;
+		int maxlength = Tools_Math.getMaxValue(this.getListOfLens());
+		for(String name : sequences.keySet()){
+			if(sequences.get(name).getLength() < maxlength){
+				sequences.get(name).extendRight(maxlength-sequences.get(name).getLength());
+			}
+		}
+		while(count+linelen < maxlength){
+			for(String name : sequences.keySet()){
+				if(sequences.get(name).getLength() < maxlength){
+					sequences.get(name).extendRight(maxlength-sequences.get(name).getLength());
+				}
+				//TODO sort out this mess, kinda hacked it as i was writing my thesis :(
+				
+				out.write(Tools_String.getStringofLenX(name, 15) + "\t\t"+sequences.get(name).getSequence().substring(count, count+linelen) + neline);
+				out.flush();
+			}
+			out.write(neline+neline);
+			out.flush();
+			count = count + linelen;
+		}
+		for(String name : sequences.keySet()){
+			out.write(Tools_String.getStringofLenX(name, 15) + "\t\t"+sequences.get(name).getSequence().substring(count, maxlength) + neline);
+			out.flush();
+		}
+		out.close();
+	}
+	
+	
 }

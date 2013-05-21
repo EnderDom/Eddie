@@ -7,7 +7,7 @@ import java.util.Properties;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
-import enderdom.eddie.bio.fasta.Fasta;
+import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.databases.manager.DatabaseManager;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
@@ -62,7 +62,7 @@ public class Task_ESTScan extends TaskXT{
 					DatabaseManager man = ui.getDatabaseManager(password);
 					try {
 						if(man.open()){
-							man.getBioSQLXT().getContigsAsFasta(man, new Fasta(), -1);
+							man.getBioSQLXT().getContigsAsList(man, new Fasta(), -1);
 							logger.debug("Writing as temporary file...");
 							File in = File.createTempFile("tempfasta", ".fasta");
 							input = in.getPath();

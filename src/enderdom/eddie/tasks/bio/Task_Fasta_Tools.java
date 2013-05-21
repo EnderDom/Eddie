@@ -12,7 +12,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.io.FilenameUtils;
 
 import enderdom.eddie.bio.factories.SequenceListFactory;
-import enderdom.eddie.bio.fasta.Fasta;
+import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.sequence.BioFileType;
 
 import enderdom.eddie.tasks.TaskState;

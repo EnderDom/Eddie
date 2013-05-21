@@ -10,8 +10,8 @@ import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.assembly.ACERecord;
-import enderdom.eddie.bio.fasta.Fasta;
-import enderdom.eddie.bio.fasta.FastaParser;
+import enderdom.eddie.bio.lists.Fasta;
+import enderdom.eddie.bio.lists.FastaParser;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.SequenceObject;
 

@@ -382,17 +382,20 @@ public class MySQL_Extended implements BioSQLExtended{
 		return names;
 	}
 	
-	public int[] getReads(DatabaseManager manager, int bioentry_id){
-		String sql = new String("SELECT read_bioentry_id FROM assembly WHERE contig_bioentry_id=?");
+	//Really could do with ORM but w/e
+	public int[][] getReads(DatabaseManager manager, int bioentry_id){
+		String sql = new String("SELECT read_bioentry_id, run_id, range_start, range_end FROM assembly WHERE contig_bioentry_id=?");
 		LinkedList<Integer> values = new LinkedList<Integer>();
 		try{
 			readFromContigGET = MySQL_BioSQL.init(manager.getCon(), readFromContigGET, sql);
 			readFromContigGET.setInt(1,bioentry_id);
 			set = readFromContigGET.executeQuery();
 			while(set.next()){
-				values.add(set.getInt(1));
+				for(int i =1; i < 5 ;i++)values.add(set.getInt(i));
 			}
-			return Tools_Array.ListInt2int(values);
+			int[][] ret = new int[4][values.size()/4];
+			for(int i =0; i < values.size();i++)ret[i%4][i/4] = values.get(i);
+			return ret;
 		}
 		catch(SQLException sq){
 			logger.error("Failed to get reads using contig id", sq);
@@ -705,7 +708,7 @@ public class MySQL_Extended implements BioSQLExtended{
 		return ress;
 	}
 
-	public SequenceList getContigsAsFasta(DatabaseManager manager, SequenceList l, int i) {
+	public SequenceList getContigsAsList(DatabaseManager manager, SequenceList l, int i) {
 		String sql;
 		Statement st;
 		if( i < 0){

@@ -230,5 +230,13 @@ public abstract class Tools_String {
 		}
 	}
 
+	public static String getStringofLenX(String name, int x){
+		if(name.length() < x){
+			StringBuffer b = new StringBuffer(name);
+			while(b.length() < x)b.append(" ");
+			return b.toString();
+		}
+		else return name=name.substring(0,x);
+	}
 	
 }

@@ -3,7 +3,7 @@ package enderdom.eddie.tools.bio;
 import java.io.IOException;
 import java.net.URL;
 
-import enderdom.eddie.bio.fasta.Fasta;
+import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.SequenceObject;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
