@@ -66,7 +66,8 @@ public class Task_dbTools extends TaskXT{
 				"to download reads rather than consensus"));
 		options.addOption(new Option("i", true, "Bulk download input, input being a list of sequence names"));
 		options.addOption(new Option("readsasfasta", false, "Pulls reads which make this contig as fasta"));
-		options.addOption(new Option("readsasaln", false, "Pulls reads which make this contig as clustal aln"));
+		//Doesn't work as reads are raw and not prealigned to contig
+		//options.addOption(new Option("readsasaln", false, "Pulls reads which make this contig as clustal aln"));
 		options.addOption(new Option("o","output", true, "Output file"));
 		options.addOption(new Option("all",false, "Batch download all contigs available"));
 		options.addOption(new Option("run_id",true, "Batch download all contigs attached to run_id"));

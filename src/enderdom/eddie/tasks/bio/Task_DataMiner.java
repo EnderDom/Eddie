@@ -33,7 +33,7 @@ public class Task_DataMiner extends TaskXT{
 		super.buildOptions();
 		options.addOption("PTHR",true, "Panther term");
 		options.addOption("organism",true, "Limit to organism");
-		options.addOption("output",true, "Output file for data");
+		options.addOption("o","output",true, "Output file for data");
 		options.removeOption("p");
 	}
 	
