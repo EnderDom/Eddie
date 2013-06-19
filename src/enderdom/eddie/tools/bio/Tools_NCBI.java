@@ -35,7 +35,7 @@ public class Tools_NCBI {
 			throws MalformedURLException, URISyntaxException, XMLStreamException {
 		URI uri = new URI("http", eutils, esummary, "db="+database.toString()+"&id="+gi, null);
 		URL site = uri.toURL();
-		return Tools_XML.getSingleTagFromURL(site, "Item", "TaxId");
+		return Tools_XML.getSingleTagFromURLwValue(site, "Item", "TaxId");
 	}
 	
 	public static String getTaxIDFromAccession(NCBI_DATABASE database, String accession)

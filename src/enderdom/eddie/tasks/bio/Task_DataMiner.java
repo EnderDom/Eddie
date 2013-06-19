@@ -12,12 +12,14 @@ import enderdom.eddie.tools.bio.NCBI_DATABASE;
 import enderdom.eddie.tools.bio.Tools_NCBI;
 import enderdom.eddie.tools.bio.Tools_Panther;
 import enderdom.eddie.tools.bio.Tools_Uniprot;
+import enderdom.eddie.tools.bio.UNIPROT_EXIST;
 
 public class Task_DataMiner extends TaskXT{
 
 	private String panther;
 	private String organism;
 	private String output;
+	private boolean exist;
 	
 	public Task_DataMiner(){
 		
@@ -28,6 +30,7 @@ public class Task_DataMiner extends TaskXT{
 		panther = getOption(cmd, "PTHR", null);
 		organism = getOption(cmd, "organism", null);
 		output = getOption(cmd, "output", null);
+		exist = cmd.hasOption("confirmedOnly");		
 	}
 	
 	public void buildOptions(){
@@ -35,6 +38,7 @@ public class Task_DataMiner extends TaskXT{
 		options.addOption("PTHR",true, "Panther term");
 		options.addOption("organism",true, "Limit to organism");
 		options.addOption("o","output",true, "Output file for data");
+		options.addOption("confirmedOnly", false, "Only get sequences with protein confirmed (Will only download from uniprot)");
 		options.removeOption("p");
 	}
 	
@@ -63,6 +67,18 @@ public class Task_DataMiner extends TaskXT{
 			for(PantherGene gene : genes){
 				String uid = gene.getUniprot();
 				String ncbi = gene.getNCBI();
+				if(exist){
+					ncbi = null;
+					if(uid != null){
+						try{
+							uid = Tools_Uniprot.getExistLvl(uid) == UNIPROT_EXIST.protein ? uid : null;
+						}
+						catch(Exception e){
+							logger.error("Failed to ascertain if protein exists",e);
+							uid=null;
+						}
+					}
+				}
 				if(shortn != null){
 					if(gene.getShortSpecies().equals(shortn)){
 						try{
