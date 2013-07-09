@@ -9,7 +9,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
 import enderdom.eddie.bio.homology.blast.BlastObject;
-import enderdom.eddie.bio.homology.blast.BlastxDocumentParser;
 import enderdom.eddie.bio.homology.blast.MultiblastParser;
 import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.lists.FastaParser;
@@ -22,7 +21,6 @@ import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.ui.UI;
 
-@SuppressWarnings("deprecation")
 public class Task_BlastAnalysis extends TaskXTwIO{
 	
 	private String blastfolders; //Path containing the blast files
@@ -134,7 +132,7 @@ public class Task_BlastAnalysis extends TaskXTwIO{
 						BlastObject xml = null;
 						for(String contig : contig2file.keySet()){
 							try{
-								xml = new BlastxDocumentParser(contig2file.get(contig)).getBlastObject();
+								xml = new MultiblastParser(MultiblastParser.BASICBLAST, new File(contig2file.get(contig))).next();
 								if(xml.getNoOfHits() > 0){
 									if(xml.getLowestEValue() < this.e){
 										contigswithblasts++;
