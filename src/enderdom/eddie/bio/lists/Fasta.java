@@ -1,4 +1,4 @@
-package enderdom.eddie.bio.fasta;
+package enderdom.eddie.bio.lists;
 
 import java.io.BufferedWriter;
 import java.io.File;

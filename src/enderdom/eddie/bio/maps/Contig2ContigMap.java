@@ -50,8 +50,8 @@ public class Contig2ContigMap {
 	 * @return true if all went well
 	 */
 	public boolean retrieveReadIDs(DatabaseManager manager){
-		read_ids = manager.getBioSQLXT().getReads(manager, contig_id);
-		return read_ids.length != 0;
+		int[][] r = manager.getBioSQLXT().getReads(manager, contig_id);
+		return r == null ? false : (read_ids = r[0]).length > 0;  
 	}
 	
 	public boolean retrieveContigs(DatabaseManager manager){

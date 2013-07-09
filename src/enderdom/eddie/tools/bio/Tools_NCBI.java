@@ -8,7 +8,7 @@ import java.net.URL;
 
 import javax.xml.stream.XMLStreamException;
 
-import enderdom.eddie.bio.fasta.Fasta;
+import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.SequenceObject;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
@@ -35,7 +35,7 @@ public class Tools_NCBI {
 			throws MalformedURLException, URISyntaxException, XMLStreamException {
 		URI uri = new URI("http", eutils, esummary, "db="+database.toString()+"&id="+gi, null);
 		URL site = uri.toURL();
-		return Tools_XML.getSingleTagFromURL(site, "Item", "TaxId");
+		return Tools_XML.getSingleTagFromURLwValue(site, "Item", "TaxId");
 	}
 	
 	public static String getTaxIDFromAccession(NCBI_DATABASE database, String accession)

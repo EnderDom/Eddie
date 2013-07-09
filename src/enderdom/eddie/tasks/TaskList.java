@@ -12,7 +12,6 @@ import enderdom.eddie.tasks.bio.Task_ESTScan;
 import enderdom.eddie.tasks.bio.Task_Fasta_Tools;
 import enderdom.eddie.tasks.bio.Task_IprscanLocal;
 import enderdom.eddie.tasks.bio.Task_UniVec;
-import enderdom.eddie.tasks.bio.Task_WebInterPro;
 import enderdom.eddie.tasks.database.Task_AddRunData;
 import enderdom.eddie.tasks.database.Task_Assembly2DB;
 import enderdom.eddie.tasks.database.Task_BioSQLDB;
@@ -75,10 +74,10 @@ public class TaskList {
 			tasks[1][3] = "fastatools";
 			tasks[2][3] = "various fasta tools [WIP]";
 			
-			//WebInterpro
-			tasks[0][4] = Task_WebInterPro.class.getName();
-			tasks[1][4] = "iprscanweb";
-			tasks[2][4] = "send sequences to iprscan web service";
+			//Unclaimed
+			//tasks[0][4] = null;
+			//tasks[1][4] = null;
+			//tasks[2][4] = null;
 			
 			//BioTools 
 			tasks[0][5] = Task_BioTools.class.getName();

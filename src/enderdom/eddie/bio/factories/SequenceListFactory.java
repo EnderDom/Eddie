@@ -5,8 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import enderdom.eddie.bio.assembly.ACEFileParser;
-import enderdom.eddie.bio.fasta.Fasta;
-import enderdom.eddie.bio.homology.ClustalAlign;
+import enderdom.eddie.bio.lists.ClustalAlign;
+import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;

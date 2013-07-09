@@ -1,4 +1,4 @@
-package enderdom.eddie.bio.fasta;
+package enderdom.eddie.bio.lists;
 
 public interface FastaHandler {	
 	

@@ -8,10 +8,9 @@ import java.util.Stack;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.io.FilenameUtils;
-import org.biojava3.ws.alignment.qblast.BlastProgramEnum;
 
 import enderdom.eddie.bio.factories.SequenceListFactory;
-import enderdom.eddie.bio.fasta.Fasta;
+import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.sequence.SequenceList;
 
 import enderdom.eddie.tasks.Checklist;
@@ -199,9 +198,6 @@ public class Task_BlastLocal extends TaskXTwIO{
 	}
 	
 	public void runAutoBlast(File output, SequenceList seqs, Checklist list){
-		if(BlastProgramEnum.valueOf(blast_prg) == null){
-			logger.warn("Are you sure " + blast_prg + " is a program?");
-		}	
 		//Stack, should.... be synchronized
 		Stack<String> stack = new Stack<String>();
 		int i=0;

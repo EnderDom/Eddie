@@ -6,7 +6,7 @@ import java.io.InputStream;
 
 import org.junit.Test;
 
-import enderdom.eddie.bio.homology.ClustalAlign;
+import enderdom.eddie.bio.lists.ClustalAlign;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 

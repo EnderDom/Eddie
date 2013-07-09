@@ -11,6 +11,7 @@ import org.junit.Test;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.graphics.bio.ClustalImage;
+import enderdom.eddie.tools.graphics.Tools_Image;
 
 public class ClustalImageTest {
 
@@ -21,7 +22,7 @@ public class ClustalImageTest {
 		try {
 			ClustalImage img = new ClustalImage(in, BioFileType.CLUSTAL_ALN);
 			File f = File.createTempFile("image", ".png");
-			img.drawImage(f);
+			Tools_Image.saveImageDPMM(f, img.getBufferedImage(), img.getDPMM());
 			if(!f.exists()){
 				fail("Failed to create image");
 			}
