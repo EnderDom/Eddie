@@ -1,10 +1,58 @@
-Eddie v4.35
+---GENERAL---
 
-Fourth Total rewrite of the Dominic's Database & Script Manager for Biology 
+Eddie v4.51
+
+Fourth Total rewrite of the Dominic's Database & Script Manager for Biology
 
 Currently requires
 
 Java 1.6
 Connection to MySQL database
+Ant to compile
+Several java libraries found in the lib/ folder
 
 See https://github.com/EnderDom/Eddie for more details
+
+Make sure Eddie_libs paths are correct in the Eddie.jar MANIFEST 
+
+Should create a eddie.properties file and logs folder as well as a few other folders depending on 
+what tasks are running
+
+---COMPILE---
+Currently requires ant to compile (easily), this all needs to be done in a console/terminal
+
+If your not sure, check you have ant:
+ant -version
+
+Move into the directory and clean any old builds:
+ant clean
+
+Rebuild the project:
+ant build
+
+Create a jar file (Only works after you run ant build and have not cleaned):
+ant createjar
+
+---RUNNING---
+
+To Run:
+java -jar Eddie.jar
+
+For General help menu
+java -jar Eddie.jar -h
+
+Each task ease specified by a task name, for a list 
+java -jar Eddie.jar -tasklist
+
+For task specific help use -opts
+java -jar Eddie.jar -task taskname -opts
+
+---ECLIPSE---
+The eclipse classpaths and project files i've left in an edited so they should
+work anywhere. To import it, copy the whole git folder into your eclipse workspace
+then in eclipse File->Import ... Import Existing Projects in workspace. Hopefully if the version
+isn't too disimilar it will import fine and you can then edit it in eclipse.
+
+---LICENCE---
+
+LGPL v3 (See http://www.gnu.org/licenses/lgpl.html)
