@@ -456,6 +456,17 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 		return type;
 	}
 
-
+	
+	public void dump(){
+		logger.warn("Dumping sequences, this should only be done in the event that a save failed");
+		System.out.println("---CUT----");
+		System.out.println("          ");
+		for(String key : sequences.keySet()){
+			System.out.println(">"+key);
+			System.out.println(sequences.get(key));
+		}
+		System.out.println("          ");
+		System.out.println("---CUT----");
+	}
 		
 }

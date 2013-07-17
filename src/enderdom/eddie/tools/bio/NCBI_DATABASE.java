@@ -1,5 +1,12 @@
 package enderdom.eddie.tools.bio;
 
+/**
+ * 
+ * @author Dominic Matthew Wood
+ *
+ * Databases for NCBI etools *Not ncbi blast*
+ *
+ */
 public enum NCBI_DATABASE {
 	biosample,
 	biosystems,
@@ -18,5 +25,6 @@ public enum NCBI_DATABASE {
 	sequences,
 	snp,
 	sra,
-	taxonomy
+	taxonomy,
+	unknown
 }
