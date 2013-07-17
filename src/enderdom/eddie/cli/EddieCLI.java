@@ -33,7 +33,7 @@ public class EddieCLI implements UI {
 	
 	
 	public EddieCLI(EddiePropertyLoader loader){
-		System.out.println("Eddie v" + (EddiePropertyLoader.engineversion+EddiePropertyLoader.subversion) + " by (S.C.Corp.)");
+		System.out.println("Eddie v" + (EddiePropertyLoader.engineversion+EddiePropertyLoader.subversion) + " by Dominic Matthew Wood");
 		this.load = loader;
 		setArgs(loader.args);
 		/*

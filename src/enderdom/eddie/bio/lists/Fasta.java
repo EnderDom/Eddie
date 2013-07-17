@@ -197,7 +197,6 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 		return l;
 	}
 	
-	
 	/*
 	 * See Tool_Sequences static method for array values
 	 */
@@ -468,5 +467,5 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 		System.out.println("          ");
 		System.out.println("---CUT----");
 	}
-		
+	
 }
