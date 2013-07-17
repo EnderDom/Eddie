@@ -17,7 +17,6 @@ import enderdom.eddie.bio.sequence.BioFileType;
 
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
-import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 
 /*
@@ -37,9 +36,6 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 	private String quals;
 	
 	public Task_Fasta_Tools(){
-		trimRowNs = -1;
-		trimPercNs = -1;
-		trim =-1;
 	}
 	
 	public void run(){
@@ -142,7 +138,7 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 		options.getOption("i").setDescription("Input fasta file");
 		options.addOption(new Option("q", "qual", true, "Optional quality file for convert fastas & qual -> fastq"));
 		options.getOption("o").setDescription("Output file or files");
-		options.addOption(new Option("trim", true, "Trim Sequences Using below this value ie -trim 100"));
+		options.addOption(new Option("trim", true, "Trim each sequences in fasta of length below this value ie -trim 100"));
 		options.addOption(new Option("stats", false, "Print Statistics for Fasta/q files"));
 		options.addOption(new Option("convert", false, "Convert files to another file type"));
 		options.addOption(new Option("trimPercNs", true, "Remove any sequence where the percentage of Ns is greater than this INTEGER value"));
@@ -155,43 +151,14 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		if(cmd.hasOption("trimPercNs")){
-			Integer i = Tools_String.parseString2Int(cmd.getOptionValue("trimPercNs"));
-			if(i != null){
-				this.trimPercNs = i;
-			}
-			else{
-				logger.warn("TrimPercNs, but is not a number");
-			}
-		}
-		if(cmd.hasOption("trimRowNs")){
-			Integer i =Tools_String.parseString2Int(cmd.getOptionValue("trimRowNs"));
-			if(i != null){
-				this.trimRowNs = i;
-			}
-			else{
-				logger.warn("TrimRowNs, but is not a number");
-			}
-			
-		}
-		if(cmd.hasOption("q")){
-			quals = cmd.getOptionValue("q");
-		} 
-		if(cmd.hasOption("trim")){
-			Integer i = Tools_String.parseString2Int(cmd.getOptionValue("trim"));
-			if(i != null){
-				this.trim = i;
-			}
-			else{
-				logger.warn("Trim set, but is not a number");
-			}
-		}
-		if(cmd.hasOption("trimAtString")){
-			trimAtString = cmd.getOptionValue("trimAtString");
-		}
-		if(cmd.hasOption("stats"))stats=true;
-		if(cmd.hasOption("convert"))this.convert = true;
-		if(cmd.hasOption("lengths"))this.lengths=true;
+		this.trimPercNs = getOption(cmd, "trimPercNs", -1);
+		this.trimRowNs = getOption(cmd, "trimRowNs", -1);
+		this.quals = getOption(cmd, "q", null);
+		this.trim = getOption(cmd, "trim", -1);
+		this.trimAtString = getOption(cmd, "trimAtStrin", null);
+		this.stats = cmd.hasOption("stats");
+		this.convert = cmd.hasOption("conver");
+		this.lengths = cmd.hasOption("lengths");
 	}
 	
 	public Options getOptions(){
