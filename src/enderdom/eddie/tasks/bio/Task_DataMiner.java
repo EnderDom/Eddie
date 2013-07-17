@@ -11,6 +11,7 @@ import enderdom.eddie.bio.homology.blast.BlastObject;
 import enderdom.eddie.bio.homology.blast.MultiblastParser;
 import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.sequence.BioFileType;
+import enderdom.eddie.bio.sequence.SequenceObject;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
@@ -28,6 +29,7 @@ public class Task_DataMiner extends TaskXT{
 	private String blast;
 	private String organism;
 	private String output;
+	//private int limit;
 	private boolean exist;
 	
 	public Task_DataMiner(){
@@ -41,6 +43,7 @@ public class Task_DataMiner extends TaskXT{
 		output = getOption(cmd, "output", null);
 		exist = cmd.hasOption("confirmedOnly");	
 		blast = getOption(cmd, "BLAST", null);
+		//limit = getOption(cmd, "limit", -1);
 	}
 	
 	public void buildOptions(){
@@ -49,6 +52,7 @@ public class Task_DataMiner extends TaskXT{
 		options.addOption("BLAST",true, "Download sequences in this blast file");
 		options.addOption("organism",true, "Limit to organism");
 		options.addOption("o","output",true, "Output file for data");
+		//options.addOption("l", "limit", true, "Limit the downloaded sequences to this number");
 		options.addOption("confirmedOnly", false, "Only get sequences with protein confirmed (Will only download from uniprot) [PTHR Only]");
 		options.removeOption("p");
 	}
@@ -105,17 +109,33 @@ public class Task_DataMiner extends TaskXT{
 			MultiblastParser parser = new MultiblastParser(MultiblastParser.BASICBLAST, f);
 			BlastObject o = null;
 			NCBI_DATABASE db = null;
+			int c=0,d=0,e=0;
 			while(parser.hasNext()){
 				o = parser.next();
+				c++;
 				db = Tools_NCBI.getDBfromDB(o.getBlastTagContents("BlastOutput_db"));
+				if(db == NCBI_DATABASE.unknown){
+					logger.error("Terminating unsuccessfully, the blast output database is not supported");
+					return;
+				}
 				String s = null;
 				for(int i =1; i <= o.getNoOfHits() ;i++){
+					System.out.print("\rDownloading blast result:"+c+" hit"+i+" from ncbi...     ");
 					s = o.getHitTagContents("Hit_accession", i);
 					if(s!=null){
-						out.addSequenceObject(Tools_NCBI.getSequencewAcc(db,s));
+						SequenceObject seq = Tools_NCBI.getSequencewAcc(db,s);
+						if(seq != null){
+							out.addSequenceObject(seq);
+							d++;
+						}
+						else{
+							e++;
+						}
 					}
 					else logger.warn("Failed to get hit accession for hit number "+i);
 				}
+				System.out.println();
+				System.out.println("Downloaded Sequences: "+d+". Failed to Download: " + e);
 			}
 		} 
 		catch (Exception e) {

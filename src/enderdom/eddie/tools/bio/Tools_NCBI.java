@@ -124,8 +124,8 @@ public class Tools_NCBI {
 	 * @return searchable database for other NCBI tools
 	 */
 	public static NCBI_DATABASE getDBfromDB(String db){
-		if(db.contentEquals("nr")) return NCBI_DATABASE.protein;
-		else if (db.contentEquals("nt")) return NCBI_DATABASE.nuccore;
+		if(db.endsWith("nr")) return NCBI_DATABASE.protein;
+		else if (db.endsWith("nt")) return NCBI_DATABASE.nuccore;
 		else if (db.toLowerCase().contains("est")) return NCBI_DATABASE.nucest;
 		else return NCBI_DATABASE.unknown;
 	}
