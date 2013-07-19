@@ -5,6 +5,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -117,6 +119,17 @@ public class Tools_NCBI {
 		return getSequencewGI(database, gi);
 	}
 	
+	public static String getTagInfoFromGI(NCBI_DATABASE database, String gi, String tag) throws URISyntaxException, MalformedURLException, XMLStreamException{
+		URI uri = new URI("http", eutils, efetch, "db="+database.toString()+"&id="+gi+"&rettype=xml", null);
+		URL site = uri.toURL();
+		return Tools_XML.getSingleTagFromURL(site, tag);
+	}
+	
+	public static String[] getLineageFromGI(NCBI_DATABASE database, String gi) throws MalformedURLException, URISyntaxException, XMLStreamException{
+		String s = getTagInfoFromGI(database,gi,"OrgName_lineage");
+		return s != null ? s.split(";") : null;
+	}
+	
 	/**
 	 * 
 	 * @param db enter a blast database and returns a search database
@@ -128,5 +141,15 @@ public class Tools_NCBI {
 		else if (db.endsWith("nt")) return NCBI_DATABASE.nuccore;
 		else if (db.toLowerCase().contains("est")) return NCBI_DATABASE.nucest;
 		else return NCBI_DATABASE.unknown;
+	}
+	
+	/**
+	 * Simple method, tries to get 
+	 * @param name
+	 */
+	public static String getNCBIGi(String name){
+		Pattern r = Pattern.compile("gi\\|\\d+\\|");
+		Matcher m = r.matcher(name);
+		return m.find() ?name.substring(m.start()+3, m.end()): null; 
 	}
 }

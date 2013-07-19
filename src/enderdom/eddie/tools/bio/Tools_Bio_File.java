@@ -9,12 +9,13 @@ public class Tools_Bio_File {
 	
 	public static BioFileType detectFileType(String filename){
 		String[] filesuffix = new String[]{".ace",".sam",".fna",".fasta",".fastq", ".qual", ".aln", ".xml"};
-		String[] filetype = new String[]{"ACE","SAM","FASTA","FASTA","FASTQ","QUAL", "CLUSTAL", "XML"};
+		BioFileType[] filetype = new BioFileType[]{BioFileType.ACE,BioFileType.SAM,BioFileType.FASTA,BioFileType.FASTA,
+				BioFileType.FASTA,BioFileType.QUAL, BioFileType.CLUSTAL_ALN,BioFileType.XML};
 		
 		for(int i=0; i < filesuffix.length; i++){
 			if(filename.endsWith(filesuffix[i])){
 				Logger.getRootLogger().debug("Filetype detected as " + filetype[i]);
-				BioFileType t = BioFileType.valueOf(filetype[i]);
+				BioFileType t = filetype[i];
 				if(t == BioFileType.XML){
 					//Check Blast first line
 					String s = Tools_File.returnLine(filename, 1);

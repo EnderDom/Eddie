@@ -2,6 +2,7 @@ package enderdom.eddie.tasks;
 
 import org.apache.log4j.Logger;
 
+import enderdom.eddie.tasks.bio.Task_AminoAnalysis;
 import enderdom.eddie.tasks.bio.Task_Assembly;
 import enderdom.eddie.tasks.bio.Task_BioTools;
 import enderdom.eddie.tasks.bio.Task_BlastAnalysis;
@@ -74,10 +75,10 @@ public class TaskList {
 			tasks[1][3] = "fastatools";
 			tasks[2][3] = "various fasta tools [WIP]";
 			
-			//Unclaimed
-			//tasks[0][4] = null;
-			//tasks[1][4] = null;
-			//tasks[2][4] = null;
+			//Amino Acid analysis
+			tasks[0][4] = Task_AminoAnalysis.class.getName();
+			tasks[1][4] = "aminoanalysis";
+			tasks[2][4] = "Search for unique residues based on phylum";
 			
 			//BioTools 
 			tasks[0][5] = Task_BioTools.class.getName();

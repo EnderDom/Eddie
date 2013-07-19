@@ -1,6 +1,5 @@
 package enderdom.eddie.bio.sequence;
 
-import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
@@ -84,7 +83,6 @@ public abstract class BasicSequenceList implements SequenceList{
 	public SequenceObject getSequence(String key){
 		return this.sequences.get(key);
 	}
-	
 
 	public boolean canAddSequenceObjects() {
 		return true;
@@ -106,17 +104,6 @@ public abstract class BasicSequenceList implements SequenceList{
 		else{
 			logger.warn("Attempting to remove sequence which does not exist " + name);
 		}
-	}
-	public String[] saveFile(File file, BioFileType filetype) throws Exception,
-			UnsupportedTypeException {
-		logger.fatal("This method should always be overwritten by subordinate class");
-		return null;
-	}
-
-	public int loadFile(File file, BioFileType filetype) throws Exception,
-			UnsupportedTypeException {
-		logger.fatal("This method should always be overwritten by subordinate class");
-		return 0;
 	}
 
 	public BioFileType getFileType() {

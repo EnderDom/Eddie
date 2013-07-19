@@ -36,6 +36,27 @@ public abstract class Tools_File {
 		}
     }
 	
+	public static boolean quickWrite(String[] str, File file){
+		try{
+			FileWriter fstream = new FileWriter(file, false);
+			BufferedWriter out = new BufferedWriter(fstream);
+			String newline = Tools_System.getNewline();
+			for(String s : str){
+				out.write(s);
+				out.flush();
+				out.write(newline);
+				out.flush();
+			}
+			out.close();
+			return true;
+		}
+		catch(IOException exe){
+			logger.warn(exe);
+			return false;
+		}
+		
+	}
+	
 	public static String quickRead(File file){
 		return quickRead(file, true);
 	}

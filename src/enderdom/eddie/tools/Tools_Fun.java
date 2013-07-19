@@ -21,6 +21,9 @@ public abstract class Tools_Fun {
 				"And now for something completely different...",
 				"I would like to tha..BRRR!!R!!RR!!RR!...All hail hypnotoad",
 				"foobar",
+				"Charizard, I chose you.",
+				"Magicarp used splash, it was super effective",
+				"Always bring a towel",
 				"Insert yet another stupid reference here."
 		};
 		
@@ -28,7 +31,7 @@ public abstract class Tools_Fun {
 	}
 	
 	public static String getRandom(String[] in){
-		return in[(int)Math.round(Math.random()*in.length)];
+		return in[(int)Math.round(Math.random()*in.length-1)];
 	}
 	
 	public static void printAbout(){
@@ -39,7 +42,7 @@ public abstract class Tools_Fun {
 		System.out.println("Current Position: Recieving psychotherapy at the Walter Bishop Institute for Borked Scientists");
 		System.out.println("Contact: Please speak to Lead Psychotherapist at the Institute");
 		System.out.println("");
-		System.out.println("");
+		System.out.println("Message of the Day:");
 		System.out.println(getRandomMessage());
 	}
 	
