@@ -115,7 +115,7 @@ public class ClustalAlign extends BasicSequenceList{
 			this.sequences.put(nams.get(i),new GenericSequence(nams.get(i), seqs.get(i)));
 		}
 		
-		logger.info("Parsed " + this.sequences.size() + " sequences from clustal file");
+		logger.info("Parsed " + (this.sequences.size()-1) + " sequences from clustal file");
 		return counter;
 	}
 	

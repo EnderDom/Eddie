@@ -21,7 +21,6 @@ import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
-import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Assembly;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
@@ -53,25 +52,18 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	
 	public Task_Assembly2DB(){
 		setHelpHeader("--This is the Help Message for the Assemby2DB Task--");
-		runid =-1;
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		if(cmd.hasOption("uploadreads"))uploadreads=true;
-		if(cmd.hasOption("uploadcontigs"))uploadcontigs=true;
+		uploadreads=cmd.hasOption("uploadreads");
+		uploadcontigs= cmd.hasOption("uploadcontigs");
 		//if(cmd.hasOption("remaploc"))remaplocations=true;
-		if(cmd.hasOption("mapcontigs"))mapcontigs=true;
-		if(cmd.hasOption("identifier"))this.identifier=cmd.getOptionValue("identifier");
-		if(cmd.hasOption("programname"))this.programname=cmd.getOptionValue("programid");
-		if(cmd.hasOption("pad"))this.unpad = true;
-		if(cmd.hasOption("runid")){
-			Integer a = Tools_String.parseString2Int(cmd.getOptionValue("runid"));
-			if(a != null)runid=a.intValue();
-			else{
-				logger.error("Run id is not a number!!");
-			}
-		}
+		this.mapcontigs=cmd.hasOption("mapcontigs");
+		this.identifier= getOption(cmd, "identifier", null);
+		this.programname = getOption(cmd, "programid", null);
+		this.unpad = cmd.hasOption("pad");
+		this.runid = getOption(cmd, "runid", -1);
 	}
 	
 	public void buildOptions(){

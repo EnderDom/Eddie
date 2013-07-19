@@ -117,15 +117,6 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 		}
 		return success;
 	}
-
-	public void parseArgs(String[] args) {
-		if(isLogging()){
-			logger.warn("Warning, you should not be seeing this message, subclasses should always overwrite this");
-		}
-		else{
-			preLog("Warning, you should not be seeing this message, subclasses should always overwrite this");
-		}
-	}
 	
 	public boolean isLogging(){
 		return this.isLogging;
@@ -211,6 +202,10 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 	public static void configureProps(String filepath, String props){
 		logger = Logger.getLogger(filepath);
         PropertyConfigurator.configure(props);
+	}
+	
+	public String getPropertyFilePath(){
+		return this.propfile.getPath();
 	}
 }
 
