@@ -150,6 +150,28 @@ public class Tools_NCBI {
 	public static String getNCBIGi(String name){
 		Pattern r = Pattern.compile("gi\\|\\d+\\|");
 		Matcher m = r.matcher(name);
-		return m.find() ?name.substring(m.start()+3, m.end()): null; 
+		return m.find() ?name.substring(m.start()+3, m.end()-1): null; 
+	}
+	
+	/**
+	 * Input blast name string with species in brackets 
+	 * ie Sequenc1 [Homo sapeins]
+	 * and it will return 
+	 * 
+	 * H.sapiens
+	 * 
+	 * Should work on multi species
+	 * ie
+	 * [Homo sapiens sapiens] -> H.sapien
+	 *
+	 * 
+	 * @param name
+	 * @return Specis name abbreviated
+	 */
+	public static String getSpecies(String name){
+		Pattern r = Pattern.compile("\\[\\S+(\\s\\S+)|(\\s\\S+\\s\\S+)\\]");
+		Matcher m = r.matcher(name);
+		return m.find() ? name.substring(m.start()+2, name.charAt(m.end()-1) == ']'? m.end()-1:m.end()): null;
+		
 	}
 }

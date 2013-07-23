@@ -2,6 +2,7 @@ package enderdom.eddie.tasks.bio;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.io.FilenameUtils;
@@ -27,7 +28,7 @@ public class Task_DataMiner extends TaskXT{
 
 	private String panther;
 	private String blast;
-	private String organism;
+	private String filter;
 	private String output;
 	//private int limit;
 	private boolean exist;
@@ -39,7 +40,7 @@ public class Task_DataMiner extends TaskXT{
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
 		panther = getOption(cmd, "PTHR", null);
-		organism = getOption(cmd, "organism", null);
+		filter = getOption(cmd, "filter", null);
 		output = getOption(cmd, "output", null);
 		exist = cmd.hasOption("confirmedOnly");	
 		blast = getOption(cmd, "BLAST", null);
@@ -50,7 +51,7 @@ public class Task_DataMiner extends TaskXT{
 		super.buildOptions();
 		options.addOption("PTHR",true, "Download sequences attached to this panther term");
 		options.addOption("BLAST",true, "Download sequences in this blast file");
-		options.addOption("organism",true, "Limit to organism");
+		options.addOption("filter",true, "Filter, use species name for PTHR, or phyla/order/genus for BLAST");
 		options.addOption("o","output",true, "Output file for data");
 		//options.addOption("l", "limit", true, "Limit the downloaded sequences to this number");
 		options.addOption("confirmedOnly", false, "Only get sequences with protein confirmed (Will only download from uniprot) [PTHR Only]");
@@ -109,34 +110,61 @@ public class Task_DataMiner extends TaskXT{
 			MultiblastParser parser = new MultiblastParser(MultiblastParser.BASICBLAST, f);
 			BlastObject o = null;
 			NCBI_DATABASE db = null;
-			int c=0,d=0,e=0;
+			int c=0,d=0,e=0,g=0;
+			HashSet<String> accs = new HashSet<String>();
+			logger.info("Parsing XML file for accessions...");
 			while(parser.hasNext()){
 				o = parser.next();
-				c++;
+				
 				db = Tools_NCBI.getDBfromDB(o.getBlastTagContents("BlastOutput_db"));
 				if(db == NCBI_DATABASE.unknown){
 					logger.error("Terminating unsuccessfully, the blast output database is not supported");
 					return;
 				}
-				String s = null;
+				String accession = null;
 				for(int i =1; i <= o.getNoOfHits() ;i++){
-					System.out.print("\rDownloading blast result:"+c+" hit"+i+" from ncbi...     ");
-					s = o.getHitTagContents("Hit_accession", i);
-					if(s!=null){
-						SequenceObject seq = Tools_NCBI.getSequencewAcc(db,s);
-						if(seq != null){
-							out.addSequenceObject(seq);
-							d++;
-						}
-						else{
-							e++;
-						}
+					accession = o.getHitTagContents("Hit_accession", i);
+					if(accession!=null){
+						accs.add(accession);
+						c++;
 					}
 					else logger.warn("Failed to get hit accession for hit number "+i);
-				}
-				System.out.println();
-				System.out.println("Downloaded Sequences: "+d+". Failed to Download: " + e);
+				}				
 			}
+			logger.info("Parse complete, "+c+" accessions retrieved");
+			g=c;
+			for(String accession : accs){
+				System.out.print("\rAccession:"+accession+" ("+d+") Retrieving GI...             ");
+				boolean conti = true;
+				String gi = Tools_NCBI.getGIFromAccession(db, accession);
+				System.out.print("\rAccession:"+accession+" ("+d+") GI is "+gi+"...             ");
+				conti=true;
+				if(filter != null){
+					conti=false;
+					System.out.print("\rAccession:"+accession+" ("+d+") Acquiring lineage...             ");
+					String[] ine = Tools_NCBI.getLineageFromGI(db, gi);
+					for(String org : ine){
+						if(org.trim().toLowerCase().equals(filter.trim().toLowerCase())){
+							conti = true;
+							logger.debug("Sequence with GI " + gi +" is a " + filter);
+							g--;
+						}
+					}
+				}
+				if(conti){
+					System.out.print("\rAccession:"+accession+" ("+d+") Downloading sequence...        ");
+					SequenceObject seq =Tools_NCBI.getSequencewGI(db,gi); 
+					if(seq != null){
+						out.addSequenceObject(seq);
+						d++;
+					}
+					else{
+						e++;
+					}
+				}
+			}
+			System.out.println("");
+			System.out.println("Downloaded Sequences: "+d+". Filtered sequences "+g+". Failed to Download: " + e);
 		} 
 		catch (Exception e) {
 			logger.error("Failed to parser file as a blast file", e);
@@ -148,8 +176,8 @@ public class Task_DataMiner extends TaskXT{
 			Fasta f = new Fasta();
 			PantherGene[] genes = Tools_Panther.getGeneList(panther);
 			String shortn = null;
-			if(organism != null){
-				shortn = Tools_Panther.getShortSpeciesName(organism);
+			if(filter != null){
+				shortn = Tools_Panther.getShortSpeciesName(filter);
 				logger.debug("Retrieved short name as "  +shortn);
 			}
 			int ncbin=0, uidn =0, fail=0, cull =0;

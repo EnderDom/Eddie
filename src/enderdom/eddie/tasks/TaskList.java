@@ -12,6 +12,7 @@ import enderdom.eddie.tasks.bio.Task_DataMiner;
 import enderdom.eddie.tasks.bio.Task_ESTScan;
 import enderdom.eddie.tasks.bio.Task_Fasta_Tools;
 import enderdom.eddie.tasks.bio.Task_IprscanLocal;
+import enderdom.eddie.tasks.bio.Task_SeqList;
 import enderdom.eddie.tasks.bio.Task_UniVec;
 import enderdom.eddie.tasks.database.Task_AddRunData;
 import enderdom.eddie.tasks.database.Task_Assembly2DB;
@@ -153,6 +154,9 @@ public class TaskList {
 			tasks[1][20] = "dataminer";
 			tasks[2][20] = "Run data mining scripts";	
 			
+			tasks[0][21] = Task_SeqList.class.getName(); 
+			tasks[1][21] = "seqlist";
+			tasks[2][21] = "Sequence list (clustal, fasta etc) tools";	
 			
 			return tasks;
 		}

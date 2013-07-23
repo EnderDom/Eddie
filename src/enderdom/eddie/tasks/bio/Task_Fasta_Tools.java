@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -18,6 +19,7 @@ import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_System;
+import enderdom.eddie.tools.bio.Tools_NCBI;
 
 /*
  * This is a fucking mess
@@ -36,6 +38,7 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 	private String trimAtString;
 	private boolean lengths;
 	private String quals;
+	private boolean dmw;
 	
 	public Task_Fasta_Tools(){
 	}
@@ -128,6 +131,17 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 				logger.error("Failed to output list of lengths to " + output);
 			}
 		}
+		if(dmw){
+			logger.debug("Renaming sequences...");
+			HashMap<String, String> str = new HashMap<String, String>();
+			for(String name : this.fasta.keySet()){
+				String specie =Tools_NCBI.getSpecies(name);
+				String[] s = specie.split(" ");
+				if(s.length > 1)specie = s[0].substring(0,1).toUpperCase()+"."+s[1];
+				str.put(name, Tools_NCBI.getNCBIGi(name)+"_" + specie);
+			}
+			fasta.renameNames(str);
+		}
 		//OTHER fasta tools
 	}
 	
@@ -149,6 +163,7 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 		options.addOption(new Option("trimAtString", true, "Trims the fasta name after the first occurance " +
 				"of string ie -trimAtString \">Contig\" would change >Contig2121 to >Contig"));
 		options.addOption(new Option("s","short", false, "Use Short titles, names are truncated to first space (Needed to match fasta qual)"));
+		options.addOption(new Option("dmwName", false, "Use Dominic Wood Naming scheme for fasta with ncbi blast names "));
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
@@ -161,6 +176,7 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 		this.stats = cmd.hasOption("stats");
 		this.convert = cmd.hasOption("conver");
 		this.lengths = cmd.hasOption("lengths");
+		this.dmw = cmd.hasOption("dmwName");
 	}
 	
 	public Options getOptions(){
