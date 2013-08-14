@@ -5,9 +5,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import enderdom.eddie.bio.assembly.ACEFileParser;
+import enderdom.eddie.bio.assembly.ACERecordList;
 import enderdom.eddie.bio.lists.ClustalAlign;
 import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.sequence.BioFileType;
+import enderdom.eddie.bio.sequence.ContigList;
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
@@ -59,7 +61,7 @@ public class SequenceListFactory {
 					return f;
 				case ACE:
 					f = new Fasta();
-					ACEFileParser parser = new ACEFileParser(new File(input));
+					ACEFileParser parser = new ACEFileParser(i);
 					while(parser.hasNext()){
 						f.addSequenceObject(parser.next().getConsensus());
 					}
@@ -115,6 +117,31 @@ public class SequenceListFactory {
 				return new Fasta();
 			default:
 				throw new UnsupportedTypeException("Builder for this filetype not yet implemented");
+		}
+	}
+	
+	public static ContigList getContigList(String input) throws IOException, UnsupportedTypeException{
+		File i = new File(input);
+		if(!i.exists()){
+			throw new FileNotFoundException("File: " + input + " does not exist");
+		}
+		else if(i.isDirectory()){
+			throw new FileNotFoundException("File: " + input + " is a directory");//TODO support directory
+		}
+		else{
+			BioFileType filetype = Tools_Bio_File.detectFileType(i.getName());
+			switch(filetype){
+				case ACE:
+					ContigList list = new ACERecordList(i);
+					return list;
+//				case SAM:
+	//				logger.error("To do add SAM support");
+		//			return null;
+				//case SAM://TODO this method	
+				default:
+				throw new UnsupportedTypeException("You are trying to get a sequence list from " 
+						+ filetype.toString() + " which is not yet supported");	
+			}
 		}
 	}
 
