@@ -67,6 +67,11 @@ public class DatabaseManager {
 	
 	public synchronized Connection openConnection(String dbtype, String driver, String dbhost, String dbname, String dbuser, String dbpass) throws Exception{
 		this.dbtype=dbtype;
+		if(driver==null || driver.length() == 0){
+			if(dbtype.equals("mysql"))driver="com.mysql.jdbc.Driver";
+			else if(dbtype.equals("sqllite"))driver="org.sqlite.JDBC";
+			loader.setValue("DBDRIVER", driver);
+		}
 		Class.forName(driver).newInstance();
 		String mys = "jdbc:"+dbtype+"://"+dbhost;
 		logger.debug("Using to check database "+dbname+" exists: " + mys);
@@ -157,6 +162,9 @@ public class DatabaseManager {
 			else{
 				return true;
 			}
+		}
+		else if(this.dbtype.equals("sqllite")){
+			
 		}
 		return false;
 	}
