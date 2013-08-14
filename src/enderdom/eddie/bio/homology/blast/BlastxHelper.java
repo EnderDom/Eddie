@@ -1,6 +1,5 @@
 package enderdom.eddie.bio.homology.blast;
 
-import java.io.File;
 import java.math.BigDecimal;
 
 import org.apache.commons.io.FilenameUtils;
@@ -38,11 +37,6 @@ public class BlastxHelper {
 	 */
 	public int date_range = 21; 
 	
-	@Deprecated
-	public BlastxHelper(File file) throws Exception{
-		blastx = new BlastxDocumentParser(file).getBlastObject();
-		this.contig_id = -1;
-	}
 	
 	public BlastxHelper(BlastObject o){
 		this.blastx = o;

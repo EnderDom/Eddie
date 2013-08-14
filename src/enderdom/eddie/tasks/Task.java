@@ -159,11 +159,11 @@ public abstract class Task extends BasicTask {
 	 * it is not parsable. If unparseable logs a warning, but does
 	 * not throw exception
 	 */
-	protected String getOption(CommandLine cmd, String opt, String defaul){
+	public static String getOption(CommandLine cmd, String opt, String defaul){
 		if(cmd.hasOption(opt) && cmd.getOptionValue(opt) != null){
 			String r = cmd.getOptionValue(opt);
 			if(r != null && r.length() != 0)return r;
-			else logger.warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as string");
+			else Logger.getRootLogger().warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as string");
 		}
 		return defaul;
 	}
@@ -179,11 +179,11 @@ public abstract class Task extends BasicTask {
 	 * it is not parsable. If unparseable logs a warning, but does
 	 * not throw exception
 	 */
-	protected int getOption(CommandLine cmd, String opt, int defaul){
+	public static int getOption(CommandLine cmd, String opt, int defaul){
 		if(cmd.hasOption(opt) &&  cmd.getOptionValue(opt) != null){
 			Integer i = Tools_String.parseString2Int(cmd.getOptionValue(opt));
 			if(i != null)return i.intValue();
-			else logger.warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as integer");
+			else Logger.getRootLogger().warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as integer");
 		}
 		return defaul;
 	}
@@ -198,11 +198,20 @@ public abstract class Task extends BasicTask {
 	 * it is not parsable. If unparseable logs a warning, but does
 	 * not throw exception
 	 */
-	protected double getOption(CommandLine cmd, String opt, double defaul){
+	public static double getOption(CommandLine cmd, String opt, double defaul){
 		if(cmd.hasOption(opt) && cmd.getOptionValue(opt) != null){
 			Double i = Tools_String.parseString2Double(cmd.getOptionValue(opt));
 			if(i != null)return i.doubleValue();
-			else logger.warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as double");
+			else Logger.getRootLogger().warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as double");
+		}
+		return defaul;
+	}
+	
+	public static String[] getOptions(CommandLine cmd, String opt, String[] defaul){
+		if(cmd.hasOption(opt) && cmd.getOptionValues(opt) != null){
+			String[] r = cmd.getOptionValues(opt);
+			if(r != null && r.length> 0)return r;
+			else Logger.getRootLogger().warn("Failed to parse -" + opt + cmd.getOptionValue(opt) + " as String");
 		}
 		return defaul;
 	}
@@ -216,7 +225,7 @@ public abstract class Task extends BasicTask {
 	 * @param f
 	 * @return
 	 */
-	protected String getOptionFromFile(CommandLine cmd, String opt){
+	public static String getOptionFromFile(CommandLine cmd, String opt){
 		String f = null;
 		String filename = cmd.getOptionValue(opt);
 		if(filename != null){

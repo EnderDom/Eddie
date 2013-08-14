@@ -1,6 +1,9 @@
 #eclipse bin directory
 bin/
-
+Eddie.jar
+logs/
+eddie.properties
+compile.sh
 #OS Specific stuff
 #
 #Dolphin

@@ -1,45 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="lib/" kind="src" path="src"/>
-	<classpathentry excluding="data/" kind="src" path="test"/>
-	<classpathentry kind="lib" path="lib/commons-cli-1.2/commons-cli-1.2.jar" sourcepath="lib/commons-cli-1.2/commons-cli-1.2-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:lib/commons-cli-1.2/commons-cli-1.2-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/commons-lang/commons-lang3-3.1.jar" sourcepath="lib/commons-lang/commons-lang3-3.1-sources.jar"/>
-	<classpathentry kind="lib" path="lib/apache-log4j-1.2.16/log4j-1.2.16.jar" sourcepath="lib/apache-log4j-1.2.16/src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/picard/picard-1.65.jar"/>
-	<classpathentry kind="lib" path="lib/picard/sam-1.65.jar"/>
-	<classpathentry kind="lib" path="lib/biojava3/biojava3-core-3.0.3.jar" sourcepath="lib/biojava3/biojava3-core-3.0.3-sources.jar"/>
-	<classpathentry kind="lib" path="lib/iprscan/jaxrpc.jar"/>
-	<classpathentry kind="lib" path="lib/iprscan/axis.jar"/>
-	<classpathentry kind="lib" path="lib/iprscan/activation.jar"/>
-	<classpathentry kind="lib" path="lib/iprscan/commons-discovery-0.2.jar"/>
-	<classpathentry kind="lib" path="lib/iprscan/commons-logging-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/iprscan/mail.jar"/>
-	<classpathentry kind="lib" path="lib/iprscan/saaj.jar"/>
-	<classpathentry kind="lib" path="lib/iprscan/servlet.jar"/>
-	<classpathentry kind="lib" path="lib/iprscan/wsdl4j-1.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/iprscan/IPRScan_AxisM.jar"/>
-	<classpathentry kind="lib" path="lib/biojava3/biojava3-ws-3.0.3.jar" sourcepath="lib/biojava3/biojava3-ws-3.0.3-sources.jar"/>
-	<classpathentry kind="lib" path="lib/biojava1.8/blast-1.8.2.jar" sourcepath="lib/biojava1.8/blast-1.8.2-sources.jar"/>
-	<classpathentry kind="lib" path="lib/biojava1.8/core-1.8.2.jar" sourcepath="lib/biojava1.8/core-1.8.2-sources.jar"/>
-	<classpathentry kind="lib" path="lib/biojava1.8/biosql-1.8.2.jar" sourcepath="lib/biojava1.8/biosql-1.8.2-sources.jar"/>
-	<classpathentry kind="lib" path="lib/SQL/mysql-connector-java-5.1.6.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="lib/stox/woodstox-core-lgpl-4.1.4.jar"/>
-	<classpathentry kind="lib" path="lib/stox/stax2-api-3.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/commons-io/commons-io-2.2.jar" sourcepath="lib/commons-io/commons-io-2.2-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:lib/commons-io/commons-io-2.2-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/SQL/sqlite-jdbc-3.7.2.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:lib/SQL/sqlite-jdbc-3.7.2-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.1.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
+	<classpathentry kind="lib" path="lib/sam-1.65.jar"/>
+	<classpathentry kind="lib" path="lib/core-1.8.2.jar"/>
+	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.6.jar"/>
+	<classpathentry kind="lib" path="lib/woodstox-core-lgpl-4.1.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.2.jar"/>
+	<classpathentry kind="lib" path="lib/picard-1.65.jar"/>
+	<classpathentry kind="lib" path="lib/stax2-api-3.1.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

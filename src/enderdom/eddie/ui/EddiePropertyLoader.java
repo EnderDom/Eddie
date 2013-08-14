@@ -30,7 +30,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
      * though this one has been written from scratch
      */
     public static int engineversion = 4;
-    public static double subversion = 0.49;
+    public static double subversion = 0.52;
     public static String edition = "Development";
     public String[] actions;
 	
@@ -258,10 +258,6 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 	
 	public static double getFullVersion(){
 		return engineversion+subversion;
-	}
-	
-	public String getPropertyFilePath(){
-		return this.propfile.getPath();
 	}
 
 	public boolean isTest() {

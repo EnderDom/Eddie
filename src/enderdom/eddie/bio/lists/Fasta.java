@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
@@ -197,7 +198,6 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 		return l;
 	}
 	
-	
 	/*
 	 * See Tool_Sequences static method for array values
 	 */
@@ -246,7 +246,7 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 	 * not the number of modifications (Multiple modifications per string
 	 * will happen if s1 occurs more than once and this is not counted)
 	 */
-	public int replaceNames(String s1, String s2){
+	public int alterNames(String s1, String s2){
 		LinkedHashMap<String, SequenceObject> seqs2 = new LinkedHashMap<String, SequenceObject>();
 		int i = 0;
 		for(String s : sequences.keySet()){
@@ -264,6 +264,59 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 		if(this.sequences.size() != seqs2.size()){
 			logger.error("An error occured, for some reason the" +
 					" new hashmap is not the same size as the old one. No changes made.");
+		}
+		else{
+			sequences = seqs2;
+		}
+		return i;
+	}
+	
+	/**
+	 * Outright rename the sequences, so sequence s1 becomes s2
+	 * 
+	 * ie renameNames("Contig1", "Cherry1")
+	 * renames sequences called Contig1 to Cherry1
+	 * This will overwrite any sequences already called Cherry1
+	 * 
+	 * @param s1
+	 * @param s2
+	 * @return number of sequences renamed
+	 */
+	public int renameName(String s1, String s2){
+		LinkedHashMap<String, SequenceObject> seqs2 = new LinkedHashMap<String, SequenceObject>();
+		int i = 0;
+		for(String s : sequences.keySet()){
+			if(s.equals(s1)){
+				SequenceObject o = sequences.get(s);
+				o.setIdentifier(s2);
+				System.out.println("About to put " + s2 + " " + seqs2.size());
+				seqs2.put(s2, o);
+				i++;
+			}
+			else seqs2.put(s, sequences.get(s)); 
+		}
+		if(this.sequences.size() != seqs2.size()){
+			logger.error("An error occured, old seqs was " + this.sequences.size() 
+					+ " and old is " + seqs2.size());
+		}
+		else{
+			sequences = seqs2;
+		}
+		return i;
+	}
+	
+	public int renameNames(HashMap<String, String> maps){
+		LinkedHashMap<String, SequenceObject> seqs2 = new LinkedHashMap<String, SequenceObject>();
+		int i = 0;
+		for(String s : maps.keySet()){
+			SequenceObject o = sequences.get(s);
+			o.setIdentifier(maps.get(s));
+			seqs2.put(maps.get(s), o);
+			i++;
+		}
+		if(this.sequences.size() != seqs2.size()){
+			logger.error("An error occured, old seqs was " + this.sequences.size() 
+					+ " and old is " + seqs2.size());
 		}
 		else{
 			sequences = seqs2;
@@ -456,6 +509,17 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 		return type;
 	}
 
-
-		
+	
+	public void dump(){
+		logger.warn("Dumping sequences, this should only be done in the event that a save failed");
+		System.out.println("---CUT----");
+		System.out.println("          ");
+		for(String key : sequences.keySet()){
+			System.out.println(">"+key);
+			System.out.println(sequences.get(key));
+		}
+		System.out.println("          ");
+		System.out.println("---CUT----");
+	}
+	
 }

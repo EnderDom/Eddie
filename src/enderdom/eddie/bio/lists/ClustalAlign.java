@@ -33,8 +33,8 @@ public class ClustalAlign extends BasicSequenceList{
 	//TODO implement contig
 	private String line;
 	public static int clustallen = 60;
-	public static int whitespace =6;
 	protected File file;
+	public static int namespacemax=10;
 	
 	public ClustalAlign(File file, BioFileType type) throws UnsupportedTypeException, Exception{
 		this.file=file;
@@ -115,7 +115,7 @@ public class ClustalAlign extends BasicSequenceList{
 			this.sequences.put(nams.get(i),new GenericSequence(nams.get(i), seqs.get(i)));
 		}
 		
-		logger.info("Parsed " + this.sequences.size() + " sequences from clustal file");
+		logger.info("Parsed " + (this.sequences.size()-1) + " sequences from clustal file");
 		return counter;
 	}
 	
@@ -135,7 +135,6 @@ public class ClustalAlign extends BasicSequenceList{
 	}
 
 	private void save(File file, int linelen) throws IOException{
-		logger.warn("Clustal output save is a quick fix, not really recommended");
 		FileWriter fstream = new FileWriter(file);
 		BufferedWriter out = new BufferedWriter(fstream);
 		String neline = Tools_System.getNewline();
@@ -147,6 +146,7 @@ public class ClustalAlign extends BasicSequenceList{
 			if(sequences.get(name).getLength() < maxlength){
 				sequences.get(name).extendRight(maxlength-sequences.get(name).getLength());
 			}
+			if(name.length() > namespacemax)namespacemax=name.length();
 		}
 		while(count+linelen < maxlength){
 			for(String name : sequences.keySet()){
@@ -155,18 +155,39 @@ public class ClustalAlign extends BasicSequenceList{
 				}
 				//TODO sort out this mess, kinda hacked it as i was writing my thesis :(
 				
-				out.write(Tools_String.getStringofLenX(name, 15) + "\t\t"+sequences.get(name).getSequence().substring(count, count+linelen) + neline);
+				out.write(Tools_String.getStringofLenX(name, namespacemax) + "      "+sequences.get(name).getSequence().substring(count, count+linelen) + neline);
 				out.flush();
 			}
+			out.write(Tools_String.getStringofLenX("", namespacemax)+"      "+getClustAnnnot(sequences, count, count+linelen)+neline);
 			out.write(neline+neline);
 			out.flush();
 			count = count + linelen;
 		}
 		for(String name : sequences.keySet()){
-			out.write(Tools_String.getStringofLenX(name, 15) + "\t\t"+sequences.get(name).getSequence().substring(count, maxlength) + neline);
+			out.write(Tools_String.getStringofLenX(name, namespacemax) + "      "+sequences.get(name).getSequence().substring(count, maxlength) + neline);
 			out.flush();
 		}
 		out.close();
+	}
+
+	//TODO complete for . and : symbols
+	private String getClustAnnnot(
+			LinkedHashMap<String, SequenceObject> sequences, int count, int i) {
+		StringBuffer b = new StringBuffer();
+		while(count!=i){
+			char a = '~';
+			for(String s : sequences.keySet()){
+				if(a=='~')a=sequences.get(s).getSequence().charAt(count);
+				else if(sequences.get(s).getSequence().charAt(count) != a){
+					a='#';
+					break;
+				}
+			}
+			if(a=='#')b.append(" ");
+			else b.append("*");
+			count++;
+		}
+		return b.toString();
 	}
 	
 	
