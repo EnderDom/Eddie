@@ -1,7 +1,6 @@
 package enderdom.eddie.databases.bioSQL.interfaces;
 
 import java.io.File;
-import java.sql.Connection;
 import java.sql.Date;
 import java.util.HashMap;
 

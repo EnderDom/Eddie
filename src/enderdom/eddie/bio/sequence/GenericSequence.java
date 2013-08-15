@@ -20,6 +20,7 @@ public class GenericSequence implements SequenceObject{
 	private String quality; //QUALITY STORED AS FASTQ 
 	private int type = -1;
 	private int positioninlist = -1;
+	Logger logger = Logger.getRootLogger();
 	
 	public GenericSequence(String Identifier){
 		this.Identifier = Identifier;

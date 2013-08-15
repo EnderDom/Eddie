@@ -11,6 +11,9 @@ import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
 
 
+import enderdom.eddie.bio.factories.SequenceListFactory;
+import enderdom.eddie.bio.sequence.BioFileType;
+import enderdom.eddie.bio.sequence.ContigList;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_System;
@@ -22,11 +25,13 @@ public class Task_Convert extends TaskXTwIO{
 	private static int BAM2SAM = 1;
 	private static int ACE2FNA = 2;
 	private static int XML2FASTA = 3;
+	private static int ACE2ALN = 4;
+	private static int SAM2ALN = 5;
 	//private static int FASTA2FASTQ = 3;
 	Logger logger = Logger.getLogger("Converterz");
 	String id_tag;
 	String seq_tag;
-	
+	String ref;
 	
 	public Task_Convert(){
 		
@@ -37,9 +42,11 @@ public class Task_Convert extends TaskXTwIO{
 		if(cmd.hasOption("sam2bam"))conversiontype = BAM2SAM;
 		if(cmd.hasOption("ace2fna"))conversiontype = ACE2FNA;
 		if(cmd.hasOption("xml2fasta"))conversiontype = XML2FASTA;
+		if(cmd.hasOption("ace2aln"))conversiontype = ACE2ALN;
+		if(cmd.hasOption("sam2aln"))conversiontype = SAM2ALN;
 		id_tag = getOption(cmd, "name", "id");
 		seq_tag = getOption(cmd, "seq", "sequence");
-		
+		ref = getOption(cmd, "refFile", null);
 	}
 	
 	public void parseOpts(Properties props){
@@ -49,10 +56,13 @@ public class Task_Convert extends TaskXTwIO{
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("sam2bam", false, "Convert SAM/BAM to BAM/SAM"));
-		options.addOption(new Option("ace2fna", false, "Converts ACE"));
+		options.addOption(new Option("ace2fna", false, "Converts ACE to fasta"));
 		options.addOption(new Option("xml2fasta", false, "Grabs 2 tags in xml and makes fasta (-name and -seq)"));
-		options.addOption(new Option("name", true, "For sequence name tag in xml"));
+		options.addOption(new Option("ace2aln", false, "Converts one ACE contig (specified by -name) to align"));
+		options.addOption(new Option("sam2aln", false, "Converts one SAM contig (specified by -name) to align"));
+		options.addOption(new Option("name", true, "For sequence name tag in xml or assembly file"));
 		options.addOption(new Option("seq", true, "For sequence tag in xml"));
+		options.addOption(new Option("refFile", true, "Reference file (fasta/q with consensus contigs) for SAM"));
 		//options.addOption(new Option("fasta2fastq", false, "Convert Fasta and Qual file to Fastq"));
 		//options.addOption(new Option("q","qual", true, "Quality file if needed"));
 	}
@@ -71,10 +81,10 @@ public class Task_Convert extends TaskXTwIO{
 			if(conversiontype==BAM2SAM){
 				logger.info("Converter Successful: "+Tools_Converters.SAM2BAM(in, out));
 			}
-			if(conversiontype==ACE2FNA){
+			else if(conversiontype==ACE2FNA){
 				logger.info("Converter Successful: "+Tools_Converters.ACE2FNA(in, out));
 			}
-			if(conversiontype==XML2FASTA){
+			else if(conversiontype==XML2FASTA){
 				try {
 					logger.info("ID tag is " + id_tag + " and " + " Seq tag is " + seq_tag);
 					logger.info("Converter Successful: "+Tools_Converters.XML2Fasta(in, out, id_tag, seq_tag));
@@ -82,6 +92,27 @@ public class Task_Convert extends TaskXTwIO{
 					logger.error("Failed to convert xml to fasta!",e);
 				} catch (IOException e) {
 					logger.error("Failed to convert xml to fasta!",e);
+				}
+			}
+			else if(conversiontype==ACE2ALN){
+				try {
+					ContigList l = SequenceListFactory.getContigList(in);
+					logger.debug("Retrieving " + id_tag);
+					logger.info("saved to "+l.getContig(id_tag).saveFile(out, BioFileType.CLUSTAL_ALN)[0]);
+				} catch (Exception e) {
+					logger.error("Failed to parse and convert" + input, e);
+				}
+			}
+			else if(conversiontype==SAM2ALN){
+				ContigList l = null;
+				try {
+					if(ref != null)l = SequenceListFactory.getContigList(in, new File(ref));
+					else l=SequenceListFactory.getContigList(in);
+					logger.debug("Retrieving " + id_tag);
+					logger.info("saved to "+l.getContig(id_tag).saveFile(out, BioFileType.CLUSTAL_ALN)[0]);
+				} 
+				catch (Exception e) {
+					logger.error("Failed to load SAM file",e);
 				}
 			}
 			else{

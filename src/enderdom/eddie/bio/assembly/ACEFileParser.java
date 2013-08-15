@@ -34,6 +34,7 @@ public class ACEFileParser implements Iterator<Contig>{
 	private BufferedReader mReader;
 	private String currentline;
 	private ACERecord currentrecord;
+	private String currentread;
 	private static int AS = 0;
 	private static int CO = 1;
 	private static int CO_ = 2;
@@ -236,6 +237,7 @@ public class ACEFileParser implements Iterator<Contig>{
 		String[] s = line.split(" ");
 		if(s.length > 4){
 			this.currentrecord.setReadName(s[1]);
+			this.currentread=s[1];
 			Integer l = Tools_String.parseString2Int(s[2]);
 			if(l != null){
 				//Expected Length currently not used
@@ -318,7 +320,7 @@ public class ACEFileParser implements Iterator<Contig>{
 			Integer l4 = Tools_String.parseString2Int(s[4]);
 			
 			if(l1 != null && l2 !=null && l3 != null && l4 != null){
-				this.currentrecord.addQA(l1,l2,l3,l4);
+				this.currentrecord.addQA(currentread,l1,l2,l3,l4);
 			}
 			else{
 				logger.error("Offset data is borked line: "+line);

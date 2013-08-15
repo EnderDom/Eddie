@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import enderdom.eddie.bio.assembly.ACEFileParser;
-import enderdom.eddie.bio.assembly.ACERecordList;
+import enderdom.eddie.bio.assembly.BasicContigList;
 import enderdom.eddie.bio.lists.ClustalAlign;
 import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.sequence.BioFileType;
@@ -19,6 +19,40 @@ public class SequenceListFactory {
 	public SequenceListFactory(){
 		
 	}
+			
+	public static SequenceList getSequenceList(File i) throws Exception{
+		BioFileType filetype = Tools_Bio_File.detectFileType(i.getName());
+		Fasta f;
+		switch(filetype){
+			case FASTA:
+				f = new Fasta();
+				f.loadFile(i, filetype);
+				return f;
+			case FASTQ:
+				f = new Fasta();
+				f.loadFile(i, filetype);
+				return f;
+			case QUAL:
+				f = new Fasta();
+				f.loadFile(i, filetype);
+				return f;
+			case ACE:
+				f = new Fasta();
+				ACEFileParser parser = new ACEFileParser(i);
+				while(parser.hasNext()){
+					f.addSequenceObject(parser.next().getConsensus());
+				}
+				return f;
+			case CLUSTAL_ALN:
+				ClustalAlign a = new ClustalAlign(i, BioFileType.CLUSTAL_ALN);
+				return a;
+			//case SAM://TODO this method	
+			default:
+			throw new UnsupportedTypeException("You are trying to get a sequence list from " 
+					+ filetype.toString() + " which is not yet supported");	
+		}
+	}
+		
 	
 	/**
 	 * Task in general is supposed to remove some
@@ -44,36 +78,25 @@ public class SequenceListFactory {
 			throw new FileNotFoundException("File: " + input + " is a directory");//TODO support directory
 		}
 		else{
-			BioFileType filetype = Tools_Bio_File.detectFileType(i.getName());
-			Fasta f;
-			switch(filetype){
-				case FASTA:
-					f = new Fasta();
-					f.loadFile(i, filetype);
-					return f;
-				case FASTQ:
-					f = new Fasta();
-					f.loadFile(i, filetype);
-					return f;
-				case QUAL:
-					f = new Fasta();
-					f.loadFile(i, filetype);
-					return f;
-				case ACE:
-					f = new Fasta();
-					ACEFileParser parser = new ACEFileParser(i);
-					while(parser.hasNext()){
-						f.addSequenceObject(parser.next().getConsensus());
-					}
-					return f;
-				case CLUSTAL_ALN:
-					ClustalAlign a = new ClustalAlign(new File(input), BioFileType.CLUSTAL_ALN);
-					return a;
-				//case SAM://TODO this method	
-				default:
-				throw new UnsupportedTypeException("You are trying to get a sequence list from " 
-						+ filetype.toString() + " which is not yet supported");	
-			}
+			return getSequenceList(i);
+		}
+	}
+	
+	public static SequenceList getSequenceList(File i, File i2)throws FileNotFoundException, UnsupportedTypeException, IOException{
+		BioFileType f1 = Tools_Bio_File.detectFileType(i.getName());
+		BioFileType f2 = Tools_Bio_File.detectFileType(i2.getName());
+		if((f1 == BioFileType.FASTA && f2 == BioFileType.QUAL) || (f1 == BioFileType.QUAL && f2 == BioFileType.FASTA)){
+			Fasta f = new Fasta();
+			f.loadFile(i, f1);
+			f.loadFile(i2, f2);
+			return f;
+		}
+//		else if((f1 == BioFileType.ACE && f2 == BioFileType.FASTA)){
+//			//TODO
+//		}
+		else{
+			throw new UnsupportedTypeException("Cannot generate Sequence list from " 
+		+ f1.toString() + " and " + f2.toString() + " filetypes");
 		}
 	}
 	
@@ -81,27 +104,13 @@ public class SequenceListFactory {
 		File i = new File(input);
 		File i2 = new File(input2);
 		if(!i.exists() || !i2.exists()){
-			throw new FileNotFoundException("File: " + input + " does not exist");
+			throw new FileNotFoundException("File: " + input +" or "+ input2+" does not exist");
 		}
 		else if(i.isDirectory() || i2.isDirectory()){
-			throw new FileNotFoundException("File: " + input + " is a directory");
+			throw new FileNotFoundException("File: " + input +" or "+ input2+ " is a directory");
 		}
 		else{
-			BioFileType f1 = Tools_Bio_File.detectFileType(i.getName());
-			BioFileType f2 = Tools_Bio_File.detectFileType(i2.getName());
-			if((f1 == BioFileType.FASTA && f2 == BioFileType.QUAL) || (f1 == BioFileType.QUAL && f2 == BioFileType.FASTA)){
-				Fasta f = new Fasta();
-				f.loadFile(i, f1);
-				f.loadFile(i2, f2);
-				return f;
-			}
-//			else if((f1 == BioFileType.ACE && f2 == BioFileType.FASTA)){
-//				//TODO
-//			}
-			else{
-				throw new UnsupportedTypeException("Cannot generate Sequence list from " 
-			+ f1.toString() + " and " + f2.toString() + " filetypes");
-			}
+			return getSequenceList(i, i2);
 		}
 	}
 	
@@ -120,29 +129,61 @@ public class SequenceListFactory {
 		}
 	}
 	
-	public static ContigList getContigList(String input) throws IOException, UnsupportedTypeException{
+	public static ContigList getContigList(String input) throws Exception{
 		File i = new File(input);
 		if(!i.exists()){
-			throw new FileNotFoundException("File: " + input + " does not exist");
+			throw new Exception("File: " + input + " does not exist");
 		}
 		else if(i.isDirectory()){
-			throw new FileNotFoundException("File: " + input + " is a directory");//TODO support directory
+			throw new Exception("File: " + input + " is a directory");//TODO support directory
 		}
 		else{
-			BioFileType filetype = Tools_Bio_File.detectFileType(i.getName());
-			switch(filetype){
-				case ACE:
-					ContigList list = new ACERecordList(i);
-					return list;
-//				case SAM:
-	//				logger.error("To do add SAM support");
-		//			return null;
-				//case SAM://TODO this method	
-				default:
-				throw new UnsupportedTypeException("You are trying to get a sequence list from " 
-						+ filetype.toString() + " which is not yet supported");	
-			}
+			return getContigList(input);
+		}
+	}
+	
+	
+	public static ContigList getContigList(String input, String input2) throws Exception{
+		File i = new File(input);
+		File i2 = new File(input2);
+		if(!i.exists() || !i2.exists()){
+			throw new FileNotFoundException("File: " + input +" or "+ input2+" does not exist");
+		}
+		else if(i.isDirectory() || i2.isDirectory()){
+			throw new FileNotFoundException("File: " + input +" or "+ input2+ " is a directory");
+		}
+		else{
+			return getContigList(i, i2);
+		}
+	}
+	
+	public static ContigList getContigList(File i) throws Exception{
+		BioFileType filetype = Tools_Bio_File.detectFileType(i.getName());
+		switch(filetype){
+			case ACE:
+				return new BasicContigList(i, filetype);
+			case SAM:
+				return new BasicContigList(i, filetype);
+			default:
+			throw new UnsupportedTypeException("You are trying to get a sequence list from " 
+					+ filetype.toString() + " which is not yet supported");	
 		}
 	}
 
+	
+	public static ContigList getContigList(File i, File i2) throws Exception{
+		BioFileType filetype = Tools_Bio_File.detectFileType(i.getName());
+		BioFileType filetype2 = Tools_Bio_File.detectFileType(i2.getName());
+		switch(filetype){
+			case SAM:
+				if(filetype2 == BioFileType.FASTA || filetype2 == BioFileType.FAST_QUAL || filetype2 == BioFileType.FASTQ){
+					return new BasicContigList(i, i2, filetype);
+				}
+				else throw new UnsupportedTypeException("SAM file needs to have a fasta file, " 
+						+ i2.getName() + " is not detected as such");
+			default:
+			throw new UnsupportedTypeException("You are trying to get a sequence list from " 
+					+ filetype.toString() + " which is not yet supported");	
+		}
+	}
 }

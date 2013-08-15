@@ -36,10 +36,10 @@ public class Task_BlastAnalysis2 extends TaskXT{
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		blastRunID = this.getOption(cmd, "rb", -1);
-		evalue = this.getOption(cmd, "evalue", 0.001);
-		hit_no = this.getOption(cmd, "numbhits", 50);
-		output = this.getOption(cmd, "o", null);
+		blastRunID = getOption(cmd, "rb", -1);
+		evalue = getOption(cmd, "evalue", 0.001);
+		hit_no = getOption(cmd, "numbhits", 50);
+		output = getOption(cmd, "o", null);
 		unique = cmd.hasOption("unique");
 		OP_contig = cmd.hasOption("OP_contig");
 		OP_read = cmd.hasOption("OP_read");

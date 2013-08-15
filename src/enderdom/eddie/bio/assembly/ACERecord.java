@@ -1,19 +1,10 @@
 package enderdom.eddie.bio.assembly;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.sequence.BasicRegion;
-import enderdom.eddie.bio.sequence.BioFileType;
-import enderdom.eddie.bio.sequence.Contig;
 import enderdom.eddie.bio.sequence.GenericSequence;
 import enderdom.eddie.bio.sequence.SequenceObject;
-import enderdom.eddie.bio.sequence.UnsupportedTypeException;
-import enderdom.eddie.tools.Tools_Math;
 
 
 /**
@@ -34,28 +25,21 @@ import enderdom.eddie.tools.Tools_Math;
  * have a new Construcion there.
  * 
  */
-public class ACERecord implements Contig{
+public class ACERecord extends BasicContig{
 
 	private StringBuilder sequencebuffer;
 	private StringBuilder contigbuffer;
 	private StringBuilder qualitybuffer;
-	private String contigname;
-	private LinkedHashMap<String, SequenceObject> sequences;
 	private ArrayList<BasicRegion> regions;
 	private boolean finalised;
-	private int arraycount =0;
-	private int position =1;
 	private String currentread;
-	Logger logger = Logger.getLogger("ACEFileParser");
-	private int[][] offset;
 	private char[] compliments;
-	private int iteratorcount = 0;
 	
 	/**
 	 * Constructor
 	 */
 	public ACERecord(){
-		sequences = new LinkedHashMap<String, SequenceObject>();
+		super();
 		sequencebuffer = new StringBuilder();
 		qualitybuffer = new StringBuilder();
 		contigbuffer = new StringBuilder();
@@ -97,22 +81,6 @@ public class ACERecord implements Contig{
 		qualitybuffer.append(line+" ");//Added space, as the line break usually replaces space in quality strings
 	}
 	
-	/**
-	 * 
-	 * @return the reference name of this contig
-	 */
-	public String getContigName(){
-		return contigname;
-	}
-	
-	/**
-	 * Sets the reference name of this contig
-	 * @param name
-	 */
-	public void setContigName(String name){
-		//logger.trace("Contig name set as " + name);
-		this.contigname = name;
-	}
 	
 	/**
 	 * Set the number of reads to be added
@@ -148,8 +116,13 @@ public class ACERecord implements Contig{
 	 */
 	public void setReadName(String readname){
 		if(currentread!=null){
-			sequences.put(currentread, new GenericSequence(currentread, sequencebuffer.toString(), position));
-			position++;
+			if(sequences.containsKey(currentread)){
+				sequences.get(currentread).setSequence(sequencebuffer.toString());
+			}
+			else{
+				sequences.put(currentread, new GenericSequence(currentread, sequencebuffer.toString(), position));
+				position++;
+			}
 		}
 		sequencebuffer = new StringBuilder();
 		currentread=readname;
@@ -190,10 +163,15 @@ public class ACERecord implements Contig{
 	 * @param c expected to be 'C' or 'U'
 	 */
 	public void addOffSet(String name, int off, char c){
-		//logger.trace("Set readname " + name + " @" + arraycount);
-		offset[0][arraycount] = off-1;
-		compliments[arraycount] = c;
-		arraycount++;
+		int pos =-1;
+		if(!sequences.containsKey(name)){
+			sequences.put(name, new GenericSequence(name, null, position));
+			pos=position;
+			position++;
+		}
+		else pos = sequences.get(name).getPositionInList();
+		offset[0][pos-1] = off-1;
+		compliments[pos-1] = c;
 	}
 
 	/**
@@ -207,11 +185,12 @@ public class ACERecord implements Contig{
 	 * @param i3
 	 * @param i4
 	 */
-	public void addQA(int i1, int i2, int i3, int i4){
-		this.offset[1][arraycount-1] = i1-1;
-		this.offset[2][arraycount-1] = i2-1;
-		this.offset[3][arraycount-1] = i3-1;
-		this.offset[4][arraycount-1] = i4-1;
+	public void addQA(String name, int i1, int i2, int i3, int i4){
+		int s = sequences.get(name).getPositionInList();
+		this.offset[1][s-1] = i1-1;
+		this.offset[2][s-1] = i2-1;
+		this.offset[3][s-1] = i3-1;
+		this.offset[4][s-1] = i4-1;
 	}
 	
 	/**
@@ -223,16 +202,7 @@ public class ACERecord implements Contig{
 	public void addRegion(int i1, int i2, String readname){		
 		regions.add(new BasicRegion(i1, i2, 0, readname));
 	}
-	
 
-	/**
-	 * 
-	 * @return Consensus sequence as a SequenceObject
-	 */
-	public SequenceObject getConsensus(){
-		return sequences.get(contigname);
-	}
-	
 	/**
 	 * 
 	 * @param i
@@ -369,161 +339,5 @@ public class ACERecord implements Contig{
 		return this.compliments[read];
 	}
 
-	//Not all the relevant for ACErecord but
-	public int getN50() {
-		logger.error("Not implemented");
-		return 0;
-	}
-
-	public int[] getListOfLens() {
-		int[] lens = new int[this.getNoOfReads()];
-		int i=0;
-		for(String s : sequences.keySet()){
-			if(!s.equals(contigname)){
-				lens[i] = sequences.get(s).getLength();
-				i++;
-			}
-		}
-		return lens;
-	}
-	
-
-	public int[] getListOfActualLens() {
-		int[] lens = new int[this.getNoOfReads()];
-		int i=0;
-		for(String s : sequences.keySet()){
-			if(!s.equals(contigname)){
-				lens[i] = sequences.get(s).getActualLength();
-				i++;
-			}
-		}
-		return lens;
-	}
-
-	public int getNoOfMonomers() {
-		return Tools_Math.sum(getListOfActualLens());
-	}
-
-	public int getQuickMonomers() {
-		return Tools_Math.sum(getListOfLens());
-	}
-	
-	public int getNoOfSequences() {
-		return this.getNoOfReads();
-	}
-
-	public synchronized SequenceObject getSequence(int i) {
-		for(String s : sequences.keySet()){
-			if(sequences.get(s).getPositionInList()-1 == i){
-				return sequences.get(s);
-			}
-		}
-		return null;
-	}
-
-	public SequenceObject getSequence(String s) {
-		return sequences.get(s);
-	}
-		
-	public String[] saveFile(File file, BioFileType filetype) throws Exception {
-		logger.error("Not implemented");
-		return null;
-	}
-
-	public int loadFile(File file, BioFileType filetype) throws Exception,
-			UnsupportedTypeException {
-		logger.error("Not implemented");
-		return -1;
-	}
-
-	public boolean hasNext() {
-		return iteratorcount+1 < this.getNoOfReads();
-	}
-
-	public SequenceObject next() {
-		iteratorcount++;
-		return this.getSequence(iteratorcount);
-	}
-
-	public void remove() {
-		logger.error("Not implemented");
-	}
-
-	public int trimLeftAllContig() {
-		logger.error("Not implemented");
-		return 0;
-	}
-
-	public int trimRightAllContig() {
-		logger.error("Not implemented");
-		return 0; 
-	}
-
-	public Contig[] removeSectionAllContig(int opts) {
-		logger.error("Not implemented");
-		return null;
-	}
-
-	public String getName(){
-		return contigname;
-	}
-
-	public BioFileType getFileType() {
-		return BioFileType.ACE_SECTION;
-	}
-
-	public String getFileName() {
-		logger.error("Not implemented");
-		return null;
-	}
-
-	public String getFilePath() {
-		logger.error("Not implemented");
-		return null;
-	}
-
-	//TODO
-	public boolean canAddSequenceObjects() {
-		return false;
-	}
-
-	public void addSequenceObject(SequenceObject object) {
-		logger.error("Currently no support for add sequences to ACERecord");
-	}
-
-	public boolean canRemoveSequenceObjects() {
-		return false;
-	}
-
-	public void removeSequenceObject(String name) {
-		logger.error("Currently no support for add sequences to ACERecord");
-	}
-
-	public Set<String> keySet() {
-		return this.sequences.keySet();
-	}
-	
-	public int getCoverageAtBp(int position, int base) {
-		int coverage = 0;
-		for(int i =0; i < this.getNoOfReads(); i++){
-			char c = this.getCharAt(i, position, base);
-			if(c == '-' || c=='*');
-			else coverage++;
-		}
-		return coverage;
-	}
-
-	public char getCharAt(int sequencenumber, int position, int base) {
-		int offset = position-this.offset[0][sequencenumber]-base;
-		if(offset > -1 && offset < this.getSequence(sequencenumber).getSequence().length()){
-			return this.getSequence(sequencenumber).getSequence().charAt(position-this.offset[0][sequencenumber]-base);
-		}
-		else{
-			return '-';
-		}
-	}
-	
-	
-	
 }
 

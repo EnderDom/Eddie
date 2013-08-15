@@ -35,6 +35,7 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 
 	private boolean fastq;
 	int iteration =0;
+	int seqcount=0;
 	
 	public Fasta(){
 		sequences = new LinkedHashMap<String, SequenceObject>();
@@ -52,8 +53,9 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 			lengthCheck(title);
 		}
 		else{
-			sequences.put(title, new GenericSequence(title, sequence));
+			sequences.put(title, new GenericSequence(title, sequence, seqcount));
 		}
+		seqcount++;
 	}
 
 

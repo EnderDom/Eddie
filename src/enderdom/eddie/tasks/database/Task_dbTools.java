@@ -53,10 +53,10 @@ public class Task_dbTools extends TaskXT{
 		super.parseArgsSub(cmd);
 		readsasfasta = cmd.hasOption("readsasfasta");
 		readsasaln = cmd.hasOption("readsasaln");
-		output = this.getOption(cmd, "o", null);
-		input = this.getOption(cmd, "i", null);
-		contig = this.getOption(cmd, "c", null);
-		run_id = this.getOption(cmd, "run_id", -1);
+		output = getOption(cmd, "o", null);
+		input = getOption(cmd, "i", null);
+		contig = getOption(cmd, "c", null);
+		run_id = getOption(cmd, "run_id", -1);
 		all=(cmd.hasOption("run_id") || cmd.hasOption("all"));
 	}
 	

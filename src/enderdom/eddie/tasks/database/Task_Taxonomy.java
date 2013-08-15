@@ -55,12 +55,12 @@ public class Task_Taxonomy extends TaskXT{
 		speciesQuery=cmd.hasOption("OP_spec");
 		node=cmd.hasOption("OP_node");
 		speciesQuery=cmd.hasOption("OP_spec");
-		node_rank = this.getOption(cmd, "OP_node", "phylum");
-		output = this.getOption(cmd, "o", null);
-		blastRunID = this.getOption(cmd, "rb", -1);
-		hit_no = this.getOption(cmd, "no_hit", -1);
-		evalue = this.getOption(cmd, "evalue", -1.0);	
-		localdb = this.getOption(cmd, "ld", "nr");
+		node_rank = getOption(cmd, "OP_node", "phylum");
+		output = getOption(cmd, "o", null);
+		blastRunID = getOption(cmd, "rb", -1);
+		hit_no = getOption(cmd, "no_hit", -1);
+		evalue = getOption(cmd, "evalue", -1.0);	
+		localdb = getOption(cmd, "ld", "nr");
 		if(cmd.hasOption("nd")){
 			ncbidb = NCBI_DATABASE.valueOf(cmd.getOptionValue("nd").trim());
 			if(ncbidb == null){

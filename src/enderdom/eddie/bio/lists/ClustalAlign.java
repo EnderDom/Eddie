@@ -147,6 +147,7 @@ public class ClustalAlign extends BasicSequenceList{
 				sequences.get(name).extendRight(maxlength-sequences.get(name).getLength());
 			}
 			if(name.length() > namespacemax)namespacemax=name.length();
+			
 		}
 		while(count+linelen < maxlength){
 			for(String name : sequences.keySet()){
