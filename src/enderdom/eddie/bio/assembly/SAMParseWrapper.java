@@ -2,6 +2,7 @@ package enderdom.eddie.bio.assembly;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -25,7 +26,7 @@ public class SAMParseWrapper {
 	
 	public static Logger logger = Logger.getRootLogger();
 
-	public static Contig[] parseSAM(File f, File f2) throws Exception {
+	public static ArrayList<Contig> parseSAM(File f, File f2) throws Exception {
 		//Loading SAM file
 		logger.info("Loading SAM file...");
 		SAMFileReader reader = new SAMFileReader(IoUtil.openFileForReading(f));
@@ -71,7 +72,7 @@ public class SAMParseWrapper {
 			SAMRecord re = iterator.next();
 			if(contigs.containsKey(re.getReferenceName())){
 				Contig c = contigs.get(re.getReferenceName());
-				String[] redseqs = generateAlignedRead(re);
+				String[] redseqs = generateAlignedRead(re, c);
 				SequenceObject o = new GenericSequence(re.getReadName(), redseqs[0], redseqs[1], c.createPosition());
 				c.addSequenceObject(o);
 				c.setOffset(o.getIdentifier(), 0);//No offset needed as read is aligned
@@ -82,10 +83,10 @@ public class SAMParseWrapper {
 		}
 		System.out.println();
 		logger.info("SAM file parsed.");
-		return contigs.values().toArray(new Contig[0]);
+		return new ArrayList<Contig>(contigs.values());
 	}
 	
-	public static String[] generateAlignedRead(SAMRecord rec){
+	public static String[] generateAlignedRead(SAMRecord rec, Contig c){
 		StringBuffer b = new StringBuffer();
 		StringBuffer q = new StringBuffer();
 		int position = 1;
@@ -98,6 +99,7 @@ public class SAMParseWrapper {
 				if(qual !=null)q.append('!');
 				position++;
 			}
+			c.addRegion(block.getReadStart()-1, block.getReadStart()+block.getLength()-1, rec.getReadName());
 			b.append(read.substring(block.getReadStart()-1, block.getReadStart()+block.getLength()-1));
 			if(qual!=null)b.append(qual.substring(block.getReadStart()-1, block.getReadStart()+block.getLength()-1));
 			position+=block.getLength();

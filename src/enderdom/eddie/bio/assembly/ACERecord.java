@@ -30,10 +30,9 @@ public class ACERecord extends BasicContig{
 	private StringBuilder sequencebuffer;
 	private StringBuilder contigbuffer;
 	private StringBuilder qualitybuffer;
-	private ArrayList<BasicRegion> regions;
 	private boolean finalised;
 	private String currentread;
-	private char[] compliments;
+
 	
 	/**
 	 * Constructor
@@ -66,11 +65,11 @@ public class ACERecord extends BasicContig{
 	 * 
 	 */
 	public void addCurrentSequence(String line){
-		sequencebuffer.append(line);
+		sequencebuffer.append(line.replaceAll("-", "\\*"));
 	}
 	
 	public void addContigSequence(String line){
-		contigbuffer.append(line);
+		contigbuffer.append(line.replaceAll("-", "\\*"));
 	}
 	
 	/**
@@ -82,32 +81,6 @@ public class ACERecord extends BasicContig{
 	}
 	
 	
-	/**
-	 * Set the number of reads to be added
-	 * this should be done as this is were the 
-	 * read data objects are initialised
-	 * @param i
-	 */
-	public void setNumberOfReads(int i){
-		//logger.trace("Number of reads set to " + i);
-		this.offset = new int[5][i];
-		this.compliments = new char[i];
-	}
-	
-	/**
-	 * Sets the number of regions (BS)
-	 * 
-	 * @param i
-	 */
-	public void setNumberOfRegions(int i){
-		ArrayList<BasicRegion> regs = new ArrayList<BasicRegion>(i);
-		if(regions.size() !=0){
-			for(int j=0;j < regions.size(); j++){
-				regs.add(regions.get(j));
-			}
-		}
-		regions = regs;
-	}
 	
 	/**
 	 * Adds a read name to the contig, 
@@ -191,16 +164,6 @@ public class ACERecord extends BasicContig{
 		this.offset[2][s-1] = i2-1;
 		this.offset[3][s-1] = i3-1;
 		this.offset[4][s-1] = i4-1;
-	}
-	
-	/**
-	 * Add region for read 'readname'
-	 * @param i1
-	 * @param i2
-	 * @param readname
-	 */
-	public void addRegion(int i1, int i2, String readname){		
-		regions.add(new BasicRegion(i1, i2, 0, readname));
 	}
 
 	/**

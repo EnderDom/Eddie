@@ -1,5 +1,7 @@
 package enderdom.eddie.bio.sequence;
 
+import java.util.ArrayList;
+
 
 /**
  * 
@@ -13,6 +15,7 @@ package enderdom.eddie.bio.sequence;
 
 public interface Contig extends SequenceList {
 	
+	
 	public String getContigName();
 	
 	public void setContigName(String s);
@@ -20,6 +23,10 @@ public interface Contig extends SequenceList {
 	public SequenceObject getConsensus(); 
 	
 	public void setConsensus(SequenceObject s);
+	
+	public char getConsensusCompliment();
+	
+	public void setConsensusCompliment(char c);
 	
 	/**
 	 * Set the offset, how much to add to the leftmost base in order to align
@@ -37,6 +44,7 @@ public interface Contig extends SequenceList {
 	 */
 	public void setOffset(String s, int offset);
 
+	public int getOffset(String s);
 	
 	/**
 	 * I'm not really all the clear what range and padded range refer
@@ -51,6 +59,16 @@ public interface Contig extends SequenceList {
 	 */
 	public void setRange(String s, int start, int end);
 	
+	public int[] getRange(String s);
+	
+	public void setPaddedRange(String s, int start, int end);
+	
+	public int[] getPaddedRange(String s);
+	
+	public void setCompliment(String s, char c);
+	
+	public char getCompliment(String s);
+	
 	public int trimLeftAllContig();
 	
 	public int trimRightAllContig();
@@ -63,5 +81,13 @@ public interface Contig extends SequenceList {
 	public char getCharAt(int sequencenumber, int position, int base);
 
 	public int createPosition();
+	
+	public String[] getReadNames();
+	
+	public void addRegion(int i1, int i2, String readname);
+	
+	public ArrayList<BasicRegion> getRegions();
+	
+	
 	
 }

@@ -53,19 +53,19 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 		this.props = props;
 	}
 
-    public Properties loadPropertyFile(File file){
-    	return this.loadPropertyFile(file, new Properties());
+    public Properties loadPropertyFile(String file, boolean isLogging){
+    	return loadPropertyFile(new File(file), new Properties(), isLogging);
     }
     
-    public Properties loadPropertyFile(File file, Properties prop){
+    public Properties loadPropertyFile(File file, Properties prop, boolean isLogging){
     	 try{
             prop.load(new FileInputStream(file));
-            if(isLogging())	logger.info("Trying to load Properties File @"+file.getPath());
+            if(isLogging)	logger.info("Trying to load Properties File @"+file.getPath());
             else	preLog("Trying to load Properties File @ "+file.getPath());
         	return prop;
          }
          catch(FileNotFoundException fi) {
-        	 if(isLogging()){
+        	 if(isLogging){
         		 logger.error(fi);
         	 }
         	 else{
@@ -75,7 +75,7 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
         	 return null;
          }
          catch(IOException io) {
-        	 if(isLogging()){
+        	 if(isLogging){
         		 logger.error(io);
         	 }
         	 else{
@@ -85,6 +85,42 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
         	 return null;
          }
     }
+    
+	
+	public boolean checkPropertiesAndLoadFile(String path){
+		return checkPropertiesAndLoadFile(new File(path));
+	}
+	
+	public boolean checkPropertiesAndLoadFile(File propsfile){
+		preLog("Attempting to load file from "+ propsfile.getPath()+"...");
+		if(propsfile.isFile() && propsfile.canWrite()){
+			preLog("File exists, loading...");
+			this.props = loadPropertyFile(propsfile, this.props, this.isLogging());
+			propfile = propsfile;
+			return true;
+		}
+		else if(propsfile.isFile() && !propsfile.canWrite()){
+			preLog("File exists, but it cannot be written to.");
+			return false;
+		}
+		else if(!propsfile.exists()){
+			try{
+				preLog("File doesn't exist, creating...");
+				propsfile.getParentFile().mkdirs();
+				if(propsfile.createNewFile()){
+					propfile = propsfile;
+					return true;
+				}
+				else return false;
+			}
+			catch(IOException io){
+				preLog("Error thrown, can't create file at "+propsfile.getPath());
+				io.printStackTrace();
+				return false;
+			}
+		}
+		else return false;
+	}
     
     public boolean savePropertyFile(File file, Properties props1){
 		return this.savePropertyFile(file.getPath(), props1);

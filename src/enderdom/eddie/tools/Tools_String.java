@@ -238,5 +238,6 @@ public abstract class Tools_String {
 		}
 		else return name=name.substring(0,x);
 	}
+
 	
 }

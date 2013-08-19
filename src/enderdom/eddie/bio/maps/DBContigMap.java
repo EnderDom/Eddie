@@ -9,7 +9,7 @@ import enderdom.eddie.tools.Tools_Math;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
-public class Contig2ContigMap {
+public class DBContigMap {
 
 	/**
 	 * Creates A map of read IDs for a Contig
@@ -38,7 +38,7 @@ public class Contig2ContigMap {
 	 * @param div2 (The 6 letter division id of the assembly you wish to match
 	 * this contig to)
 	 */
-	public Contig2ContigMap(int run_id){
+	public DBContigMap(int run_id){
 	
 	}
 	
@@ -230,7 +230,7 @@ public class Contig2ContigMap {
 	 * there is a bug in this method or one of the mapping
 	 * methods
 	 */
-	public boolean validateMap(Contig2ContigMap contig){
+	public boolean validateMap(DBContigMap contig){
 		int[][] a = contig.getUniqsAndSizes();
 		int sizeOfThisInOther = 0;
 		int sizeOfOtherInThis = 0;

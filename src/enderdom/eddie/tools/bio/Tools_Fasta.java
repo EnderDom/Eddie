@@ -28,6 +28,45 @@ public class Tools_Fasta {
 		return phrap.toString();
 	}
 	
+	public static String Fastq2QualwNewline4ACE(String qual, int linesize){
+		StringBuilder phrap = new StringBuilder();
+		int line = 0;
+		phrap.append(" ");
+		for(int i =0; i < qual.length(); i++){
+			int ascii = (int)qual.charAt(i)-33;
+			if(ascii < 10){
+				phrap.append(ascii + "  ");
+			}
+			else{
+				phrap.append(ascii + " ");
+			}
+			if(phrap.length() > linesize+line){
+				phrap.append(newline+" ");
+				line = phrap.length();
+			}
+		}
+		return phrap.toString();
+	}
+	
+	public static String Fastq2QualwNewline(String qual, int linesize){
+		StringBuilder phrap = new StringBuilder();
+		int line = 0;
+		for(int i =0; i < qual.length(); i++){
+			int ascii = (int)qual.charAt(i)-33;
+			if(ascii < 10){
+				phrap.append(ascii + "  ");
+			}
+			else{
+				phrap.append(ascii + " ");
+			}
+			if(phrap.length() > linesize+line){
+				phrap.append(newline);
+				line = phrap.length();
+			}
+		}
+		return phrap.toString();
+	}
+	
 	
 	/*
 	 * Converts quality string into int array then into

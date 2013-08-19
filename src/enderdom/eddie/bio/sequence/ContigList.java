@@ -1,13 +1,10 @@
 package enderdom.eddie.bio.sequence;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 public interface ContigList extends Iterator<Contig>{
-	
-	public static int ACE = 0;
-	public static int SAM = 1;
-	public static int BAM = 2; 
 	
 	public Contig getContig(String name);
 	
@@ -17,8 +14,16 @@ public interface ContigList extends Iterator<Contig>{
 	
 	public LinkedHashMap<String, String> getConsensusAsMap();
 	
-	public int size();
+	public int getNoOfContigs();
 	
+	public int getNoOfReads();
 	
+	public void addContig(Contig c);
+	
+	public void save(File f, BioFileType t) throws Exception;
+	
+	public void load(File f, File f1, BioFileType t)throws Exception;
+	
+	public void load(File f, BioFileType t) throws Exception;
 	
 }

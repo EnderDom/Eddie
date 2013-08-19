@@ -1,7 +1,5 @@
 package enderdom.eddie.ui;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Properties;
 
 import enderdom.eddie.cli.LazyPosixParser;
@@ -140,48 +138,14 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 	public boolean loadProperties(){
 		//Look first in the surrounding file
 		String slash = Tools_System.getFilepathSeparator();
-		if(loadPropertiesFromFile(Tools_File.getEnvirons(this)+propertyfilename))return true;
+		if(checkPropertiesAndLoadFile(Tools_File.getEnvirons(this)+propertyfilename))return true;
 		//Then in the home directory
-		if(loadPropertiesFromFile(System.getProperty("user.home")+slash+".eddie"+slash+propertyfilename))return true;
+		if(checkPropertiesAndLoadFile(System.getProperty("user.home")+slash+".eddie"+slash+propertyfilename))return true;
 		
 		preLog("ERROR: don't have permission to save settings in either local folder of user home directory");
 		return false;
 	}
-	
-	public boolean loadPropertiesFromFile(String path){
-		return loadPropertiesFromFile(new File(path));
-	}
-	
-	public boolean loadPropertiesFromFile(File propsfile){
-		preLog("Attempting to load file from "+ propsfile.getPath()+"...");
-		if(propsfile.isFile() && propsfile.canWrite()){
-			preLog("File exists, loading...");
-			this.loadPropertyFile(propsfile, this.props);
-			propfile = propsfile;
-			return true;
-		}
-		else if(propsfile.isFile() && !propsfile.canWrite()){
-			preLog("File exists, but it cannot be written to.");
-			return false;
-		}
-		else if(!propsfile.exists()){
-			try{
-				preLog("File doesn't exist, creating...");
-				propsfile.getParentFile().mkdirs();
-				if(propsfile.createNewFile()){
-					propfile = propsfile;
-					return true;
-				}
-				else return false;
-			}
-			catch(IOException io){
-				preLog("Error thrown, can't create file at "+propsfile.getPath());
-				io.printStackTrace();
-				return false;
-			}
-		}
-		else return false;
-	}
+
 	
 	public void setDefaultProperties(){
 		String slash = Tools_System.getFilepathSeparator();

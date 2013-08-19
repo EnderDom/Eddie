@@ -221,10 +221,10 @@ public class ACEFileParser implements Iterator<Contig>{
 			l = Tools_String.parseString2Int(s[4]);
 			if(l!=null)this.currentrecord.setNumberOfRegions(l);
 			else logger.error("Error parsing number of BS regions for contig " + line);
-//			if(s[5].length() == 1){
-//				char c = s[5].charAt(0);
-//				//As yet i've not seen any use for this  
-//			}
+			if(s[5].length() == 1){
+				char c = s[5].charAt(0);
+				this.currentrecord.setConsensusCompliment(c);  
+			}
 			logger.trace("Parsed contig: " + s[1] + " as having AS: " + s[3] + " & BS: " + l);
 		}
 		else{

@@ -1,12 +1,14 @@
 package enderdom.eddie.bio.assembly;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.lists.ClustalAlign;
+import enderdom.eddie.bio.sequence.BasicRegion;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.Contig;
 import enderdom.eddie.bio.sequence.GenericSequence;
@@ -22,7 +24,10 @@ public class BasicContig implements Contig{
 	protected Logger logger = Logger.getRootLogger();
 	protected int iteratorcount = 0;
 	protected int[][] offset;
+	protected char[] compliments;
 	protected int position = 1;
+	private char comcomp;
+	protected ArrayList<BasicRegion> regions;
 	
 	public BasicContig(){
 		this.sequences = new LinkedHashMap<String, SequenceObject>();
@@ -129,14 +134,18 @@ public class BasicContig implements Contig{
 
 	public void setNumberOfReads(int i){
 		this.offset = new int[5][i];
+		this.compliments = new char[i];
 	}
 	
 	public void resetNumberOfReads(int iniu){
 		int[][] temp = new int[5][iniu];
+		char[] temp2 = new char[iniu];
 		for(int i =0; i < offset[0].length; i++){
 			for(int j = 0; j < 5; j++)temp[j][i] = offset[j][i];
+			temp2[i] = this.compliments[i];
 		}
 		offset = temp;
+		
 	}
 
 	public String getFileName() {
@@ -244,9 +253,14 @@ public class BasicContig implements Contig{
 	
 	public void setRange(String s, int start, int stop){
 		checkSequence(s);
-		checkSequence(s);
 		offset[1][sequences.get(s).getPositionInList()-1]= start;
 		offset[2][sequences.get(s).getPositionInList()-1]= stop;
+	}
+	
+	public void setPaddedRange(String s, int start, int stop){
+		checkSequence(s);
+		offset[3][sequences.get(s).getPositionInList()-1]= start;
+		offset[4][sequences.get(s).getPositionInList()-1]= stop;
 	}
 
 	private void checkSequence(String s) {
@@ -256,11 +270,19 @@ public class BasicContig implements Contig{
 		}
 	}
 
-	public void checkOffset(int index){
+	private void checkOffset(int index){
 		if(offset == null){
 			this.setNumberOfReads(index+1);
 		}
 		else if (offset.length <= index)this.resetNumberOfReads(index+1);
+		else return;
+	}
+	
+	private void checkCompliment(int index){
+		if(compliments == null){
+			this.setNumberOfReads(index+1);
+		}
+		else if (compliments.length <= index)this.resetNumberOfReads(index+1);
 		else return;
 	}
 
@@ -269,9 +291,88 @@ public class BasicContig implements Contig{
 	}
 
 	public void setOffset(String s, int off) {
-		checkOffset(position);
 		checkSequence(s);
+		checkOffset(position);
 		this.offset[0][sequences.get(s).getPositionInList()-1] = off;
+	}
+
+	public String[] getReadNames() {
+		String[] str = new String[this.getNoOfSequences()];
+		for(String s : this.sequences.keySet()){
+			int i = this.sequences.get(s).getPositionInList();
+			if(i != 0){
+				str[i] = this.sequences.get(s).getIdentifier();
+			}
+		}
+		return str;
+	}
+
+	public int getOffset(String s) {
+		return this.offset[0][this.sequences.get(s).getPositionInList()-1];
+	}
+
+	public int[] getRange(String s) {
+		return new int[]{
+			this.offset[1][this.sequences.get(s).getPositionInList()-1],
+			this.offset[2][this.sequences.get(s).getPositionInList()-1],
+		};
+	}
+	
+
+	public int[] getPaddedRange(String s) {
+		return new int[]{
+			this.offset[3][this.sequences.get(s).getPositionInList()-1],
+			this.offset[4][this.sequences.get(s).getPositionInList()-1],
+		};
+	}
+
+	public void setCompliment(String s, char c) {
+		this.checkSequence(s);
+		this.checkCompliment(position);
+		this.compliments[sequences.get(s).getPositionInList()-1]=c;
+		
+	}
+
+	public char getCompliment(String s) {
+		return this.compliments[this.sequences.get(s).getPositionInList()-1];
+	}
+
+
+	/**
+	 * Sets the number of regions (BS)
+	 * 
+	 * @param i
+	 */
+	public void setNumberOfRegions(int i){
+		ArrayList<BasicRegion> regs = new ArrayList<BasicRegion>(i);
+		if(regions.size() !=0){
+			for(int j=0;j < regions.size(); j++){
+				regs.add(regions.get(j));
+			}
+		}
+		regions = regs;
+	}
+	
+	/**
+	 * Add region for read 'readname'
+	 * @param i1
+	 * @param i2
+	 * @param readname
+	 */
+	public void addRegion(int i1, int i2, String readname){		
+		regions.add(new BasicRegion(i1, i2, 0, readname));
+	}
+
+	public ArrayList<BasicRegion> getRegions() {
+		return this.regions;
+	}
+
+	public char getConsensusCompliment() {
+		return this.comcomp;
+	}
+
+	public void setConsensusCompliment(char c) {
+		this.comcomp = c;
 	}
 
 	
