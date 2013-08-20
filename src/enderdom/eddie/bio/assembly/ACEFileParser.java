@@ -117,10 +117,10 @@ public class ACEFileParser implements Iterator<Contig>{
 		try{
 			while((currentline=mReader.readLine()) != null && !currentline.startsWith("CO ")){
 				//space or { added else it could look like a sequence (particularly CT) #facepalm
-				if(currentline.startsWith("BQ ")){
+				if(currentline.startsWith("BQ")){
 					/*
 					 * All the files I've seen have no quality data on the same line
-					 * as the BQ, but I don't trust biologists thus I have this check:
+					 * as the BQ, but I don't trust people so I have this check:
 					 */
 					currentline = currentline.substring(2, currentline.length());
 					if(currentline.trim().length() == 0){
@@ -187,7 +187,7 @@ public class ACEFileParser implements Iterator<Contig>{
 		switch(sw){
 			case 0: parseAS(line);break;//AS
 			case 1: parseFirstCO(line);break; //CO
-			case 2: this.currentrecord.addContigSequence(line);//CO_
+			case 2: this.currentrecord.addContigSequence(line);break;//CO_
 			case 3: this.currentrecord.addQuality(line);break;//BQ
 			case 4: parseFirstRD(line);break;//RD
 			case 5: this.currentrecord.addCurrentSequence(line);break;//RD_
@@ -197,7 +197,7 @@ public class ACEFileParser implements Iterator<Contig>{
 			case 9: break;//CT <-- not yet dealt with
 			case 10: break;//DS
 			case 11: break;//Break == Do nothing
-			case 12: logger.warn("EOF reached, this message should not be reached, which means if you're reading this... err..?");//DO Nothing
+			case 12: logger.warn("EOF reached, this message should not be reached, which means if you're reading this... err..?");break;//DO Nothing
 			default: logger.error("This message indicates an error occured previously");
 		}
 	}
@@ -215,9 +215,9 @@ public class ACEFileParser implements Iterator<Contig>{
 			else{
 				logger.error("Parse Abberation, number after contig name is NaN");
 			}
-			l = Tools_String.parseString2Int(s[3]);
-			if(l!=null)this.currentrecord.setNumberOfReads(l);
-			else logger.error("Error parsing number of reads for contig " + line);			
+			//l = Tools_String.parseString2Int(s[3]);
+			//if(l!=null)this.currentrecord.setNumberOfReads(l);
+			//else logger.error("Error parsing number of reads for contig " + line);			
 			l = Tools_String.parseString2Int(s[4]);
 			if(l!=null)this.currentrecord.setNumberOfRegions(l);
 			else logger.error("Error parsing number of BS regions for contig " + line);
@@ -248,7 +248,7 @@ public class ACEFileParser implements Iterator<Contig>{
 			Integer l2 = Tools_String.parseString2Int(s[3]);
 			Integer l3 = Tools_String.parseString2Int(s[4]);
 			if(l2 == 0 && l3 == 0){
-				
+				//Er???
 			}
 			else{
 				if(warn ==0){
@@ -283,7 +283,8 @@ public class ACEFileParser implements Iterator<Contig>{
 		if(s.length >3){
 			Integer l = Tools_String.parseString2Int(s[3]);
 			if(l != null && s[2].length() ==1){
-				this.currentrecord.addOffSet(s[1], l, s[2].charAt(0));
+				this.currentrecord.setOffset(s[1],l,1);
+				this.currentrecord.setCompliment(s[1], s[2].charAt(0));				
 			}
 			else{
 				logger.error("Offset data is borked line: "+line);
@@ -300,7 +301,7 @@ public class ACEFileParser implements Iterator<Contig>{
 			Integer l1 = Tools_String.parseString2Int(s[1]);
 			Integer l2 = Tools_String.parseString2Int(s[2]);
 			if(l1 != null && l2 !=null){
-				this.currentrecord.addRegion(l1, l2, s[3]);
+				this.currentrecord.addRegion(l1, l2, s[3], 1);
 			}
 			else{
 				logger.error("Offset data is borked line: "+line);
@@ -320,7 +321,8 @@ public class ACEFileParser implements Iterator<Contig>{
 			Integer l4 = Tools_String.parseString2Int(s[4]);
 			
 			if(l1 != null && l2 !=null && l3 != null && l4 != null){
-				this.currentrecord.addQA(currentread,l1,l2,l3,l4);
+				this.currentrecord.setRange(currentread, l1, l2, 1);
+				this.currentrecord.setPaddedRange(currentread, l3, l4, 1);
 			}
 			else{
 				logger.error("Offset data is borked line: "+line);

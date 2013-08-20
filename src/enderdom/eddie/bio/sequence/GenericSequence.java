@@ -15,11 +15,11 @@ import enderdom.eddie.tools.bio.Tools_Sequences;
  */
 public class GenericSequence implements SequenceObject{
 	
-	private String sequence;
-	private String Identifier;
-	private String quality; //QUALITY STORED AS FASTQ 
-	private int type = -1;
-	private int positioninlist = -1;
+	protected String sequence;
+	protected String Identifier;
+	protected String quality; //QUALITY STORED AS FASTQ 
+	protected int type = -1;
+	protected int positioninlist = -1;
 	Logger logger = Logger.getRootLogger();
 	
 	public GenericSequence(String Identifier){

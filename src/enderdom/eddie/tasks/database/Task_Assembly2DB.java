@@ -288,18 +288,18 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		int bioentry_id = bs.getBioEntry(manager.getCon(), identifier, null, biodatabase_id);
 		if(bioentry_id < 1)bs.getBioEntrywName(manager.getCon(), record.getConsensus().getIdentifier());
 		if(bioentry_id > 0){
-			for(int i =0; i < record.getNoOfReads() ; i++){
-				String read = record.getReadName(i);
+			int i =0;
+			for(String read : record.getReadNames()){
 				int read_id = bs.getBioEntry(manager.getCon(), read, read, biodatabase_id);
 				if(read_id < 0){
 					logger.error("Oh dear read "+ read + " does not seem to be in the database we cannot map reads not int the db");
 					return false;
 				}
 				else{
-					int offset = record.getReadOffset(i);
+					int offset = record.getOffset(read, 0);
 					int start = offset;
-					int end = offset+record.getRead(i).getLength();				
-					char c = record.getReadCompliment(i);
+					int end = offset+record.getSequence(read).getLength();				
+					char c = record.getCompliment(read);
 					@SuppressWarnings("unused")
 					int comp = 0;
 					if(c == 'C'){
@@ -311,7 +311,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 						logger.error("Read mapping has failed");
 						return false;
 					}
-					System.out.print("\r"+"Contig No>:"+count+", mapping Read No.:"+i);
+					System.out.print("\r"+"Contig No>:"+count+", mapping Read No.:"+(i++));
 				}
 			}
 			return true;

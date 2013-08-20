@@ -20,7 +20,7 @@ public interface Contig extends SequenceList {
 	
 	public void setContigName(String s);
 	
-	public SequenceObject getConsensus(); 
+	public SequenceObjectXT getConsensus(); 
 	
 	public void setConsensus(SequenceObject s);
 	
@@ -42,9 +42,9 @@ public interface Contig extends SequenceList {
 	 * READ: -TGTGTG
 	 * 
 	 */
-	public void setOffset(String s, int offset);
+	public void setOffset(String s, int offset, int base);
 
-	public int getOffset(String s);
+	public int getOffset(String s, int base);
 	
 	/**
 	 * I'm not really all the clear what range and padded range refer
@@ -57,13 +57,13 @@ public interface Contig extends SequenceList {
 	 * @param start
 	 * @param end
 	 */
-	public void setRange(String s, int start, int end);
+	public void setRange(String s, int start, int end, int base);
 	
-	public int[] getRange(String s);
+	public int[] getRange(String s, int base);
 	
-	public void setPaddedRange(String s, int start, int end);
+	public void setPaddedRange(String s, int start, int end, int base);
 	
-	public int[] getPaddedRange(String s);
+	public int[] getPaddedRange(String s, int base);
 	
 	public void setCompliment(String s, char c);
 	
@@ -78,13 +78,13 @@ public interface Contig extends SequenceList {
 	public int getCoverageAtBp(int i, int base);
 	
 	//Gets char based on underlying file, ie includes '*' in consensuse
-	public char getCharAt(int sequencenumber, int position, int base);
+	public char getCharAtRelative2Contig(String s, int position, int base);
 
 	public int createPosition();
 	
 	public String[] getReadNames();
 	
-	public void addRegion(int i1, int i2, String readname);
+	public void addRegion(int i1, int i2, String readname, int base);
 	
 	public ArrayList<BasicRegion> getRegions();
 	

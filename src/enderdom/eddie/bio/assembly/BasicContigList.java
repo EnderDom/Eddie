@@ -21,7 +21,7 @@ public class BasicContigList implements ContigList{
 	Logger logger = Logger.getRootLogger();
 	
 	public BasicContigList(){
-		
+		records = new ArrayList<Contig>();
 	}
 	
 	public BasicContigList(ArrayList<Contig> list){
@@ -29,10 +29,12 @@ public class BasicContigList implements ContigList{
 	}
 
 	public BasicContigList(File f, BioFileType t) throws Exception{
+		records = new ArrayList<Contig>();
 		load(f, t);
 	}
 	
 	public BasicContigList(File f, File f2, BioFileType t) throws Exception{
+		records = new ArrayList<Contig>();
 		load(f, f2, t);
 	}
 	

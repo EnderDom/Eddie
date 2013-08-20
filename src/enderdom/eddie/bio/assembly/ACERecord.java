@@ -3,8 +3,9 @@ package enderdom.eddie.bio.assembly;
 import java.util.ArrayList;
 
 import enderdom.eddie.bio.sequence.BasicRegion;
-import enderdom.eddie.bio.sequence.GenericSequence;
+import enderdom.eddie.bio.sequence.GenericSequenceXT;
 import enderdom.eddie.bio.sequence.SequenceObject;
+import enderdom.eddie.tools.bio.Tools_Fasta;
 
 
 /**
@@ -32,7 +33,6 @@ public class ACERecord extends BasicContig{
 	private StringBuilder qualitybuffer;
 	private boolean finalised;
 	private String currentread;
-
 	
 	/**
 	 * Constructor
@@ -81,7 +81,6 @@ public class ACERecord extends BasicContig{
 	}
 	
 	
-	
 	/**
 	 * Adds a read name to the contig, 
 	 * this triggers the previous read to be finalised 
@@ -93,7 +92,7 @@ public class ACERecord extends BasicContig{
 				sequences.get(currentread).setSequence(sequencebuffer.toString());
 			}
 			else{
-				sequences.put(currentread, new GenericSequence(currentread, sequencebuffer.toString(), position));
+				sequences.put(currentread, new GenericSequenceXT(currentread, sequencebuffer.toString(), position));
 				position++;
 			}
 		}
@@ -120,50 +119,19 @@ public class ACERecord extends BasicContig{
 	 * etc.
 	 */
 	public void finalise(){
-		sequences.put(contigname, new GenericSequence(this.contigname, this.contigbuffer.toString(), 
-				this.qualitybuffer.toString(),0));
+		if(sequences.get(contigname)==null){
+			sequences.put(contigname, new GenericSequenceXT(this.contigname, this.contigbuffer.toString(), 
+					Tools_Fasta.Qual2Fastq(this.qualitybuffer.toString()),0));
+		}
+		else{
+			sequences.get(contigname).setSequence(this.contigbuffer.toString());
+			sequences.get(contigname).setQuality(Tools_Fasta.Qual2Fastq(this.qualitybuffer.toString()));
+		}
 		setReadName(currentread);
 		this.sequencebuffer = null;
 		this.contigbuffer = null;
+		this.qualitybuffer = null;
 		setFinalised(true);
-	}
-
-	
-	/**
-	 * Add offset 'off' to read 'name' with complimentation 'c'
-	 * @param name
-	 * @param off
-	 * @param c expected to be 'C' or 'U'
-	 */
-	public void addOffSet(String name, int off, char c){
-		int pos =-1;
-		if(!sequences.containsKey(name)){
-			sequences.put(name, new GenericSequence(name, null, position));
-			pos=position;
-			position++;
-		}
-		else pos = sequences.get(name).getPositionInList();
-		offset[0][pos-1] = off-1;
-		compliments[pos-1] = c;
-	}
-
-	/**
-	 * 
-	 * Assumes QA for read comes after read sequence thus readcount-1
-	 * if it doesn't this will cause errors, as yet
-	 * this errors will go uncaught
-	 * 
-	 * @param i1
-	 * @param i2
-	 * @param i3
-	 * @param i4
-	 */
-	public void addQA(String name, int i1, int i2, int i3, int i4){
-		int s = sequences.get(name).getPositionInList();
-		this.offset[1][s-1] = i1-1;
-		this.offset[2][s-1] = i2-1;
-		this.offset[3][s-1] = i3-1;
-		this.offset[4][s-1] = i4-1;
 	}
 
 	/**
@@ -188,7 +156,6 @@ public class ACERecord extends BasicContig{
 		return sequences.get(name);
 	}
 	
-	
 	/**
 	 * 
 	 * @param name
@@ -197,110 +164,9 @@ public class ACERecord extends BasicContig{
 	 * using index
 	 */
 	public int getReadIndex(String name){
-		return sequences.get(name).getPositionInList();
+		return sequences.get(name).getPositionInList()-1;
 	}
 	
-	/**
-	 * 
-	 * @param index
-	 * @return read at that index
-	 */
-	public String getReadName(int index){
-		return this.getRead(index).getIdentifier();
-	}
-	
-	/**
-	 * 
-	 * @return self explanatory
-	 */
-	public int getNoOfReads(){
-		return this.sequences.size()-1;
-	}
-	
-	/**
-	 * Get offset for read at i in contig
-	 * @param i
-	 * @return int
-	 */
-	public int getReadOffset(int i){
-		return offset[0][i];
-	}
-	
-	/**
-	 * @param i
-	 * @return two values, start and end of range, as a int[].length ==2
-	 */
-	public int[] getReadRange(int i){
-		return new int[]{offset[1][i], offset[2][i]};
-	}
-	
-	/**
-	 * @param i
-	 * @return two values, start and end of range, as a int[].length ==2
-	 */
-	public int[] getReadRangePadded(int i){
-		return new int[]{offset[3][i], offset[4][i]};
-	}
-	
-	/**
-	 * 
-	 * INDEV
-	 * Not sure what to do about the fact that coverage is often
-	 * considered as length/no. of bps, as such bps which are not
-	 * actually in the consensus are included in the coverage count
-	 * but when we consider the contig, on a per-bp basis, this causes
-	 * a minor issue, to we include the nucleotides, not actual aligned
-	 * to the consensus contig, in this case I haven't
-	 * 
-	 *  @return Returns an int array of length equal to consensus, each
-	 *  position has an integer value which is a count of bps in 
-	 *  read at equivalent aligned position should be equivalent to coverage
-	 *  
-	 */
-	public int[] getDepthMap(){
-		int[] arr = new int[this.getConsensus().getActualLength()];
-		SequenceObject seq = sequences.get(contigname);
-		int actuallength = 0;
-		int depth=0;
-		for(int i =0; i < seq.getSequence().length(); i++){
-			if(seq.getSequence().charAt(i) != '-'){
-				depth=0;
-				for(int j =0; j < this.getNoOfReads(); j++){
-					int l = this.getReadOffset(j);
-					if(i >= l && i < this.getReadRange(j)[1]+l){
-						//TODO consider BS inclusion ranges <-- at the moment this is inaccurate without them						
-						if(this.getRead(j).getSequence().charAt(i+l) != '-' && this.getRead(j).getSequence().charAt(i+l) != '*'){
-							depth++;
-						}
-					}
-				}
-				arr[actuallength] = depth;
-				actuallength++;
-			}
-		}
-		return arr;
-	}
-	
-	/**
-	 * @return Total Sum of lengths of all reads minus non-bp (ie '*'/'-')
-	 */
-	public int getTotalBpofReads(){
-		int r =0;
-		for(int i =0; i < this.getNoOfReads(); i++){
-			r+=this.getRead(i).getActualLength();
-		}
-		return r;
-	}
-	
-	/**
-	 * 
-	 * @param read index
-	 * @return a char, should be 'C' or 'U', but this
-	 * isn't checked
-	 */
-	public char getReadCompliment(int read){
-		return this.compliments[read];
-	}
 
 }
 

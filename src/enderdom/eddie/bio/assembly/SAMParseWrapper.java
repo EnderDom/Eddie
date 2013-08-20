@@ -25,6 +25,7 @@ import enderdom.eddie.bio.sequence.SequenceObject;
 public class SAMParseWrapper {
 	
 	public static Logger logger = Logger.getRootLogger();
+	private static int sambase = 1;
 
 	public static ArrayList<Contig> parseSAM(File f, File f2) throws Exception {
 		//Loading SAM file
@@ -75,7 +76,7 @@ public class SAMParseWrapper {
 				String[] redseqs = generateAlignedRead(re, c);
 				SequenceObject o = new GenericSequence(re.getReadName(), redseqs[0], redseqs[1], c.createPosition());
 				c.addSequenceObject(o);
-				c.setOffset(o.getIdentifier(), 0);//No offset needed as read is aligned
+				c.setOffset(o.getIdentifier(), 0,0);//No offset needed as read is aligned
 				System.out.print("\r"+(count++));
 			}
 			else throw new IOException("Failed to parse SAM" +
@@ -99,7 +100,7 @@ public class SAMParseWrapper {
 				if(qual !=null)q.append('!');
 				position++;
 			}
-			c.addRegion(block.getReadStart()-1, block.getReadStart()+block.getLength()-1, rec.getReadName());
+			c.addRegion(block.getReadStart()-1, block.getReadStart()+block.getLength()-1, rec.getReadName(), sambase);
 			b.append(read.substring(block.getReadStart()-1, block.getReadStart()+block.getLength()-1));
 			if(qual!=null)b.append(qual.substring(block.getReadStart()-1, block.getReadStart()+block.getLength()-1));
 			position+=block.getLength();

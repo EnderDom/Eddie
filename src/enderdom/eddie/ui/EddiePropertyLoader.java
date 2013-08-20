@@ -28,7 +28,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
      * though this one has been written from scratch
      */
     public static int engineversion = 4;
-    public static double subversion = 0.55;
+    public static double subversion = 0.56;
     public static String edition = "Development";
     public String[] actions;
 	
@@ -41,6 +41,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 	private String[] defaulttooltips;
 	
 	public EddiePropertyLoader(String[] args) {
+		setLogname("eddie.log");
 		this.props = new Properties();
 		/*
 		 * Load properties and then set default properties if property doesn't exist,
@@ -125,7 +126,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 			buildOptions();
 		}
 		HelpFormatter help = new HelpFormatter();
-		help.printHelp("ls", "-- Eddie v"+(engineversion+subversion)+" Help Menu --", options, "-- Share And Enjoy! --");
+		help.printHelp("java -jar Eddie.jar [args]", "-- Eddie v"+(engineversion+subversion)+" Help Menu --", options, "-- Share And Enjoy! --");
 		System.out.println();
 		System.out.println("Use -task for list of command line tasks");
 		System.out.println("Use -task taskname -opts for that task's helpmenu");
@@ -220,8 +221,12 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 		return db;
 	}
 	
-	public static double getFullVersion(){
+	public static double getVersion(){
 		return engineversion+subversion;
+	}
+	
+	public static String getFullVersion(){
+		return new String(engineversion+"."+(int)(subversion*100));
 	}
 
 	public boolean isTest() {

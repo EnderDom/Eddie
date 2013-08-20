@@ -23,6 +23,7 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 	protected Level level = Level.DEBUG;
 	public static String defaultlnf =  "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
 	public static int numbercache = 0;
+	protected String logname;
 	
 	public void setValue(String prop, String value){
 		props.setProperty(prop, value);
@@ -171,7 +172,7 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 		Properties defaults = new Properties();
 		//Set Log File Properties
 		defaults.setProperty("log4j.appender.rollingFile", "org.apache.log4j.RollingFileAppender");
-		defaults.setProperty("log4j.appender.rollingFile.File", logfilepath+"eddie.log");
+		defaults.setProperty("log4j.appender.rollingFile.File", logfilepath);
 		defaults.setProperty("log4j.appender.rollingFile.MaxFileSize", "10MB");
 		defaults.setProperty("log4j.appender.rollingFile.MaxBackupIndex", "3");
 		defaults.setProperty("log4j.appender.rollingFile.layout", "org.apache.log4j.PatternLayout");
@@ -200,7 +201,6 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 		if (!logfolder.exists()) {
 			boolean done = logfolder.mkdir();
 			if(!done)System.out.println("Could not make a log folder @ " + logfolder.getPath());
-			else return false;
 		}
 		if(logfolder.isDirectory()){
             File log_properties = new File(logfolder.getPath()+slash+"log4j.properties");
@@ -210,7 +210,7 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
             }
             //If properties never written, use defaults
             else{
-                Properties defaults = getDefaultLogProperties(logfolder.getPath()+slash);
+                Properties defaults = getDefaultLogProperties(logfolder.getPath()+slash+getLogname());
                 savePropertyFile(log_properties.getPath(), defaults);
                 configureProps(log_properties.getPath(), defaults);
             }
@@ -243,6 +243,14 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 	
 	public String getPropertyFilePath(){
 		return this.propfile.getPath();
+	}
+
+	public String getLogname() {
+		return logname;
+	}
+
+	public void setLogname(String logname) {
+		this.logname = logname;
 	}
 }
 

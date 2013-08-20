@@ -88,8 +88,8 @@ public class Task_Assembly extends TaskXTwIO{
 							lengths[count]=-1;
 						}
 						else{
-							totalread+=record.getNoOfReads();
-							totalbp+=record.getTotalBpofReads();
+							totalread+=record.getNoOfSequences();
+							totalbp+=record.getQuickMonomers();
 						}
 						count++;
 					}

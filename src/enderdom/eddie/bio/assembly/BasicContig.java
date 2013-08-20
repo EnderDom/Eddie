@@ -11,31 +11,29 @@ import enderdom.eddie.bio.lists.ClustalAlign;
 import enderdom.eddie.bio.sequence.BasicRegion;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.Contig;
-import enderdom.eddie.bio.sequence.GenericSequence;
 import enderdom.eddie.bio.sequence.SequenceObject;
+import enderdom.eddie.bio.sequence.GenericSequenceXT;
+import enderdom.eddie.bio.sequence.SequenceObjectXT;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.tools.Tools_Math;
 import enderdom.eddie.ui.BasicPropertyLoader;
 
 public class BasicContig implements Contig{
 
-	protected LinkedHashMap<String, SequenceObject> sequences;
+	protected LinkedHashMap<String, SequenceObjectXT> sequences;
 	protected String contigname;
 	protected Logger logger = Logger.getRootLogger();
 	protected int iteratorcount = 0;
-	protected int[][] offset;
-	protected char[] compliments;
 	protected int position = 1;
-	private char comcomp;
 	protected ArrayList<BasicRegion> regions;
 	
 	public BasicContig(){
-		this.sequences = new LinkedHashMap<String, SequenceObject>();
+		this.sequences = new LinkedHashMap<String, SequenceObjectXT>();
 		this.contigname = "Unnamed_"+BasicPropertyLoader.numbercache++;
 	}
 	
 	public BasicContig(String contig){
-		this.sequences = new LinkedHashMap<String, SequenceObject>();
+		this.sequences = new LinkedHashMap<String, SequenceObjectXT>();
 		this.contigname = contig;
 	}
 	
@@ -77,6 +75,9 @@ public class BasicContig implements Contig{
 		return Tools_Math.sum(getListOfLens());
 	}
 	
+	/**
+	 * @return number of reads in this contig
+	 */
 	public int getNoOfSequences() {
 		return this.sequences.size()-1;
 	}
@@ -114,38 +115,12 @@ public class BasicContig implements Contig{
 	
 	public int getCoverageAtBp(int position, int base) {
 		int coverage = 0;
-		for(int i =0; i < this.getNoOfSequences(); i++){
-			char c = this.getCharAt(i, position, base);
+		for(String read : this.getReadNames()){
+			char c = this.getCharAtRelative2Contig(read, position, base);
 			if(c == '-' || c=='*');
 			else coverage++;
 		}
 		return coverage;
-	}
-
-	public char getCharAt(int sequencenumber, int position, int base) {
-		int offset = position-this.offset[0][sequencenumber]-base;
-		if(offset > -1 && offset < this.getSequence(sequencenumber).getSequence().length()){
-			return this.getSequence(sequencenumber).getSequence().charAt(position-this.offset[0][sequencenumber]-base);
-		}
-		else{
-			return '-';
-		}
-	}
-
-	public void setNumberOfReads(int i){
-		this.offset = new int[5][i];
-		this.compliments = new char[i];
-	}
-	
-	public void resetNumberOfReads(int iniu){
-		int[][] temp = new int[5][iniu];
-		char[] temp2 = new char[iniu];
-		for(int i =0; i < offset[0].length; i++){
-			for(int j = 0; j < 5; j++)temp[j][i] = offset[j][i];
-			temp2[i] = this.compliments[i];
-		}
-		offset = temp;
-		
 	}
 
 	public String getFileName() {
@@ -166,12 +141,12 @@ public class BasicContig implements Contig{
 	 * 
 	 * @return Consensus sequence as a SequenceObject
 	 */
-	public SequenceObject getConsensus(){
+	public SequenceObjectXT getConsensus(){
 		return sequences.get(contigname);
 	}
 	
 
-	public void setConsensus(SequenceObject s) {
+	public void setConsensus(SequenceObjectXT s) {
 		this.sequences.put(contigname, s);
 	}
 
@@ -179,7 +154,7 @@ public class BasicContig implements Contig{
 		return true;
 	}
 
-	public void addSequenceObject(SequenceObject object) {
+	public void addSequenceObject(SequenceObjectXT object) {
 		object.setPositionInList(position);
 		position++;
 		this.sequences.put(object.getIdentifier(), object);
@@ -209,8 +184,8 @@ public class BasicContig implements Contig{
 					align.addSequenceObject(sequences.get(k));
 				}
 				else{
-					SequenceObject o = sequences.get(k);
-					int off = offset[0][o.getPositionInList()-1];
+					SequenceObjectXT o = sequences.get(k);
+					int off = o.getOffset(0);
 					if(off < 0){
 						o.leftTrim(off*-1, 0);
 					}
@@ -251,90 +226,61 @@ public class BasicContig implements Contig{
 	}
 
 	
-	public void setRange(String s, int start, int stop){
+	public void setRange(String s, int start, int stop, int base){
 		checkSequence(s);
-		offset[1][sequences.get(s).getPositionInList()-1]= start;
-		offset[2][sequences.get(s).getPositionInList()-1]= stop;
+		sequences.get(s).setRange(start, stop, base);
 	}
 	
-	public void setPaddedRange(String s, int start, int stop){
+	public void setPaddedRange(String s, int start, int stop, int base){
 		checkSequence(s);
-		offset[3][sequences.get(s).getPositionInList()-1]= start;
-		offset[4][sequences.get(s).getPositionInList()-1]= stop;
+		sequences.get(s).setPaddedRange(start, stop, base);
 	}
 
 	private void checkSequence(String s) {
 		if(!sequences.containsKey(s)){
-			sequences.put(s, new GenericSequence(s, "", position));
+			sequences.put(s, new GenericSequenceXT(s, position));
 			position++;
 		}
-	}
-
-	private void checkOffset(int index){
-		if(offset == null){
-			this.setNumberOfReads(index+1);
-		}
-		else if (offset.length <= index)this.resetNumberOfReads(index+1);
-		else return;
-	}
-	
-	private void checkCompliment(int index){
-		if(compliments == null){
-			this.setNumberOfReads(index+1);
-		}
-		else if (compliments.length <= index)this.resetNumberOfReads(index+1);
-		else return;
 	}
 
 	public int createPosition() {
 		return this.position++;
 	}
 
-	public void setOffset(String s, int off) {
-		checkSequence(s);
-		checkOffset(position);
-		this.offset[0][sequences.get(s).getPositionInList()-1] = off;
-	}
-
 	public String[] getReadNames() {
 		String[] str = new String[this.getNoOfSequences()];
 		for(String s : this.sequences.keySet()){
-			int i = this.sequences.get(s).getPositionInList();
-			if(i != 0){
+			int i = this.sequences.get(s).getPositionInList()-1;
+			if(i != -1){
 				str[i] = this.sequences.get(s).getIdentifier();
 			}
 		}
 		return str;
 	}
 
-	public int getOffset(String s) {
-		return this.offset[0][this.sequences.get(s).getPositionInList()-1];
+	public int getOffset(String s, int base) {
+		return this.sequences.get(s).getOffset(base);
 	}
 
-	public int[] getRange(String s) {
-		return new int[]{
-			this.offset[1][this.sequences.get(s).getPositionInList()-1],
-			this.offset[2][this.sequences.get(s).getPositionInList()-1],
-		};
+	public void setOffset(String s, int offset, int base){
+		checkSequence(s);
+		this.sequences.get(s).setOffset(offset, base);
 	}
 	
+	public int[] getRange(String s, int base) {
+		return this.sequences.get(s).getRange(base);
+	}
 
-	public int[] getPaddedRange(String s) {
-		return new int[]{
-			this.offset[3][this.sequences.get(s).getPositionInList()-1],
-			this.offset[4][this.sequences.get(s).getPositionInList()-1],
-		};
+	public int[] getPaddedRange(String s, int base) {
+		return this.sequences.get(s).getPaddedRange(base);
 	}
 
 	public void setCompliment(String s, char c) {
-		this.checkSequence(s);
-		this.checkCompliment(position);
-		this.compliments[sequences.get(s).getPositionInList()-1]=c;
-		
+		this.sequences.get(s).setCompliment(c);
 	}
 
 	public char getCompliment(String s) {
-		return this.compliments[this.sequences.get(s).getPositionInList()-1];
+		return this.sequences.get(s).getCompliments();
 	}
 
 
@@ -359,8 +305,8 @@ public class BasicContig implements Contig{
 	 * @param i2
 	 * @param readname
 	 */
-	public void addRegion(int i1, int i2, String readname){		
-		regions.add(new BasicRegion(i1, i2, 0, readname));
+	public void addRegion(int i1, int i2, String readname, int base){		
+		regions.add(new BasicRegion(i1-base, i2-base, 0, readname));
 	}
 
 	public ArrayList<BasicRegion> getRegions() {
@@ -368,11 +314,32 @@ public class BasicContig implements Contig{
 	}
 
 	public char getConsensusCompliment() {
-		return this.comcomp;
+		return this.getConsensus().getCompliments();
 	}
 
 	public void setConsensusCompliment(char c) {
-		this.comcomp = c;
+		if(this.getConsensus() == null){
+			if(this.getContigName() == null){
+				logger.error("Contig name must be set before adding contig information");
+			}
+			this.setConsensus(new GenericSequenceXT(contigname, 0));
+		}
+		this.getConsensus().setCompliment(c);
+	}
+
+	public void addSequenceObject(SequenceObject object) {
+		this.sequences.put(object.getIdentifier(), new GenericSequenceXT(object.getIdentifier(), object.getSequence(), object.getQuality(), position));
+		position++;
+	}
+
+	public void setConsensus(SequenceObject s) {
+		this.sequences.put(s.getIdentifier(), new GenericSequenceXT(s.getIdentifier(), s.getSequence(), s.getQuality(), 0));
+		this.contigname = s.getIdentifier();
+	}
+	
+
+	public char getCharAtRelative2Contig(String s, int position, int base) {
+		return this.sequences.get(s).getSequence().charAt((position-base)+this.sequences.get(s).getOffset(0));
 	}
 
 	

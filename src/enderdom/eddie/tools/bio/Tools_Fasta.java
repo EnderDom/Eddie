@@ -41,8 +41,8 @@ public class Tools_Fasta {
 				phrap.append(ascii + " ");
 			}
 			if(phrap.length() > linesize+line){
-				phrap.append(newline+" ");
 				line = phrap.length();
+				phrap.append(newline+" ");
 			}
 		}
 		return phrap.toString();
@@ -91,6 +91,7 @@ public class Tools_Fasta {
 	
 	public static int[] getSeqQualAsIntArray(String quality){
 		quality = quality.trim().replaceAll("\\s+", " ");
+		quality.replaceAll(" +", " ");
 		String[] qul = quality.split(" ");
 		int[] arr = new int[qul.length];
 		for(int i =0; i < qul.length; i++){
