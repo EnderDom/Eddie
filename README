@@ -19,7 +19,8 @@ Should create a eddie.properties file and logs folder
 as well as a few other folders depending on what tasks are running
 
 ---COMPILE---
-Currently requires ant to compile (easily), this all needs to be done in a console/terminal
+Currently requires ant to compile (easily), this all needs to be done in
+a console/terminal
 
 If your not sure, check you have ant:
 ant -version
@@ -48,23 +49,26 @@ For task specific help use -opts
 java -jar Eddie.jar -task taskname -opts
 
 ---ECLIPSE---
-The eclipse classpaths and project files i've left in an edited so they should
-work anywhere. To import it, copy the whole git folder into your eclipse workspace
-then in eclipse File->Import ... Import Existing Projects in workspace. Hopefully if the version
-isn't too disimilar it will import fine and you can then edit it in eclipse.
+The eclipse classpaths and project files i've left in an edited so they 
+should work anywhere. To import it, copy the whole git folder into your 
+eclipse workspace then in eclipse File->Import ... Import Existing Projects 
+in workspace. Hopefully if the version isn't too disimilar it will import
+fine and you can then edit it in eclipse.
 
 ---TROUBLESHOOTING---
 
 Common Errors:
 
 1)	Starting Eddie Java Application
-Exception in thread "main" java.lang.NoClassDefFoundError: org/apache/commons/cli/ParseException
-	at enderdom.eddie.main.Eddie.main(Eddie.java:22)
+Exception in thread "main" java.lang.NoClassDefFoundError: 
+org/apache/commons/cli/ParseException at 
+enderdom.eddie.main.Eddie.main(Eddie.java:22)
 
 
-Check that the 'lib' folder is in the same folder as the Eddie.jar file or that
-the path to the lib folder is the same as the path in the manifest file within the 
-jar (jar is just a zip folder so you can open it as such)
+Check that the 'lib' folder is in the same folder as the Eddie.jar
+file or that the path to the lib folder is the same as the path in 
+the manifest file within the jar (jar is just a zip folder so you
+ can open it as such)
 
 
 ---PROPERTIES---
@@ -80,15 +84,17 @@ Important Properties are:
 [DBNAME] The name of the database eddie will use
 [DBUSER] the username for the database
 
-Note: passwords are not stored, because I don't really know what I'm doing in that
-regard. They are stored in RAM whilst the program uses them to access the database but
-will be removed each time the program shuts down.
+Note: passwords are not stored, because I don't really know what I'm doing 
+in that regard. They are stored in RAM whilst the program uses them to access 
+the database but will be removed each time the program shuts down.
 
-[BLAST_DB] Location of a local blast database folder (Where stuff like nr.00.phd should be)
-[BLAST_BIN] Location of the binary folder (Where the blast binaries are (but not the filepath 
-of an individual program, the programs have to be the default ie blastn or blastn.exe depending
-on OS)
-[UNIVEC_URL] Where the univec database is located online, hopefully it won't change
+[BLAST_DB] Location of a local blast database folder (Where stuff like 
+nr.00.phd should be) 
+[BLAST_BIN] Location of the binary folder (Where the blast binaries are
+(but not the filepath of an individual program, the programs have to be
+the default ie blastn or blastn.exe depending on OS)
+[UNIVEC_URL] Where the univec database is located online, hopefully it
+won't change
 
 
 
