@@ -64,7 +64,7 @@ public class TaskManager extends Thread{
 				logTask(task);
 				taskcounter++;
 				if(taskcounter % 100 == 0){
-					logger.debug(Tools_Fun.getFunnyMessage());
+					logger.debug(Tools_Fun.getRandomMessage());
 				}
 			}
 			if(!started){

@@ -12,7 +12,7 @@ import org.codehaus.stax2.XMLInputFactory2;
 import org.codehaus.stax2.XMLStreamReader2;
 
 import enderdom.eddie.bio.assembly.ACEFileParser;
-import enderdom.eddie.bio.fasta.Fasta;
+import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.sequence.Contig;
 
 import net.sf.picard.io.IoUtil;

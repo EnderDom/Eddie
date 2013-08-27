@@ -54,12 +54,12 @@ public class Task_Blast extends TaskXT{
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
-		if(cmd.hasOption("db"))dbname=cmd.getOptionValue("db");
-		if(cmd.hasOption("i"))input=cmd.getOptionValue("i");
+		dbname= getOption(cmd, "dbname", null);
+		dbname = getOption(cmd, "input", null);
 		fuzzynames = cmd.hasOption("fuzzy");
 		force = cmd.hasOption("force");
-		run_id = this.getOption(cmd, "run_id", -1);
-		if(cmd.hasOption("date"))date=cmd.getOptionValue("date");
+		run_id = getOption(cmd, "run_id", -1);
+		//date = getOption(cmd, "date", null);
 	}
 	
 	public void buildOptions(){

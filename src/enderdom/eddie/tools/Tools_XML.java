@@ -80,7 +80,7 @@ public class Tools_XML {
 	 * @return
 	 * @throws XMLStreamException
 	 */
-	public static String getSingleTagFromURL(URL site, String tag, String value) throws XMLStreamException{
+	public static String getSingleTagFromURLwValue(URL site, String tag, String value) throws XMLStreamException{
 		XMLInputFactory2 f = (XMLInputFactory2) XMLInputFactory2.newInstance();
 	    f.setProperty(XMLInputFactory2.SUPPORT_DTD, Boolean.FALSE);
 	    XMLStreamReader2 stream = (XMLStreamReader2) f.createXMLStreamReader(site);
@@ -95,12 +95,30 @@ public class Tools_XML {
 							stream.close();
 							return ret;
 						}
-					}				
+					}
 				}
 		    }
 		}
 		return null;
 	}
+	
+	public static String getSingleAttrValuefromURL(URL site, String tag, int index) throws XMLStreamException{
+		XMLInputFactory2 f = (XMLInputFactory2) XMLInputFactory2.newInstance();
+	    f.setProperty(XMLInputFactory2.SUPPORT_DTD, Boolean.FALSE);
+	    XMLStreamReader2 stream = (XMLStreamReader2) f.createXMLStreamReader(site);
+		while(stream.hasNext()){
+		    stream.next();
+		    if(stream.isStartElement()){
+		    	String xmtag = stream.getName().toString();
+				if(xmtag.equals(tag)){
+					if(stream.getAttributeCount() > index)return stream.getAttributeValue(index);
+					else return null;
+				}
+		    }
+		}
+		return null;
+	}
+	
 	
 	final public static Document inputStreamToDocument(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException{
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

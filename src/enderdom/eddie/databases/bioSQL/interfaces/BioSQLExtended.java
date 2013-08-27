@@ -1,7 +1,6 @@
 package enderdom.eddie.databases.bioSQL.interfaces;
 
 import java.io.File;
-import java.sql.Connection;
 import java.sql.Date;
 import java.util.HashMap;
 
@@ -130,8 +129,24 @@ public interface BioSQLExtended {
 	public String[][] getUniqueStringFields(DatabaseManager manager, String[] fields, String table);
 	
 	public Run getRun(DatabaseManager manager, int run_id);
-	
-	public int[] getReads(DatabaseManager manager, int bioentry_id);
+
+	/**
+	 * Returns a 4xn matrix
+	 * containing data on reads associated with 
+	 * the contig stapiluated by bioentry arg
+	 * where x is column and y is row int[x][y]
+	 * int[0][y] = bioentry_id
+	 * int[1][y] = run_id
+	 * int[2][y] = range_start
+	 * int[3][y] = range_end
+	 * 
+	 * Probably better as a ORM but this will suffice
+	 * 
+	 * @param manager
+	 * @param bioentry_id contig bioentry_id
+	 * @return 4xn integer matrix
+	 */
+	public int[][] getReads(DatabaseManager manager, int bioentry_id);
 	
 	public int getContigFromRead(DatabaseManager manager, int bioentry_id, int run_id);
 
@@ -191,7 +206,7 @@ public interface BioSQLExtended {
 	 */
 	public String[] getContigNames(DatabaseManager manager, int r, int i);
 
-	public SequenceList getContigsAsFasta(DatabaseManager manager, SequenceList l, int i);
+	public SequenceList getContigsAsList(DatabaseManager manager, SequenceList l, int i);
 	
 	public Taxonomy getTaxonomyFromSQL(DatabaseManager manager, Integer biosql_id, Integer ncbi_id);
 	

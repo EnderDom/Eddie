@@ -37,10 +37,10 @@ public class Task_IPRupload extends TaskXT {
 		if(cmd.hasOption("i")){
 			this.input = cmd.getOptionValue("i");
 		}	
-		runid = this.getOption(cmd, "runid", -1);
-		suffix = this.getOption(cmd, "suffix", null);
-		version = this.getOption(cmd, "version", "4.8");
-		params = this.getOption(cmd, "params", "unknown");
+		runid = getOption(cmd, "runid", -1);
+		suffix = getOption(cmd, "suffix", null);
+		version = getOption(cmd, "version", "4.8");
+		params = getOption(cmd, "params", "unknown");
 	}
 	
 	public void buildOptions(){

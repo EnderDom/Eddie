@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 import enderdom.eddie.tools.Tools_Math;
 import enderdom.eddie.tools.bio.Tools_Sequences;
 
-import enderdom.eddie.bio.fasta.Fasta;
+import enderdom.eddie.bio.lists.Fasta;
 
 /**
  * @author dominic

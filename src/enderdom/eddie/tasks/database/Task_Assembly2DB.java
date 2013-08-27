@@ -10,8 +10,8 @@ import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.assembly.ACERecord;
-import enderdom.eddie.bio.fasta.Fasta;
-import enderdom.eddie.bio.fasta.FastaParser;
+import enderdom.eddie.bio.lists.Fasta;
+import enderdom.eddie.bio.lists.FastaParser;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.SequenceObject;
 
@@ -21,7 +21,6 @@ import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
-import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Assembly;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
@@ -53,25 +52,18 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	
 	public Task_Assembly2DB(){
 		setHelpHeader("--This is the Help Message for the Assemby2DB Task--");
-		runid =-1;
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		if(cmd.hasOption("uploadreads"))uploadreads=true;
-		if(cmd.hasOption("uploadcontigs"))uploadcontigs=true;
+		uploadreads=cmd.hasOption("uploadreads");
+		uploadcontigs= cmd.hasOption("uploadcontigs");
 		//if(cmd.hasOption("remaploc"))remaplocations=true;
-		if(cmd.hasOption("mapcontigs"))mapcontigs=true;
-		if(cmd.hasOption("identifier"))this.identifier=cmd.getOptionValue("identifier");
-		if(cmd.hasOption("programname"))this.programname=cmd.getOptionValue("programid");
-		if(cmd.hasOption("pad"))this.unpad = true;
-		if(cmd.hasOption("runid")){
-			Integer a = Tools_String.parseString2Int(cmd.getOptionValue("runid"));
-			if(a != null)runid=a.intValue();
-			else{
-				logger.error("Run id is not a number!!");
-			}
-		}
+		this.mapcontigs=cmd.hasOption("mapcontigs");
+		this.identifier= getOption(cmd, "identifier", null);
+		this.programname = getOption(cmd, "programid", null);
+		this.unpad = cmd.hasOption("pad");
+		this.runid = getOption(cmd, "runid", -1);
 	}
 	
 	public void buildOptions(){
@@ -296,18 +288,18 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		int bioentry_id = bs.getBioEntry(manager.getCon(), identifier, null, biodatabase_id);
 		if(bioentry_id < 1)bs.getBioEntrywName(manager.getCon(), record.getConsensus().getIdentifier());
 		if(bioentry_id > 0){
-			for(int i =0; i < record.getNoOfReads() ; i++){
-				String read = record.getReadName(i);
+			int i =0;
+			for(String read : record.getReadNames()){
 				int read_id = bs.getBioEntry(manager.getCon(), read, read, biodatabase_id);
 				if(read_id < 0){
 					logger.error("Oh dear read "+ read + " does not seem to be in the database we cannot map reads not int the db");
 					return false;
 				}
 				else{
-					int offset = record.getReadOffset(i);
+					int offset = record.getOffset(read, 0);
 					int start = offset;
-					int end = offset+record.getRead(i).getLength();				
-					char c = record.getReadCompliment(i);
+					int end = offset+record.getSequence(read).getLength();				
+					char c = record.getCompliment(read);
 					@SuppressWarnings("unused")
 					int comp = 0;
 					if(c == 'C'){
@@ -319,7 +311,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 						logger.error("Read mapping has failed");
 						return false;
 					}
-					System.out.print("\r"+"Contig No>:"+count+", mapping Read No.:"+i);
+					System.out.print("\r"+"Contig No>:"+count+", mapping Read No.:"+(i++));
 				}
 			}
 			return true;

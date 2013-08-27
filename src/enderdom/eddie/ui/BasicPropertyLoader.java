@@ -22,6 +22,8 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 	//Default logger level, if not set by user, this level will be used for logging
 	protected Level level = Level.DEBUG;
 	public static String defaultlnf =  "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
+	public static int numbercache = 0;
+	protected String logname;
 	
 	public void setValue(String prop, String value){
 		props.setProperty(prop, value);
@@ -52,19 +54,19 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 		this.props = props;
 	}
 
-    public Properties loadPropertyFile(File file){
-    	return this.loadPropertyFile(file, new Properties());
+    public Properties loadPropertyFile(String file, boolean isLogging){
+    	return loadPropertyFile(new File(file), new Properties(), isLogging);
     }
     
-    public Properties loadPropertyFile(File file, Properties prop){
+    public Properties loadPropertyFile(File file, Properties prop, boolean isLogging){
     	 try{
             prop.load(new FileInputStream(file));
-            if(isLogging())	logger.info("Trying to load Properties File @"+file.getPath());
+            if(isLogging)	logger.info("Trying to load Properties File @"+file.getPath());
             else	preLog("Trying to load Properties File @ "+file.getPath());
         	return prop;
          }
          catch(FileNotFoundException fi) {
-        	 if(isLogging()){
+        	 if(isLogging){
         		 logger.error(fi);
         	 }
         	 else{
@@ -74,7 +76,7 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
         	 return null;
          }
          catch(IOException io) {
-        	 if(isLogging()){
+        	 if(isLogging){
         		 logger.error(io);
         	 }
         	 else{
@@ -84,6 +86,42 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
         	 return null;
          }
     }
+    
+	
+	public boolean checkPropertiesAndLoadFile(String path){
+		return checkPropertiesAndLoadFile(new File(path));
+	}
+	
+	public boolean checkPropertiesAndLoadFile(File propsfile){
+		preLog("Attempting to load file from "+ propsfile.getPath()+"...");
+		if(propsfile.isFile() && propsfile.canWrite()){
+			preLog("File exists, loading...");
+			this.props = loadPropertyFile(propsfile, this.props, this.isLogging());
+			propfile = propsfile;
+			return true;
+		}
+		else if(propsfile.isFile() && !propsfile.canWrite()){
+			preLog("File exists, but it cannot be written to.");
+			return false;
+		}
+		else if(!propsfile.exists()){
+			try{
+				preLog("File doesn't exist, creating...");
+				propsfile.getParentFile().mkdirs();
+				if(propsfile.createNewFile()){
+					propfile = propsfile;
+					return true;
+				}
+				else return false;
+			}
+			catch(IOException io){
+				preLog("Error thrown, can't create file at "+propsfile.getPath());
+				io.printStackTrace();
+				return false;
+			}
+		}
+		else return false;
+	}
     
     public boolean savePropertyFile(File file, Properties props1){
 		return this.savePropertyFile(file.getPath(), props1);
@@ -117,15 +155,6 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 		}
 		return success;
 	}
-
-	public void parseArgs(String[] args) {
-		if(isLogging()){
-			logger.warn("Warning, you should not be seeing this message, subclasses should always overwrite this");
-		}
-		else{
-			preLog("Warning, you should not be seeing this message, subclasses should always overwrite this");
-		}
-	}
 	
 	public boolean isLogging(){
 		return this.isLogging;
@@ -143,7 +172,7 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 		Properties defaults = new Properties();
 		//Set Log File Properties
 		defaults.setProperty("log4j.appender.rollingFile", "org.apache.log4j.RollingFileAppender");
-		defaults.setProperty("log4j.appender.rollingFile.File", logfilepath+"eddie.log");
+		defaults.setProperty("log4j.appender.rollingFile.File", logfilepath);
 		defaults.setProperty("log4j.appender.rollingFile.MaxFileSize", "10MB");
 		defaults.setProperty("log4j.appender.rollingFile.MaxBackupIndex", "3");
 		defaults.setProperty("log4j.appender.rollingFile.layout", "org.apache.log4j.PatternLayout");
@@ -172,7 +201,6 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 		if (!logfolder.exists()) {
 			boolean done = logfolder.mkdir();
 			if(!done)System.out.println("Could not make a log folder @ " + logfolder.getPath());
-			else return false;
 		}
 		if(logfolder.isDirectory()){
             File log_properties = new File(logfolder.getPath()+slash+"log4j.properties");
@@ -182,7 +210,7 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
             }
             //If properties never written, use defaults
             else{
-                Properties defaults = getDefaultLogProperties(logfolder.getPath()+slash);
+                Properties defaults = getDefaultLogProperties(logfolder.getPath()+slash+getLogname());
                 savePropertyFile(log_properties.getPath(), defaults);
                 configureProps(log_properties.getPath(), defaults);
             }
@@ -211,6 +239,18 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 	public static void configureProps(String filepath, String props){
 		logger = Logger.getLogger(filepath);
         PropertyConfigurator.configure(props);
+	}
+	
+	public String getPropertyFilePath(){
+		return this.propfile.getPath();
+	}
+
+	public String getLogname() {
+		return logname;
+	}
+
+	public void setLogname(String logname) {
+		this.logname = logname;
 	}
 }
 

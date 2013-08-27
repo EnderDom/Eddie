@@ -1,5 +1,7 @@
 package enderdom.eddie.tools;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -47,7 +49,12 @@ public abstract class Tools_String {
 		}
 	}
 	
-	//Splits a string into a lines of length splitsize
+	/**
+	 * Splits a string into a lines of length splitsize
+	 * @param splitsize
+	 * @param seq
+	 * @return string split into lines, appended with a final newline
+	 */
 	public static String splitintolines(int splitsize, String seq){
 		String newline = System.getProperty("line.separator");
 		int i = 0;
@@ -58,6 +65,25 @@ public abstract class Tools_String {
 		}
 		newstring.append(seq.substring(i, seq.length()) + newline);
 		return newstring.toString();
+	}
+	
+	/**
+	 * Like splitintolines but saves straight to file
+	 * 
+	 * @param splitsize
+	 * @param seq
+	 * @param writer
+	 */
+	public static void splitintolinesandsave(int splitsize, String seq, BufferedWriter writer) throws IOException{
+		String newline = System.getProperty("line.separator");
+		int i = 0;
+		while(i < seq.length()-splitsize){
+			writer.write(seq.substring(i, i+splitsize));
+			writer.write(newline);
+			i= i+splitsize;
+		}
+		writer.write(seq.substring(i, seq.length()));
+		writer.write(newline);
 	}
 	
 	public static boolean isIntegerParseInt(String str) {
@@ -228,6 +254,15 @@ public abstract class Tools_String {
 			}
 			return sb.toString();
 		}
+	}
+
+	public static String getStringofLenX(String name, int x){
+		if(name.length() < x){
+			StringBuffer b = new StringBuffer(name);
+			while(b.length() < x)b.append(" ");
+			return b.toString();
+		}
+		else return name=name.substring(0,x);
 	}
 
 	

@@ -7,7 +7,8 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.bio.fasta.Fasta;
+import enderdom.eddie.bio.lists.ClustalAlign;
+import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.GenericSequence;
 import enderdom.eddie.bio.sequence.SequenceList;
@@ -27,6 +28,7 @@ public class Task_dbTools extends TaskXT{
 
 	private String contig;
 	private boolean readsasfasta;
+	private boolean readsasaln;
 	private String output;
 	private boolean all;
 	private String input;
@@ -50,10 +52,11 @@ public class Task_dbTools extends TaskXT{
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
 		readsasfasta = cmd.hasOption("readsasfasta");
-		output = this.getOption(cmd, "o", null);
-		input = this.getOption(cmd, "i", null);
-		contig = this.getOption(cmd, "c", null);
-		run_id = this.getOption(cmd, "run_id", -1);
+		readsasaln = cmd.hasOption("readsasaln");
+		output = getOption(cmd, "o", null);
+		input = getOption(cmd, "i", null);
+		contig = getOption(cmd, "c", null);
+		run_id = getOption(cmd, "run_id", -1);
 		all=(cmd.hasOption("run_id") || cmd.hasOption("all"));
 	}
 	
@@ -63,6 +66,8 @@ public class Task_dbTools extends TaskXT{
 				"to download reads rather than consensus"));
 		options.addOption(new Option("i", true, "Bulk download input, input being a list of sequence names"));
 		options.addOption(new Option("readsasfasta", false, "Pulls reads which make this contig as fasta"));
+		//Doesn't work as reads are raw and not prealigned to contig
+		//options.addOption(new Option("readsasaln", false, "Pulls reads which make this contig as clustal aln"));
 		options.addOption(new Option("o","output", true, "Output file"));
 		options.addOption(new Option("all",false, "Batch download all contigs available"));
 		options.addOption(new Option("run_id",true, "Batch download all contigs attached to run_id"));
@@ -72,8 +77,9 @@ public class Task_dbTools extends TaskXT{
 		setCompleteState(TaskState.STARTED);
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
 		try{
-			if(readsasfasta && contig != null){
-				DBReadsAsFasta(contig, output, password, ui);
+			if((readsasfasta || readsasaln) && contig != null){
+				if(readsasfasta)DBReadsAsList(contig, output, password, ui, BioFileType.FASTA);
+				else DBReadsAsList(contig, output, password, ui, BioFileType.CLUSTAL_ALN);
 			}
 			else if(contig != null || (input != null)){
 				if(input != null){
@@ -104,31 +110,37 @@ public class Task_dbTools extends TaskXT{
 	}
 	
 	
-	public static void DBReadsAsFasta(String contig, String output, String password, UI ui) throws Exception{
+	public static void DBReadsAsList(String contig, String output, String password, UI ui, BioFileType type) throws Exception{
 		DatabaseManager manager = ui.getDatabaseManager(password);
 	
 		manager.open();
+		SequenceList list;
 		if(contig != null && output != null){
 			int m = manager.getBioSQLXT().getBioEntryId(manager, contig, true, manager.getEddieDBID());
 			if(m == -1){
 				Logger.getRootLogger().error("Failed to retrieve the ID for contig " + contig);
 			}
 			else{
-				int[] reads = manager.getBioSQLXT().getReads(manager, m);
+				int[][] reads = manager.getBioSQLXT().getReads(manager, m);
 				if(reads.length == 0){
 					Logger.getRootLogger().error("Failed to get any reads for contig " + contig + "(ID:"+m+")");
 					return;
 				}
 				else{
-					Fasta fasta = new Fasta();
-					for(int i : reads){
-						String[] names = manager.getBioSQL().getBioEntryNames(manager.getCon(), i);
-						String sequence = manager.getBioSQL().getSequence(manager.getCon(), i);
-						fasta.addSequence(names[0], sequence);
+					if(BioFileType.CLUSTAL_ALN == type)list = new ClustalAlign();
+					else list = new Fasta();
+					for(int i =0 ; i < reads[0].length ;i++){
+						String[] names = manager.getBioSQL().getBioEntryNames(manager.getCon(), reads[0][i]);
+						String sequence = manager.getBioSQL().getSequence(manager.getCon(), reads[0][i]);
+						GenericSequence seq = new GenericSequence(names[0], sequence);
+						if(BioFileType.CLUSTAL_ALN == type){
+							seq.extendLeft(reads[2][i]);
+						}
+						list.addSequenceObject(seq);
 					}
 					boolean success = false;
 					try {
-						 success = fasta.save2Fasta(new File(output)) != null;
+						 success = list.saveFile(new File(output), type).length > 0;
 					} 
 					catch (IOException e) {
 						success = false;
@@ -150,7 +162,7 @@ public class Task_dbTools extends TaskXT{
 		
 		manager.open();
 		SequenceList list = new Fasta();
-		list = manager.getBioSQLXT().getContigsAsFasta(manager, list, run_id);
+		list = manager.getBioSQLXT().getContigsAsList(manager, list, run_id);
 		Logger.getRootLogger().info("Saving "+list.getNoOfSequences()+" Contigs to Fasta file " + output);
 		try {
 			list.saveFile(new File(output), BioFileType.FASTA);

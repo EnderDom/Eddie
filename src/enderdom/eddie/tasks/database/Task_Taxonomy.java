@@ -45,27 +45,22 @@ public class Task_Taxonomy extends TaskXT{
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
 		
-		if(cmd.hasOption("ld")){
-			localdb = cmd.getOptionValue("ld");
-		}
-		if(cmd.hasOption("o"))this.output=cmd.getOptionValue("o");
-		if(cmd.hasOption("OP_ua"))updateacc=true;
-		if(cmd.hasOption("OP_up"))updatepar=true;
-		if(cmd.hasOption("OP_de"))depth=true;
-		if(cmd.hasOption("OP_spec"))speciesQuery=true;
 		if(cmd.hasOption("OP_spec_taxids")){
 			speciesQuery=true;
 			taxids=true;
-		}
-		
-		if(cmd.hasOption("OP_node"))node=true;
-		if(cmd.hasOption("OP_spec"))speciesQuery=true;
-		node_rank = this.getOption(cmd, "OP_node", "phylum");
-		output = this.getOption(cmd, "o", null);
-		blastRunID = this.getOption(cmd, "rb", -1);
-		hit_no = this.getOption(cmd, "no_hit", -1);
-		evalue = this.getOption(cmd, "evalue", -1.0);	
-		localdb = this.getOption(cmd, "ld", "nr");
+		}		
+		updateacc=cmd.hasOption("OP_ua");
+		updatepar=cmd.hasOption("OP_up");
+		depth=cmd.hasOption("OP_de");
+		speciesQuery=cmd.hasOption("OP_spec");
+		node=cmd.hasOption("OP_node");
+		speciesQuery=cmd.hasOption("OP_spec");
+		node_rank = getOption(cmd, "OP_node", "phylum");
+		output = getOption(cmd, "o", null);
+		blastRunID = getOption(cmd, "rb", -1);
+		hit_no = getOption(cmd, "no_hit", -1);
+		evalue = getOption(cmd, "evalue", -1.0);	
+		localdb = getOption(cmd, "ld", "nr");
 		if(cmd.hasOption("nd")){
 			ncbidb = NCBI_DATABASE.valueOf(cmd.getOptionValue("nd").trim());
 			if(ncbidb == null){

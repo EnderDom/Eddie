@@ -39,7 +39,7 @@ public class Tools_Panther {
 		}
 		else Logger.getRootLogger().debug("Panther term is good");
 		//Get uRL 
-		URI uri = new URI("http", panthr, search, "keyword=PTHR22751&listType=gene&type=getList", null);
+		URI uri = new URI("http", panthr, search, "keyword="+pantherterm+"&listType=gene&type=getList", null);
 		URL site = uri.toURL();
 		//Read into buffer
 		Logger.getRootLogger().debug("Accessing Panther databse via http...");

@@ -6,7 +6,7 @@ package enderdom.eddie.tools;
 
 public abstract class Tools_Fun {
 	
-	public static String getFunnyMessage(){
+	public static String getRandomMessage(){
 		String[] messages = new String[]{
 				";)",
 				"I'm Sorry Dave, but I just can't do that.",
@@ -15,25 +15,35 @@ public abstract class Tools_Fun {
 				"Row row row your boat, gently down the stream. Merrily merrily merrily merrily. Life is but a dream",
 				"Warp 5 Lieutenant. Engage!",
 				"This application is sponsored by Soylent Green, No artificial colors or preservatives. Made entirely from vegetables *who couldn't fight back*",
-				"EnderDom is currently unavailable, as he remains mostly dead, in order to avoid paying taxes"
+				"EnderDom is currently unavailable, as he remains mostly dead, in order to avoid paying taxes",
+				"Casual Shirt Tuesday has been cancelled indefinitely",
+				"This message was brought to you by the Nuka Cola Corporation, Feel those Rads",
+				"And now for something completely different...",
+				"I would like to tha..BRRR!!R!!RR!!RR!...All hail hypnotoad",
+				"foobar",
+				"Charizard, I chose you.",
+				"Magicarp used splash, it was super effective",
+				"Always bring a towel",
+				"Insert yet another stupid reference here."
 		};
 		
 		return getRandom(messages);
 	}
 	
 	public static String getRandom(String[] in){
-		return in[(int)Math.round(Math.random()*in.length)];
+		return in[(int)Math.round(Math.random()*in.length-1)];
 	}
 	
 	public static void printAbout(){
 		System.out.println("");
 		System.out.println("");
-		System.out.println("Author: EnderDom");
+		System.out.println("Author: Dominic Matthew Wood");
 		System.out.println("About: A mindless jerk who'll be the first against the wall when the revolution comes.");
 		System.out.println("Current Position: Recieving psychotherapy at the Walter Bishop Institute for Borked Scientists");
-		System.out.println("Contact: Please speak to Dr. Smith at the Institute");
+		System.out.println("Contact: Please speak to Lead Psychotherapist at the Institute");
 		System.out.println("");
-		System.out.println("");
+		System.out.println("Message of the Day:");
+		System.out.println(getRandomMessage());
 	}
 	
 	public static String rot13(String s){

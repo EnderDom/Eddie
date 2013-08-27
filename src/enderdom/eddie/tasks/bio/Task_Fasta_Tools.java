@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -12,16 +13,18 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.io.FilenameUtils;
 
 import enderdom.eddie.bio.factories.SequenceListFactory;
-import enderdom.eddie.bio.fasta.Fasta;
+import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.sequence.BioFileType;
 
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
-import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
+import enderdom.eddie.tools.bio.Tools_NCBI;
 
 /*
  * This is a fucking mess
+ * 
+ * This is moving towards just a mess
  */
 public class Task_Fasta_Tools extends TaskXTwIO{
 	
@@ -35,11 +38,9 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 	private String trimAtString;
 	private boolean lengths;
 	private String quals;
+	private boolean dmw;
 	
 	public Task_Fasta_Tools(){
-		trimRowNs = -1;
-		trimPercNs = -1;
-		trim =-1;
 	}
 	
 	public void run(){
@@ -130,6 +131,17 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 				logger.error("Failed to output list of lengths to " + output);
 			}
 		}
+		if(dmw){
+			logger.debug("Renaming sequences...");
+			HashMap<String, String> str = new HashMap<String, String>();
+			for(String name : this.fasta.keySet()){
+				String specie =Tools_NCBI.getSpecies(name);
+				String[] s = specie.split(" ");
+				if(s.length > 1)specie = s[0].substring(0,1).toUpperCase()+"."+s[1];
+				str.put(name, Tools_NCBI.getNCBIGi(name)+"_" + specie);
+			}
+			fasta.renameNames(str);
+		}
 		//OTHER fasta tools
 	}
 	
@@ -142,7 +154,7 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 		options.getOption("i").setDescription("Input fasta file");
 		options.addOption(new Option("q", "qual", true, "Optional quality file for convert fastas & qual -> fastq"));
 		options.getOption("o").setDescription("Output file or files");
-		options.addOption(new Option("trim", true, "Trim Sequences Using below this value ie -trim 100"));
+		options.addOption(new Option("trim", true, "Trim each sequences in fasta of length below this value ie -trim 100"));
 		options.addOption(new Option("stats", false, "Print Statistics for Fasta/q files"));
 		options.addOption(new Option("convert", false, "Convert files to another file type"));
 		options.addOption(new Option("trimPercNs", true, "Remove any sequence where the percentage of Ns is greater than this INTEGER value"));
@@ -151,47 +163,20 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 		options.addOption(new Option("trimAtString", true, "Trims the fasta name after the first occurance " +
 				"of string ie -trimAtString \">Contig\" would change >Contig2121 to >Contig"));
 		options.addOption(new Option("s","short", false, "Use Short titles, names are truncated to first space (Needed to match fasta qual)"));
+		options.addOption(new Option("dmwName", false, "Use Dominic Wood Naming scheme for fasta with ncbi blast names "));
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		if(cmd.hasOption("trimPercNs")){
-			Integer i = Tools_String.parseString2Int(cmd.getOptionValue("trimPercNs"));
-			if(i != null){
-				this.trimPercNs = i;
-			}
-			else{
-				logger.warn("TrimPercNs, but is not a number");
-			}
-		}
-		if(cmd.hasOption("trimRowNs")){
-			Integer i =Tools_String.parseString2Int(cmd.getOptionValue("trimRowNs"));
-			if(i != null){
-				this.trimRowNs = i;
-			}
-			else{
-				logger.warn("TrimRowNs, but is not a number");
-			}
-			
-		}
-		if(cmd.hasOption("q")){
-			quals = cmd.getOptionValue("q");
-		} 
-		if(cmd.hasOption("trim")){
-			Integer i = Tools_String.parseString2Int(cmd.getOptionValue("trim"));
-			if(i != null){
-				this.trim = i;
-			}
-			else{
-				logger.warn("Trim set, but is not a number");
-			}
-		}
-		if(cmd.hasOption("trimAtString")){
-			trimAtString = cmd.getOptionValue("trimAtString");
-		}
-		if(cmd.hasOption("stats"))stats=true;
-		if(cmd.hasOption("convert"))this.convert = true;
-		if(cmd.hasOption("lengths"))this.lengths=true;
+		this.trimPercNs = getOption(cmd, "trimPercNs", -1);
+		this.trimRowNs = getOption(cmd, "trimRowNs", -1);
+		this.quals = getOption(cmd, "q", null);
+		this.trim = getOption(cmd, "trim", -1);
+		this.trimAtString = getOption(cmd, "trimAtStrin", null);
+		this.stats = cmd.hasOption("stats");
+		this.convert = cmd.hasOption("conver");
+		this.lengths = cmd.hasOption("lengths");
+		this.dmw = cmd.hasOption("dmwName");
 	}
 	
 	public Options getOptions(){

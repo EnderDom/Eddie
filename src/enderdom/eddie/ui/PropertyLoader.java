@@ -16,11 +16,15 @@ public interface PropertyLoader {
 	
 	public Properties getPropertyObject();
 	
-	public void setPropertyObject(Properties props);
+	public void setPropertyObject(Properties props);	
 	
-	public Properties loadPropertyFile(File filename);
+	public boolean checkPropertiesAndLoadFile(String path);
 	
-	public Properties loadPropertyFile(File filename, Properties props);
+	public boolean checkPropertiesAndLoadFile(File file);
+	
+	public Properties loadPropertyFile(File file, Properties prop, boolean isLogging);
+	
+	public Properties loadPropertyFile(String filepath, boolean isLogging);
 	
 	public boolean savePropertyFile(File filename, Properties props);
 	
