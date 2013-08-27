@@ -28,7 +28,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
      * though this one has been written from scratch
      */
     public static int engineversion = 4;
-    public static double subversion = 0.56;
+    public static double subversion = 0.57;
     public static String edition = "Development";
     public String[] actions;
 	
@@ -226,7 +226,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 	}
 	
 	public static String getFullVersion(){
-		return new String(engineversion+"."+(int)(subversion*100));
+		return new String(""+(engineversion+subversion));
 	}
 
 	public boolean isTest() {

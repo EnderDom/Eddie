@@ -102,7 +102,7 @@ public class FastaParser{
 			multi++;
 			linecount++;
 		}
-		System.out.println();
+		System.out.println("\rParsing Line: "+linecount);
 		if(sequence.length() > 0){
 			count++;
 			handler.addAll(title, sequence.toString(), quality.toString());
@@ -161,7 +161,7 @@ public class FastaParser{
 			multi++;
 			linecount++;
 		}
-		if(linecount>5000)System.out.println();
+		System.out.println("\rParsing Line: "+linecount);
 		if(sequence.length() > 0){
 			if(!qual)handler.addSequence(title, sequence.toString());
 			else handler.addQuality(title, Tools_Fasta.Qual2Fastq(sequence.toString()));

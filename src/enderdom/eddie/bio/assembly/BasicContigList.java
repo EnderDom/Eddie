@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.Contig;
 import enderdom.eddie.bio.sequence.ContigList;
@@ -109,6 +110,13 @@ public class BasicContigList implements ContigList{
 	public void save(File f, BioFileType t) throws Exception{
 		if(t == BioFileType.ACE){
 			new ACEWriter().save(this, f);
+		}
+		else if(t == BioFileType.FASTA){
+			Fasta fasta =new Fasta();
+			for(Contig r : this.records){
+				fasta.addSequence(r.getContigName(), r.getConsensus().getSequence().replaceAll("\\*", ""));
+			}
+			fasta.saveFile(f, t);
 		}
 		else throw new UnsupportedTypeException("Biofile type is not ACEm do not support " + t.toString());
 	}

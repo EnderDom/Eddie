@@ -16,76 +16,93 @@ import enderdom.eddie.ui.EddiePropertyLoader;
 
 public class ACEWriter {
 	
-	final String newline = Tools_System.getNewline();
-	final static String acedateformat = "EEE MMM HH:mm:ss yyyy";
-	boolean writeDS = true;
-	boolean writeCT = true; 
+	String newline;
+	public String acedateformat = "EEE MMM HH:mm:ss yyyy";
+	final private String date;
+	private boolean writeDS = true;
+	private boolean writeCT = true; 
 	private static int acebase = 1;
-	private static int linelength = 60;
+	private int linelength = 60;
+	private int perc;
+	private int count;
+	private String written;
+	private int size;
+	private int readcount;
+	
 	
 	public ACEWriter(){
-		
+		date = Tools_System.getDateNow(acedateformat);
+		newline = Tools_System.getNewline();
+		count=-1;
+		perc=0;
+		readcount=0;
 	}
 	
 	public void save(BasicContigList list, File f) throws IOException {
 		Logger logger = Logger.getRootLogger();
 		logger.info("Writing to File at "+f.getPath());
-		
+		System.out.println();
+		System.out.println("You may want to go make a cup of tea...");
+		System.out.println();
 		FileWriter fstream = new FileWriter(f);
 		BufferedWriter out = new BufferedWriter(fstream);
 		
 		//Write AS header
-		System.out.print("Writing");
-		int c =0;
+		size = list.getNoOfReads();
 		out.write(getASHeader(list));
-		out.flush();
 		//Loop Through Contigs	
 		for(String name : list.getContigNames()){
 			out.write(getCOHeader(list.getContig(name)));
-			out.write(Tools_String.splitintolines(linelength, list.getContig(name).getConsensus().getSequence()));
+			Tools_String.splitintolinesandsave(linelength, list.getContig(name).getConsensus().getSequence(), out);
 			out.write(newline);
-			out.flush();
 			out.write("BQ ");
 			out.write(newline);
 			out.write(Tools_Fasta.Fastq2QualwNewline4ACE(list.getContig(name).getConsensus().getQuality(), linelength));
 			out.write(newline);
 			out.write(newline);
-			out.flush();
 			//Loop Through Reads
 			for(String read : list.getContig(name).getReadNames()){
 				out.write(getAFHeader(read, name, list));
-				out.flush();
 			}
 			for(BasicRegion r : list.getContig(name).getRegions()){
 				out.write(getBSHeader(r));
-				out.flush();
 			}
 			for(String read : list.getContig(name).getReadNames()){
 				out.write(newline);
 				out.write(getRDHeader(read, name, list));
-				out.write(Tools_String.splitintolines(linelength, list.getContig(name).getSequence(read).getSequence()));
+				Tools_String.splitintolinesandsave(linelength, list.getContig(name).getSequence(read).getSequence(), out);
 				out.write(newline);
-				out.flush();
 				out.write(getQAHeader(read, name, list));
-				out.flush();
 				if(writeDS){
 					out.write(getDSHeader());
-					out.flush();
 				}
 				out.write(newline);
+				readcount++;
+				if(readcount%25 == 0)writeUpdate();
 			}
 			if(writeCT){
 				out.write(getCTHeader());
-				out.flush();
 			}
-			c++;
-			if(c%100==0)System.out.print(".");
+			writeUpdate();
 		}
-		System.out.println();
+		System.out.println("\r100% written");
 		logger.info("File written.");
 		out.flush();
 		out.close();
 		
+	}
+	
+	private void writeUpdate(){
+		perc = (int)((double)readcount/size*100);
+		count++;
+		switch(count){
+			case 0: written="% written -  "; break;
+			case 1: written="% written \\  "; break;
+			case 2: written="% written |  "; break;
+			case 3: written="% written /  "; break;
+			default:count=-1;
+		}
+		System.out.print("\r"+perc + written);
 	}
 
 	private String getCTHeader() {
@@ -103,7 +120,7 @@ public class ACEWriter {
 	private String getDSHeader() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("DS VERSION: 1 TIME: ");
-		buffer.append(Tools_System.getDateNow(acedateformat));
+		buffer.append(date);
 		buffer.append(newline);
 		return buffer.toString();
 	}
@@ -202,5 +219,12 @@ public class ACEWriter {
 		this.writeCT = writeCT;
 	}
 
+	public int getLinelength() {
+		return linelength;
+	}
+
+	public void setLinelength(int linelength) {
+		this.linelength = linelength;
+	}
 	
 }
