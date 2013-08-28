@@ -88,6 +88,9 @@ public interface Contig extends SequenceList {
 	
 	public ArrayList<BasicRegion> getRegions();
 	
-	
+
+	public boolean isNoQual2fastq();
+
+	public void setNoQual2fastq(boolean noQual2fastq);
 	
 }

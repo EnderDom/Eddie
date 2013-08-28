@@ -41,9 +41,6 @@ public class ACEWriter {
 	public void save(BasicContigList list, File f) throws IOException {
 		Logger logger = Logger.getRootLogger();
 		logger.info("Writing to File at "+f.getPath());
-		System.out.println();
-		System.out.println("You may want to go make a cup of tea...");
-		System.out.println();
 		FileWriter fstream = new FileWriter(f);
 		BufferedWriter out = new BufferedWriter(fstream);
 		
@@ -52,27 +49,34 @@ public class ACEWriter {
 		out.write(getASHeader(list));
 		//Loop Through Contigs	
 		for(String name : list.getContigNames()){
-			out.write(getCOHeader(list.getContig(name)));
-			Tools_String.splitintolinesandsave(linelength, list.getContig(name).getConsensus().getSequence(), out);
+			Contig c = list.getContig(name);
+			out.write(getCOHeader(c));
+			Tools_String.splitintolinesandsave(linelength, c.getConsensus().getSequence(), out);
 			out.write(newline);
 			out.write("BQ ");
 			out.write(newline);
-			out.write(Tools_Fasta.Fastq2QualwNewline4ACE(list.getContig(name).getConsensus().getQuality(), linelength));
+			if(c.isNoQual2fastq()){
+				out.write(Tools_Fasta.Fastq2QualwNewline4ACE(c.getConsensus().getQuality(), linelength));
+			}
+			else{
+				out.write(Tools_Fasta.QualwNewline(c.getConsensus().getQuality(), linelength));
+			}
+			
 			out.write(newline);
 			out.write(newline);
 			//Loop Through Reads
 			for(String read : list.getContig(name).getReadNames()){
-				out.write(getAFHeader(read, name, list));
+				out.write(getAFHeader(read, name, c));
 			}
 			for(BasicRegion r : list.getContig(name).getRegions()){
 				out.write(getBSHeader(r));
 			}
 			for(String read : list.getContig(name).getReadNames()){
 				out.write(newline);
-				out.write(getRDHeader(read, name, list));
-				Tools_String.splitintolinesandsave(linelength, list.getContig(name).getSequence(read).getSequence(), out);
+				out.write(getRDHeader(read, name, c));
+				Tools_String.splitintolinesandsave(linelength, c.getSequence(read).getSequence(), out);
 				out.write(newline);
-				out.write(getQAHeader(read, name, list));
+				out.write(getQAHeader(read, name, c));
 				if(writeDS){
 					out.write(getDSHeader());
 				}
@@ -126,14 +130,14 @@ public class ACEWriter {
 	}
 
 	private String getQAHeader(String read, String name,
-			BasicContigList list) {
+			Contig c) {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("QA " );
-		int[] range = list.getContig(name).getRange(read, acebase);
+		int[] range = c.getRange(read, acebase);
 		buffer.append(range[0]);
 		buffer.append(" ");
 		buffer.append(range[1]);
-		range = list.getContig(name).getPaddedRange(read, acebase);
+		range = c.getPaddedRange(read, acebase);
 		buffer.append(" ");
 		buffer.append(range[0]);
 		buffer.append(" ");
@@ -143,12 +147,12 @@ public class ACEWriter {
 	}
 
 	private String getRDHeader(String read, String name,
-			BasicContigList list) {
+			Contig c) {
 		StringBuffer buffer =  new StringBuffer();
 		buffer.append("RD ");
 		buffer.append(read);
 		buffer.append( " ");
-		buffer.append(list.getContig(name).getSequence(read).getLength());
+		buffer.append(c.getSequence(read).getLength());
 		buffer.append(" 0 0");
 		buffer.append(newline);
 		return buffer.toString();
@@ -167,14 +171,14 @@ public class ACEWriter {
 	}
 
 	private String getAFHeader(String read, String name,
-			BasicContigList list) {
+			Contig c) {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("AF ");
 		buffer.append(read);
 		buffer.append(" " );
-		buffer.append(list.getContig(name).getCompliment(read));
+		buffer.append(c.getCompliment(read));
 		buffer.append(" " );
-		buffer.append(list.getContig(name).getOffset(read, acebase));
+		buffer.append(c.getOffset(read, acebase));
 		buffer.append(newline);
 		return buffer.toString();
 	}

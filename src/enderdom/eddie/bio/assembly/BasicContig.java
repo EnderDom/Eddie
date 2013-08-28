@@ -26,6 +26,7 @@ public class BasicContig implements Contig{
 	protected int iteratorcount = 0;
 	protected int position = 1;
 	protected ArrayList<BasicRegion> regions;
+	private boolean noQual2fastq;
 	
 	public BasicContig(){
 		this.sequences = new LinkedHashMap<String, SequenceObjectXT>();
@@ -340,6 +341,15 @@ public class BasicContig implements Contig{
 
 	public char getCharAtRelative2Contig(String s, int position, int base) {
 		return this.sequences.get(s).getSequence().charAt((position-base)+this.sequences.get(s).getOffset(0));
+	}
+	
+
+	public boolean isNoQual2fastq() {
+		return noQual2fastq;
+	}
+
+	public void setNoQual2fastq(boolean noQual2fastq) {
+		this.noQual2fastq = noQual2fastq;
 	}
 
 	

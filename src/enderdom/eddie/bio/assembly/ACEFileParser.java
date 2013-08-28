@@ -52,6 +52,7 @@ public class ACEFileParser implements Iterator<Contig>{
 	Logger logger = Logger.getLogger("ACEFileParser");
 	int warn;
 	File f;
+	private boolean noQual2fasta;
 	
 	/**
 	 * @param file Ace file input
@@ -113,6 +114,7 @@ public class ACEFileParser implements Iterator<Contig>{
 	 */
 	public ACERecord next() {
 		currentrecord = new ACERecord();
+		currentrecord.setNoQual2fastq(this.noQual2fasta);
 		parseLine(currentsw, currentline);
 		try{
 			while((currentline=mReader.readLine()) != null && !currentline.startsWith("CO ")){
@@ -188,7 +190,7 @@ public class ACEFileParser implements Iterator<Contig>{
 			case 0: parseAS(line);break;//AS
 			case 1: parseFirstCO(line);break; //CO
 			case 2: this.currentrecord.addContigSequence(line);break;//CO_
-			case 3: this.currentrecord.addQuality(line);break;//BQ
+			case 3: this.currentrecord.addQuality(line+" ");break;//BQ
 			case 4: parseFirstRD(line);break;//RD
 			case 5: this.currentrecord.addCurrentSequence(line);break;//RD_
 			case 6: parseAF(line);break;//AF
@@ -352,6 +354,14 @@ public class ACEFileParser implements Iterator<Contig>{
 	 */
 	public int getReadsSize() {
 		return reads;
+	}
+
+	public boolean isNoQual2fasta() {
+		return noQual2fasta;
+	}
+
+	public void setNoQual2fasta(boolean noQual2fasta) {
+		this.noQual2fasta = noQual2fasta;
 	}
 
 }

@@ -19,10 +19,12 @@ public class Tools_Fasta {
 		for(int i =0; i < qual.length(); i++){
 			int ascii = (int)qual.charAt(i)-33;
 			if(ascii < 10){
-				phrap.append(ascii + "  ");
+				phrap.append(ascii);
+				phrap.append("  ");
 			}
 			else{
-				phrap.append(ascii + " ");
+				phrap.append(ascii);
+				phrap.append(" ");
 			}
 		}
 		return phrap.toString();
@@ -35,17 +37,37 @@ public class Tools_Fasta {
 		for(int i =0; i < qual.length(); i++){
 			int ascii = (int)qual.charAt(i)-33;
 			if(ascii < 10){
-				phrap.append(ascii + "  ");
+				phrap.append(ascii);
+				phrap.append("  ");
 			}
 			else{
-				phrap.append(ascii + " ");
+				phrap.append(ascii);
+				phrap.append(" ");
 			}
 			if(phrap.length() > linesize+line){
 				line = phrap.length();
-				phrap.append(newline+" ");
+				phrap.append(newline);
+				phrap.append(" ");
 			}
 		}
 		return phrap.toString();
+	}
+	
+
+	public static String QualwNewline(String qual, int linelength) {
+		StringBuilder build = new StringBuilder();
+		int start=0;
+		int end=linelength;
+		while(end < qual.length()){
+			while(qual.charAt(end)!=' ' &&  end < qual.length()){
+				end++;
+			}
+			build.append(qual.substring(start,end));
+			start = end;
+			end+=linelength;
+		}
+		build.append(qual.substring(start));
+		return build.toString();
 	}
 	
 	public static String Fastq2QualwNewline(String qual, int linesize){
@@ -132,4 +154,5 @@ public class Tools_Fasta {
 		}
 		else return true;
 	}
+
 }

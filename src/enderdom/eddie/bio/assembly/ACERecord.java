@@ -77,7 +77,7 @@ public class ACERecord extends BasicContig{
 	 * @param line
 	 */
 	public void addQuality(String line){
-		qualitybuffer.append(line+" ");//Added space, as the line break usually replaces space in quality strings
+		qualitybuffer.append(line.replaceAll(" +", " "));//Added space, as the line break usually replaces space in quality strings
 	}
 	
 	
@@ -119,13 +119,14 @@ public class ACERecord extends BasicContig{
 	 * etc.
 	 */
 	public void finalise(){
+		String quality = isNoQual2fastq()? Tools_Fasta.Qual2Fastq(this.qualitybuffer.toString()) : this.qualitybuffer.toString();
 		if(sequences.get(contigname)==null){
 			sequences.put(contigname, new GenericSequenceXT(this.contigname, this.contigbuffer.toString(), 
-					Tools_Fasta.Qual2Fastq(this.qualitybuffer.toString()),0));
+					quality,0));
 		}
 		else{
 			sequences.get(contigname).setSequence(this.contigbuffer.toString());
-			sequences.get(contigname).setQuality(Tools_Fasta.Qual2Fastq(this.qualitybuffer.toString()));
+			sequences.get(contigname).setQuality(quality);
 		}
 		setReadName(currentread);
 		this.sequencebuffer = null;
@@ -166,7 +167,7 @@ public class ACERecord extends BasicContig{
 	public int getReadIndex(String name){
 		return sequences.get(name).getPositionInList()-1;
 	}
-	
 
+	
 }
 
