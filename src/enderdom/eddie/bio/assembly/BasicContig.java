@@ -18,6 +18,20 @@ import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.tools.Tools_Math;
 import enderdom.eddie.ui.BasicPropertyLoader;
 
+/**
+ * Be warned, contigname is kind of set
+ * in 3 or 4 separate locations contigname, the key for the 
+ * consensus and the sequenceObject's identifier in this object. But
+ * also potentially the key for this object in a parent contiglist
+ *
+ * This is a semi-WTF, but its kind of needed for when 
+ * the consensus acts as its own entity and when the
+ * contig acts as its own entity.Check setContigName
+ * for what needs to be changed 
+ * 
+ * @author dominic
+ *
+ */
 public class BasicContig implements Contig{
 
 	protected LinkedHashMap<String, SequenceObjectXT> sequences;
@@ -98,6 +112,12 @@ public class BasicContig implements Contig{
 
 
 	public void setContigName(String s) {
+		if(contigname != null && this.sequences.containsKey(contigname)){
+			SequenceObjectXT o = this.getConsensus();
+			this.sequences.remove(o.getIdentifier());
+			o.setIdentifier(s);
+			this.sequences.put(s, o);
+		}
 		this.contigname = s;
 	}
 

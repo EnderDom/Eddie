@@ -82,14 +82,13 @@ public class ACEWriter {
 				}
 				out.write(newline);
 				readcount++;
-				if(readcount%25 == 0)writeUpdate();
 			}
 			if(writeCT){
 				out.write(getCTHeader());
 			}
 			writeUpdate();
 		}
-		System.out.println("\r100% written");
+		System.out.println("\r100% written      ");
 		logger.info("File written.");
 		out.flush();
 		out.close();
