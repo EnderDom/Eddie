@@ -86,7 +86,7 @@ public class ACEWriter {
 			if(writeCT){
 				out.write(getCTHeader());
 			}
-			writeUpdate();
+			if(readcount%10==0)writeUpdate();
 		}
 		System.out.println("\r100% written      ");
 		logger.info("File written.");

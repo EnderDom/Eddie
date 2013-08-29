@@ -120,6 +120,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 						
 						BioSQL bs = manager.getBioSQL();
 						int biodatabase_id = manager.getEddieDBID();
+						bs.largeInsert(manager.getCon(),true);
 						logger.debug("Bio Database id: "+biodatabase_id);
 						if(biodatabase_id < 0){
 							logger.error("Nobiodatase entry for Eddie");
@@ -138,7 +139,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 							}
 							logger.info(rem+" sequences skipped due to already uploaded");
 						}
-						logger.debug("Uploading....");
+						logger.debug("Cacheing....");
 						
 						while(fasta.hasNext()){
 							SequenceObject o = fasta.next();
@@ -152,12 +153,20 @@ public class Task_Assembly2DB extends TaskXTwIO{
 								manager.getBioSQLXT().addRunBioentry(manager, bioentry, this.runid);
 							}
 							count++;
+							if(count%10000 == 0){
+								System.out.println();
+								logger.debug("Uploading cached statements...");
+								bs.largeInsert(manager.getCon(),false);
+								bs.largeInsert(manager.getCon(),true);
+							}
 							System.out.print("\r"+(count) + " of " +size + "       ");
 							checklist.update(o.getIdentifier());
 						}
 						System.out.println();
-						if(count != size-1){
-							logger.error("Failed to upload all the sequences");
+						logger.debug("Uploading cached statements...");
+						bs.largeInsert(manager.getCon(),false);
+						if(count != size){
+							logger.error("Failed to upload all the sequences, seqs uploaded: " +count + " in fasta " + size);
 						}
 						else{
 							checklist.complete();
@@ -189,7 +198,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 							runid = Tools_Assembly.getSingleRunId(manager, programname, BioSQLExtended.assembly);
 							logger.debug("Run id for " + this.programname+ " returned as " + runid);
 							if(runid == -1){
-								logger.error("This upload needs to be tied to a run, see -task uploadrun");
+								logger.error("This upload needs to be tied to a run, see -task runDatabase");
 								return;
 							}
 						}
@@ -203,6 +212,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 								done= checklist.getData();
 								logger.debug("Can skip: " + done.length + " files previously done");
 							}
+							bs.largeInsert(manager.getCon(),true);
 							while(parser.hasNext()){
 								record = (ACERecord) parser.next();
 								String name = record.getConsensus().getIdentifier();
@@ -226,11 +236,16 @@ public class Task_Assembly2DB extends TaskXTwIO{
 													if(j != UserResponse.YES)return;
 												}
 											}
+											System.out.print("\r"+"Contig No.: "+count );
 										}
 										else{
 											System.out.print("\r"+"Contig No.: "+count+"Skipped Contig ");
 										}					
 										count++;
+										if(count%10000==0){
+											bs.largeInsert(manager.getCon(),false);
+											bs.largeInsert(manager.getCon(),true);
+										}
 									}
 								}
 								else{
@@ -238,6 +253,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 								}
 								checklist.update(name);
 							}
+							bs.largeInsert(manager.getCon(),false);
 							System.out.println();
 							checklist.complete();
 						}

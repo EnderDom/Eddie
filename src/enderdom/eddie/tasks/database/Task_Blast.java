@@ -59,6 +59,7 @@ public class Task_Blast extends TaskXT{
 		fuzzynames = cmd.hasOption("fuzzy");
 		force = cmd.hasOption("force");
 		run_id = getOption(cmd, "run_id", -1);
+		input = getOption(cmd, "i", null);
 		//date = getOption(cmd, "date", null);
 	}
 	
@@ -95,12 +96,13 @@ public class Task_Blast extends TaskXT{
 		if(input !=null)in = new File(input);
 		this.checklist = openChecklist(ui);
 		if(in == null || !in.exists()){
-			ui.error("File "+input+" does not exists");
+			logger.error("File "+input+" does not exists");
 			return;
 		}
 		else{
 			manager = ui.getDatabaseManager(password);
 			try{
+				int errornumb = 5;
 				manager.open();
 				if(in.isDirectory()){
 					files = in.listFiles();
@@ -116,18 +118,19 @@ public class Task_Blast extends TaskXT{
 								counts[0]++;
 							}
 							catch(Exception e){
-								ui.error("Failed to parse file " + files[i].getName(),e);
+								logger.error("Failed to parse file " + files[i].getName(),e);
 								counts[1]++;
 								errfiles.push(files[i].getName());
 							}
 							checklist.update(files[i].getName());
-							if(counts[1] > 5){
+							if(counts[1] > errornumb){
+
 								double d = (double)counts[1]/(double)counts[0];
 								if(d >errorperc){
-									logger.error("Error count has reached >5 and 10% of files");
-									this.setCompleteState(TaskState.ERROR);
-									return;
+									logger.error("Error count has reached >"+errornumb+" and "+(100*d)+"% of files");
+									errorperc+=0.2;
 								}
+								errornumb*=2;
 							}
 						}
 						else{
@@ -155,7 +158,7 @@ public class Task_Blast extends TaskXT{
 						uploadBlastFile(in);
 					}
 					catch(Exception e){
-						ui.error("Failed to parse file " + in.getName(),e);
+						logger.error("Failed to parse file " + in.getName(),e);
 						setCompleteState(TaskState.ERROR);
 						return;
 					}

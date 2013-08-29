@@ -180,4 +180,6 @@ public interface BioSQL {
 			int object_id, int predicate_id, int ontology_id);
 
 	public boolean addDbxrefTerm(Connection con, int dbxref_id, int term_id, Integer rank);
+
+	public void largeInsert(Connection con, boolean start);
 }

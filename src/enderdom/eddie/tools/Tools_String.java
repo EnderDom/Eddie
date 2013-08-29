@@ -190,14 +190,13 @@ public abstract class Tools_String {
 				ii[j]=a;
 			}
 		}
-		if(ii.length > 0){
-			Arrays.sort(ii);
-			return ii[ii.length-1];
-		}
+		
 		if(ii.length > 1){
 			for(int j =0; j < ii.length; j++){
 				if(ii[j] == 454){ii[j]=-1;break;}
 			}
+		}
+		if(ii.length > 0){
 			Arrays.sort(ii);
 			return ii[ii.length-1];
 		}

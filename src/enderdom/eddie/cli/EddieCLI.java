@@ -198,22 +198,6 @@ public class EddieCLI implements UI {
 		this.dbmanager = dbmanager;
 	}
 		
-	public void throwError(String message, Throwable t){
-		logger.error(message,t);
-	}
-	
-	public void error(String message, Throwable t){
-		throwError(message, t);
-	}
-	
-	public void error(String message){
-		logger.error(message);
-	}
-
-	public void throwError(String message, String[] details) {
-		logger.error(message);
-		for(String s : details)System.out.println(s);
-	}
 	
 	protected void finalize() throws Throwable {
 		super.finalize();

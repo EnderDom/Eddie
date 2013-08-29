@@ -63,6 +63,7 @@ public class Task_AddRunData extends TaskXT{
 			else{
 				if(run.validate()){
 					run.uploadRun(manager);
+					logger.debug("Run Uploaded");
 				}
 				else{
 					for(String s : run.getValidationErrors())logger.error(s);

@@ -657,20 +657,20 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 
 	
-	public boolean setRun(DatabaseManager manager, Date date, String runtype, int parent, String program, String version, String dbname, String source, String params, String comment){		
+	public boolean setRun(DatabaseManager manager, Date date, String runtype, Integer parent, String program, String version, String dbname, String source, String params, String comment){		
 		try{
 			runSET = MySQL_BioSQL.init(manager.getCon(), runSET, "INSERT INTO run " +
 					"(run_date, runtype, parent_id, program, version, dbname, source, params, comment) VALUES (?,?,?,?,?,?,?,?,?);");
 			runSET.setDate(1, date);
 			runSET.setString(2, runtype);
-			if(version == null)runSET.setNull(3, Types.INTEGER);
+			if(parent == null)runSET.setNull(3, Types.INTEGER);
 			else runSET.setInt(3, parent);
 			runSET.setString(4, program);
 			if(version == null)runSET.setNull(5, Types.VARCHAR);
 			else runSET.setString(5, version);
 			if(dbname == null)runSET.setNull(6, Types.VARCHAR);
 			else runSET.setString(6, dbname);
-			if(dbname == null)runSET.setNull(7, Types.VARCHAR);
+			if(source == null)runSET.setNull(7, Types.VARCHAR);
 			else runSET.setString(7, source);
 			if(params == null)runSET.setNull(8, Types.VARCHAR);
 			else runSET.setString(8, params);
