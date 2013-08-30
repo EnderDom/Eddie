@@ -195,7 +195,7 @@ public interface BioSQLExtended {
 	
 	public BioSequence[] getBioSequences(DatabaseManager manager, int bioentry_id);
 	
-	public boolean setRun(DatabaseManager manager, Date date, String runtype, int parent_id,  String program, String version, String dbname, String source, String params, String comment);
+	public boolean setRun(DatabaseManager manager, Date date, String runtype, Integer parent_id,  String program, String version, String dbname, String source, String params, String comment);
 
 	/**
 	 * Retrieve some contig names attached to the run of id 'r'

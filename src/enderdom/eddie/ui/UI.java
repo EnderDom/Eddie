@@ -56,21 +56,6 @@ public interface UI{
 	public DatabaseManager getDatabaseManager();
 	
 	public void setDatabaseManager(DatabaseManager manager);
-
-	
-	/**
-	 * This is primarily for the GUI, to alert the user of an 
-	 * error as they may not see the logs
-	 * @param message
-	 * @param t
-	 */
-	public void throwError(String message, Throwable t);
-
-	public void throwError(String message, String[] details);
-	
-	public void error(String message, Throwable t);
-
-	public void error(String message);
 	
 	public void initShutdown();
 	

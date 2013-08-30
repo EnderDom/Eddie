@@ -38,7 +38,7 @@ public class DatabaseManager {
 	private BioSQL biosql;
 	private BioSQLExtended biosqlext;
 	private int biodatabase_id =-1;
-	private static double databaseversion =2.7;
+	private static double databaseversion =2.8;
 	private boolean isOpen;
 	
 	public DatabaseManager(UI ui){
@@ -145,7 +145,7 @@ public class DatabaseManager {
 			return true;
 		}
 		catch (SQLException e) {
-			ui.error("Failed to create new database "+dbname, e);
+			logger.error("Failed to create new database "+dbname, e);
 			return false;
 		}
 	}
@@ -175,7 +175,7 @@ public class DatabaseManager {
 			return true;
 		}
 		catch(SQLException sqle){
-			ui.error("Failed to close Connection: ",sqle);
+			logger.error("Failed to close Connection: ",sqle);
 			return false;
 		}
 	}
@@ -235,11 +235,11 @@ public class DatabaseManager {
 			return Tools_SQL_MySQL.getTableCount(getCon());
 		}
 		else if(this.dbtype.equals("banana")){
-			ui.error("Fruit in database error.");
+			logger.error("Fruit in database error.");
 			return -1;
 		}
 		else{
-			ui.error("Unimplemented Procedure");
+			logger.error("Unimplemented Procedure");
 			return -1;
 		}
 	}
@@ -254,7 +254,7 @@ public class DatabaseManager {
 			return -1;
 		}
 		catch(SQLException sq){
-			ui.error("Failed to get last insert, you sure you inserted stuff");
+			logger.error("Failed to get last insert, you sure you inserted stuff", sq);
 			return -1;
 		}
 	}

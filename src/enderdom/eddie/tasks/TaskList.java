@@ -34,6 +34,7 @@ import enderdom.eddie.ui.UI;
  * I really don't like the idea. So add all Tasks in variable here and the UI
  * will retrieve them and act appropriately.
  */
+@SuppressWarnings("deprecation")
 public class TaskList {
 
 	private static String[][] tasks;

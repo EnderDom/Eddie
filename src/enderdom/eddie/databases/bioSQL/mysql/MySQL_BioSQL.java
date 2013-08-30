@@ -901,4 +901,16 @@ public class MySQL_BioSQL implements BioSQL {
 			return false;
 		}
 	}
+
+	public void largeInsert(Connection con, boolean start) {
+		try{
+			Statement st = con.createStatement();
+			if(start)st.execute("START TRANSACTION;");
+			else st.execute("COMMIT;");
+			st.close();
+		}
+		catch(SQLException sq){
+			logger.error("Failed in method large insert", sq);
+		}
+	}
 }

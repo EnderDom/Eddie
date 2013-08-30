@@ -89,7 +89,7 @@ public class Task_Assembly extends TaskXTwIO{
 						}
 						else{
 							totalread+=record.getNoOfSequences();
-							totalbp+=record.getQuickMonomers();
+							totalbp+=record.getNoOfMonomers();
 						}
 						count++;
 					}
@@ -156,7 +156,7 @@ public class Task_Assembly extends TaskXTwIO{
 			}
 			else{
 				logger.info("Not Task set");
-			}			
+			}
 		}
 		
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());

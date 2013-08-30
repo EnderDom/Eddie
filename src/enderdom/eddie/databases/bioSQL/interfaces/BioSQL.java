@@ -180,4 +180,7 @@ public interface BioSQL {
 			int object_id, int predicate_id, int ontology_id);
 
 	public boolean addDbxrefTerm(Connection con, int dbxref_id, int term_id, Integer rank);
+
+	//This is really just mysql specific, but it allows faster mysql for innodb
+	public void largeInsert(Connection con, boolean start);
 }

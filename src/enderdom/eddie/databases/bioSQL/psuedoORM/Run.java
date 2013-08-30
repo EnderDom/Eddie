@@ -18,7 +18,7 @@ public class Run {
 */
 	private Logger logger = Logger.getRootLogger();
 	private int run_id;
-	private int parent_id;
+	private Integer parent_id;
 	private Date date;
 	private String runtype;
 	private String program;
@@ -37,7 +37,7 @@ public class Run {
 	
 	
 	
-	public Run(int r, Date time, String runtype, int parent, String program,
+	public Run(int r, Date time, String runtype, Integer parent, String program,
 			String version, String dbname, String source, String params, String comment){
 		this.run_id = r;
 		this.date = time;
@@ -51,7 +51,7 @@ public class Run {
 		this.comment =comment;
 	}
 	
-	public Run(Date time, String runtype, int parent, String program,
+	public Run(Date time, String runtype, Integer parent, String program,
 			String version, String dbname, String source, String params, String comment){
 		this.date = time;
 		this.runtype = runtype;
@@ -143,11 +143,11 @@ public class Run {
 		this.source = source;
 	}
 
-	public int getParent_id() {
+	public Integer getParent_id() {
 		return parent_id;
 	}
 
-	public void setParent_id(int parent_id) {
+	public void setParent_id(Integer parent_id) {
 		this.parent_id = parent_id;
 	}
 

@@ -170,6 +170,44 @@ public abstract class Tools_String {
 	}
 	
 	/**
+	 * Like getLongestInt, but with workarounds
+	 * 454 workaround
+	 *  
+	 * @param name
+	 * @return
+	 */
+	public static int getContigNumber(String name){
+		name = name.replaceAll( "[^\\d]", " ");
+		name = name.replaceAll( " +", " ");
+		name = name.trim();
+		String[] i = name.split(" ");
+		int[] ii = new int[i.length];
+		for(int j =0; j < i.length; j++){
+			if(i[j].trim().length() > 0){
+				Integer a = parseString2Int(i[j]);
+				if(a == null){
+					a=-1;
+					Logger.getRootLogger().warn("This error message suggests an intrinsic code based bug {"+i[j] + "}");
+				}
+				ii[j]=a;
+			}
+		}
+		if(ii.length > 0){
+			Arrays.sort(ii);
+			if(ii[ii.length-1] == 454){
+				if(Tools_Math.sum(ii) > 454){
+					return ii[ii.length-2];
+				}
+			}
+			return ii[ii.length-1];
+		}
+		else{
+			return -1;
+		}
+	}
+	
+	
+	/**
 	 * 
 	 * @param list list object containing Strings, with len>1
 	 * @return list sorted by string length and then by alphabetical order
