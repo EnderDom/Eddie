@@ -18,9 +18,16 @@ import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_CLI;
 import enderdom.eddie.tools.Tools_File;
-import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 
+/**
+ * 
+ * This will be put on the stack of
+ * horrible tasks. FFS I can't code for toffee.
+ * 
+ * @author dominic
+ *
+ */
 public class Task_Blast extends TaskXT{
 
 	private boolean fuzzynames;
@@ -29,14 +36,13 @@ public class Task_Blast extends TaskXT{
 	private boolean[] ignore;
 	DatabaseManager manager;
 	private String dbname;
-	private String date;
 	private int run_id;
-	private double errorperc;
 	//filecount, fileerror, fileskip, hspcount-up, hspcount-skip, hspcount-error
 	private int[] counts;
 	private boolean force;
 	Stack<String> errfiles;
 	Stack<String> errfilesmin;
+	private boolean ignoreErrors;
 	
 	public Task_Blast(){
 		setHelpHeader("--This is the Help Message for the the blast Task--");
@@ -72,17 +78,11 @@ public class Task_Blast extends TaskXT{
 		options.addOption(new Option("db","dbname", true, "Default database name, such as nr, swiss-prot etc. If not set, will attempt to get from blast file"));
 		options.addOption(new Option("fuzzy", false, "Check for fuzzy names before failing, " +
 				"may be help if blast query-id is different from database id. May lead to incorrect uploads though "));
+		options.addOption(new Option("g","ignore", true, "Ignore errors and continue updating"));
 	}
 	
 	public void parseOpts(Properties props){
-		Double j = Tools_String.parseString2Double(props.getProperty("MAXERRORPERC"));
-		if( j != null){
-			errorperc=j;
-		}
-		else{
-			props.setProperty("MAXERRORPERC", 0.1+"");
-			errorperc=0.1;
-		}
+
 	}
 	
 	public Options getOptions(){
@@ -102,7 +102,6 @@ public class Task_Blast extends TaskXT{
 		else{
 			manager = ui.getDatabaseManager(password);
 			try{
-				int errornumb = 5;
 				manager.open();
 				if(in.isDirectory()){
 					files = in.listFiles();
@@ -123,14 +122,8 @@ public class Task_Blast extends TaskXT{
 								errfiles.push(files[i].getName());
 							}
 							checklist.update(files[i].getName());
-							if(counts[1] > errornumb){
-
-								double d = (double)counts[1]/(double)counts[0];
-								if(d >errorperc){
-									logger.error("Error count has reached >"+errornumb+" and "+(100*d)+"% of files");
-									errorperc+=0.2;
-								}
-								errornumb*=2;
+							if(counts[1] > 1 && !ignoreErrors){
+								throw new Exception("Errors in blast upload, quitting, run with -ignore to skip errors");
 							}
 						}
 						else{
@@ -139,8 +132,7 @@ public class Task_Blast extends TaskXT{
 						System.out.print("\rFile No.: "+i+" 		");
 					}
 					dealErrors();
-					
-					
+
 					String s = Tools_System.getNewline();
 					System.out.println(s+"#####################################################");
 					System.out.println("--Blast Parsing--");
@@ -177,6 +169,8 @@ public class Task_Blast extends TaskXT{
 	
 	public void uploadBlastFile(File file) throws Exception{
 		MultiblastParser parse = new MultiblastParser(MultiblastParser.BASICBLAST, file);
+		manager.getBioSQL().largeInsert(manager.getCon(), true);
+		int parsecount=0;
 		while(parse.hasNext()){
 			BlastObject o = parse.next();
 			if(o != null){
@@ -184,8 +178,13 @@ public class Task_Blast extends TaskXT{
 				if(dbname == null){
 					dbname = helper.getBlastDatabase();
 				}
-				helper.setRun_id(run_id);
-				if(run_id > 0)helper.setDate(date);
+				if(run_id > 0){
+					helper.setRun_id(run_id);
+				}
+				else{
+					helper.setDate(Tools_System.getDateNow(Tools_System.SQL_DATE_FORMAT));
+				}
+				
 				int[] j = helper.upload2BioSQL(manager, fuzzynames, dbname, force);
 				if(j[0] == -1){
 					counts[5]++;
@@ -196,12 +195,24 @@ public class Task_Blast extends TaskXT{
 					counts[4]+=j[1];
 					counts[6]+=j[2];
 				}
+				if(run_id <0 && helper.getRun_id() > 0){
+					logger.debug("Run id was not available so was created and set as " + run_id);
+					this.run_id = helper.getRun_id();
+				}
+				else if(run_id < 0) throw new Exception("No run ID attributed to blast");
+				
+				parsecount++;
+				if(parsecount%1000==0){
+					manager.getBioSQL().largeInsert(manager.getCon(), false);
+					manager.getBioSQL().largeInsert(manager.getCon(), true);
+				}
 			}
 			else{
 				counts[1]++;
 				errfiles.push(file.getName());
 			}
 		}
+		manager.getBioSQL().largeInsert(manager.getCon(), false);
 	}
 	
 	private void trimRecovered(String[] data){

@@ -178,6 +178,8 @@ public abstract class Tools_String {
 	 */
 	public static int getContigNumber(String name){
 		name = name.replaceAll( "[^\\d]", " ");
+		name = name.replaceAll( " +", " ");
+		name = name.trim();
 		String[] i = name.split(" ");
 		int[] ii = new int[i.length];
 		for(int j =0; j < i.length; j++){
@@ -190,14 +192,13 @@ public abstract class Tools_String {
 				ii[j]=a;
 			}
 		}
-		
-		if(ii.length > 1){
-			for(int j =0; j < ii.length; j++){
-				if(ii[j] == 454){ii[j]=-1;break;}
-			}
-		}
 		if(ii.length > 0){
 			Arrays.sort(ii);
+			if(ii[ii.length-1] == 454){
+				if(Tools_Math.sum(ii) > 454){
+					return ii[ii.length-2];
+				}
+			}
 			return ii[ii.length-1];
 		}
 		else{

@@ -130,21 +130,26 @@ public class Task_BlastAnalysis2 extends TaskXT{
 	}
 	
 	private void printHitReadCount(int run_id){
+		int hit_count = manager.getBioSQLXT().getHitCountwReadCount(manager, run_id, evalue, hit_no, 1, -1);
+		if(hit_count == 0){
+			logger.warn("Hit count at 0 suggests you haven't mapped contigs to reads");
+			logger.warn("Run -task sqluploader -opts");
+		}
+		
 		System.out.println("----INFO----");
 		printRunStuff(run_id);
 		System.out.println("Blast Hits mapped to reads where hit no <" 
 				+ hit_no + " & evalue <" +evalue+ ":");
-		int hit_count = manager.getBioSQLXT().getHitCountwReadCount(manager, run_id, evalue, hit_no, 1, -1);
 		System.out.println(hit_count);
 		System.out.println("------------");
 	}
 	
 	private void printHitCount(int run_id){
+		int hit_count = manager.getBioSQLXT().getHitCount(manager, run_id, evalue, hit_no, 1, -1, unique);
 		System.out.println("----INFO----");
 		printRunStuff(run_id);
 		System.out.println("Blast Hits where hit no <" 
 				+ hit_no + " & evalue <" +evalue+ ":");
-		int hit_count = manager.getBioSQLXT().getHitCount(manager, run_id, evalue, hit_no, 1, -1, unique);
 		System.out.println(hit_count);
 		System.out.println("------------");
 	}

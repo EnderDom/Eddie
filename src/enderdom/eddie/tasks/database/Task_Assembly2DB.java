@@ -96,9 +96,13 @@ public class Task_Assembly2DB extends TaskXTwIO{
 			manager.open();
 			//UPLOADING READS
 			if(this.identifier == null){
-				this.identifier = ui.requiresUserInput("Please Enter a unique identifier:", "Identifier required, maybe Digest_Read? or Mar12_CAP3_Contig?");
+				if(uploadreads || uploadcontigs){
+					this.identifier = ui.requiresUserInput("Please Enter a unique identifier:", 
+							"Identifier required, maybe Digest_Read? or Mar12_CAP3_Contig?");
+				}
 			}
 			if(uploadreads){
+				logger.debug("Running upload reads...");
 				File file = new File(this.input);
 				if(file.exists()){
 					type = Tools_Bio_File.detectFileType(input);
@@ -183,6 +187,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 			}
 			//UPLOADING CONTIGS
 			else if(uploadcontigs){
+				logger.debug("Running upload contigs...");
 				File file = new File(this.input);
 				if(file.exists()){
 					BioFileType type = Tools_Bio_File.detectFileType(input);
@@ -270,18 +275,31 @@ public class Task_Assembly2DB extends TaskXTwIO{
 				}
 			}
 			else if(mapcontigs){
+				logger.debug("Running map contigs to reads...");
 				this.checklist.complete();
+				if(this.runid < 0){
+					logger.error("Run id is required for mapping contigs, " +
+							"please find the run id of this assembly" +
+							", see -task runDatabase -list");
+					return;
+				}
 				ACEFileParser parser = new ACEFileParser(new File(input));
-				
 				int count=0;
+	
+				manager.getBioSQL().largeInsert(manager.getCon(),true);
 				while(parser.hasNext()){
 					count++;
 					ACERecord record = parser.next();
-					if(!mapReads(record, manager, this.identifier+count, manager.getEddieDBID(), this.runid, count)){
-						logger.error("Failed to upload "+ this.identifier+count);
+					if(!mapReads(record, manager, record.getContigName(), manager.getEddieDBID(), this.runid, count)){
+						logger.error("Failed to upload "+ record.getContigName());
 					}
-					
+					if(count%10000==0){
+						manager.getBioSQL().largeInsert(manager.getCon(),false);
+						manager.getBioSQL().largeInsert(manager.getCon(),true);
+					}
 				}
+				System.out.println();
+				manager.getBioSQL().largeInsert(manager.getCon(),false);
 			}
 			else{
 				logger.error("No option selected");
@@ -301,8 +319,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	public boolean mapReads(ACERecord record, DatabaseManager manager, String identifier, int biodatabase_id, int runid, int count){
 		BioSQL bs = manager.getBioSQL();
 		BioSQLExtended bsxt = manager.getBioSQLXT();
-		int bioentry_id = bs.getBioEntry(manager.getCon(), identifier, null, biodatabase_id);
-		if(bioentry_id < 1)bs.getBioEntrywName(manager.getCon(), record.getConsensus().getIdentifier());
+		int bioentry_id = bs.getBioEntry(manager.getCon(), identifier, identifier, biodatabase_id);
+		if(bioentry_id < 1)bioentry_id=bs.getBioEntrywName(manager.getCon(), identifier);
 		if(bioentry_id > 0){
 			int i =0;
 			for(String read : record.getReadNames()){
@@ -327,12 +345,16 @@ public class Task_Assembly2DB extends TaskXTwIO{
 						logger.error("Read mapping has failed");
 						return false;
 					}
-					System.out.print("\r"+"Contig No>:"+count+", mapping Read No.:"+(i++));
+					System.out.print("\r"+"Contig No>:"+count+", mapping Read No.:"+(i++)+ "     ");
 				}
 			}
 			return true;
 		}
-		else return false;
+		
+		else{
+			logger.error("Could not retrieve bioentry_id with identifier: "+identifier);
+			return false;
+		}
 	}	
 	
 

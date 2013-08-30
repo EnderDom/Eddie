@@ -72,10 +72,20 @@ public class Task_DatabaseUpdate extends BasicTask{
 					return;	
 				}
 			}
+			else if(upfrom == 2.7){
+				try{
+					dbto28();
+				} catch (SQLException e) {
+					logger.error("Error updating ",e);
+					setCompleteState(TaskState.ERROR);
+					return;	
+				}
+			}
 			else{
 				logger.error("Can't update any further");
 			}
 		}
+		logger.info("Finished updating");
 		setCompleteState(TaskState.FINISHED);
 	}
 	
@@ -100,7 +110,7 @@ public class Task_DatabaseUpdate extends BasicTask{
 	public void dbto26() throws SQLException{
 		if(manager.getDBTYPE().equals("mysql"))  MySQL_Update.updbto26(manager);
 		else{
-			System.out.println("There was no support for none mysql before 2.6, eh?");
+			System.out.println("There was no support for mysql before 2.6, eh?");
 		}
 		upfrom=2.6;
 	}
@@ -108,8 +118,16 @@ public class Task_DatabaseUpdate extends BasicTask{
 	public void dbto27() throws SQLException{
 		if(manager.getDBTYPE().equals("mysql"))  MySQL_Update.updbto27(manager);
 		else{
-			System.out.println("There was no support for none mysql before 2.7, eh?");
+			System.out.println("There was no support for mysql before 2.7, eh?");
 		}
 		upfrom=2.7;
+	}
+	
+	public void dbto28() throws SQLException{
+		if(manager.getDBTYPE().equals("mysql"))  MySQL_Update.updbto28(manager);
+		else{
+			System.out.println("There was no support for mysql before 2.8, eh?");
+		}
+		upfrom=2.8;
 	}
 }

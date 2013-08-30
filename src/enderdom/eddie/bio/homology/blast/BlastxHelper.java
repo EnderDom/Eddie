@@ -5,9 +5,11 @@ import java.math.BigDecimal;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
+import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.tools.Tools_String;
+import enderdom.eddie.tools.Tools_System;
 
 /**
  * 
@@ -136,8 +138,8 @@ public class BlastxHelper {
 		this.run_id = run_id;
 	}
 	
-	public void getRun_id(int run_id){
-		this.run_id = run_id;
+	public int getRun_id(){
+		return this.run_id;
 	}
 	
 	
@@ -174,41 +176,40 @@ public class BlastxHelper {
 	public int[] upload2BioSQL(DatabaseManager manager, boolean fuzzy, String dbname, boolean force){
 		int[] values = new int[]{-1,0,0};
 		String nom = null;
-		/* Temporarily removed as blast get unique run id per assembly now*/
-//		if(run_id < 1){ 
-//			Run run = new Run();
-//			run.setRuntype("blast");
-//			run.setProgram(this.getBlastProgram());
-//			run.setVersion(this.getBlastVersion());
-//			run.setDbname(dbname);
-//			run.setParams(this.getParametersAsString());
-//			run.setDateValue(this.date, Tools_System.SQL_DATE_FORMAT);
-//			if(run.validate()){
-//				this.run_id = run.getSimilarRun(manager, this.date_range);
-//				if(this.run_id > 0){
-//					logger.trace("Similar Run was found and ID retrieved");
-//				}
-//				else{
-//					logger.trace("No similar run, uploaded as new run");
-//					this.run_id = run.uploadRun(manager);
-//					if(this.run_id != -1){
-//						logger.trace("Run was uploaded and ID retrieved");	
-//					}
-//					else{
-//						logger.error("Failed to retrieve a run id, cannot upload");
-//						values[0]=-1;
-//						return values;
-//					}
-//				}
-//			}
-//			else{
-//				logger.error("Run failed to validate?");
-//				for(String s : run.getValidationErrors()){
-//					if(s.length() > 0)logger.error(s);
-//				}
-//				return values;
-//			}
-//		}
+		if(run_id < 1){ 
+			Run run = new Run();
+			run.setRuntype("blast");
+			run.setProgram(this.getBlastProgram());
+			run.setVersion(this.getBlastVersion());
+			run.setDbname(dbname);
+			run.setParams(this.getParametersAsString());
+			run.setDateValue(this.date, Tools_System.SQL_DATE_FORMAT);
+			if(run.validate()){
+				this.run_id = run.getSimilarRun(manager, this.date_range);
+				if(this.run_id > 0){
+					logger.trace("Similar Run was found and ID retrieved");
+				}
+				else{
+					logger.trace("No similar run, uploaded as new run");
+					this.run_id = run.uploadRun(manager);
+					if(this.run_id != -1){
+						logger.trace("Run was uploaded and ID retrieved as " + run_id);	
+					}
+					else{
+						logger.error("Failed to retrieve a run id, cannot upload");
+						values[0]=-1;
+						return values;
+					}
+				}
+			}
+			else{
+				logger.error("Run failed to validate?");
+				for(String s : run.getValidationErrors()){
+					if(s.length() > 0)logger.error(s);
+				}
+				return values;
+			}
+		}
 		if(run_id < 1){
 			logger.error("Run id was not correctly set");
 			return values;

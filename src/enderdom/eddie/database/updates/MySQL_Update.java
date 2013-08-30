@@ -121,4 +121,12 @@ public class MySQL_Update{
 			st.close();
 			updateDatabase(manager);
 	}
+	
+	public static void updbto28(DatabaseManager manager)throws SQLException{
+		String s = "ALTER TABLE assembly ADD UNIQUE (contig_bioentry_id,read_bioentry_id,run_id)";
+		Statement st = manager.getCon().createStatement();
+		st.executeUpdate(s);
+		st.close();
+		updateDatabase(manager);
+	}
 }
