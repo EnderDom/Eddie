@@ -21,8 +21,6 @@ import enderdom.eddie.databases.bioSQL.psuedoORM.custom.EddieTerm;
 import enderdom.eddie.databases.manager.DatabaseManager;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
-
-import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 
 public class Task_ESTUpload extends TaskXT{
@@ -35,40 +33,35 @@ public class Task_ESTUpload extends TaskXT{
 	private String params;
 	private String comment;
 	private boolean force;
+	private boolean doNotTrim;
 	
 	public Task_ESTUpload(){
 		setHelpHeader("--This is the Help Message for the Est upload Task--");
-		runid=-1;
-		version ="2.1";
-		force=false;
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		if(cmd.hasOption("i")){
-			this.input = cmd.getOptionValue("i");
-		}	
-		if(cmd.hasOption("r")){
-			Integer r = Tools_String.parseString2Int(cmd.getOptionValue("r"));
-			if(r != null) runid = r;
-			else logger.warn("could not read " + cmd.getOptionValue("r") + " as number");
-		}
-		if(cmd.hasOption("v"))version = cmd.getOptionValue("v");
-		if(cmd.hasOption("params"))params = cmd.getOptionValue("params");
-		if(cmd.hasOption("comment"))comment = cmd.getOptionValue("comment");
-		if(cmd.hasOption("force"))force=true;
-		if(cmd.hasOption("suffix"))prot_suffix=cmd.getOptionValue("suffix");
+		input = getOption(cmd, "i", null);
+		runid = getOption(cmd, "r", -1);
+		version = getOption(cmd, "version", "2.1");
+		params = getOption(cmd, "params", null);
+		comment = getOption(cmd, "comment", null);
+		force=cmd.hasOption("force");
+		doNotTrim=cmd.hasOption("d");
+		prot_suffix=getOption(cmd, "s", "_prot");
 	}
 	
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("i","input",true, "Input file from ESTscan containing proteins"));
 		options.addOption("r", "runid", true, "Run id of the contig assembly");
+		//options.addOption("z", "overwrite", false, "Replace an existing ESTscan of this assembly");
 		options.addOption("v", "version", true, "Version of ESTScan, not added will assume 2.1");
 		options.addOption("params",true, "Parameters used for the ESTScan");
 		options.addOption("force",false, "Force upload, even if source sequence can't be found");
 		options.addOption("comment",true, "Add a comment to the run record?");
 		options.addOption("suffix",true, "Suffix for protein names, as they are likely the same as parent so need change. Default: _prot");
+		options.addOption("d", "dontTrimName", false, "Don't trim names to first space char (or ; char)");
 		options.removeOption("w");
 		options.removeOption("o");
 	}
@@ -96,27 +89,40 @@ public class Task_ESTUpload extends TaskXT{
 							SequenceList l = SequenceListFactory.getSequenceList(input);
 							logger.debug("Parsing Sequences");
 							int c=0;int u=0;
+							manager.getBioSQL().largeInsert(manager.getCon(), true);
 							while(l.hasNext()){
-								SequenceObject o = l.next();
-								//o.setIdentifier(o.getIdentifier().replace("Digest", "Digest_"));
-								int parent_id = manager.getBioSQL().getBioEntry(manager.getCon(), o.getIdentifier(), o.getIdentifier(), manager.getEddieDBID());
+								SequenceObject o2 = l.next();
+								String iden = o2.getIdentifier();
+								if(!doNotTrim){
+									iden=iden.replaceAll(";", " ");
+									String[] dents = iden.split(" ");
+									if(dents.length > 0)iden = dents[0];
+								}
+								int parent_id = manager.getBioSQL().getBioEntry(manager.getCon(), iden, iden, manager.getEddieDBID());
+								if(parent_id < 1) parent_id = manager.getBioSQL().getBioEntrywName(manager.getCon(), iden);
 								if(parent_id > 0 || force){
-									manager.getBioSQL().addSequence(manager.getCon(), manager.getEddieDBID(), null, o.getIdentifier()+prot_suffix, 
-											o.getIdentifier()+prot_suffix, o.getIdentifier()+prot_suffix, "CDS", null, 1, o.getSequence(), BioSQL.alphabet_PROTEIN);
+									manager.getBioSQL().addSequence(manager.getCon(), manager.getEddieDBID(), null, iden+prot_suffix, 
+											iden+prot_suffix, iden+prot_suffix, "CDS", null, 1, o2.getSequence(), BioSQL.alphabet_PROTEIN);
 									int bioen = manager.getBioSQL().getBioEntry(manager.getCon(),
-											o.getIdentifier()+prot_suffix,o.getIdentifier()+prot_suffix, manager.getEddieDBID());
+											iden+prot_suffix,iden+prot_suffix, manager.getEddieDBID());
 									if(bioen < 1)throw new Exception("We cannot recover bioentry id after adding the bioentry");
 									manager.getBioSQLXT().addRunBioentry(manager, bioen, estrun);
 									manager.getBioSQL().addBioEntryRelationship(manager.getCon(), bioen, parent_id, onto.getTerm(EddieTerm.TRANSLATE).getTerm_id(), 1);
 									u++;
 								}
 								else{
-									skipped.add(o.getIdentifier());
+									skipped.add(iden);
 								}
+								
 								c++;
+								if(c%1000==0){
+									manager.getBioSQL().largeInsert(manager.getCon(), false);
+									manager.getBioSQL().largeInsert(manager.getCon(), true);
+								}
 								System.out.print("\r"+c);
 							}
 							System.out.println();
+							manager.getBioSQL().largeInsert(manager.getCon(), false);
 							logger.debug("Dealt with " + c + " sequences in file of which "+ u+" appeared to upload");
 						}
 						if(skipped.size() > 0)dealwithSkipped(skipped);
@@ -146,6 +152,7 @@ public class Task_ESTUpload extends TaskXT{
 			File dir = null;
 			if(!(dir=new File(work)).exists())dir.mkdir();
 			String newline = Tools_System.getNewline();
+			logger.info("Skipped sequences have been listed in this file " + work +"skipped_files.txt" );
 			BufferedWriter writ = new BufferedWriter(new FileWriter(new File((work+"skipped_files.txt")),false));
 			for(String s : skipped){writ.write(s+newline);writ.flush();}
 			writ.close();
