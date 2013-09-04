@@ -39,6 +39,7 @@ public class StreamGobbler extends Thread{
         	Logger.getRootLogger().warn("IO Issue", ioe);
         }
     }
+
     
     public StringBuffer getOutput(){
     	return this.buffer;

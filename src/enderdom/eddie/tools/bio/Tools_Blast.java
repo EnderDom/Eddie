@@ -31,7 +31,7 @@ public abstract class Tools_Blast {
 			exec+=" -remote";
 		}
 
-		StringBuffer[] buffer = Tools_Task.runProcess(exec, true);
+		StringBuffer[] buffer = Tools_Task.runProcess(exec, false);
 		return buffer;
 	}
 	

@@ -156,7 +156,7 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 		options.getOption("o").setDescription("Output file or files");
 		options.addOption(new Option("trim", true, "Trim each sequences in fasta of length below this value ie -trim 100"));
 		options.addOption(new Option("stats", false, "Print Statistics for Fasta/q files"));
-		options.addOption(new Option("convert", false, "Convert files to another file type"));
+		//options.addOption(new Option("convert", false, "Convert files to another file type"));
 		options.addOption(new Option("trimPercNs", true, "Remove any sequence where the percentage of Ns is greater than this INTEGER value"));
 		options.addOption(new Option("trimRowNs", true, "Remove any sequences with a row of Ns greater than this"));
 		options.addOption(new Option("lengths", false, "Print a list of lengths to the output"));

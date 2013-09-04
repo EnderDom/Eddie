@@ -206,7 +206,8 @@ public class MySQL_Extended implements BioSQLExtended{
 			"run_id INT(10) UNSIGNED NOT NULL,"+
 			"trimmed TINYINT,"+ //0 == not trimmed
 			"range_start INT(10),"+ //If trimmed this should just be the offset
-			"range_end INT(10)"+
+			"range_end INT(10),"+
+			"UNIQUE (contig_bioentry_id,read_bioentry_id,run_id)"+
 			")"+MySQL_BioSQL.innodb+"=INNODB;";
 		try{
 			Statement st = manager.getCon().createStatement();

@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import enderdom.eddie.bio.factories.SequenceListFactory;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.ContigList;
+import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_System;
@@ -27,7 +28,7 @@ public class Task_Convert extends TaskXTwIO{
 	private static int XML2FASTA = 3;
 	private static int ACE2ALN = 4;
 	private static int SAM2ALN = 5;
-	//private static int FASTA2FASTQ = 3;
+	private static int FASTQ2FASTA = 6;
 	Logger logger = Logger.getLogger("Converterz");
 	String id_tag;
 	String seq_tag;
@@ -44,6 +45,7 @@ public class Task_Convert extends TaskXTwIO{
 		if(cmd.hasOption("xml2fasta"))conversiontype = XML2FASTA;
 		if(cmd.hasOption("ace2aln"))conversiontype = ACE2ALN;
 		if(cmd.hasOption("sam2aln"))conversiontype = SAM2ALN;
+		if(cmd.hasOption("fastq2fasta"))conversiontype = FASTQ2FASTA;
 		id_tag = getOption(cmd, "name", "id");
 		seq_tag = getOption(cmd, "seq", "sequence");
 		ref = getOption(cmd, "refFile", null);
@@ -56,6 +58,7 @@ public class Task_Convert extends TaskXTwIO{
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("sam2bam", false, "Convert SAM/BAM to BAM/SAM"));
+		options.addOption(new Option("fastq2fasta", false, "Convert fastq to fasta"));
 		options.addOption(new Option("ace2fna", false, "Converts ACE to fasta"));
 		options.addOption(new Option("xml2fasta", false, "Grabs 2 tags in xml and makes fasta (-name and -seq)"));
 		options.addOption(new Option("ace2aln", false, "Converts one ACE contig (specified by -name) to align"));
@@ -110,6 +113,16 @@ public class Task_Convert extends TaskXTwIO{
 					else l=SequenceListFactory.getContigList(in);
 					logger.debug("Retrieving " + id_tag);
 					logger.info("saved to "+l.getContig(id_tag).saveFile(out, BioFileType.CLUSTAL_ALN)[0]);
+				} 
+				catch (Exception e) {
+					logger.error("Failed to load SAM file",e);
+				}
+			}
+			else if(conversiontype==FASTQ2FASTA){
+				try {
+					SequenceList l = SequenceListFactory.getSequenceList(in);
+					String[] s = l.saveFile(out, BioFileType.FASTA);
+					logger.info("Saved to " + s[0]);
 				} 
 				catch (Exception e) {
 					logger.error("Failed to load SAM file",e);

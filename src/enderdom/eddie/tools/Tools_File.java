@@ -342,7 +342,7 @@ public abstract class Tools_File {
 		if((e=outname.lastIndexOf(".")) != -1)outname = outname.substring(0, e);
 		e=0;
 		File out;
-		while((out=new File(directory.getPath()+Tools_System.getFilepathSeparator()+outname+e+fileending)).exists())e++;
+		while((out=new File(directory.getPath()+Tools_System.getFilepathSeparator()+outname+"_"+e+fileending)).exists())e++;
 		return out;
 	}
 }
