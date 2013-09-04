@@ -13,8 +13,6 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FilenameUtils;
-
 import enderdom.eddie.bio.sequence.BasicSequenceList;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.GenericSequence;
@@ -423,6 +421,7 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 		if(file.isFile()){
 			filename = file.getName();
 			filepath = file.getPath();
+			this.type = filetype;
 			return loadFile(new FileInputStream(file), filetype);
 		}
 		else{
@@ -432,6 +431,7 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 	
 	public int loadFile(InputStream file, BioFileType filetype) throws UnsupportedTypeException, IOException {
 			FastaParser parser = new FastaParser(this);
+			this.type = filetype;
 			switch(filetype){
 				case QUAL:
 					return parser.parseQual(file);

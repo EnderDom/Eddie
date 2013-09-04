@@ -121,4 +121,8 @@ public abstract class BasicSequenceList implements SequenceList{
 	public Set<String> keySet() {
 		return this.sequences.keySet();
 	}
+	
+	public void setFileType(BioFileType t){
+		this.type = t;
+	}
 }

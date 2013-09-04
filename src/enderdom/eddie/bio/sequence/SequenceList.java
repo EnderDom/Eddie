@@ -104,6 +104,8 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	public int loadFile(File file, BioFileType filetype) throws Exception, UnsupportedTypeException;
 	
 	public BioFileType getFileType();
+	
+	public void setFileType(BioFileType t);
 
 	/**
 	 * 
@@ -121,5 +123,7 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	
 	
 	public Set<String> keySet();
+	
+	
 	
 }

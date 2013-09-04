@@ -37,7 +37,7 @@ public class ClustalAlign extends BasicSequenceList{
 	public static int namespacemax=10;
 	
 	public ClustalAlign(File file, BioFileType type) throws UnsupportedTypeException, Exception{
-		this.file=file;
+		this.file=file;		
 		loadFile(file, type);
 	}
 	
@@ -125,8 +125,8 @@ public class ClustalAlign extends BasicSequenceList{
 	public int loadFile(File file, BioFileType filetype) throws Exception, UnsupportedTypeException {
 		filename = file.getName();
 		filepath = file.getPath();
+		this.type = filetype;
 		FileInputStream fis = new FileInputStream(file);
-		
 		return loadFile(fis, filetype);
 	}
 

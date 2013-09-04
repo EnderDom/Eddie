@@ -41,6 +41,7 @@ public class BasicContig implements Contig{
 	protected int position = 1;
 	protected ArrayList<BasicRegion> regions;
 	private boolean noQual2fastq;
+	protected BioFileType type;
 	
 	public BasicContig(){
 		this.sequences = new LinkedHashMap<String, SequenceObjectXT>();
@@ -190,7 +191,7 @@ public class BasicContig implements Contig{
 	}
 	
 	public BioFileType getFileType() {
-		return BioFileType.CONTIG_BASIC;
+		return type == null ? BioFileType.CONTIG_BASIC : type;
 	}
 
 	public SequenceObject getSequence(String s) {
@@ -372,5 +373,9 @@ public class BasicContig implements Contig{
 		this.noQual2fastq = noQual2fastq;
 	}
 
+
+	public void setFileType(BioFileType t){
+		this.type = t;
+	}
 	
 }
