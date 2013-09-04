@@ -58,10 +58,8 @@ public class Task_UniVec extends TaskXTwIO{
 		/*
 		* Check IO
 		*/
-		File dir = checkOutput();
 		File file = checkInput();
 		if(file == null && xml == null){ this.setCompleteState(TaskState.ERROR); return;}
-		
 
 		if(xml == null){
 			if(!checkUniDB()){
@@ -69,7 +67,8 @@ public class Task_UniVec extends TaskXTwIO{
 				this.setCompleteState(TaskState.ERROR);
 				return;
 			}
-			File out = Tools_File.getOutFileName(dir, file, ".xml");
+			File blastout = new File(FilenameUtils.getFullPath(output)
+					+FilenameUtils.getBaseName(output)+"_blast.xml");
 			
 			/*
 			* Build univec strategy file
@@ -84,18 +83,12 @@ public class Task_UniVec extends TaskXTwIO{
 			* Actually run the blast program
 			* See http://www.ncbi.nlm.nih.gov/VecScreen/VecScreen_docs.html for specs on vecscreen
 			*/
-			StringBuffer[] arr = Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-import_search_strategy "+strat+" -outfmt 5 ", out, false);
-			if(arr[0].length() > 0){
-				logger.info("blastn output:"+Tools_System.getNewline()+arr[0].toString().trim());
-			}
-			if(arr[1].length() > 0){
-				logger.info("blastn output:"+Tools_System.getNewline()+arr[0].toString().trim());
-			}
-			if(out.isFile()){
-				xml = out.getPath();
+			Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-import_search_strategy "+strat+" -outfmt 5 ", blastout, false);
+			if(blastout.isFile()){
+				logger.error("Search ran, blast outputed to: " + blastout.getPath());
 			}
 			else{
-				logger.error("Search ran, but no outfile found at " + out.getPath());
+				logger.error("Search ran, but no outfile found at " + blastout.getPath());
 				this.setCompleteState(TaskState.ERROR);
 				return;
 			}
@@ -149,7 +142,7 @@ public class Task_UniVec extends TaskXTwIO{
 	public void buildOptions(){
 		super.buildOptions();
 		options.getOption("i").setDescription("Input sequence file Fast(a/q)");
-		options.getOption("o").setDescription("Output folder");
+		options.getOption("o").setDescription("Output file");
 		options.addOption(new Option("u", "uni_db", true, "Set UniVec database location"));
 		options.addOption(new Option("c", "create_db", false, "Downloads and creates the UniVec database with the makeblastdb"));
 		options.addOption(new Option("bbb", "blast_bin", true, "Specify blast bin directory"));
@@ -188,9 +181,6 @@ public class Task_UniVec extends TaskXTwIO{
 			}
 			else logger.warn("Trim length suggested is not a number, defaulted to " + filter);	
 		}
-		if(cmd.hasOption("s")){
-			this.saveasfastq = true;
-		}
 	}
 	
 	
@@ -218,12 +208,12 @@ public class Task_UniVec extends TaskXTwIO{
 		}
 	}
 	
-	public static String[] parseBlastAndTrim(File xml, SequenceList seql, String outputfolder, BioFileType filetype, int trimlength, boolean saveasfastq){
+	public String[] parseBlastAndTrim(File xml, SequenceList seql, String outputfolder, BioFileType filetype, int trimlength, boolean saveasfastq){
 		try{
 			return parseBlastAndTrim(new MultiblastParser(MultiblastParser.UNIVEC, xml), seql, outputfolder, filetype, trimlength, saveasfastq);
 		}
 		catch(Exception e){
-			Logger.getRootLogger().error("Failed to parse XML and trim sequences", e);
+			Logger.getRootLogger().error("An error occured during this task, check logs", e);
 			return null;
 		}
 	}
@@ -260,21 +250,6 @@ public class Task_UniVec extends TaskXTwIO{
 		}
 	}
 	
-	public File checkOutput(){
-		if(output == null){
-			output = workspace + Tools_System.getFilepathSeparator()+
-					"out" + Tools_System.getFilepathSeparator();
-		}
-		File dir = new File(output);
-		if(dir.isFile()){
-			logger.warn("File named out present in folder ...ugh...");
-			Tools_File.justMoveFileSomewhere(dir);
-			dir = new File(output);
-		}
-		dir.mkdirs();
-		return dir;
-	}
-	
 	
 	/**
 	 * Parses a blast xml file and trims a SequenceList according
@@ -299,7 +274,7 @@ public class Task_UniVec extends TaskXTwIO{
 	 * 
 	 * @throws Exception
 	 */
-	public static String[] parseBlastAndTrim(MultiblastParser parser, SequenceList seql, String outputfolder, BioFileType filetype, int trimlength, boolean saveasfastq) throws Exception{
+	public String[] parseBlastAndTrim(MultiblastParser parser, SequenceList seql, String output, BioFileType filetype, int trimlength, boolean saveasfastq) throws Exception{
 		int startsize =  seql.getNoOfSequences();
 		int startmonmers = seql.getQuickMonomers();
 		int lefttrims = 0;
@@ -316,10 +291,15 @@ public class Task_UniVec extends TaskXTwIO{
 			while(parser.hasNext()){
 				obj = (UniVecBlastObject) parser.next();
 				obj.reverseOrder();
-				s = obj.getBlastTagContents("Iteration_query-def");
+				s = obj.get("Iteration_query-def");
 				for(UniVecRegion r : obj.getRegions()){
 					if(!alreadytrimmed.contains(s)){
 						alreadytrimmed.add(s);
+						if(seql.getSequence(s) == null){
+							Logger.getRootLogger().error("SequenceList does not contain blast query id " + s);
+							Logger.getRootLogger().error("You will probably have to rename blast or input sequence list for this to work");
+							throw new Exception("Failed as blast query name does not match sequence names, see logs for more info");
+						}
 						o = seql.getSequence(s);
 						if(r.isLeftTerminal()){
 							o.leftTrim(r.getStop(0),0);
@@ -405,13 +385,21 @@ public class Task_UniVec extends TaskXTwIO{
 		System.out.println("A total of "+ removed +" sequences were removed (" + added +" Added due to internal trims)" );
 		System.out.println("###############################");
 		System.out.println("");
-		String name = outputfolder+Tools_System.getFilepathSeparator();
-		name += seql.getFileName() !=null ? FilenameUtils.getBaseName(seql.getFileName())+"_trimmed" : "out_trimmed";  
-		if(!saveasfastq){
-			return seql.saveFile(new File(name), filetype);
+		
+		//Woefully overcomplicated file save time
+		BioFileType t = Tools_Bio_File.detectFileType(output);
+		String filename = FilenameUtils.getFullPath(output)+ FilenameUtils.getBaseName(output) + "_trimmed";
+		if(t != BioFileType.FASTA && t != BioFileType.FASTQ && t!=BioFileType.QUAL){
+			t = seql.getFileType();
+		}
+		if(t==BioFileType.FASTA){
+			return seql.saveFile(new File(filename+".fasta"), t);	
+		}
+		else if(t==BioFileType.FASTQ){
+			return seql.saveFile(new File(filename+".fastq"), t);
 		}
 		else{
-			return seql.saveFile(new File(name), BioFileType.FASTQ);
+			return seql.saveFile(new File(filename), t);
 		}
 	}
 	
