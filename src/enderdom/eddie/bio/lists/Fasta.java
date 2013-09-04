@@ -120,11 +120,8 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 	}
 	
 	public String save2Fastq(File output) throws IOException{
-		filename= FilenameUtils.getBaseName(output.getName()) + ".fastq";
-		filepath = FilenameUtils.getPath(output.getPath());
-		output = new File(FilenameUtils.concat(filepath, filename));
-
-		FileWriter fstream = new FileWriter(output);
+	
+		FileWriter fstream = new FileWriter(output, false);
 		BufferedWriter out = new BufferedWriter(fstream);
 		int count =0;
 		for(String str : sequences.keySet()){
@@ -142,7 +139,7 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 	}
 	
 	public String save2Fasta(File output) throws IOException{
-		FileWriter fstream = new FileWriter(output);
+		FileWriter fstream = new FileWriter(output, false);
 		BufferedWriter out = new BufferedWriter(fstream);
 		int count = 0;
 		for(String str : sequences.keySet()){
@@ -418,7 +415,7 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 			case FASTQ:
 				return new String[]{this.save2Fastq(file)};
 			default:
-				throw new UnsupportedTypeException("Fasta(q) cannot be saved as this filetype");
+				throw new UnsupportedTypeException("Fasta(q) cannot be saved as this filetype: " + filetype.toString());
 		}
 	}
 	
@@ -511,6 +508,8 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 		return type;
 	}
 
+		
+	
 	
 	public void dump(){
 		logger.warn("Dumping sequences, this should only be done in the event that a save failed");
