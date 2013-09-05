@@ -405,6 +405,7 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 
 	//TODO improve remove redundancy of saveFasta and saveFile
 	public String[] saveFile(File file, BioFileType filetype) throws UnsupportedTypeException, IOException {
+		logger.info("Saving File...");
 		switch(filetype){
 			case FAST_QUAL:
 				return this.save2FastaAndQual(new File(file.getPath()+".fasta"), new File(file.getPath()+".qual"));
