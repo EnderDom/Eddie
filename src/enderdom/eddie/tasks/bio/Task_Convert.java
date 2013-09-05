@@ -58,7 +58,7 @@ public class Task_Convert extends TaskXTwIO{
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("sam2bam", false, "Convert SAM/BAM to BAM/SAM"));
-		options.addOption(new Option("fastq2fasta", false, "Convert fastq to fasta"));
+		options.addOption(new Option("fastq2fasta", false, "Convert fastq to fasta and qual"));
 		options.addOption(new Option("ace2fna", false, "Converts ACE to fasta"));
 		options.addOption(new Option("xml2fasta", false, "Grabs 2 tags in xml and makes fasta (-name and -seq)"));
 		options.addOption(new Option("ace2aln", false, "Converts one ACE contig (specified by -name) to align"));
@@ -121,7 +121,7 @@ public class Task_Convert extends TaskXTwIO{
 			else if(conversiontype==FASTQ2FASTA){
 				try {
 					SequenceList l = SequenceListFactory.getSequenceList(in);
-					String[] s = l.saveFile(out, BioFileType.FASTA);
+					String[] s = l.saveFile(out, BioFileType.FAST_QUAL);
 					logger.info("Saved to " + s[0]);
 				} 
 				catch (Exception e) {
