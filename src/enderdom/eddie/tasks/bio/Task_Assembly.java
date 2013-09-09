@@ -1,57 +1,40 @@
 package enderdom.eddie.tasks.bio;
 
-import java.io.File;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
 import enderdom.eddie.bio.assembly.ACEFileParser;
-import enderdom.eddie.bio.assembly.ACEObject;
-import enderdom.eddie.bio.assembly.ACEParser;
 import enderdom.eddie.bio.assembly.ACERecord;
 
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_Array;
-import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Sequences;
 
-@SuppressWarnings("deprecation")
 public class Task_Assembly extends TaskXTwIO{
 	
-	private boolean coverage;
 	private boolean stats;
-	private int range;
-	private int contig;
-	private String name;
 	private int filter;
+	private boolean lens2file;
 	
 	public Task_Assembly(){
 		filter = 0;
-		contig =-1;
-		range =100;
 	}
 
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		if(cmd.hasOption("coverage"))coverage =true;
-		if(cmd.hasOption("contig"))name=cmd.getOptionValue("contig");
-		if(cmd.hasOption("range"))range=Tools_String.parseString2Int(cmd.getOptionValue("range"));
-		if(cmd.hasOption("stats"))stats=true;
-		if(range <1)range=100;
-		if(cmd.hasOption("numbcontig")){
-			Integer a = Tools_String.parseString2Int(cmd.getOptionValue("numbcontig"));
-			if(a!=null)contig=a;
-		}
-		if(cmd.hasOption("statlenfilter")){
-			Integer a = Tools_String.parseString2Int(cmd.getOptionValue("statlenfilter"));
-			if(a!=null)filter=a;
-		}
+		stats = cmd.hasOption("stats");
+		lens2file = cmd.hasOption("l");
+		filter = getOption(cmd, "statlenfilter", -1);
 	}
 	
 	public void parseOpts(Properties props){
@@ -60,12 +43,13 @@ public class Task_Assembly extends TaskXTwIO{
 	
 	public void buildOptions(){
 		super.buildOptions();
-		options.addOption(new Option("coverage", false, "Coverage analysis Ace File"));
-		options.addOption(new Option("stats", false, "Get Statistics regarding file"));
-		options.addOption(new Option("range", true, "Range Integer"));
-		options.addOption(new Option("numbcontig", true, "Contig Number to analyse"));
-		options.addOption(new Option("contig", true, "Contig Name to analyse"));
-		options.addOption(new Option("statlenfilter", true, "Filter out contigs smaller than arg bp in length"));
+		options.addOption(new Option("s","stats", false, "Get Statistics regarding file"));
+		options.addOption(new Option("c","contig", true, "Contig Name to analyse"));
+		options.addOption(new Option("f", "filterlen", true, "Filter out contigs smaller than arg bp in length"));
+		options.addOption(new Option("l", "lengths2file", false, "Get list of contigs length and save to file"));
+		options.removeOption("p");
+		options.removeOption("w");
+		options.removeOption("filetype");
 	}
 	
 	public void run(){
@@ -122,36 +106,41 @@ public class Task_Assembly extends TaskXTwIO{
 					return;
 				}
 			}
-			else if(coverage){//TODO upgrade
-				logger.debug("Coverage Option Set");
-				ACEObject ace = getAce();
-				if(contig != -1){
-					name = ace.getRefName(contig);
-					logger.debug("Contig : " + name + " retrieved");
-				}
-				if(name != null){
-					try{
-						double[] coverage_ranges = ace.getRangeOfCoverages(name, range);
-						System.out.println("Coverage Analysis of " +name);
-						System.out.println("#############################");
-						System.out.println("#-----------DATA------------#");
-						
-						for(int i =0; i < coverage_ranges.length; i++)System.out.print(i*range+"-"+((i+1)*range)+ ",");
-						System.out.println("\n");
-						for(int i =0; i < coverage_ranges.length; i++)System.out.print(coverage_ranges[i]+ ",");
-						System.out.println("\n");
-						System.out.println("\n");
-						System.out.println("#############################");
+			else if(lens2file){
+				ACEFileParser parse;
+				try {
+					parse = new ACEFileParser(new FileInputStream(this.input));
+					int count=0;
+					logger.info("Parsing ACE file ...");
+					ArrayList<Integer> arrs = new ArrayList<Integer>(parse.getContigSize());
+					while(parse.hasNext()){
+						ACERecord record = (ACERecord) parse.next();
+						System.out.print("\r(No."+count+") : " + record.getContigName() + "        ");
+						int l = record.getConsensus().getActualLength();
+						if(l >= this.filter){
+							arrs.add(l);
+						}
+						count++;
 					}
-					catch(Exception e){
-						logger.error("Out of Cheese Error...", e);
-						setCompleteState(TaskState.ERROR);
-						return;
-					}
+					System.out.println();
+					logger.info("Writing to file " + output);
+					FileWriter fstream = new FileWriter(output);
+					BufferedWriter out = new BufferedWriter(fstream);
+					String newline = Tools_System.getNewline();
+					for(Integer i : arrs){
+						out.write(i.toString());
+						out.write(newline);
+					} 
+					out.close();
 				}
-				else{
-					logger.info("Contig Name is null... not yet finished");
-					
+				catch (FileNotFoundException e) {
+					logger.error("No file called " + this.input,e);
+					setCompleteState(TaskState.ERROR);
+					return;
+				} catch (IOException e) {
+					logger.error("Could not parse " + this.input + " and/or write to "+this.output,e);
+					setCompleteState(TaskState.ERROR);
+					return;
 				}
 			}
 			else{
@@ -161,36 +150,6 @@ public class Task_Assembly extends TaskXTwIO{
 		
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
 	    setCompleteState(TaskState.FINISHED);
-	}
-	
-
-	public ACEObject getAce(){
-		File ace = new File(input);
-		ACEObject obj = new ACEObject();
-		if(ace.exists()){
-			if(!input.endsWith(".ace") && !input.endsWith(".ACE")){
-				logger.warn("Warning the specified input does not have the standard file tag");
-			}
-			logger.debug("Parsing ACE file");
-			ACEParser parser = new ACEParser(obj);
-			try {
-				parser.parseAce(ace);
-				logger.debug("Parsing Done");
-			}
-			catch (Exception e) {
-				logger.error("Error Parsing ACE file",e);
-			}
-		}
-		else{
-			logger.error("Ace file does not exist")	;
-		}
-		return obj;
-	}
-	//TODO test padded string	
-	public void runTest(){
-		logger.debug("Testing Assembly Task");
-		
-		
 	}
 	
 }
