@@ -513,7 +513,7 @@ public class Task_UniVec extends TaskXTwIO{
 		File tmpfolder = new File(this.workspace + Tools_System.getFilepathSeparator()+strategyfolder);
 		if(!tmpfolder.exists())tmpfolder.mkdirs();
 		//Write to file
-		if(Tools_File.stream2File(str, strat)){
+		if(!Tools_File.stream2File(str, strat)){
 			logger.error("Failed to create search strategy file at " + strat);
 			return false;
 		}
