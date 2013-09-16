@@ -2,7 +2,6 @@ package enderdom.eddie.tasks.bio;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
 
@@ -13,7 +12,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.factories.SequenceListFactory;
-import enderdom.eddie.bio.homology.blast.BlastObject;
 import enderdom.eddie.bio.homology.blast.MultiblastParser;
 import enderdom.eddie.bio.homology.blast.UniVecBlastObject;
 import enderdom.eddie.bio.homology.blast.UniVecRegion;
@@ -23,7 +21,6 @@ import enderdom.eddie.bio.sequence.SequenceObject;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_File;
-import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.Tools_Task;
 import enderdom.eddie.tools.Tools_Web;
@@ -45,9 +42,9 @@ public class Task_UniVec extends TaskXTwIO{
 	private static String strategyfile = "univec_strategy";
 	private static String key = "UNI_VEC_DB";
 	private SequenceList fout;
-	private int filter = 50;
+	private int filter;
 	private boolean saveasfastq;
-	private boolean stats;
+	private boolean nograb;
 	
 	public Task_UniVec(){
 	}
@@ -67,9 +64,13 @@ public class Task_UniVec extends TaskXTwIO{
 				this.setCompleteState(TaskState.ERROR);
 				return;
 			}
-			File blastout = new File(FilenameUtils.getFullPath(output)
-					+FilenameUtils.getBaseName(output)+"_blast.xml");
-			
+			if(output == null){
+				output = FilenameUtils.getFullPath(input)
+						+FilenameUtils.getBaseName(input);
+			}
+			this.xml = FilenameUtils.getFullPath(output)
+					+FilenameUtils.getBaseName(output)+"_blast.xml";
+			File blastout = new File(this.xml);
 			/*
 			* Build univec strategy file
 			*/
@@ -85,7 +86,7 @@ public class Task_UniVec extends TaskXTwIO{
 			*/
 			Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-import_search_strategy "+strat+" -outfmt 5 ", blastout, false);
 			if(blastout.isFile()){
-				logger.error("Search ran, blast outputed to: " + blastout.getPath());
+				logger.info("Search ran, blast outputed to: " + blastout.getPath());
 			}
 			else{
 				logger.error("Search ran, but no outfile found at " + blastout.getPath());
@@ -99,7 +100,9 @@ public class Task_UniVec extends TaskXTwIO{
 		String[] outs = null;
 		if(xml != null){
 			File xm = new File(xml);
+			logger.debug("Start trimming sequences");
 			if(xm.isFile()){
+				logger.debug("Output of blast is file " + xm.getName());
 				outs = parseBlastAndTrim(xm, fout, output, this.filetype, filter,this.saveasfastq);
 			}
 			else if(xm.isDirectory()){
@@ -125,9 +128,9 @@ public class Task_UniVec extends TaskXTwIO{
 				logger.error("Error loading XML file");
 				this.setCompleteState(TaskState.ERROR);
 			}
-		}
-		for(int i =0; i < outs.length ; i++){
-			logger.info("Saved file to " + outs[i]);
+			for(int i =0; i < outs.length ; i++){
+				logger.info("Saved file to " + outs[i]);
+			}
 		}
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
 		setCompleteState(TaskState.FINISHED);
@@ -147,6 +150,9 @@ public class Task_UniVec extends TaskXTwIO{
 		options.addOption(new Option("q","qual", true, "Include quality file, this will also be trimmed"));
 		options.addOption(new Option("r", "trim", true, "Remove sequences smaller than this (After trimming) "));
 		options.addOption(new Option("s", "saveFastq", true, "Force Save file as fastq format"));
+		options.addOption(new Option("g", "setNoGrab", false, "Currently automatically grabs qual named the same as " +
+				".fasta file but with .qual, set this to stop that function"));
+		options.removeOption("p");
 		options.removeOption("w");
 	}
 	
@@ -160,22 +166,15 @@ public class Task_UniVec extends TaskXTwIO{
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		if(cmd.hasOption("u"))uni_db=cmd.getOptionValue("u");
-		if(cmd.hasOption("bbb"))blast_bin=cmd.getOptionValue("bbb");
-		if(cmd.hasOption("c"))create=true;
-		if(cmd.hasOption("i"))input=cmd.getOptionValue("i");
-		if(cmd.hasOption("x"))xml=cmd.getOptionValue("x");
-		if(cmd.hasOption("q"))qual=cmd.getOptionValue("q");
-		if(cmd.hasOption("z")){
-			stats=true;
-		}
-		if(cmd.hasOption("r")){
-			Integer trimlen = Tools_String.parseString2Int(cmd.getOptionValue("r"));
-			if(trimlen != null){
-				this.filter = trimlen;
-			}
-			else logger.warn("Trim length suggested is not a number, defaulted to " + filter);	
-		}
+		uni_db = getOption(cmd, "u", null);
+		blast_bin = getOption(cmd, "bbb", null);
+		create = cmd.hasOption("c");
+		input = getOption(cmd, "i", null);
+		xml = getOption(cmd, "x", null);
+		qual = getOption(cmd, "q", null);
+		if(!cmd.hasOption("r")) logger.warn("No filter length set, defaulted to 50");
+		filter = getOption(cmd, "r", 50);
+		nograb = cmd.hasOption("g");
 	}
 	
 	public String[] parseBlastAndTrim(File xml, SequenceList seql, String outputfolder, BioFileType filetype, int trimlength, boolean saveasfastq){
@@ -199,17 +198,30 @@ public class Task_UniVec extends TaskXTwIO{
 			return null;
 		}
 		File file = new File(input);
+		File quals = null;
+		if(qual != null) quals = new File(qual);
 		if(!file.isFile()){
 			logger.error("Input file is not a file");
 			return null;
 		}
 		else{
 			try {
-				if(qual != null &&  new File(qual).isFile()){
-					fout = SequenceListFactory.getSequenceList(input, qual);
+				if(qual != null && quals.isFile()){
+					logger.debug("Quality file found and parsing");
+					fout = SequenceListFactory.getSequenceList(file, quals);
 				}
-				else{
-					fout = SequenceListFactory.getSequenceList(input);
+				else if((quals = new File(FilenameUtils.getFullPath(file.getPath()) 
+						+ FilenameUtils.getBaseName(file.getPath()) + ".qual")).isFile() && !nograb){
+					logger.warn("Grabbed nearby qual file, to stop, change set no grab");
+					fout = SequenceListFactory.getSequenceList(file, quals);
+				}
+				else if(qual == null){
+					logger.debug("Quality file could not be found");
+					fout = SequenceListFactory.getSequenceList(file);
+				}
+				else {
+					logger.debug("Quality file definately not found");
+					fout = SequenceListFactory.getSequenceList(file);
 				}
 				this.filetype = fout.getFileType();
 				return file;

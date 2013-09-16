@@ -26,10 +26,12 @@ public class Eddie {
 				cli.exit();
 			}
 			else if(retvalue == 3){//Persisting CLI mode <-- currently not supported
-				
+				System.out.println("Eddie v." + EddiePropertyLoader.getFullVersion() + " " 
+						+EddiePropertyLoader.edition+ " Edition does not support persistant CLI");
 			}	
 			else if(retvalue == 4){
-				System.out.println(EddiePropertyLoader.edition+ " Edition does not include GUI modules ");
+				System.out.println("Eddie v." + EddiePropertyLoader.getFullVersion() + " " 
+						+EddiePropertyLoader.edition+ " Edition does not include GUI modules ");
 			}
 			else if(retvalue == 6){
 				Tools_Fun.printAbout();

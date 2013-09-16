@@ -8,6 +8,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 
@@ -73,12 +74,18 @@ public class Task_Convert extends TaskXTwIO{
 	public void run(){
 		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running Assembly Task @ "+Tools_System.getDateNow());
-		if(input ==null || output == null){
+		if(input ==null){
 			logger.error("Input/Output not set");
 			setCompleteState(TaskState.ERROR);
 			return;
 		}
+		
 		File in = new File(input);
+		if(output == null){
+			output = new String(FilenameUtils.getFullPath(in.getPath())
+					+FilenameUtils.getBaseName(in.getPath())+"_cnv");
+			logger.debug("No output set, generated as "+ output);
+		}
 		File out = new File(output);
 		if(input != null && in.isFile() && (!out.exists() || overwrite)){
 			if(conversiontype==BAM2SAM){
