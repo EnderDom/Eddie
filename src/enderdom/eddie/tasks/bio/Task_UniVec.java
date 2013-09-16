@@ -99,10 +99,6 @@ public class Task_UniVec extends TaskXTwIO{
 		String[] outs = null;
 		if(xml != null){
 			File xm = new File(xml);
-			if(stats){
-				printStats(xm);
-				return;
-			}
 			if(xm.isFile()){
 				outs = parseBlastAndTrim(xm, fout, output, this.filetype, filter,this.saveasfastq);
 			}
@@ -151,7 +147,6 @@ public class Task_UniVec extends TaskXTwIO{
 		options.addOption(new Option("q","qual", true, "Include quality file, this will also be trimmed"));
 		options.addOption(new Option("r", "trim", true, "Remove sequences smaller than this (After trimming) "));
 		options.addOption(new Option("s", "saveFastq", true, "Force Save file as fastq format"));
-		options.addOption(new Option("z", "stats", false, "Just print out stats, don't do anything else (Needs xml)"));
 		options.removeOption("w");
 	}
 	
@@ -180,31 +175,6 @@ public class Task_UniVec extends TaskXTwIO{
 				this.filter = trimlen;
 			}
 			else logger.warn("Trim length suggested is not a number, defaulted to " + filter);	
-		}
-	}
-	
-	
-	private void printStats(File xm)  {
-		try{
-			MultiblastParser parser = new MultiblastParser(MultiblastParser.UNIVEC, xm);
-			HashMap<String, Integer> map = new HashMap<String, Integer>(); 
-			while(parser.hasNext()){
-				BlastObject obj = parser.next();
-				for(int i=1; i <= obj.getNoOfHits();i++){
-					String tag = obj.getHitTagContents("Hit_accession", i);
-					if(map.containsKey(tag)){
-						map.put(tag, map.get(tag)+1);
-					}
-					else{
-						map.put(tag, 1);
-					}
-					//TODO sort map
-				}
-			}
-			for(String s : map.keySet())System.out.println(s+" " + map.get(s));
-		}
-		catch(Exception e){
-			logger.error("Failed to parse blast xml",e);
 		}
 	}
 	
