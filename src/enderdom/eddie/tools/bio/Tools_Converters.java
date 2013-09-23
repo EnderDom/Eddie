@@ -14,6 +14,7 @@ import org.codehaus.stax2.XMLStreamReader2;
 import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.sequence.Contig;
+import enderdom.eddie.bio.sequence.GenericSequence;
 
 import net.sf.picard.io.IoUtil;
 import net.sf.picard.sam.SamFormatConverter;
@@ -65,16 +66,20 @@ public class Tools_Converters {
 	 * @param output (Fasta nucleotide file)
 	 * @return true if not errors
 	 */
-	public static boolean ACE2FNA(File in, File output){
+	public static boolean ACE2FNA(File in, File output, boolean noscrub){
 		try{
 			ACEFileParser parser = new ACEFileParser(in);
 			Contig record = null;
 			Fasta fasta = new Fasta();
 			while(parser.hasNext()){
 				record = parser.next();
-				fasta.addSequenceObject(record.getConsensus());
+				if(noscrub){
+					fasta.addSequenceObject(record.getConsensus());
+				}
+				else fasta.addSequenceObject(new GenericSequence(record.getConsensus().getIdentifier(), 
+						record.getConsensus().getSequence().replaceAll("\\*","")));
 			}
-			if(fasta.save2Fasta(output) != null){
+			if(fasta.save2Fasta(output) == null){
 				logger.error("File was not successfully saved");
 				return false;
 			}

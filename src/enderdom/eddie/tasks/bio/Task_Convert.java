@@ -30,6 +30,7 @@ public class Task_Convert extends TaskXTwIO{
 	private static int ACE2ALN = 4;
 	private static int SAM2ALN = 5;
 	private static int FASTQ2FASTA = 6;
+	private boolean noscrub;
 	Logger logger = Logger.getLogger("Converterz");
 	String id_tag;
 	String seq_tag;
@@ -50,6 +51,7 @@ public class Task_Convert extends TaskXTwIO{
 		id_tag = getOption(cmd, "name", "id");
 		seq_tag = getOption(cmd, "seq", "sequence");
 		ref = getOption(cmd, "refFile", null);
+		noscrub = cmd.hasOption("noScrub");
 	}
 	
 	public void parseOpts(Properties props){
@@ -67,6 +69,7 @@ public class Task_Convert extends TaskXTwIO{
 		options.addOption(new Option("name", true, "For sequence name tag in xml or assembly file"));
 		options.addOption(new Option("seq", true, "For sequence tag in xml"));
 		options.addOption(new Option("refFile", true, "Reference file (fasta/q with consensus contigs) for SAM"));
+		options.addOption(new Option("noScrub", false, "Don't scrub '*' when converting from ace to fasta"));
 		//options.addOption(new Option("fasta2fastq", false, "Convert Fasta and Qual file to Fastq"));
 		//options.addOption(new Option("q","qual", true, "Quality file if needed"));
 	}
@@ -85,17 +88,23 @@ public class Task_Convert extends TaskXTwIO{
 			output = new String(FilenameUtils.getFullPath(in.getPath())
 					+FilenameUtils.getBaseName(in.getPath())+"_cnv");
 			logger.debug("No output set, generated as "+ output);
-		}
-		File out = new File(output);
-		if(input != null && in.isFile() && (!out.exists() || overwrite)){
+		}	
+		
+		if(input != null && in.isFile()){
 			if(conversiontype==BAM2SAM){
-				logger.info("Converter Successful: "+Tools_Converters.SAM2BAM(in, out));
+				output = checkEndings(new String[]{".sam"}, ".sam", output);
+				File out = new File(output);
+				logger.info("Converter running: "+Tools_Converters.SAM2BAM(in, out));
 			}
 			else if(conversiontype==ACE2FNA){
-				logger.info("Converter Successful: "+Tools_Converters.ACE2FNA(in, out));
+				output = checkEndings(new String[]{".fna", ".fasta", ".faa"}, ".fasta", output);
+				File out = new File(output);
+				logger.info("Converter running: "+Tools_Converters.ACE2FNA(in, out, noscrub));
 			}
 			else if(conversiontype==XML2FASTA){
 				try {
+					output = checkEndings(new String[]{".fna", ".fasta", ".faa"}, ".fasta", output);
+					File out = new File(output);
 					logger.info("ID tag is " + id_tag + " and " + " Seq tag is " + seq_tag);
 					logger.info("Converter Successful: "+Tools_Converters.XML2Fasta(in, out, id_tag, seq_tag));
 				} catch (XMLStreamException e) {
@@ -106,6 +115,9 @@ public class Task_Convert extends TaskXTwIO{
 			}
 			else if(conversiontype==ACE2ALN){
 				try {
+					output = checkEndings(new String[]{".aln"}, ".aln", output);
+					File out = new File(output);
+					
 					ContigList l = SequenceListFactory.getContigList(in);
 					logger.debug("Retrieving " + id_tag);
 					logger.info("saved to "+l.getContig(id_tag).saveFile(out, BioFileType.CLUSTAL_ALN)[0]);
@@ -116,6 +128,9 @@ public class Task_Convert extends TaskXTwIO{
 			else if(conversiontype==SAM2ALN){
 				ContigList l = null;
 				try {
+					output = checkEndings(new String[]{".aln"}, ".aln", output);
+					File out = new File(output);
+					
 					if(ref != null)l = SequenceListFactory.getContigList(in, new File(ref));
 					else l=SequenceListFactory.getContigList(in);
 					logger.debug("Retrieving " + id_tag);
@@ -127,6 +142,9 @@ public class Task_Convert extends TaskXTwIO{
 			}
 			else if(conversiontype==FASTQ2FASTA){
 				try {
+					output = checkEndings(new String[]{".fna", ".fasta", ".faa"}, ".fasta", output);
+					File out = new File(output);
+					
 					SequenceList l = SequenceListFactory.getSequenceList(in);
 					String[] s = l.saveFile(out, BioFileType.FAST_QUAL);
 					logger.info("Saved to " + s[0]);
@@ -145,6 +163,12 @@ public class Task_Convert extends TaskXTwIO{
 		}
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
 	    setCompleteState(TaskState.FINISHED);
+	}
+
+	private String checkEndings(String[] strings, String end, String output) {
+		boolean endexists = false;
+		for(String s : strings)if((endexists = output.toLowerCase().endsWith(s)))break;
+		return endexists ? output : new String(output + end); 
 	}
 
 }

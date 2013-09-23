@@ -147,7 +147,10 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 		out.close();fstream.close();
 		logger.info("Fasta Saved Successfully");
 		if(count == sequences.keySet().size())return output.getPath();
-		else return null;
+		else {
+			logger.error("Consider to have failed as fasta size: " + sequences.keySet().size() + " but saved sequences:" + count);
+			return null;
+		}
 	}
 	
 	public String[] save2FastaAndQual(File output, File quality)throws IOException{
