@@ -34,7 +34,8 @@ public class Task_Assembly extends TaskXTwIO{
 		super.parseArgsSub(cmd);
 		stats = cmd.hasOption("stats");
 		lens2file = cmd.hasOption("l");
-		filter = getOption(cmd, "statlenfilter", -1);
+		filter = getOption(cmd, "f", -1);
+		
 	}
 	
 	public void parseOpts(Properties props){
@@ -44,7 +45,6 @@ public class Task_Assembly extends TaskXTwIO{
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("s","stats", false, "Get Statistics regarding file"));
-		options.addOption(new Option("c","contig", true, "Contig Name to analyse"));
 		options.addOption(new Option("f", "filterlen", true, "Filter out contigs smaller than arg bp in length"));
 		options.addOption(new Option("l", "lengths2file", false, "Get list of contigs length and save to file"));
 		options.removeOption("p");
