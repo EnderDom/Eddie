@@ -55,10 +55,12 @@ public class Task_UniVec extends TaskXTwIO{
 		/*
 		* Check IO
 		*/
-		File file = checkInput();
-		if(file == null && xml == null){ this.setCompleteState(TaskState.ERROR); return;}
 
 		if(xml == null){
+			File file = new File(input);
+			if(!file.exists()){
+				logger.error("File "+input+" does not exist, aborting");
+			}
 			if(!checkUniDB()){
 				logger.error("Failed to establish UniVec database");
 				this.setCompleteState(TaskState.ERROR);
@@ -99,6 +101,10 @@ public class Task_UniVec extends TaskXTwIO{
 		//Trim fasta based on univec output
 		String[] outs = null;
 		if(xml != null){
+			if(checkInput() == null){
+				logger.error("Error Loading Fasta file, check input" + input);
+				this.setCompleteState(TaskState.ERROR);
+			}
 			File xm = new File(xml);
 			logger.debug("Start trimming sequences");
 			if(xm.isFile()){
