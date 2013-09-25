@@ -38,6 +38,7 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 	private String trimAtString;
 	private boolean lengths;
 	private String quals;
+	private boolean trimName;
 	private boolean dmw;
 	
 	public Task_Fasta_Tools(){
@@ -142,7 +143,10 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 			}
 			fasta.renameNames(str);
 		}
-		//OTHER fasta tools
+		if(trimName){
+			logger.debug("Trimming names....");
+			fasta.trimNames(" ");
+		}
 	}
 	
 	public void parseOpts(Properties props){
@@ -164,6 +168,7 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 				"of string ie -trimAtString \">Contig\" would change >Contig2121 to >Contig"));
 		options.addOption(new Option("s","short", false, "Use Short titles, names are truncated to first space (Needed to match fasta qual)"));
 		options.addOption(new Option("dmwName", false, "Use Dominic Wood Naming scheme for fasta with ncbi blast names "));
+		options.addOption(new Option("nameTrim", false, "Trim names to whitespace"));
 	}
 	
 	public void parseArgsSub(CommandLine cmd){
@@ -177,6 +182,7 @@ public class Task_Fasta_Tools extends TaskXTwIO{
 		this.convert = cmd.hasOption("conver");
 		this.lengths = cmd.hasOption("lengths");
 		this.dmw = cmd.hasOption("dmwName");
+		this.trimName = cmd.hasOption("nameTrim");
 	}
 	
 	public Options getOptions(){
