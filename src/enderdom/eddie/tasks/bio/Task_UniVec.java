@@ -1,6 +1,9 @@
 package enderdom.eddie.tasks.bio;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Properties;
@@ -15,6 +18,8 @@ import enderdom.eddie.bio.factories.SequenceListFactory;
 import enderdom.eddie.bio.homology.blast.MultiblastParser;
 import enderdom.eddie.bio.homology.blast.UniVecBlastObject;
 import enderdom.eddie.bio.homology.blast.UniVecRegion;
+import enderdom.eddie.bio.lists.FastaHandler;
+import enderdom.eddie.bio.lists.FastaParser2;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.bio.sequence.SequenceObject;
@@ -26,9 +31,10 @@ import enderdom.eddie.tools.Tools_Task;
 import enderdom.eddie.tools.Tools_Web;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
 import enderdom.eddie.tools.bio.Tools_Blast;
+import enderdom.eddie.tools.bio.Tools_Fasta;
 import enderdom.eddie.ui.UserResponse;
 
-public class Task_UniVec extends TaskXTwIO{
+public class Task_UniVec extends TaskXTwIO implements FastaHandler{
 
 	private String uni_db;
 	private String blast_bin;
@@ -45,7 +51,9 @@ public class Task_UniVec extends TaskXTwIO{
 	private int filter;
 	private boolean saveasfastq;
 	private boolean nograb;
-	
+	private boolean segment;
+	private String segmentfilepath;
+
 	public Task_UniVec(){
 	}
 	
@@ -86,7 +94,35 @@ public class Task_UniVec extends TaskXTwIO{
 			* Actually run the blast program
 			* See http://www.ncbi.nlm.nih.gov/VecScreen/VecScreen_docs.html for specs on vecscreen
 			*/
-			Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-import_search_strategy "+strat+" -outfmt 5 ", blastout, false);
+			if(!segment){
+				Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-num_descriptions 3 -import_search_strategy "+strat+" -outfmt 5 ", blastout, false);
+			}
+			else{
+				try{
+					BufferedWriter writer = null;
+					BufferedWriter writer2 = new BufferedWriter(new FileWriter(new File(segmentfilepath)));
+					File temp = File.createTempFile("eddtmp_", ".fasta");
+					FastaParser2 parser = new FastaParser2(file, true, false, false);
+					int c=0;
+					while(parser.hasNext()){
+						SequenceObject o = parser.next();
+						//Pretty ugly, i know :(
+						writer = new BufferedWriter(new FileWriter(temp));
+						Tools_Fasta.saveFasta(o.getIdentifier(), o.getSequence(), writer);
+						Tools_Blast.runLocalBlast(temp, "blastn", blast_bin, uni_db, "" +
+								"-import_search_strategy "+strat+" -outfmt 5 -num_descriptions 3 ", 
+								new File(FilenameUtils.getFullPath(xml)+o.getIdentifier()+".xml"), false);
+						writer2.write(o.getIdentifier());
+						System.out.println("\rParsing Sequence: "+c+ "     ");				
+						c++;
+					}
+					writer.close();
+					writer2.close();
+				}
+				catch(IOException e){
+					logger.error("Failed to parse the fasta file " + file.getName(), e);
+				}
+			}
 			if(blastout.isFile()){
 				logger.info("Search ran, blast outputed to: " + blastout.getPath());
 			}
@@ -158,6 +194,7 @@ public class Task_UniVec extends TaskXTwIO{
 		options.addOption(new Option("s", "saveFastq", true, "Force Save file as fastq format"));
 		options.addOption(new Option("g", "setNoGrab", false, "Currently automatically grabs qual named the same as " +
 				".fasta file but with .qual, set this to stop that function"));
+		options.addOption(new Option("e", "seqment", true, "Segment fasta, set filepath for list of completed univecs"));
 		options.removeOption("p");
 		options.removeOption("w");
 	}
@@ -181,6 +218,8 @@ public class Task_UniVec extends TaskXTwIO{
 		if(!cmd.hasOption("r")) logger.warn("No filter length set, defaulted to 50");
 		filter = getOption(cmd, "r", 50);
 		nograb = cmd.hasOption("g");
+		segmentfilepath = getOption(cmd, "e", null);
+		segment = segmentfilepath!=null;
 	}
 	
 	public String[] parseBlastAndTrim(File xml, SequenceList seql, String outputfolder, BioFileType filetype, int trimlength, boolean saveasfastq){
@@ -508,6 +547,28 @@ public class Task_UniVec extends TaskXTwIO{
 		else{
 			return true;
 		}
+	}
+
+	public void addSequence(String title, String sequence) {
+		
+	}
+
+	public void addQuality(String title, String quality) {
+		//Null
+	}
+
+	public void addAll(String title, String sequence, String quality) {
+		
+	}
+
+	public void setFastq(boolean fastq) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public boolean isFastq() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }
 

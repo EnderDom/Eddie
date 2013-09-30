@@ -24,7 +24,7 @@ import enderdom.eddie.tools.bio.Tools_Sequences;
 
 
 /**
- * @author dominic
+ * @author Dominic Matthew Wood
  * This ought to be replace with something from 
  * BioJava,  but I don't have time
  */

@@ -56,7 +56,7 @@ public abstract class Tools_Task {
 		}
         try{
 	        
-	        Logger.getRootLogger().debug("Execing " + cmd[0] + " " + cmd[1] 
+	        Logger.getRootLogger().trace("Execing " + cmd[0] + " " + cmd[1] 
 	                           + " " + cmd[2]);
 	        Runtime rt = Runtime.getRuntime();
 	        Process proc = rt.exec(cmd);
