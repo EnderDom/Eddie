@@ -1,10 +1,13 @@
 package enderdom.eddie.tasks.bio;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Properties;
 
@@ -53,6 +56,7 @@ public class Task_UniVec extends TaskXTwIO implements FastaHandler{
 	private boolean nograb;
 	private boolean segment;
 	private String segmentfilepath;
+	private HashSet<String> segments;
 
 	public Task_UniVec(){
 	}
@@ -95,28 +99,50 @@ public class Task_UniVec extends TaskXTwIO implements FastaHandler{
 			* See http://www.ncbi.nlm.nih.gov/VecScreen/VecScreen_docs.html for specs on vecscreen
 			*/
 			if(!segment){
-				Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-num_descriptions 3 -import_search_strategy "+strat+" -outfmt 5 ", blastout, false);
+				Tools_Blast.runLocalBlast(file, "blastn", blast_bin, uni_db, "-num_descriptions 3 -import_search_strategy "+strat+" -outfmt 5 ", blastout, false, false);
 			}
 			else{
 				try{
+					this.xml = FilenameUtils.getFullPath(xml);
+					File segout = new File(segmentfilepath);
+					
+					segments = new HashSet<String>();
+					if(segout.isFile()){
+						BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(segout)));
+						String line =null;
+						while((line = reader.readLine()) != null)segments.add(line);
+					}
 					BufferedWriter writer = null;
-					BufferedWriter writer2 = new BufferedWriter(new FileWriter(new File(segmentfilepath)));
+					BufferedWriter writer2 = new BufferedWriter(new FileWriter(segout, true));
 					File temp = File.createTempFile("eddtmp_", ".fasta");
 					FastaParser2 parser = new FastaParser2(file, true, false, false);
 					int c=0;
 					while(parser.hasNext()){
 						SequenceObject o = parser.next();
-						//Pretty ugly, i know :(
-						writer = new BufferedWriter(new FileWriter(temp));
-						Tools_Fasta.saveFasta(o.getIdentifier(), o.getSequence(), writer);
-						Tools_Blast.runLocalBlast(temp, "blastn", blast_bin, uni_db, "" +
-								"-import_search_strategy "+strat+" -outfmt 5 -num_descriptions 3 ", 
-								new File(FilenameUtils.getFullPath(xml)+o.getIdentifier()+".xml"), false);
-						writer2.write(o.getIdentifier());
-						System.out.println("\rParsing Sequence: "+c+ "     ");				
+						if(!segments.contains(o.getIdentifier())){
+							//Pretty ugly, i know :(
+							writer = new BufferedWriter(new FileWriter(temp));
+							File ou = new File(this.xml+o.getIdentifier()+".xml");
+							Tools_Fasta.saveFasta(o.getIdentifier(), o.getSequence(), writer);
+							Tools_Blast.runLocalBlast(temp, "blastn", blast_bin, uni_db, "" +
+									"-import_search_strategy "+strat+" -outfmt 5 -num_descriptions 3 ", 
+									ou, false, true);
+							writer.close();
+							temp.delete();
+							if(ou.exists()){
+								writer2.write(o.getIdentifier() + Tools_System.getNewline());
+							}
+							else{
+								logger.error("Failed to save blast output file");
+							}
+							System.out.print("\rParsing Sequence: "+c+ "     ");			
+						}
+						else{
+							System.out.print("\rSkipping Sequence: "+c+ "     ");			
+						}
 						c++;
 					}
-					writer.close();
+					System.out.println("\rParsed Sequences: "+c+ "     ");
 					writer2.close();
 				}
 				catch(IOException e){
@@ -509,7 +535,7 @@ public class Task_UniVec extends TaskXTwIO implements FastaHandler{
 			if(!blast_bin.endsWith(Tools_System.getFilepathSeparator()))univec.append(Tools_System.getFilepathSeparator());
 			univec.append("");
 			univec.append(univeccom +"-in "+ filepath+ ".fasta -out "+ filepath+ " ");
-			StringBuffer[] arr = Tools_Task.runProcess(univec.toString(), true);
+			StringBuffer[] arr = Tools_Task.runProcess(univec.toString(), true, false);
 			if(arr[0].length() > 0){
 				logger.info("makeblastdb output:"+Tools_System.getNewline()+arr[0].toString().trim());
 			}

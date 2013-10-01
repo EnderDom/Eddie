@@ -10,7 +10,7 @@ import enderdom.eddie.tools.Tools_Task;
 public abstract class Tools_Blast {
 
 	/* This from Eddie3 */
-	public static StringBuffer[] runLocalBlast(File blastquery, String blastprg, String blastbin, String blastdb, String blastparams, File output,boolean remote){
+	public static StringBuffer[] runLocalBlast(File blastquery, String blastprg, String blastbin, String blastdb, String blastparams, File output,boolean remote, boolean quiet){
 		if(Tools_System.isWindows()){
 			if(blastprg.toLowerCase().indexOf("exe") == -1){
 				blastprg = blastprg + ".exe"; /*
@@ -31,8 +31,14 @@ public abstract class Tools_Blast {
 			exec+=" -remote";
 		}
 
-		StringBuffer[] buffer = Tools_Task.runProcess(exec, false);
+		StringBuffer[] buffer = Tools_Task.runProcess(exec, false, quiet);
 		return buffer;
 	}
+
+	public static StringBuffer[] runLocalBlast(File blastquery, String blastprg, String blastbin, 
+			String blastdb, String blastparams, File output,boolean remote){
+		return runLocalBlast(blastquery, blastprg, blastbin, blastdb, blastparams, output, remote, true);
+	}
+
 	
 }

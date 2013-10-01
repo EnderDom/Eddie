@@ -10,11 +10,31 @@ public abstract class Tools_Task {
 	 * 
 	 * @param coms String containing a command line command
 	 * @param cache boolean denote whether or not to store data returned
+	 * @param log each command run
+	 * @return StringBuffer array containing Sys err and out if cache is true
+	 * else is empty
+	 */
+	public static StringBuffer[] runProcess(String coms, boolean cache, boolean quiet){
+		return runProcess(new String[]{coms}, cache, quiet);
+	}
+	
+	/**
+	 * 
+	 * @param coms String containing a command line command
+	 * @param cache boolean denote whether or not to store data returned
 	 * @return StringBuffer array containing Sys err and out if cache is true
 	 * else is empty
 	 */
 	public static StringBuffer[] runProcess(String coms, boolean cache){
-		return runProcess(new String[]{coms}, cache);
+		return runProcess(new String[]{coms}, cache, true);
+	}
+	
+	/**
+	 * 
+	 * see other runProcess method
+	 */
+	public static StringBuffer[] runProcess(String[] coms, boolean cache){
+		return runProcess(coms, cache, true);
 	}
 	
 	/**
@@ -32,32 +52,37 @@ public abstract class Tools_Task {
 	 * @return StringBuffer array containing Sys err and out if cache is true
 	 * else is empty
 	 */
-	public static StringBuffer[] runProcess(String[] coms, boolean cache){
+	public static StringBuffer[] runProcess(String[] coms, boolean cache, boolean quiet){
 		StringBuffer[] output = null;
 		String osName = System.getProperty("os.name" );
 		String[] cmd =  new String[coms.length+2];
         if( osName.indexOf("Windows NT" ) != -1 ){
             cmd[0] = "command.com" ;
             cmd[1] = "/C" ;
-            Logger.getRootLogger().debug("Man your computer's old! You dug this up?");
+            if(!quiet)Logger.getRootLogger().debug("Man your computer's old! You dug this up?");
         }
         else if ( osName.indexOf( "Windows") != -1){
         	 cmd[0] = "cmd.exe" ;
              cmd[1] = "/C" ;
-             Logger.getRootLogger().debug("Using process commands for Windows 95 and higher");
-        }
+             if(!quiet) Logger.getRootLogger().debug("Using process commands for Windows 95 and higher");
+             else Logger.getRootLogger().trace("Using process commands for Windows 95 and higher");
+        }       
         else{ 
         	cmd[0] = "/bin/sh";
 			cmd[1] = "-c";
-			Logger.getRootLogger().debug("Using process command for Unix");
+			if(!quiet)Logger.getRootLogger().debug("Using process command for Unix");
+			else Logger.getRootLogger().trace("Using process command for Unix");
         }
         for(int i =0; i < coms.length; i++){
 			cmd[i+2] = coms[i];
 		}
         try{
-	        
-	        Logger.getRootLogger().trace("Execing " + cmd[0] + " " + cmd[1] 
+	        if(!quiet){
+	        	Logger.getRootLogger().debug("Execing " + cmd[0] + " " + cmd[1] 
 	                           + " " + cmd[2]);
+	        }
+	        else Logger.getRootLogger().trace("Execing " + cmd[0] + " " + cmd[1] 
+                    + " " + cmd[2]);
 	        Runtime rt = Runtime.getRuntime();
 	        Process proc = rt.exec(cmd);
 	        // any error message
@@ -74,7 +99,10 @@ public abstract class Tools_Task {
 	                                
 	        // any error???
 	        int exitVal = proc.waitFor(); //Note:: This will pause the thread
-	        if(exitVal == 0){Logger.getRootLogger().debug("Process Exited Normally");}
+	        if(exitVal == 0){
+	        	if(!quiet)Logger.getRootLogger().debug("Process Exited Normally");
+	        	else Logger.getRootLogger().trace("Process Exited Normally");
+	        }
 	        else Logger.getRootLogger().error("Abnormal exit value");
 	        
 	        if(cache){
