@@ -30,11 +30,13 @@ public class Task_Convert extends TaskXTwIO{
 	private static int ACE2ALN = 4;
 	private static int SAM2ALN = 5;
 	private static int FASTQ2FASTA = 6;
+	private static int FASTA2FASTQ = 7;
 	private boolean noscrub;
-	Logger logger = Logger.getLogger("Converterz");
+	Logger logger = Logger.getRootLogger();
 	String id_tag;
 	String seq_tag;
 	String ref;
+	private String qual;
 	
 	public Task_Convert(){
 		
@@ -48,10 +50,12 @@ public class Task_Convert extends TaskXTwIO{
 		if(cmd.hasOption("ace2aln"))conversiontype = ACE2ALN;
 		if(cmd.hasOption("sam2aln"))conversiontype = SAM2ALN;
 		if(cmd.hasOption("fastq2fasta"))conversiontype = FASTQ2FASTA;
+		if(cmd.hasOption("fasta2fastq"))conversiontype = FASTA2FASTQ;
 		id_tag = getOption(cmd, "name", "id");
 		seq_tag = getOption(cmd, "seq", "sequence");
 		ref = getOption(cmd, "refFile", null);
 		noscrub = cmd.hasOption("noScrub");
+		qual = getOption(cmd, "qual", null);
 	}
 	
 	public void parseOpts(Properties props){
@@ -70,8 +74,8 @@ public class Task_Convert extends TaskXTwIO{
 		options.addOption(new Option("seq", true, "For sequence tag in xml"));
 		options.addOption(new Option("refFile", true, "Reference file (fasta/q with consensus contigs) for SAM"));
 		options.addOption(new Option("noScrub", false, "Don't scrub '*' when converting from ace to fasta"));
-		//options.addOption(new Option("fasta2fastq", false, "Convert Fasta and Qual file to Fastq"));
-		//options.addOption(new Option("q","qual", true, "Quality file if needed"));
+		options.addOption(new Option("fasta2fastq", false, "Convert Fasta and Qual file to Fastq"));
+		options.addOption(new Option("q","qual", true, "Quality file if needed"));
 	}
 	
 	public void run(){
@@ -153,6 +157,28 @@ public class Task_Convert extends TaskXTwIO{
 					logger.error("Failed to load SAM file",e);
 				}
 			}
+			else if(conversiontype==FASTA2FASTQ){
+				try {
+					output = checkEndings(new String[]{".fastq"}, ".fastq", output);
+					File out = new File(output);
+					if(qual == null){
+						qual = FilenameUtils.getFullPath(input)+FilenameUtils.getBaseName(input)+".qual";
+						logger.warn("No quality file set, assuming it to be: " + qual);
+					}
+					File q = new File(qual);
+					if(!q.exists()){
+						setCompleteState(TaskState.ERROR);
+						logger.error("Quality file "+ qual+ " does not exist");
+						return;
+					}
+					SequenceList l = SequenceListFactory.getSequenceList(in, q);
+					String[] s = l.saveFile(out, BioFileType.FASTQ);
+					logger.info("Saved to " + s[0]);
+				} 
+				catch (Exception e) {
+					logger.error("Failed to load SAM file",e);
+				}
+			}
 			else{
 				logger.warn("No Conversion Set");
 			}
@@ -165,6 +191,7 @@ public class Task_Convert extends TaskXTwIO{
 	    setCompleteState(TaskState.FINISHED);
 	}
 
+	
 	private String checkEndings(String[] strings, String end, String output) {
 		boolean endexists = false;
 		for(String s : strings)if((endexists = output.toLowerCase().endsWith(s)))break;

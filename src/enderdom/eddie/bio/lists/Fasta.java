@@ -421,7 +421,7 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 		}
 	}
 	
-	public int loadFile(File file, BioFileType filetype) throws UnsupportedTypeException, IOException {
+	public int loadFile(File file, BioFileType filetype) throws UnsupportedTypeException, FileNotFoundException, IOException {
 		if(file.isFile()){
 			filename = file.getName();
 			filepath = file.getPath();

@@ -1,5 +1,8 @@
 package enderdom.eddie.bio.homology.blast;
 
+import enderdom.eddie.exceptions.BlastOneBaseException;
+import enderdom.eddie.exceptions.GeneralBlastException;
+
 /**
  * 
  * @author Dominic Matthew Wood

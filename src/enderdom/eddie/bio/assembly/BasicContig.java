@@ -1,6 +1,7 @@
 package enderdom.eddie.bio.assembly;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Set;
@@ -198,7 +199,7 @@ public class BasicContig implements Contig{
 		return sequences.get(s);
 	}
 		
-	public String[] saveFile(File file, BioFileType filetype) throws Exception {
+	public String[] saveFile(File file, BioFileType filetype) throws IOException, UnsupportedTypeException {
 		if(filetype == BioFileType.CLUSTAL_ALN){
 			ClustalAlign align = new ClustalAlign();
 			for(String k : this.sequences.keySet()){
@@ -225,8 +226,7 @@ public class BasicContig implements Contig{
 		}
 	}
 
-	public int loadFile(File file, BioFileType filetype) throws Exception,
-			UnsupportedTypeException {
+	public int loadFile(File file, BioFileType filetype) throws UnsupportedTypeException {
 		logger.error("Not implemented");
 		return -1;
 	}

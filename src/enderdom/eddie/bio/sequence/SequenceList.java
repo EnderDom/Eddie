@@ -1,6 +1,7 @@
 package enderdom.eddie.bio.sequence;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -89,7 +90,7 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	 * 
 	 * @return returns the paths of all files saved
 	 */
-	public String[] saveFile(File file, BioFileType filetype) throws Exception, UnsupportedTypeException;
+	public String[] saveFile(File file, BioFileType filetype) throws IOException, UnsupportedTypeException;
 	
 	/**
 	 * 
@@ -101,7 +102,7 @@ public interface SequenceList extends Iterator<SequenceObject>{
 	 * 
 	 * @return number of sequences loaded
 	 */
-	public int loadFile(File file, BioFileType filetype) throws Exception, UnsupportedTypeException;
+	public int loadFile(File file, BioFileType filetype) throws IOException, UnsupportedTypeException;
 	
 	public BioFileType getFileType();
 	

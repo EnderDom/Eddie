@@ -11,6 +11,8 @@ import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.Properties;
 
+import javax.xml.stream.XMLStreamException;
+
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -21,11 +23,14 @@ import enderdom.eddie.bio.factories.SequenceListFactory;
 import enderdom.eddie.bio.homology.blast.MultiblastParser;
 import enderdom.eddie.bio.homology.blast.UniVecBlastObject;
 import enderdom.eddie.bio.homology.blast.UniVecRegion;
-import enderdom.eddie.bio.lists.FastaHandler;
 import enderdom.eddie.bio.lists.FastaParser2;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.bio.sequence.SequenceObject;
+import enderdom.eddie.bio.sequence.UnsupportedTypeException;
+import enderdom.eddie.exceptions.BlastOneBaseException;
+import enderdom.eddie.exceptions.EddieGenericException;
+import enderdom.eddie.exceptions.GeneralBlastException;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_File;
@@ -37,7 +42,16 @@ import enderdom.eddie.tools.bio.Tools_Blast;
 import enderdom.eddie.tools.bio.Tools_Fasta;
 import enderdom.eddie.ui.UserResponse;
 
-public class Task_UniVec extends TaskXTwIO implements FastaHandler{
+/**
+ * Class has become a bit of a mess to try and get it 
+ * to work with very large runs through segmenting into
+ * pieces
+ * 
+ * @author dominic
+ *
+ */
+
+public class Task_UniVec extends TaskXTwIO{
 
 	private String uni_db;
 	private String blast_bin;
@@ -164,32 +178,28 @@ public class Task_UniVec extends TaskXTwIO implements FastaHandler{
 		String[] outs = null;
 		if(xml != null){
 			if(checkInput() == null){
-				logger.error("Error Loading Fasta file, check input" + input);
+				logger.error("Error Loading Fasta file, check input:" + input);
 				this.setCompleteState(TaskState.ERROR);
+				return;
 			}
 			File xm = new File(xml);
 			logger.debug("Start trimming sequences");
 			if(xm.isFile()){
 				logger.debug("Output of blast is file " + xm.getName());
-				outs = parseBlastAndTrim(xm, fout, output, this.filetype, filter,this.saveasfastq);
+				try {
+					outs = parseBlastAndTrim(new String[]{xm.getName()}, 
+							FilenameUtils.getFullPath(xml), fout, output, this.filetype, filter,this.saveasfastq);
+				} catch (Exception e) {
+					logger.error("Error parsing blast files", e);
+				}
 			}
 			else if(xm.isDirectory()){
-				File[] files = xm.listFiles();
-				int i =0;
-				for(File f : files){
-					if(Tools_Bio_File.detectFileType(f.getPath())==BioFileType.BLAST_XML){
-						outs = parseBlastAndTrim(f, fout, output, this.filetype, filter, this.saveasfastq);
-						i++;
-					}
-				}
-				if(i==0){
-					logger.warn("No blast files detected in folder, attempting to parse any old XMLs");
-					for(File f: files){
-						if(Tools_Bio_File.detectFileType(f.getPath())==BioFileType.XML){
-							outs = parseBlastAndTrim(f, fout, output, this.filetype, filter,this.saveasfastq);
-							i++;
-						}
-					}
+				logger.debug("Output of blast is directory " + xm.getName());
+				try {
+					outs = parseBlastAndTrim(xm.list(), FilenameUtils.getFullPath(xml),
+							fout, output, this.filetype, filter, this.saveasfastq);
+				} catch (Exception e) {
+					logger.error("Error parsing blast files", e);
 				}
 			}
 			else{
@@ -248,16 +258,6 @@ public class Task_UniVec extends TaskXTwIO implements FastaHandler{
 		segment = segmentfilepath!=null;
 	}
 	
-	public String[] parseBlastAndTrim(File xml, SequenceList seql, String outputfolder, BioFileType filetype, int trimlength, boolean saveasfastq){
-		try{
-			return parseBlastAndTrim(new MultiblastParser(MultiblastParser.UNIVEC, xml), seql, outputfolder, filetype, trimlength, saveasfastq);
-		}
-		catch(Exception e){
-			Logger.getRootLogger().error("An error occured during this task, check logs", e);
-			return null;
-		}
-	}
-	
 	/**
 	 * Checks input is okay, sets fout sequenceList
 	 * @return the Input File as a file object or null
@@ -297,7 +297,7 @@ public class Task_UniVec extends TaskXTwIO implements FastaHandler{
 				this.filetype = fout.getFileType();
 				return file;
 			} catch (Exception e) {
-				logger.error("Failed to parse input file",e);
+				logger.error("Failed to parse input file ",e);
 				return null;
 			}
 		}
@@ -309,7 +309,10 @@ public class Task_UniVec extends TaskXTwIO implements FastaHandler{
 	 * to the hit locations based on UniVec rules. Obviously this 
 	 * is only really designed for univec
 	 * 
-	 * @param parser MultiBlastParser object
+	 * @param string list of Xml blast files <- is string list because
+	 * holding as File[] rather than String[] screws stuff up leading to
+	 * java.io.FileNotFoundException: [...] (Too many open files)
+	 * 
 	 * 
 	 * @param seql Sequence list, make sure quality data is there
 	 * if it is included
@@ -327,7 +330,10 @@ public class Task_UniVec extends TaskXTwIO implements FastaHandler{
 	 * 
 	 * @throws Exception
 	 */
-	public String[] parseBlastAndTrim(MultiblastParser parser, SequenceList seql, String output, BioFileType filetype, int trimlength, boolean saveasfastq) throws Exception{
+	public String[] parseBlastAndTrim(String[] files, String path, SequenceList seql, String output, 
+			BioFileType filetype, int trimlength, boolean saveasfastq) throws UnsupportedTypeException,
+			GeneralBlastException, BlastOneBaseException, EddieGenericException{
+		logger.debug("Path for blast xmls is "+path);
 		int startsize =  seql.getNoOfSequences();
 		int startmonmers = seql.getQuickMonomers();
 		int lefttrims = 0;
@@ -340,91 +346,100 @@ public class Task_UniVec extends TaskXTwIO implements FastaHandler{
 		SequenceObject o =null;
 		HashSet<String> alreadytrimmed = new HashSet<String>();
 		String s = new String();
-		try{
-			while(parser.hasNext()){
-				obj = (UniVecBlastObject) parser.next();
-				obj.reverseOrder();
-				s = obj.get("Iteration_query-def");
-				for(UniVecRegion r : obj.getRegions()){
-					if(!alreadytrimmed.contains(s)){
-						alreadytrimmed.add(s);
-						if(seql.getSequence(s) == null){
-							Logger.getRootLogger().error("SequenceList does not contain blast query id " + s);
-							Logger.getRootLogger().error("You will probably have to rename blast or input sequence list for this to work");
-							throw new Exception("Failed as blast query name does not match sequence names, see logs for more info");
-						}
-						o = seql.getSequence(s);
-						if(r.isLeftTerminal()){
-							o.leftTrim(r.getStop(0),0);
-							if(o.getLength() >= trimlength){
-								seql.addSequenceObject(o);
-								lefttrims++;
+		MultiblastParser parser = null;
+		FileInputStream stream;
+		int filelength = files.length;
+		int c=0;
+		for(String f: files){
+			c++;
+			try{
+				stream = new FileInputStream(path+f);
+				parser = new MultiblastParser(MultiblastParser.UNIVEC,stream);
+				while(parser.hasNext()){
+					obj = (UniVecBlastObject) parser.next();
+					obj.reverseOrder();
+					s = obj.get("Iteration_query-def");
+					for(UniVecRegion r : obj.getRegions()){
+						if(!alreadytrimmed.contains(s)){
+							alreadytrimmed.add(s);
+							if(seql.getSequence(s) == null){
+								Logger.getRootLogger().error(
+										"SequenceList does not contain blast query id " + s);
+								Logger.getRootLogger().error(
+										"You will probably have to rename blast or " +
+										"input sequence list for this to work");
+								throw new IOException("Failed as blast query name does" +
+										" not match sequence names, see logs for more info");
+							}
+							o = seql.getSequence(s);
+							if(r.isLeftTerminal()){
+								o.leftTrim(r.getStop(0),0);
+								if(o.getLength() >= trimlength){
+									seql.addSequenceObject(o);
+									lefttrims++;
+								}
+								else{
+									seql.removeSequenceObject(o.getIdentifier());
+									removed++;
+								}
+							}
+							else if(r.isRightTerminal()){
+								o.rightTrim(o.getLength()-r.getStart(0),0);
+								if(o.getLength() >= trimlength){
+									seql.addSequenceObject(o);
+									righttrims++;
+								}
+								else{
+									seql.removeSequenceObject(o.getIdentifier());
+									removed++;
+								}
 							}
 							else{
-								seql.removeSequenceObject(o.getIdentifier());
-								removed++;
-							}
-						}
-						else if(r.isRightTerminal()){
-							o.rightTrim(o.getLength()-r.getStart(0),0);
-							if(o.getLength() >= trimlength){
-								seql.addSequenceObject(o);
-								righttrims++;
-							}
-							else{
-								seql.removeSequenceObject(o.getIdentifier());
-								removed++;
-							}
-						}
-						else{
-							SequenceObject[] splits =  o.removeSection(r.getStart(0), r.getStop(0),0);
-							if(splits.length > 1){
-								//Remove, as when added, added with diff name
-								seql.removeSequenceObject(o.getIdentifier());
-								if(splits[0].getLength() > trimlength){
-									seql.addSequenceObject(splits[0]);
-									if(splits[1].getLength() > trimlength){
-										seql.addSequenceObject(splits[1]) ;
-										added++;
+								SequenceObject[] splits =  o.removeSection(r.getStart(0), r.getStop(0),0);
+								if(splits.length > 1){
+									//Remove, as when added, added with diff name
+									seql.removeSequenceObject(o.getIdentifier());
+									if(splits[0].getLength() > trimlength){
+										seql.addSequenceObject(splits[0]);
+										if(splits[1].getLength() > trimlength){
+											seql.addSequenceObject(splits[1]) ;
+											added++;
+										}
+										midtrims++;
 									}
-									midtrims++;
+									else if(splits[1].getLength() > trimlength){
+										seql.addSequenceObject(splits[1]) ;
+										midtrims++;
+									}
+									else{
+										removed++;
+									}
 								}
-								else if(splits[1].getLength() > trimlength){
-									seql.addSequenceObject(splits[1]) ;
-									midtrims++;
-								}
-								else{
-									removed++;
+								else if(splits.length > 0){
+									seql.removeSequenceObject(o.getIdentifier());
+									if(splits[0].getLength() > trimlength){
+										seql.addSequenceObject(splits[0]);
+										midtrims++;
+									}
+									else{
+										removed++;
+									}
 								}
 							}
-							else if(splits.length > 0){
-								seql.removeSequenceObject(o.getIdentifier());
-								if(splits[0].getLength() > trimlength){
-									seql.addSequenceObject(splits[0]);
-									midtrims++;
-								}
-								else{
-									removed++;
-								}
-							}
+							regions++;
+							System.out.print("\rUnivec Region Count: " + regions + "| File "+c+" of "+filelength+"         ");
 						}
-						regions++;
-						System.out.print("\rUnivec Region Count: " + regions + "          ");
 					}
 				}
+				stream.close();
+				parser = null;
 			}
-		}
-		catch (Exception e) {
-			System.out.println();
-			Logger.getRootLogger().error("Exception in UniVec ",e);
-			if(obj != null){
-				Logger.getRootLogger().error("Error trimming file at " + obj.getIterationNumber() + 
-						" XML iteration, with " +obj.getBlastTagContents("Iteration_query-def"));
+			catch(IOException e){
+				logger.error("Failed to parse " + path+f, e);
 			}
-			if(o != null){
-				Logger.getRootLogger().error(" Last object was " + o.getIdentifier() + " of length " + o.getLength());
+			catch(XMLStreamException e){
+				logger.error("Failed to parse " + path+f, e);
 			}
-			return null;
 		}
 		System.out.println();
 		int endsize =  seql.getNoOfSequences();
@@ -442,17 +457,32 @@ public class Task_UniVec extends TaskXTwIO implements FastaHandler{
 		//Woefully overcomplicated file save time
 		BioFileType t = Tools_Bio_File.detectFileType(output);
 		String filename = FilenameUtils.getFullPath(output)+ FilenameUtils.getBaseName(output) + "_trimmed";
-		if(t != BioFileType.FASTA && t != BioFileType.FASTQ && t!=BioFileType.QUAL){
-			t = seql.getFileType();
-		}
-		if(t==BioFileType.FASTA){
-			return seql.saveFile(new File(filename+".fasta"), t);	
-		}
-		else if(t==BioFileType.FASTQ){
-			return seql.saveFile(new File(filename+".fastq"), t);
-		}
-		else{
-			return seql.saveFile(new File(filename), t);
+		try {
+			if(t != BioFileType.FASTA && t != BioFileType.FASTQ && t!=BioFileType.QUAL){
+				t = seql.getFileType();
+			}
+			if(t==BioFileType.FASTA){
+				return seql.saveFile(new File(filename+".fasta"), t);	
+			}
+			else if(t==BioFileType.FASTQ){
+				return seql.saveFile(new File(filename+".fastq"), t);
+			}
+			else{
+				return seql.saveFile(new File(filename), t);
+			}
+		} 
+		catch (IOException e) {
+			logger.warn("Failed to save output sequence list after all that :(");
+			logger.warn("Attempting to reroute through secondary EPS conduits...");
+			try{
+				File f2 = File.createTempFile("Backup", ".bak");
+				logger.warn("Saving at "+f2.getPath()+"/"+f2.getName());
+				return seql.saveFile(f2, t);
+			}
+			catch(IOException e2){
+				logger.error("Attempting to reroute through secondary EPS conduits failed");
+			}
+			return null;
 		}
 	}
 	
@@ -559,7 +589,7 @@ public class Task_UniVec extends TaskXTwIO implements FastaHandler{
 		InputStream str = this.getClass().getResourceAsStream(resource);
 		//Check if it is null
 		if(str == null){
-			logger.error("Failed to create strategy file resource, please send bug to maintainer");
+			logger.error("Failed to create strategy file resource, please submit bug");
 			return false;
 		}
 		//Generate folders for the strategy file
@@ -575,26 +605,5 @@ public class Task_UniVec extends TaskXTwIO implements FastaHandler{
 		}
 	}
 
-	public void addSequence(String title, String sequence) {
-		
-	}
-
-	public void addQuality(String title, String quality) {
-		//Null
-	}
-
-	public void addAll(String title, String sequence, String quality) {
-		
-	}
-
-	public void setFastq(boolean fastq) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public boolean isFastq() {
-		// TODO Auto-generated method stub
-		return false;
-	}
 }
 

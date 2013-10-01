@@ -2,6 +2,7 @@ package enderdom.eddie.bio.homology.blast;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -13,6 +14,9 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.spi.RootLogger;
 import org.codehaus.stax2.XMLInputFactory2;
 import org.codehaus.stax2.XMLStreamReader2;
+
+import enderdom.eddie.exceptions.BlastOneBaseException;
+import enderdom.eddie.exceptions.GeneralBlastException;
 
 /*
  * Had issues because of this:
@@ -40,36 +44,27 @@ public class MultiblastParser implements Iterator<BlastObject>, BlastParser{
 	public static int UNIVEC =1;
 	public Hashtable<String, String> parserCache;
 	String filename;
+	XMLInputFactory2 factory;
 	
-	public MultiblastParser(int blastype, File xml) throws Exception{
+	public MultiblastParser(int blastype, File xml) throws XMLStreamException, IOException, GeneralBlastException, BlastOneBaseException{
 		this.filename=xml.getName();
 		parserCache = new Hashtable<String, String>();
 		this.blasttype = blastype;
-		XMLInputFactory2 f = (XMLInputFactory2) XMLInputFactory2.newInstance();
-	    f.setProperty(XMLInputFactory2.SUPPORT_DTD, Boolean.FALSE);
-		stream = (XMLStreamReader2) f.createXMLStreamReader(new FileInputStream(xml));
-		try {
-			parseNext();
-		} catch (GeneralBlastException e) {
-			logger.error(e);
-		} catch (BlastOneBaseException e) {
-			logger.error(e);
-		}
+		factory = (XMLInputFactory2) XMLInputFactory2.newInstance();
+	    factory.setProperty(XMLInputFactory2.SUPPORT_DTD, Boolean.FALSE);
+		stream = (XMLStreamReader2) factory.createXMLStreamReader(new FileInputStream(xml));
+		parseNext();
 	}
 
-	public MultiblastParser(int blastype, InputStream str)throws Exception{
+	public MultiblastParser(int blastype, InputStream str)throws IOException, XMLStreamException, GeneralBlastException, BlastOneBaseException{
+		parserCache = new Hashtable<String, String>();
 		this.blasttype = blastype;
-		XMLInputFactory2 f = (XMLInputFactory2) XMLInputFactory2.newInstance();
-	    f.setProperty(XMLInputFactory2.SUPPORT_DTD, Boolean.FALSE);
-		stream = (XMLStreamReader2) f.createXMLStreamReader(str);
-		try {
-			parseNext();
-		} catch (GeneralBlastException e) {
-			logger.error(e);
-		} catch (BlastOneBaseException e) {
-			logger.error(e);
-		}
+		factory = (XMLInputFactory2) XMLInputFactory2.newInstance();
+	    factory.setProperty(XMLInputFactory2.SUPPORT_DTD, Boolean.FALSE);
+		stream = (XMLStreamReader2) factory.createXMLStreamReader(str);
+		parseNext();
 	}
+
 	
 	/*
 	 * Sets the current BlastObject to 
@@ -77,7 +72,7 @@ public class MultiblastParser implements Iterator<BlastObject>, BlastParser{
 	 * parser is always one ahead of where it claims to be
 	 * 
 	 */
-	private void parseNext() throws Exception{
+	private void parseNext() throws  GeneralBlastException, XMLStreamException, IOException, BlastOneBaseException{
 		last = current;
 		current = null;
 		String tag = "";
@@ -167,13 +162,10 @@ public class MultiblastParser implements Iterator<BlastObject>, BlastParser{
 			return last;
 		} catch (GeneralBlastException e) {
 			logger.error("A general blast exception ",e);
-		} catch (BlastOneBaseException e) {
-			logger.error("A blast one base exception ",e);
 		} catch (XMLStreamException e) {
 			logger.error("XML can't be parsed ",e);
-		}
-		catch(Exception e){
-			logger.error(e);
+		} catch (IOException e) {
+			logger.error("XML failed to be parsed ",e);
 		}
 		return null;
 	}
