@@ -22,12 +22,13 @@ import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Blast;
 import enderdom.eddie.ui.UI;
 
+
 public class Task_BlastLocal extends TaskXTwIO{
 	
 	private String blast_db;
 	private String blast_bin;
 	private String blast_prg;
-	private String blastparams;
+	private String blast_params;
 	protected boolean keepargs = true;
 	SequenceList sequences;
 	int start;
@@ -37,6 +38,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 	private boolean remote;
 	private String[] filter;
 	private int filterlen;
+	String outputform;
 
 	
 	public Task_BlastLocal(){
@@ -50,17 +52,19 @@ public class Task_BlastLocal extends TaskXTwIO{
 
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		if(cmd.hasOption("remote"))remote=true;
-		if(cmd.hasOption("bdb"))blast_db=cmd.getOptionValue("bdb");
-		if(cmd.hasOption("bbb"))blast_bin=cmd.getOptionValue("bbb");
-		if(cmd.hasOption("bpr"))blast_prg=cmd.getOptionValue("bpr");
-		if(cmd.hasOption("p"))blastparams=cmd.getOptionValue("p").replaceAll("/_", " ");
-		if(cmd.hasOption("clip"))clipname=true;
-		blastparams = getOptionFromFile(cmd, "pf");
-		
-		if(blastparams == null)	blastparams +=" -outfmt 5";
-		else if(!blastparams.contains("outfmt"))blastparams +=" -outfmt 5";
-		
+		remote = cmd.hasOption("remote");
+		blast_db = getOption(cmd, "bdb",blast_db);
+		blast_bin = getOption(cmd, "bbb",blast_bin);
+		blast_prg = getOption(cmd, "bpr", blast_prg);
+		clipname = cmd.hasOption("clipname");
+		blast_params = getOption(cmd, "p", "");
+		if(getOptionFromFile(cmd, "pf") != null){
+			blast_params += " " + getOptionFromFile(cmd, "pf");
+		}
+		if(!blast_params.contains("outfmt")){
+			outputform = getOption(cmd,"x", "5");
+			blast_params += " -outfmt " + outputform;
+		}
 		if(cmd.hasOption("f")){
 			File f = new File(cmd.getOptionValue("f"));
 			if(f.exists()){
@@ -98,7 +102,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 		options.addOption(new Option("bbb", "blast_bin", true, "Specify blast bin directory"));
 		options.addOption(new Option("bpr", "blast_prog", true, "Specify blast program"));
 		options.addOption(new Option("x", "outputformat", true, "Set Output Format, else defaults to xml"));
-		options.addOption(new Option("p", "params", true, "Additional Parameters separate with '/_' not space, ie -num_threads/_3/_-evalue/_1e-3"));
+		options.addOption(new Option("p", "params", true, "Additional Parameters separate use \"\" if multiple parameters with spaces"));
 		options.addOption(new Option("pf", "paramater file", true, "Additional blast Parameters in external file"));
 		options.addOption(new Option("filetype", true, "Specify filetype (rather then guessing from ext)"));
 		options.addOption(new Option("clip", false, "Clip output file name to whitespace in input"));
@@ -108,11 +112,12 @@ public class Task_BlastLocal extends TaskXTwIO{
 	}
 	
 	public void runTest(){
-		if(blastparams == null)blastparams = "";
+		if(blast_params == null)blast_params = "";
+		else blast_params = blast_params.replaceAll(" +", " ");
 		File in =new File(input);
 		File out =  new File(output);
 		if(in.exists() && (out.exists() || overwrite)){
-			Tools_Blast.runLocalBlast(in, blast_prg, blast_bin, blast_db, blastparams, out, false);
+			Tools_Blast.runLocalBlast(in, blast_prg, blast_bin, blast_db, blast_params, out, false);
 		}
 		else if(!in.exists()){
 			logger.error("Input "+this.input+" does not exist! " );
@@ -197,8 +202,14 @@ public class Task_BlastLocal extends TaskXTwIO{
 		return j;
 	}
 	
+	/**
+	 * This is a bit of a mess now
+	 * 
+	 * @param output
+	 * @param seqs
+	 * @param list
+	 */
 	public void runAutoBlast(File output, SequenceList seqs, Checklist list){
-		//Stack, should.... be synchronized
 		Stack<String> stack = new Stack<String>();
 		int i=0;
 		for(String s : sequences.keySet()){
@@ -207,14 +218,14 @@ public class Task_BlastLocal extends TaskXTwIO{
 		}
 		logger.debug(i+" sequences to blast, adding to TaskManager");
 		SubTask_Blast blast = new SubTask_Blast(seqs, stack, false, list, this.output, this.clipname);
-		blast.setBlastDetails(blast_prg, blast_bin, blast_db, blastparams);
+		blast.setBlastDetails(blast_prg, blast_bin, blast_db, blast_params);
 		blast.setCore(true);
 		ui.addTaskLike(blast);
 		if(remote){
 			SubTask_Blast blast2 = new SubTask_Blast(seqs, stack, true, list, this.output, this.clipname);
 			String db = FilenameUtils.getBaseName(blast_db);
 			logger.info("Database was trimmed to " + blast_db + " for the remote");
-			blast2.setBlastDetails(blast_prg, blast_bin, db, blastparams);
+			blast2.setBlastDetails(blast_prg, blast_bin, db, blast_params);
 			blast2.setCore(false);
 			ui.addTaskLike(blast2);
 		}
@@ -227,5 +238,4 @@ public class Task_BlastLocal extends TaskXTwIO{
 	public void addUI(UI ui){
 		this.ui = ui;
 	}
-	
 }

@@ -13,8 +13,6 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FilenameUtils;
-
 import enderdom.eddie.bio.sequence.BasicSequenceList;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.GenericSequence;
@@ -26,7 +24,7 @@ import enderdom.eddie.tools.bio.Tools_Sequences;
 
 
 /**
- * @author dominic
+ * @author Dominic Matthew Wood
  * This ought to be replace with something from 
  * BioJava,  but I don't have time
  */
@@ -120,11 +118,8 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 	}
 	
 	public String save2Fastq(File output) throws IOException{
-		filename= FilenameUtils.getBaseName(output.getName()) + ".fastq";
-		filepath = FilenameUtils.getPath(output.getPath());
-		output = new File(FilenameUtils.concat(filepath, filename));
-
-		FileWriter fstream = new FileWriter(output);
+	
+		FileWriter fstream = new FileWriter(output, false);
 		BufferedWriter out = new BufferedWriter(fstream);
 		int count =0;
 		for(String str : sequences.keySet()){
@@ -142,7 +137,7 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 	}
 	
 	public String save2Fasta(File output) throws IOException{
-		FileWriter fstream = new FileWriter(output);
+		FileWriter fstream = new FileWriter(output, false);
 		BufferedWriter out = new BufferedWriter(fstream);
 		int count = 0;
 		for(String str : sequences.keySet()){
@@ -152,7 +147,10 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 		out.close();fstream.close();
 		logger.info("Fasta Saved Successfully");
 		if(count == sequences.keySet().size())return output.getPath();
-		else return null;
+		else {
+			logger.error("Consider to have failed as fasta size: " + sequences.keySet().size() + " but saved sequences:" + count);
+			return null;
+		}
 	}
 	
 	public String[] save2FastaAndQual(File output, File quality)throws IOException{
@@ -410,6 +408,7 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 
 	//TODO improve remove redundancy of saveFasta and saveFile
 	public String[] saveFile(File file, BioFileType filetype) throws UnsupportedTypeException, IOException {
+		logger.info("Saving File...");
 		switch(filetype){
 			case FAST_QUAL:
 				return this.save2FastaAndQual(new File(file.getPath()+".fasta"), new File(file.getPath()+".qual"));
@@ -418,14 +417,15 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 			case FASTQ:
 				return new String[]{this.save2Fastq(file)};
 			default:
-				throw new UnsupportedTypeException("Fasta(q) cannot be saved as this filetype");
+				throw new UnsupportedTypeException("Fasta(q) cannot be saved as this filetype: " + filetype.toString());
 		}
 	}
 	
-	public int loadFile(File file, BioFileType filetype) throws UnsupportedTypeException, IOException {
+	public int loadFile(File file, BioFileType filetype) throws UnsupportedTypeException, FileNotFoundException, IOException {
 		if(file.isFile()){
 			filename = file.getName();
 			filepath = file.getPath();
+			this.type = filetype;
 			return loadFile(new FileInputStream(file), filetype);
 		}
 		else{
@@ -435,6 +435,7 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 	
 	public int loadFile(InputStream file, BioFileType filetype) throws UnsupportedTypeException, IOException {
 			FastaParser parser = new FastaParser(this);
+			this.type = filetype;
 			switch(filetype){
 				case QUAL:
 					return parser.parseQual(file);
@@ -511,6 +512,8 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 		return type;
 	}
 
+		
+	
 	
 	public void dump(){
 		logger.warn("Dumping sequences, this should only be done in the event that a save failed");

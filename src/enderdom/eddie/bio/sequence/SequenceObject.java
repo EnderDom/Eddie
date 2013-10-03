@@ -1,6 +1,10 @@
 package enderdom.eddie.bio.sequence;
 
-
+/**
+ * Would really love to hook into biojava Sequence<?> but
+ * it add an awful lot of methods to the class, few of which
+ * I currently would use
+ */
 
 public interface SequenceObject{
 

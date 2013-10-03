@@ -6,8 +6,12 @@ import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
+import org.apache.commons.io.FilenameUtils;
 
+import enderdom.eddie.bio.factories.SequenceListFactory;
 import enderdom.eddie.bio.lists.Fasta;
+import enderdom.eddie.bio.sequence.BioFileType;
+import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.databases.manager.DatabaseManager;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
@@ -23,6 +27,7 @@ public class Task_ESTScan extends TaskXT{
 	private boolean bioen;
 	private String input;
 	private String output;
+	private String params;
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
@@ -31,6 +36,7 @@ public class Task_ESTScan extends TaskXT{
 		this.bioen=cmd.hasOption("e");
 		this.input = getOption(cmd, "i", null);
 		this.output = getOption(cmd, "o", null);
+		this.params = getOption(cmd, "a", "");
 	}
 	
 	public void parseOpts(Properties props){
@@ -47,6 +53,7 @@ public class Task_ESTScan extends TaskXT{
 		options.addOption(new Option("e","bioentries", false, "Use bioentry ids for ESTscan !Advised!"));
 		options.addOption(new Option("i", "input", true, "Input sequence file Fasta"));
 		options.addOption(new Option("o", "output", true, "Output files, suffixes will be added"));
+		options.addOption(new Option("a", "params", true, "Additional parameters for estscan"));
 		options.removeOption("w");
 		options.removeOption("filetype");
 	}
@@ -55,14 +62,19 @@ public class Task_ESTScan extends TaskXT{
 	public void run() {
 		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running task @ "+Tools_System.getDateNow());
-		if(ESTScanBin != null && matrix != null && output != null){
+		if(ESTScanBin != null && matrix != null){
 			if(new File(matrix).isFile()){
+				SequenceList list = null;
+				if(this.output == null){
+					this.output = FilenameUtils.getFullPath(new File(input).getPath())+FilenameUtils.getBaseName(new File(input).getPath());
+					logger.debug("Output not set, setting as " + output+ "*");
+				}
 				if(bioen){
-					logger.info("Building Fasta File...");
+					logger.info("Building Fasta File from database...");
 					DatabaseManager man = ui.getDatabaseManager(password);
 					try {
 						if(man.open()){
-							man.getBioSQLXT().getContigsAsList(man, new Fasta(), -1);
+							list = man.getBioSQLXT().getContigsAsList(man, new Fasta(), -1);
 							logger.debug("Writing as temporary file...");
 							File in = File.createTempFile("tempfasta", ".fasta");
 							input = in.getPath();
@@ -78,6 +90,15 @@ public class Task_ESTScan extends TaskXT{
 						return;
 					}
 				}
+				else if(!bioen){
+					try {
+						list = SequenceListFactory.getSequenceList(input);
+						File in = File.createTempFile("tempfasta", ".fasta");
+						input = in.getPath();
+					} catch (Exception e) {
+						logger.error("Failed to parse sequende list", e);
+					}
+				}
 				else{
 					if(input == null){
 						logger.error("Input file isn't a file and database settings not set");
@@ -85,15 +106,17 @@ public class Task_ESTScan extends TaskXT{
 						return;
 					}
 				}
-				
 				if(this.output.indexOf(".") != -1){
 					this.output.substring(0, this.output.lastIndexOf("."));
 				}
-				String[] exec = new String[]{ESTScanBin+" -M "+matrix + " -o " + this.output+"_est.fasta -t " + this.output+"_prot.fasta " + input}; 
-				StringBuffer[] buffer = Tools_Task.runProcess(exec, true);
-				for(int i =0; i < buffer.length; i++){
-					if(i==0)logger.info("STDOUT:"+buffer[i]);
-					else logger.info("ERROUT:"+buffer[i]);
+				try{
+					list.saveFile(new File(input), BioFileType.FASTA);
+					String ex = ESTScanBin+" "+params+" -M "+matrix + " -o " + this.output+"_est.fasta -t " + this.output+"_prot.fasta " + input;
+					ex = ex.replaceAll(" +", " ");
+					Tools_Task.runProcess(new String[]{ex}, true);
+				}
+				catch(Exception e){
+					logger.error("Failed to execute ESTscan", e);
 				}
 			}
 			else{

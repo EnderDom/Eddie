@@ -1,6 +1,7 @@
 package enderdom.eddie.bio.assembly;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Set;
@@ -41,6 +42,7 @@ public class BasicContig implements Contig{
 	protected int position = 1;
 	protected ArrayList<BasicRegion> regions;
 	private boolean noQual2fastq;
+	protected BioFileType type;
 	
 	public BasicContig(){
 		this.sequences = new LinkedHashMap<String, SequenceObjectXT>();
@@ -190,14 +192,14 @@ public class BasicContig implements Contig{
 	}
 	
 	public BioFileType getFileType() {
-		return BioFileType.CONTIG_BASIC;
+		return type == null ? BioFileType.CONTIG_BASIC : type;
 	}
 
 	public SequenceObject getSequence(String s) {
 		return sequences.get(s);
 	}
 		
-	public String[] saveFile(File file, BioFileType filetype) throws Exception {
+	public String[] saveFile(File file, BioFileType filetype) throws IOException, UnsupportedTypeException {
 		if(filetype == BioFileType.CLUSTAL_ALN){
 			ClustalAlign align = new ClustalAlign();
 			for(String k : this.sequences.keySet()){
@@ -224,8 +226,7 @@ public class BasicContig implements Contig{
 		}
 	}
 
-	public int loadFile(File file, BioFileType filetype) throws Exception,
-			UnsupportedTypeException {
+	public int loadFile(File file, BioFileType filetype) throws UnsupportedTypeException {
 		logger.error("Not implemented");
 		return -1;
 	}
@@ -372,5 +373,9 @@ public class BasicContig implements Contig{
 		this.noQual2fastq = noQual2fastq;
 	}
 
+
+	public void setFileType(BioFileType t){
+		this.type = t;
+	}
 	
 }

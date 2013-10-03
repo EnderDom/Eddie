@@ -281,7 +281,7 @@ public class DatabaseManager {
 					}
 				}
 			}
-			if(i == UserResponse.NO){
+			else if(i == UserResponse.NO){
 				throw new Exception("User chose not continue the task, error thrown to break thread");
 			}
 			else{

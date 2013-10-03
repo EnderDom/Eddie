@@ -10,7 +10,7 @@ public class Tools_Bio_File {
 	public static BioFileType detectFileType(String filename){
 		String[] filesuffix = new String[]{".ace",".sam",".fna",".fasta",".fastq", ".qual", ".aln", ".xml"};
 		BioFileType[] filetype = new BioFileType[]{BioFileType.ACE,BioFileType.SAM,BioFileType.FASTA,BioFileType.FASTA,
-				BioFileType.FASTA,BioFileType.QUAL, BioFileType.CLUSTAL_ALN,BioFileType.XML};
+				BioFileType.FASTQ,BioFileType.QUAL, BioFileType.CLUSTAL_ALN,BioFileType.XML};
 		
 		for(int i=0; i < filesuffix.length; i++){
 			if(filename.endsWith(filesuffix[i])){

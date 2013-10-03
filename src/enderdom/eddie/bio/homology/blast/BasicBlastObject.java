@@ -4,6 +4,9 @@ import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
 
+import enderdom.eddie.exceptions.BlastOneBaseException;
+import enderdom.eddie.exceptions.EddieGenericException;
+import enderdom.eddie.exceptions.GeneralBlastException;
 import enderdom.eddie.tools.Tools_String;
 
 
@@ -158,9 +161,9 @@ public class BasicBlastObject implements BlastObject{
 	 * @return the contents of the tag
 	 * @throws Exception
 	 */
-	public String getHspTagContents(String tag, int hit_num, int hsp_num) throws Exception{
+	public String getHspTagContents(String tag, int hit_num, int hsp_num) throws EddieGenericException{
 		if(hsp_num <= 0){
-			throw new Exception("You cannot retrieve a hsp which doesn't exist!");
+			throw new EddieGenericException("You cannot retrieve a hsp which doesn't exist!");
 		}
 		return this.get(this.generateHspTag(hsp_num, hit_num, tag));
 	}

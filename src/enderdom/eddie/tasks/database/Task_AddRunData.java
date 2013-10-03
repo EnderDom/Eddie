@@ -8,6 +8,7 @@ import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
+import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 
 public class Task_AddRunData extends TaskXT{
@@ -24,18 +25,22 @@ public class Task_AddRunData extends TaskXT{
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		if(cmd.hasOption("program"))run.setProgram(cmd.getOptionValue("program"));
-		if(cmd.hasOption("version"))run.setVersion(cmd.getOptionValue("version"));
-		if(cmd.hasOption("run_type"))run.setRuntype(cmd.getOptionValue("run_type"));
-		if(cmd.hasOption("run_date"))run.setDateValue(cmd.getOptionValue("run_date"),Tools_System.SQL_DATE_FORMAT);
-		if(cmd.hasOption("dbname"))run.setDbname(cmd.getOptionValue("dbname"));
-		if(cmd.hasOption("params"))run.setParams(cmd.getOptionValue("params"));
-		if(cmd.hasOption("comment"))run.setComment(cmd.getOptionValue("comment"));
-		if(cmd.hasOption("list"))this.list = true;
+		run.setProgram(getOption(cmd, "program", "Unknown Program"));
+		run.setVersion(getOption(cmd, "version", "0"));
+		run.setRuntype(getOption(cmd, "run_type", "UNKNOWN"));
+		run.setDateValue(getOption(cmd, "run_date",
+				Tools_System.getDateNow(Tools_System.SQL_DATE_FORMAT)), Tools_System.SQL_DATE_FORMAT);
+		run.setDbname(getOption(cmd, "dbname", null));
+		run.setParams(getOption(cmd, "params", null));
+		run.setComment(getOption(cmd, "comment", null));
+		String s = getOption(cmd, "parent", null);
+		run.setParent_id(s==null?null:Tools_String.parseString2Int(s));
+		this.list = cmd.hasOption("list");
 	}
 	
 	public void buildOptions(){
 		super.buildOptions();
+		options.addOption(new Option("prt","parent", true, "Parent run id"));
 		options.addOption(new Option("prg","program", true, "Name of program used for run"));
 		options.addOption(new Option("ver","version", true, "Version of program run"));
 		options.addOption(new Option("rtp","run_type", true, "Run type (eg. BLAST, ASSEMBLY...), see list of current types"));

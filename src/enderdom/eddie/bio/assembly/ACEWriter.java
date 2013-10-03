@@ -18,94 +18,133 @@ public class ACEWriter {
 	
 	String newline;
 	public String acedateformat = "EEE MMM HH:mm:ss yyyy";
-	final private String date;
+	private String date;
 	private boolean writeDS = true;
 	private boolean writeCT = true; 
 	private static int acebase = 1;
 	private int linelength = 60;
 	private int perc;
-	private int count;
-	private String written;
 	private int size;
 	private int readcount;
-	
+	private boolean printprogress;
+	private boolean headerwritten;
+	Logger logger;
+	private BufferedWriter local;
 	
 	public ACEWriter(){
-		date = Tools_System.getDateNow(acedateformat);
-		newline = Tools_System.getNewline();
-		count=-1;
-		perc=0;
-		readcount=0;
+		init();
 	}
 	
+	public ACEWriter(File f) throws IOException{
+		init();
+		setBufferedWriter(f);
+	}
+	
+	
+	public void init(){
+		date = Tools_System.getDateNow(acedateformat);
+		newline = Tools_System.getNewline();
+		perc=0;
+		readcount=0;
+		logger = Logger.getRootLogger();
+		printprogress = true;
+	}
+	
+
+	public void setBufferedWriter(File f) throws IOException{
+		local = new BufferedWriter(new FileWriter(f));
+	}
+	
+	
 	public void save(BasicContigList list, File f) throws IOException {
-		Logger logger = Logger.getRootLogger();
 		logger.info("Writing to File at "+f.getPath());
 		FileWriter fstream = new FileWriter(f);
 		BufferedWriter out = new BufferedWriter(fstream);
-		
 		//Write AS header
 		size = list.getNoOfReads();
-		out.write(getASHeader(list));
+		writeHeader(list.getNoOfContigs(), size, out);
 		//Loop Through Contigs	
 		for(String name : list.getContigNames()){
 			Contig c = list.getContig(name);
-			out.write(getCOHeader(c));
-			Tools_String.splitintolinesandsave(linelength, c.getConsensus().getSequence(), out);
-			out.write(newline);
-			out.write("BQ ");
-			out.write(newline);
-			if(c.isNoQual2fastq()){
-				out.write(Tools_Fasta.Fastq2QualwNewline4ACE(c.getConsensus().getQuality(), linelength));
-			}
-			else{
-				out.write(Tools_Fasta.QualwNewline(c.getConsensus().getQuality(), linelength));
-			}
-			
-			out.write(newline);
-			out.write(newline);
-			//Loop Through Reads
-			for(String read : list.getContig(name).getReadNames()){
-				out.write(getAFHeader(read, name, c));
-			}
-			for(BasicRegion r : list.getContig(name).getRegions()){
-				out.write(getBSHeader(r));
-			}
-			for(String read : list.getContig(name).getReadNames()){
-				out.write(newline);
-				out.write(getRDHeader(read, name, c));
-				Tools_String.splitintolinesandsave(linelength, c.getSequence(read).getSequence(), out);
-				out.write(newline);
-				out.write(getQAHeader(read, name, c));
-				if(writeDS){
-					out.write(getDSHeader());
-				}
-				out.write(newline);
-				readcount++;
-			}
-			if(writeCT){
-				out.write(getCTHeader());
-			}
-			if(readcount%10==0)writeUpdate();
+			writeContig(c, out);
 		}
-		System.out.println("\r100% written      ");
+		if(printprogress)System.out.println("\r100% written      ");
+		closeAce(out);
+	}
+	
+	public void closeAce() throws IOException{
+		closeAce(local);
+	}
+	
+	public void closeAce(BufferedWriter out) throws IOException{
 		logger.info("File written.");
 		out.flush();
 		out.close();
+	}
+	
+	public void writeHeader(int contigcount, int readcount) throws IOException{
+		writeHeader(contigcount, readcount, local);
+	}
+	
+	public void writeHeader(int contigcount, int readcount, BufferedWriter out) throws IOException{
+		out.write(getASHeader(contigcount, readcount));
+		headerwritten=true;
+	}
+	
+	public int writeContig(Contig c) throws IOException{
+		return writeContig(c, local);
+	}
+	
+	public int writeContig(Contig c, BufferedWriter out) throws IOException{
+		if(!headerwritten){
+			logger.error("ACE header has not been written!");
+		}
+		int localreadcount =0;
+		String name = c.getContigName();
+		out.write(getCOHeader(c));
+		Tools_String.splitintolinesandsave(linelength, c.getConsensus().getSequence(), out);
+		out.write(newline);
+		out.write("BQ ");
+		out.write(newline);
+		if(c.isNoQual2fastq()){
+			out.write(Tools_Fasta.Fastq2QualwNewline4ACE(c.getConsensus().getQuality(), linelength));
+		}
+		else{
+			out.write(Tools_Fasta.QualwNewline(c.getConsensus().getQuality(), linelength));
+		}
 		
+		out.write(newline);
+		out.write(newline);
+		//Loop Through Reads
+		for(String read :c.getReadNames()){
+			out.write(getAFHeader(read, name, c));
+		}
+		for(BasicRegion r : c.getRegions()){
+			out.write(getBSHeader(r));
+		}
+		for(String read : c.getReadNames()){
+			out.write(newline);
+			out.write(getRDHeader(read, name, c));
+			Tools_String.splitintolinesandsave(linelength, c.getSequence(read).getSequence(), out);
+			out.write(newline);
+			out.write(getQAHeader(read, name, c));
+			if(writeDS){
+				out.write(getDSHeader());
+			}
+			out.write(newline);
+			readcount++;
+		}
+		if(writeCT){
+			out.write(getCTHeader());
+		}
+		readcount+=localreadcount;
+		if(printprogress && readcount%10==0)writeUpdate();
+		return localreadcount;
 	}
 	
 	private void writeUpdate(){
 		perc = (int)((double)readcount/size*100);
-		count++;
-		switch(count){
-			case 0: written="% written -  "; break;
-			case 1: written="% written \\  "; break;
-			case 2: written="% written |  "; break;
-			case 3: written="% written /  "; break;
-			default:count=-1;
-		}
-		System.out.print("\r"+perc + written);
+		System.out.print("\r"+perc + "% written  "+Tools_String.getCounter()+"  ");
 	}
 
 	private String getCTHeader() {
@@ -194,12 +233,12 @@ public class ACEWriter {
 		return buffer.toString();
 	}
 
-	private String getASHeader(BasicContigList list) {
+	private String getASHeader(int contigcount, int readcount) {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("AS ");
-		buffer.append(list.getNoOfContigs());
+		buffer.append(contigcount);
 		buffer.append(" ");
-		buffer.append(list.getNoOfReads());
+		buffer.append(readcount);
 		buffer.append(newline);
 		buffer.append(newline);
 		return buffer.toString();
@@ -229,5 +268,15 @@ public class ACEWriter {
 	public void setLinelength(int linelength) {
 		this.linelength = linelength;
 	}
+
+
+	public boolean isPrintprogress() {
+		return printprogress;
+	}
+
+	public void setPrintprogress(boolean printprogress) {
+		this.printprogress = printprogress;
+	}
+	
 	
 }

@@ -37,7 +37,7 @@ public class ClustalAlign extends BasicSequenceList{
 	public static int namespacemax=10;
 	
 	public ClustalAlign(File file, BioFileType type) throws UnsupportedTypeException, Exception{
-		this.file=file;
+		this.file=file;		
 		loadFile(file, type);
 	}
 	
@@ -49,14 +49,14 @@ public class ClustalAlign extends BasicSequenceList{
 		sequences = new LinkedHashMap<String, SequenceObject>();
 	}
 	
-	public String[] saveFile(File file, BioFileType filetype) throws Exception,
+	public String[] saveFile(File file, BioFileType filetype) throws IOException,
 			UnsupportedTypeException {
 		if(filetype == BioFileType.CLUSTAL_ALN){
 			this.save(file, 60);
 			return new String[]{file.getPath()};
 		}
 		else{
-			throw new Exception("Can't save Clustal as " + filetype.toString());
+			throw new IOException("Can't save Clustal as " + filetype.toString());
 		}
 	}
 
@@ -71,7 +71,7 @@ public class ClustalAlign extends BasicSequenceList{
     }
 	
 	
-	public int loadFile(InputStream fis, BioFileType filetype) throws Exception, UnsupportedTypeException {
+	public int loadFile(InputStream fis, BioFileType filetype) throws UnsupportedTypeException, IOException {
 		int counter=0;
 		
 		LinkedList<String> nams = new LinkedList<String>();
@@ -122,11 +122,11 @@ public class ClustalAlign extends BasicSequenceList{
 	/**
 	 * Quick & Dirty Clustal parser
 	 */
-	public int loadFile(File file, BioFileType filetype) throws Exception, UnsupportedTypeException {
+	public int loadFile(File file, BioFileType filetype) throws UnsupportedTypeException, IOException {
 		filename = file.getName();
 		filepath = file.getPath();
+		this.type = filetype;
 		FileInputStream fis = new FileInputStream(file);
-		
 		return loadFile(fis, filetype);
 	}
 

@@ -17,6 +17,7 @@ import enderdom.eddie.bio.sequence.SequenceObject;
 
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQL;
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
+import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
 import enderdom.eddie.databases.manager.DatabaseManager;
 
 import enderdom.eddie.tasks.TaskState;
@@ -60,7 +61,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		uploadcontigs= cmd.hasOption("uploadcontigs");
 		//if(cmd.hasOption("remaploc"))remaplocations=true;
 		this.mapcontigs=cmd.hasOption("mapcontigs");
-		this.identifier= getOption(cmd, "identifier", null);
+		this.identifier= getOption(cmd, "bid", null);
 		this.programname = getOption(cmd, "programid", null);
 		this.unpad = cmd.hasOption("pad");
 		this.runid = getOption(cmd, "runid", -1);
@@ -73,11 +74,12 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		//options.addOption(new Option("r","remaploc", false, "Remap read Locations with ACE file (only if upload already run)"));
 		options.addOption(new Option("c","uploadcontigs", false, "Uploads a contigs from ACE (run separate from uploadreads)"));
 		options.addOption(new Option("m","mapcontigs", false, "Map Contigs to reads, reads should have been uploaded, can be done in parallel with -c"));
-		options.addOption(new Option("id","identifier", true, "Uses this as the base identifier for contigs, such as CLCbio_Contig_"));
+		options.addOption(new Option("bid","identifier", true, "Uses this as the base identifier for contigs, such as CLCbio_Contig_"));
 		//options.addOption(new Option("species", false, "Drags out the default Species")); //TODO
 		//options.addOption(new Option("taxon_id", false, "Set the taxon_id"));
 		options.addOption(new Option("pid","programname", true, "Set Assembly program namer"));
-		options.addOption(new Option("runid", true, "Preset the run id (id column from db), this bypasses questioning if multiple assemblies with same assembler program"));
+		options.addOption(new Option("runid", true, "Preset the run id (id column from db), " +
+				"this bypasses questioning if multiple assemblies with same assembler program (for mapping use assembly run id)"));
 		options.removeOption("w");
 		options.removeOption("o");
 	}
@@ -115,6 +117,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 					fasta = new Fasta();
 					fasta.setFastq(true);
 					FastaParser parser = new FastaParser(fasta);
+					
 					try{
 						logger.debug("Parsing....");
 						if(fastq)parser.parseFastq(file);
@@ -129,6 +132,14 @@ public class Task_Assembly2DB extends TaskXTwIO{
 						if(biodatabase_id < 0){
 							logger.error("Nobiodatase entry for Eddie");
 							return;
+						}
+						if(runid < 1){
+							this.runid=spawnRun(manager);
+							if(this.runid < 1){
+								logger.error("Failed to add run, please add Run with " +
+										"-task runDatabase or with mysql client");
+								return;
+							}
 						}
 						int count =0;
 						int size = fasta.getNoOfSequences();
@@ -199,7 +210,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 							return;
 						}
 						else logger.debug("Biodatabase id: "+biodatabase_id);
-						if(runid == -1){
+						if(runid < 1){
 							runid = Tools_Assembly.getSingleRunId(manager, programname, BioSQLExtended.assembly);
 							logger.debug("Run id for " + this.programname+ " returned as " + runid);
 							if(runid == -1){
@@ -234,6 +245,10 @@ public class Task_Assembly2DB extends TaskXTwIO{
 											//NOTE: Name is truncated here to fit in, this will need to be taken into account elsewhere!
 											if(name.length() > 35)name = name.substring(0, 30)+"..." + count;
 											if(!bs.addSequence(manager.getCon(), biodatabase_id, null, name, this.identifier+count, this.identifier+count, "CONTIG", record.getContigName(), 0, seq, BioSQL.alphabet_DNA))break;
+											if(runid > 0){
+												int bioentry = bs.getBioEntry(manager.getCon(), this.identifier+count, this.identifier+count, biodatabase_id);
+												manager.getBioSQLXT().addRunBioentry(manager, bioentry, this.runid);
+											}
 											if(mapcontigs && mapping){
 												mapping = mapReads(record, manager, this.identifier+count, biodatabase_id, runid, count);
 												if(!mapping){
@@ -278,7 +293,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 				logger.debug("Running map contigs to reads...");
 				this.checklist.complete();
 				if(this.runid < 0){
-					logger.error("Run id is required for mapping contigs, " +
+					logger.error("Assembly run id is required for mapping contigs, " +
 							"please find the run id of this assembly" +
 							", see -task runDatabase -list");
 					return;
@@ -316,6 +331,24 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	    setCompleteState(TaskState.FINISHED);
 	}
 	
+	private int spawnRun(DatabaseManager manager) {
+		Run run = new Run();
+		run.setRuntype(Run.RUNTYPE_454);
+		run.setDate(Tools_System.getDateNowAsDate());
+		logger.warn("No run ID set, we will need to make it now");
+		logger.warn("Run IDs can be made with -task runDatabase before running this");
+		String s = ui.requiresUserInput("Source?",
+				"Enter Source of Reads eg 'E.coli cDNA library', 'Digestive gland' etc..");
+		run.setSource(s);
+		s = ui.requiresUserInput("Program/Machine?",
+				"Enter Program or machine used ie 454 GS FLX, 'Ion Torrent' etc...: ");
+		run.setProgram(s);
+		s = ui.requiresUserInput("Comment?",
+				"Any comment you want to add ie '454 Sequencing on Drosophila larvae'?");
+		run.setComment(s);
+		return run.uploadRun(manager);	
+	}
+
 	public boolean mapReads(ACERecord record, DatabaseManager manager, String identifier, int biodatabase_id, int runid, int count){
 		BioSQL bs = manager.getBioSQL();
 		BioSQLExtended bsxt = manager.getBioSQLXT();

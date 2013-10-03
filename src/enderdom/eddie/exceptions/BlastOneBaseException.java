@@ -1,6 +1,6 @@
-package enderdom.eddie.bio.homology.blast;
+package enderdom.eddie.exceptions;
 
-public class BlastOneBaseException extends Exception {
+public class BlastOneBaseException extends GeneralBlastException {
 
 	private static final long serialVersionUID = 3715321712535273493L;
 	

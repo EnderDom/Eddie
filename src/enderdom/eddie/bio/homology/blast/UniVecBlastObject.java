@@ -1,10 +1,12 @@
 package enderdom.eddie.bio.homology.blast;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
+import enderdom.eddie.exceptions.EddieGenericException;
 import enderdom.eddie.tools.Tools_String;
 
 public class UniVecBlastObject extends BasicBlastObject implements Comparator<UniVecRegion> {
@@ -24,26 +26,26 @@ public class UniVecBlastObject extends BasicBlastObject implements Comparator<Un
 	LinkedList<UniVecRegion> regions;
 	boolean reversed = false;
 	
-	public UniVecBlastObject(BlastParser parser) throws Exception{
+	public UniVecBlastObject(BlastParser parser) throws IOException{
 		super(parser);
 	}
 	
-	public boolean requiresTrim() throws Exception{
+	public boolean requiresTrim()throws EddieGenericException{
 		if(regions == null)generateRegions();
 		return this.getNoOfHits() != 0;
 	}
 	
-	public UniVecRegion getRegion(int i) throws Exception{
+	public UniVecRegion getRegion(int i)throws EddieGenericException{
 		if(regions == null)generateRegions();
 		return this.regions.get(i);
 	}
 	
-	public List<UniVecRegion> getRegions() throws Exception{
+	public List<UniVecRegion> getRegions()throws EddieGenericException{
 		if(regions == null)generateRegions();
 		return this.regions;
 	}
 	
-	public int regionCount() throws Exception{
+	public int regionCount() throws EddieGenericException{
 		if(regions == null)generateRegions();
 		return regions.size();
 	}	
@@ -54,7 +56,7 @@ public class UniVecBlastObject extends BasicBlastObject implements Comparator<Un
 	 * 
 	 * @throws Exception
 	 */
-	public void generateRegions() throws Exception{
+	public void generateRegions() throws EddieGenericException{
 		regions = new LinkedList<UniVecRegion>();
 		int laststart = 0;
 		int lastend =0;
@@ -81,7 +83,7 @@ public class UniVecBlastObject extends BasicBlastObject implements Comparator<Un
 						}
 					}
 					else{
-						throw new Exception("Failed to parse hit_start/hit_stop/Hsp_bit-score tag(s)");
+						throw new EddieGenericException("Failed to parse hit_start/hit_stop/Hsp_bit-score tag(s)");
 					}
 				}
 			}
@@ -129,7 +131,7 @@ public class UniVecBlastObject extends BasicBlastObject implements Comparator<Un
 	 * Inverts the order of regions
 	 * @throws Exception
 	 */
-	public void reverseOrder() throws Exception{
+	public void reverseOrder() throws EddieGenericException{
 		if(regions == null)generateRegions();
 		reversed = true;
 		Collections.sort(regions, this);

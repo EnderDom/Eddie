@@ -14,6 +14,15 @@ import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 
 /**
+ * 
+ * 
+ * This is awful and needs to be got rid :(
+ * 
+ * Just use a basic file list or name list instead
+ */
+
+
+/**
  * A helper class
  * receives messages to save
  * to file with the idea that
