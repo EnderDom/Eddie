@@ -18,6 +18,7 @@ import enderdom.eddie.tools.comparators.StringLength_Comparator;
 public abstract class Tools_String {
 	
 	public static int fastadefaultlength = 60;
+	private static int counter = 0;
 	
 	public static Integer parseString2Int(String sun){
 		try{
@@ -301,6 +302,16 @@ public abstract class Tools_String {
 			return b.toString();
 		}
 		else return name=name.substring(0,x);
+	}
+	
+	public static char getCounter(){
+		counter++;
+		switch(counter){ 
+			case 0: return '\\';
+			case 1: return '|';
+			case 2: return '/';
+			default:counter=-1; return '-';
+		}
 	}
 
 	
