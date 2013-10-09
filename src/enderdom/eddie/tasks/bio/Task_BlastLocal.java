@@ -165,7 +165,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 			}
 		}
 		else{
-			logger.error("Null input/output");
+			logger.error("Null input/output, input is " + input+ " and output is "+output);
 		}
 		logger.debug("Finished running task @ "+Tools_System.getDateNow());
 	    setCompleteState(TaskState.FINISHED);

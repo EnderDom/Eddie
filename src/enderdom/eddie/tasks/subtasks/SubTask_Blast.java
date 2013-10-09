@@ -71,7 +71,7 @@ public class SubTask_Blast extends BasicTask{
 				File ou = new File(outfolder+Tools_System.getFilepathSeparator()+outname+".xml");
 				if(!remote)logger.debug("Running blast locally...");			
 				else logger.debug("Running remote blast...");
-				Tools_Blast.runLocalBlast(temp, this.blast_prg, this.blast_bin, this.blast_db, this.blastparams,ou, this.remote);
+				Tools_Blast.runLocalBlast(temp, this.blast_prg, this.blast_bin, this.blast_db, this.blastparams,ou, this.remote, false);
 				check.update(id);
 				temp.delete();
 			}
