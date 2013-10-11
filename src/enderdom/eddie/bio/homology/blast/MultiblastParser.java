@@ -182,7 +182,7 @@ public class MultiblastParser implements Iterator<BlastObject>, BlastParser{
 	
 	public void close(){
 		if(this.stream != null){
-			try{	
+			try{
 				this.stream.close();
 			}
 			catch(XMLStreamException e){

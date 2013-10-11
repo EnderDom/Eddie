@@ -196,8 +196,8 @@ public class Task_Blast extends TaskXT{
 					counts[6]+=j[2];
 				}
 				if(run_id <0 && helper.getRun_id() > 0){
-					logger.debug("Run id was not available so was created and set as " + run_id);
 					this.run_id = helper.getRun_id();
+					logger.debug("Run id was not available so was created and set as " + run_id);
 				}
 				else if(run_id < 0) throw new Exception("No run ID attributed to blast");
 				
@@ -212,6 +212,9 @@ public class Task_Blast extends TaskXT{
 				errfiles.push(file.getName());
 			}
 		}
+		parse.close();
+		parse = null;
+		file = null;
 		manager.getBioSQL().largeInsert(manager.getCon(), false);
 	}
 	
