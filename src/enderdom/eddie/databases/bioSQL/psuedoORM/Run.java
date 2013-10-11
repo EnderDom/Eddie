@@ -155,8 +155,7 @@ public class Run {
 	public int uploadRun(DatabaseManager manager){
 		if(manager.getBioSQLXT().setRun(manager, Tools_System.util2sql(getDate()),
 				getRuntype(), getParent_id(), getProgram(), getVersion(), getDbname(), getSource(), getParams(), getComment())){
-			this.run_id = manager.getLastInsert(); //This could get me into trouble.... :(
-			return run_id;
+			return manager.getBioSQLXT().getRunIdFromInfo(manager, this);
 		}
 		else{
 			return -1;
@@ -204,13 +203,16 @@ public class Run {
 	}
 
 	//TODO move this to the mysql stuff
-	public int getSimilarRun(DatabaseManager manager, int date_range) {
+	@Deprecated
+	public int getSimilarRun(DatabaseManager manager, int date_range){
 		int ret = -1;
 		long range =date_range;
+		
 		try{
-			ResultSet set = manager.runSQLQuery("SELECT run_id, run_date FROM run WHERE " +
-				"runtype='"+this.runtype+"' AND program='"+this.program+"' AND version='"+
-				this.version+"' AND dbname='"+this.dbname+"' AND params='"+this.params+"'");
+			String query = "SELECT run_id, run_date FROM run WHERE " +
+					"runtype='"+this.runtype+"' AND program='"+this.program+"' AND version='"+
+					this.version+"' AND dbname='"+this.dbname+"' AND params='"+this.params+"'";
+			ResultSet set = manager.runSQLQuery(query);
 			while(set.next()){
 				java.sql.Date r = set.getDate("run_date");
 				long l = Math.abs(r.getTime()-this.getDate().getTime());

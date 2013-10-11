@@ -33,6 +33,7 @@ public class Task_AddRunData extends TaskXT{
 		run.setDbname(getOption(cmd, "dbname", null));
 		run.setParams(getOption(cmd, "params", null));
 		run.setComment(getOption(cmd, "comment", null));
+		run.setSource(getOption(cmd, "source", null));
 		String s = getOption(cmd, "parent", null);
 		run.setParent_id(s==null?null:Tools_String.parseString2Int(s));
 		this.list = cmd.hasOption("list");
@@ -48,6 +49,7 @@ public class Task_AddRunData extends TaskXT{
 		options.addOption(new Option("dbn","dbname", true, "Database name, if any database used"));
 		options.addOption(new Option("par","params", true, "Program parameters"));
 		options.addOption(new Option("com","comment", true, "Any additional comments about the run"));
+		options.addOption(new Option("src","source", true, "Source of the Data eg \"Arabiopsis root cDNA\""));
 		options.addOption(new Option("list", false, "List all current run programs/versions/dbs"));
 	}
 

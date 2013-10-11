@@ -129,6 +129,8 @@ public interface BioSQLExtended {
 	public String[][] getUniqueStringFields(DatabaseManager manager, String[] fields, String table);
 	
 	public Run getRun(DatabaseManager manager, int run_id);
+	
+	public int getRunIdFromInfo(DatabaseManager manager, Run r);
 
 	/**
 	 * Returns a 4xn matrix

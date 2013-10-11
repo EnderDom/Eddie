@@ -19,6 +19,7 @@ import enderdom.eddie.databases.bioSQL.interfaces.BioSQL;
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
 import enderdom.eddie.databases.manager.DatabaseManager;
+import enderdom.eddie.exceptions.EddieGenericException;
 
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
@@ -50,6 +51,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	private String programname;
 	private int runid;
 	private BioFileType type;
+	private boolean notrim;
 	
 	public Task_Assembly2DB(){
 		setHelpHeader("--This is the Help Message for the Assemby2DB Task--");
@@ -65,6 +67,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		this.programname = getOption(cmd, "programid", null);
 		this.unpad = cmd.hasOption("pad");
 		this.runid = getOption(cmd, "runid", -1);
+		this.notrim = cmd.hasOption("notrim");
 	}
 	
 	public void buildOptions(){
@@ -80,6 +83,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		options.addOption(new Option("pid","programname", true, "Set Assembly program namer"));
 		options.addOption(new Option("runid", true, "Preset the run id (id column from db), " +
 				"this bypasses questioning if multiple assemblies with same assembler program (for mapping use assembly run id)"));
+		options.addOption(new Option("noTrim", false, "Don't trim names to whitespace"));
 		options.removeOption("w");
 		options.removeOption("o");
 	}
@@ -117,6 +121,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 					fasta = new Fasta();
 					fasta.setFastq(true);
 					FastaParser parser = new FastaParser(fasta);
+					if(!notrim)parser.setShorttitles(true);
 					
 					try{
 						logger.debug("Parsing....");
@@ -140,6 +145,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 										"-task runDatabase or with mysql client");
 								return;
 							}
+							else logger.debug("Run ID assigned as " + runid);
 						}
 						int count =0;
 						int size = fasta.getNoOfSequences();
@@ -163,10 +169,12 @@ public class Task_Assembly2DB extends TaskXTwIO{
 								logger.error("An error occured uploading " + o.getIdentifier());
 								break;
 							}
-							if(runid > 0){
-								int bioentry = bs.getBioEntry(manager.getCon(), o.getIdentifier(), this.identifier+count, biodatabase_id);
-								manager.getBioSQLXT().addRunBioentry(manager, bioentry, this.runid);
+							int bioentry = bs.getBioEntry(manager.getCon(), this.identifier+count, o.getIdentifier(), biodatabase_id);
+							if(bioentry < 0){
+								throw new EddieGenericException("Failed to retrieve bioentry id after adding sequence");
 							}
+							manager.getBioSQLXT().addRunBioentry(manager, bioentry, this.runid);
+							
 							count++;
 							if(count%10000 == 0){
 								System.out.println();
@@ -331,6 +339,15 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	    setCompleteState(TaskState.FINISHED);
 	}
 	
+	/*
+	 * TODO Known bug means that run.uploadRun seems to fail
+	 * here. I don't know why as it works fine when being called
+	 * in Task_AddRunData. There is evidently some issue I'm missing
+	 * but I don't currently have time to look into it.
+	 * For now just upload a Run with Task_AddRunData separately and use
+	 * those...  :S
+	 * 
+	 */
 	private int spawnRun(DatabaseManager manager) {
 		Run run = new Run();
 		run.setRuntype(Run.RUNTYPE_454);

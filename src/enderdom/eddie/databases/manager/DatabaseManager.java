@@ -93,6 +93,7 @@ public class DatabaseManager {
 			isOpen = false;
 			this.password = null;//Flush pass, as most of the time this is the problem
 		}
+		
 		return this.con;
 	}
 
@@ -184,6 +185,8 @@ public class DatabaseManager {
 		if(this.biosql == null){
 			if(this.dbtype.equals("mysql")){
 				this.biosql = new MySQL_BioSQL();
+				//commit everything left in buffer
+				this.biosql.largeInsert(this.getCon(), false);
 			}
 			else if(this.dbtype.equals("postgresql")){
 				//this.biosql = new PgSQL_BioSQL();

@@ -47,6 +47,7 @@ public class MySQL_Extended implements BioSQLExtended{
 	private PreparedStatement readFromContigGET;
 	private PreparedStatement contigFromReadGET;
 	private PreparedStatement bioSequenceGET;
+	private PreparedStatement runGET;
 	
 	//SETS
 	private PreparedStatement assemblySET;
@@ -542,13 +543,50 @@ public class MySQL_Extended implements BioSQLExtended{
 			Statement st = manager.getCon().createStatement();
 			set = st.executeQuery(sql);
 			while(set.next()){
-				return new Run(run_id, set.getDate(1) ,set.getString(2), set.getInt(3), set.getString(4), set.getString(5), set.getString(6), set.getString(7),set.getString(8), set.getString(9));
+				return new Run(run_id, set.getDate(1) ,set.getString(2), set.getInt(3),
+						set.getString(4), set.getString(5), set.getString(6), 
+						set.getString(7),set.getString(8), set.getString(9));
 			}
 			return null;
 		}
 		catch(SQLException sq){
 			logger.error("Failed to get run id." , sq);
 			return null;
+		}
+	}
+	
+	
+	public int getRunIdFromInfo(DatabaseManager manager, Run r){
+		String sql = "SELECT run_id FROM run WHERE run_date=?, runtype=?, parent_id=?, program=?, version=?, dbname=?, source=?, params=?, comment=?";
+		try{
+			runGET = MySQL_BioSQL.init(manager.getCon(), runGET, sql);
+			runGET.setDate(1, Tools_System.util2sql(r.getDate()));
+			runGET.setString(2, r.getRuntype());
+			if(r.getParent_id() != null) runGET.setInt(3, r.getParent_id());
+			else runGET.setNull(3, Types.INTEGER);
+			if(r.getProgram() != null) runGET.setString(4, r.getProgram());
+			else runGET.setNull(4, Types.VARCHAR);
+			if(r.getVersion() != null) runGET.setString(5, r.getVersion());
+			else runGET.setNull(5, Types.VARCHAR);
+			if(r.getDbname() != null) runGET.setString(6, r.getDbname());
+			else runGET.setNull(6, Types.VARCHAR);
+			if(r.getSource() != null) runGET.setString(7, r.getSource());
+			else runGET.setNull(7, Types.VARCHAR);
+			if(r.getParams() != null) runGET.setString(8, r.getParams());
+			else runGET.setNull(8, Types.VARCHAR);
+			if(r.getComment() != null) runGET.setString(9, r.getComment());
+			else runGET.setNull(9, Types.VARCHAR);
+			
+			set = runGET.executeQuery();
+			
+			while(set.next()){
+				return set.getInt("run_id");
+			}
+			return -1;
+		}
+		catch(SQLException e){
+			logger.error("Failed to retrieve Run id with "+runGET.toString(), e);
+			return -1;
 		}
 	}
 	
@@ -620,7 +658,7 @@ public class MySQL_Extended implements BioSQLExtended{
 	public boolean updateDbxref(DatabaseManager manager, int bioentry_id,  int dbxref_id, int run_id, Double evalue, Integer score, Integer dbxref_startpos,
 		Integer dbxref_endpos,Integer dbxref_frame, Integer bioentry_startpos,Integer bioentry_endpos,Integer bioentry_frame, int hit, int hsp){
 
-		String sql = "UPDATE bioentry_dbxref SET evalue=?,score=?, dbxref_startpos=?,"+
+		String sql = "UPDATE bioentry_dbxref SET evalue=?, score=?, dbxref_startpos=?,"+
 				" dbxref_endpos=?, dbxref_frame=?, bioentry_startpos=?, bioentry_endpos=?, bioentry_frame=?" +
 				" WHERE bioentry_id=? AND dbxref_id=? AND run_id=? AND rank=? AND hit_no=?";
 		
@@ -680,8 +718,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			else runSET.setString(9, comment);
 			
 			logger.trace("Attempting to execute " + runSET.toString());
-			runSET.execute();
-			return true;
+			return runSET.execute();
 		}
 		catch(SQLException sq){
 			logger.error("Failed to insert run", sq);
