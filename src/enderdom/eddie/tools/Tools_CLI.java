@@ -22,7 +22,7 @@ public class Tools_CLI {
 		System.out.println(message+":");
 		Scanner sc = new Scanner(System.in);
 		String answer;
-		answer = sc.next();
+		answer = sc.nextLine();
 		return answer;
 	}
 	
