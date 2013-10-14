@@ -32,7 +32,7 @@ public class Task_Blast extends TaskXT{
 
 	private boolean fuzzynames;
 	private String input;
-	private File[] files;
+	private String[] files;
 	private boolean[] ignore;
 	DatabaseManager manager;
 	private String dbname;
@@ -104,7 +104,7 @@ public class Task_Blast extends TaskXT{
 			try{
 				manager.open();
 				if(in.isDirectory()){
-					files = in.listFiles();
+					files = in.list();
 					ignore = new boolean[files.length];
 					if(checklist.inRecovery()){
 						trimRecovered(checklist.getData());
@@ -117,11 +117,11 @@ public class Task_Blast extends TaskXT{
 								counts[0]++;
 							}
 							catch(Exception e){
-								logger.error("Failed to parse file " + files[i].getName(),e);
+								logger.error("Failed to parse file " + files[i],e);
 								counts[1]++;
-								errfiles.push(files[i].getName());
+								errfiles.push(files[i]);
 							}
-							checklist.update(files[i].getName());
+							checklist.update(files[i]);
 							if(counts[1] > 1 && !ignoreErrors){
 								throw new Exception("Errors in blast upload, quitting, run with -ignore to skip errors");
 							}
@@ -147,7 +147,7 @@ public class Task_Blast extends TaskXT{
 				}
 				else{
 					try{
-						uploadBlastFile(in);
+						uploadBlastFile(input);
 					}
 					catch(Exception e){
 						logger.error("Failed to parse file " + in.getName(),e);
@@ -167,8 +167,8 @@ public class Task_Blast extends TaskXT{
 	    setCompleteState(TaskState.FINISHED);
 	}
 	
-	public void uploadBlastFile(File file) throws Exception{
-		MultiblastParser parse = new MultiblastParser(MultiblastParser.BASICBLAST, file);
+	public void uploadBlastFile(String filename) throws Exception{
+		MultiblastParser parse = new MultiblastParser(MultiblastParser.BASICBLAST, new File(filename));
 		manager.getBioSQL().largeInsert(manager.getCon(), true);
 		int parsecount=0;
 		while(parse.hasNext()){
@@ -188,7 +188,7 @@ public class Task_Blast extends TaskXT{
 				int[] j = helper.upload2BioSQL(manager, fuzzynames, dbname, force);
 				if(j[0] == -1){
 					counts[5]++;
-					errfilesmin.push(file.getName());
+					errfilesmin.push(filename);
 				}
 				else{
 					counts[3]+=j[0];
@@ -209,19 +209,18 @@ public class Task_Blast extends TaskXT{
 			}
 			else{
 				counts[1]++;
-				errfiles.push(file.getName());
+				errfiles.push(filename);
 			}
 		}
 		parse.close();
 		parse = null;
-		file = null;
 		manager.getBioSQL().largeInsert(manager.getCon(), false);
 	}
 	
 	private void trimRecovered(String[] data){
 		for(int i =0;i < data.length; i++){
 			for(int j =0; j < files.length; j++){
-				if(data[i].equals(files[i].getName())){
+				if(data[i].equals(files[i])){
 					this.ignore[i] = true;
 					break;
 				}
