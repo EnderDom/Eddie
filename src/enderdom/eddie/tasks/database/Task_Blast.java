@@ -61,7 +61,6 @@ public class Task_Blast extends TaskXT{
 	
 	public void parseArgsSub(CommandLine cmd){
 		dbname= getOption(cmd, "dbname", null);
-		dbname = getOption(cmd, "input", null);
 		fuzzynames = cmd.hasOption("fuzzy");
 		force = cmd.hasOption("force");
 		run_id = getOption(cmd, "run_id", -1);
