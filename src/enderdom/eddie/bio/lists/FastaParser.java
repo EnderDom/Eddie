@@ -64,7 +64,7 @@ public class FastaParser{
 					sequence = new StringBuilder();
 					quality = new StringBuilder();
 				}
-				if(this.shorttitles && line.indexOf(" ") != 0){
+				if(this.shorttitles && line.indexOf(" ") > 1){
 					title = line.substring(1, line.indexOf(" "));
 				}
 				else{
@@ -139,7 +139,7 @@ public class FastaParser{
 					sequence = new StringBuilder();
 					count++;
 				}
-				if(this.shorttitles && line.indexOf(" ") != 0){
+				if(this.shorttitles && line.indexOf(" ") > 1){
 					title = line.substring(1, line.indexOf(" "));
 				}
 				else{
