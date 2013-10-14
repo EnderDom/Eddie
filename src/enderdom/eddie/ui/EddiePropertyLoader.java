@@ -157,7 +157,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				"FILES_XML","PREFLNF","TESTDATADIR",
 				"DBTYPE","DBDRIVER","DBHOST", 
 				"DBNAME", "DBUSER","UNI_VEC_DB", "UNIVEC_URL",
-				"IPRSCAN_BIN", "GRACEFUL_SHUTDOWN"
+				"IPRSCAN_BIN", "COLORSTDOUT"
 				 };
 		defaultvalues = new String[]{
 				propfile.getParent(), "5", "1", 
@@ -165,7 +165,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				"null", defaultlnf, propfile.getParent()+slash+"test", 
 				"mysql","com.mysql.jdbc.Driver", "Localhost", 
 				DatabaseManager.default_database, "user", "","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec",
-				"/usr/bin/iprscan", "FALSE"
+				"/usr/bin/iprscan", "TRUE"
 				};
 		defaulttooltips = new String[]{
 				"Default Workspace directory", "Number of threads for core tasks (High CPU)", 
@@ -175,7 +175,9 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				"Database host url", "Database name for Eddie", "Database user name", "Location of uni vec database",
 				"Default URL to download the fasta for univec data", 
 				"Location of local iprscan binary", 
-				"For example set to true will lead to shutdown only after current batch of blasts, say, are completed"
+				"Logging and standard output can be colored if set to true, " +
+				"will need to delete old log4j.properties though"
+				
 		};
 		
 		if(defaultkeys.length != defaultvalues.length)System.out.println("You're being derp Dominic :(");

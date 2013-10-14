@@ -44,20 +44,23 @@ public class MultiblastParser implements Iterator<BlastObject>, BlastParser{
 	public static int UNIVEC =1;
 	public Hashtable<String, String> parserCache;
 	String filename;
+	FileInputStream streamwrapper;
 	XMLInputFactory2 factory;
 	
 	public MultiblastParser(int blastype, File xml) throws XMLStreamException, IOException, GeneralBlastException, BlastOneBaseException{
 		this.filename=xml.getName();
 		parserCache = new Hashtable<String, String>();
+		streamwrapper = new FileInputStream(xml);
 		this.blasttype = blastype;
 		factory = (XMLInputFactory2) XMLInputFactory2.newInstance();
 	    factory.setProperty(XMLInputFactory2.SUPPORT_DTD, Boolean.FALSE);
-		stream = (XMLStreamReader2) factory.createXMLStreamReader(new FileInputStream(xml));
+		stream = (XMLStreamReader2) factory.createXMLStreamReader(streamwrapper);
 		parseNext();
 	}
 
 	public MultiblastParser(int blastype, InputStream str)throws IOException, XMLStreamException, GeneralBlastException, BlastOneBaseException{
 		parserCache = new Hashtable<String, String>();
+		streamwrapper = null;
 		this.blasttype = blastype;
 		factory = (XMLInputFactory2) XMLInputFactory2.newInstance();
 	    factory.setProperty(XMLInputFactory2.SUPPORT_DTD, Boolean.FALSE);
@@ -181,13 +184,14 @@ public class MultiblastParser implements Iterator<BlastObject>, BlastParser{
 	}
 	
 	public void close(){
-		if(this.stream != null){
-			try{
-				this.stream.close();
-			}
-			catch(XMLStreamException e){
-				logger.warn("Failed to close XML stream",e);
-			}
+		try{
+			if(this.streamwrapper != null)this.streamwrapper.close();
+			if(stream != null)this.stream.close();
+		}
+		catch(XMLStreamException e){
+			logger.warn("Failed to close XML stream",e);
+		} catch (IOException e) {
+			logger.warn("Failed to close stream politely", e);
 		}
 	}
 

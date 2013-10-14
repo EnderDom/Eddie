@@ -7,7 +7,6 @@ import java.util.Stack;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.commons.io.FilenameUtils;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
