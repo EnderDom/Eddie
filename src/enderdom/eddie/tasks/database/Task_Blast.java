@@ -7,6 +7,7 @@ import java.util.Stack;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.apache.commons.io.FilenameUtils;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 
@@ -104,6 +105,8 @@ public class Task_Blast extends TaskXT{
 				manager.open();
 				if(in.isDirectory()){
 					files = in.list();
+					String p = Tools_System.getFilepathSeparator();
+					for(int i =0; i < files.length;i++)files[i]=in.getPath()+p+files[i];
 					ignore = new boolean[files.length];
 					if(checklist.inRecovery()){
 						trimRecovered(checklist.getData());
