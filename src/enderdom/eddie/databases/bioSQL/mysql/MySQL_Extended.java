@@ -1181,7 +1181,7 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 	
 	public int getHitCountwReadCount(DatabaseManager manager, int run_id,double evalue, int hit_no, int hsp_no, int score){
-		StringBuffer sql = new StringBuffer("SELECT COUNT(read_bioentry_id) AS COUNT FROM bioentry_dbxref " +
+		StringBuffer sql = new StringBuffer("SELECT COUNT(DISTINCT(read_bioentry_id)) AS COUNT FROM bioentry_dbxref " +
 				"INNER JOIN assembly ON bioentry_dbxref.bioentry_id=assembly.contig_bioentry_id WHERE ");
 		LinkedList<String> s =  new LinkedList<String>();
 		if(run_id > 0 )s.add("bioentry_dbxref.run_id="+run_id+" ");

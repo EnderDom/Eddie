@@ -376,6 +376,19 @@ public class Task_Assembly2DB extends TaskXTwIO{
 			for(String read : record.getReadNames()){
 				int read_id = bs.getBioEntry(manager.getCon(), read, read, biodatabase_id);
 				if(read_id < 0){
+					int slim = read.lastIndexOf("_");
+					String newread=null;
+					if(slim !=-1){
+						newread = read.substring(0, slim);
+						read_id = bs.getBioEntry(manager.getCon(), newread, newread, biodatabase_id);
+						if(read_id > 0){
+							System.out.println();
+							logger.warn("Read "+read+"  not found, but "
+									+newread+" was, probably duplicate use of read");
+						}
+					}
+				}
+				if(read_id < 0){
 					logger.error("Oh dear read "+ read + " does not seem to be in the database we cannot map reads not int the db");
 					return false;
 				}

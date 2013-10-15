@@ -511,9 +511,6 @@ public class Fasta extends BasicSequenceList implements FastaHandler{
 		}
 		return type;
 	}
-
-		
-	
 	
 	public void dump(){
 		logger.warn("Dumping sequences, this should only be done in the event that a save failed");

@@ -22,8 +22,6 @@ import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_NCBI;
 
 /*
- * This is a fucking mess
- * 
  * This is moving towards just a mess
  */
 public class Task_Fasta_Tools extends TaskXTwIO{
