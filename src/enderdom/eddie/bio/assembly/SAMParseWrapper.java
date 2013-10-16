@@ -1,6 +1,7 @@
 package enderdom.eddie.bio.assembly;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,13 +22,15 @@ import enderdom.eddie.bio.sequence.Contig;
 import enderdom.eddie.bio.sequence.GenericSequence;
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.bio.sequence.SequenceObject;
+import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 
 public class SAMParseWrapper {
 	
 	public static Logger logger = Logger.getRootLogger();
 	private static int sambase = 1;
 
-	public static ArrayList<Contig> parseSAM(File f, File f2) throws Exception {
+	public static ArrayList<Contig> parseSAM(File f, File f2) throws FileNotFoundException, 
+		UnsupportedTypeException, IOException {
 		//Loading SAM file
 		logger.info("Loading SAM file...");
 		SAMFileReader reader = new SAMFileReader(IoUtil.openFileForReading(f));

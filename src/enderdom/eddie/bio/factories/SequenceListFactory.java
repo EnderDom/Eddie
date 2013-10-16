@@ -20,7 +20,7 @@ public class SequenceListFactory {
 		
 	}
 			
-	public static SequenceList getSequenceList(File i) throws Exception{
+	public static SequenceList getSequenceList(File i) throws FileNotFoundException, UnsupportedTypeException, IOException{
 		BioFileType filetype = Tools_Bio_File.detectFileType(i.getName());
 		Fasta f;
 		switch(filetype){
@@ -69,7 +69,7 @@ public class SequenceListFactory {
 	 * @throws UnsupportedTypeException
 	 * @throws IOException
 	 */
-	public static SequenceList getSequenceList(String input) throws FileNotFoundException, UnsupportedTypeException, IOException, Exception{
+	public static SequenceList getSequenceList(String input) throws FileNotFoundException, UnsupportedTypeException, IOException{
 		File i = new File(input);
 		if(!i.exists()){
 			throw new FileNotFoundException("File: " + input + " does not exist");
@@ -82,7 +82,8 @@ public class SequenceListFactory {
 		}
 	}
 	
-	public static SequenceList getSequenceList(File i, File i2)throws FileNotFoundException, UnsupportedTypeException, IOException{
+	public static SequenceList getSequenceList(File i, File i2)throws FileNotFoundException, UnsupportedTypeException, 
+			IOException{
 		BioFileType f1 = Tools_Bio_File.detectFileType(i.getName());
 		BioFileType f2 = Tools_Bio_File.detectFileType(i2.getName());
 		if((f1 == BioFileType.FASTA && f2 == BioFileType.QUAL) || (f1 == BioFileType.QUAL && f2 == BioFileType.FASTA)){
@@ -100,7 +101,8 @@ public class SequenceListFactory {
 		}
 	}
 	
-	public static SequenceList getSequenceList(String input, String input2) throws FileNotFoundException, UnsupportedTypeException, IOException{
+	public static SequenceList getSequenceList(String input, String input2) throws FileNotFoundException,
+			UnsupportedTypeException, IOException{
 		File i = new File(input);
 		File i2 = new File(input2);
 		if(!i.exists() || !i2.exists()){
@@ -143,7 +145,7 @@ public class SequenceListFactory {
 	}
 	
 	
-	public static ContigList getContigList(String input, String input2) throws Exception{
+	public static ContigList getContigList(String input, String input2) throws IOException, UnsupportedTypeException{
 		File i = new File(input);
 		File i2 = new File(input2);
 		if(!i.exists() || !i2.exists()){
@@ -157,7 +159,7 @@ public class SequenceListFactory {
 		}
 	}
 	
-	public static ContigList getContigList(File i) throws Exception{
+	public static ContigList getContigList(File i) throws IOException, UnsupportedTypeException {
 		BioFileType filetype = Tools_Bio_File.detectFileType(i.getName());
 		switch(filetype){
 			case ACE:
@@ -171,7 +173,7 @@ public class SequenceListFactory {
 	}
 
 	
-	public static ContigList getContigList(File i, File i2) throws Exception{
+	public static ContigList getContigList(File i, File i2) throws IOException, UnsupportedTypeException{
 		BioFileType filetype = Tools_Bio_File.detectFileType(i.getName());
 		BioFileType filetype2 = Tools_Bio_File.detectFileType(i2.getName());
 		switch(filetype){

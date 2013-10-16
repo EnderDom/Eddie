@@ -36,12 +36,12 @@ public class ClustalAlign extends BasicSequenceList{
 	protected File file;
 	public static int namespacemax=10;
 	
-	public ClustalAlign(File file, BioFileType type) throws UnsupportedTypeException, Exception{
+	public ClustalAlign(File file, BioFileType type) throws UnsupportedTypeException, IOException{
 		this.file=file;		
 		loadFile(file, type);
 	}
 	
-	public ClustalAlign(InputStream in, BioFileType type) throws UnsupportedTypeException, Exception{
+	public ClustalAlign(InputStream in, BioFileType type) throws UnsupportedTypeException, IOException{
 		loadFile(in, type);
 	}
 	

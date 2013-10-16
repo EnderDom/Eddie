@@ -29,12 +29,12 @@ public class BasicContigList implements ContigList{
 		records = list;
 	}
 
-	public BasicContigList(File f, BioFileType t) throws Exception{
+	public BasicContigList(File f, BioFileType t) throws IOException, UnsupportedTypeException{
 		records = new ArrayList<Contig>();
 		load(f, t);
 	}
 	
-	public BasicContigList(File f, File f2, BioFileType t) throws Exception{
+	public BasicContigList(File f, File f2, BioFileType t) throws IOException, UnsupportedTypeException{
 		records = new ArrayList<Contig>();
 		load(f, f2, t);
 	}
@@ -121,7 +121,7 @@ public class BasicContigList implements ContigList{
 		else throw new UnsupportedTypeException("Biofile type is not ACEm do not support " + t.toString());
 	}
 
-	public void load(File f, BioFileType t) throws Exception {
+	public void load(File f, BioFileType t) throws IOException, UnsupportedTypeException {
 		if(t == BioFileType.ACE){
 			parseAce(f);
 		}
@@ -133,7 +133,7 @@ public class BasicContigList implements ContigList{
 		else throw new UnsupportedTypeException("Biofile type is not ACE or SAM, do not support " + t.toString());
 	}
 
-	public void load(File f, File f2, BioFileType t) throws Exception {
+	public void load(File f, File f2, BioFileType t) throws IOException, UnsupportedTypeException {
 		if(t == BioFileType.ACE){
 			parseAce(f);
 		}
