@@ -44,7 +44,6 @@ public class Task_Assembly2DB extends TaskXTwIO{
 
 	private boolean uploadreads;
 	private boolean uploadcontigs;
-	
 	private boolean mapcontigs;
 	private boolean unpad;
 	private String identifier;
@@ -108,10 +107,10 @@ public class Task_Assembly2DB extends TaskXTwIO{
 			}
 			if(uploadreads){
 				logger.debug("Running upload reads...");
+				if(input == null)logger.fatal("Input is null!");
 				File file = new File(this.input);
 				if(file.exists()){					
 					try{
-						
 						logger.debug("Starting checklist");					
 						super.checklist.start(this.args);
 						
@@ -172,8 +171,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 								}
 								System.out.print("\r"+(count) + " Sequences    ");
 								checklist.update(o.getIdentifier());
-							}
-							
+							}		
 						}
 						System.out.println();
 						logger.debug("Uploading cached statements...");
