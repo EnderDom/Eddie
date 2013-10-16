@@ -424,11 +424,11 @@ public class MySQL_Extended implements BioSQLExtended{
 		}		
 	}
 	
-	public int getBioEntryId(DatabaseManager manager, String name, boolean fuzzy, int biodatabase_id){
+	public int getBioEntryId(DatabaseManager manager, String name, boolean fuzzy, int biodatabase_id, int runid){
 		int entry =-1;
-		entry = manager.getBioSQL().getBioEntry(manager.getCon(), name, name, biodatabase_id);
+		entry = manager.getBioSQL().getBioEntry(manager.getCon(), name, name, biodatabase_id, runid);
 		if(entry == -1){
-			entry = manager.getBioSQL().getBioEntrywName(manager.getCon(), name);
+			entry = manager.getBioSQL().getBioEntrywName(manager.getCon(), name, runid);
 		}
 		//This could lead to unexpected results, probably 
 		//should be removed if to be used by anyone other than me
@@ -438,7 +438,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			if(s == null)return entry;
 			else{
 				for(String sa : s){
-					entry = manager.getBioSQL().getBioEntrywName(manager.getCon(), sa);
+					entry = manager.getBioSQL().getBioEntrywName(manager.getCon(), sa, runid);
 					if(entry != -1){
 						logger.info("Retrieve data based on name " + sa);
 						break;

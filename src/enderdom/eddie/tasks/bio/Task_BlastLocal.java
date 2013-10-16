@@ -39,7 +39,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 	private String[] filter;
 	private int filterlen;
 	String outputform;
-
+	private int length;
 	
 	public Task_BlastLocal(){
 		/*
@@ -76,6 +76,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 				err = true;
 			}
 		}
+		length = getOption(cmd, "l", -1);
 		//quickblast = getOption(cmd, "q", null);
 	}
 	
@@ -108,6 +109,7 @@ public class Task_BlastLocal extends TaskXTwIO{
 		options.addOption(new Option("clip", false, "Clip output file name to whitespace in input"));
 		options.addOption(new Option("remote", false, "Run remote blasts in parallel with local (WARN: Will send NCBI blast jobs)"));
 		options.addOption(new Option("f", "filter", true, "Blast only the sequences in this file, need to be the same as in fasta, 1 per line no spaces"));
+		options.addOption(new Option("l", "length", true, "Only blast sequences of this length"));
 		//options.addOption(new Option("q", "quickBlast", true, "Pull a sequence from the bioSQL databse and blast it."));
 	}
 	
@@ -212,11 +214,15 @@ public class Task_BlastLocal extends TaskXTwIO{
 	public void runAutoBlast(File output, SequenceList seqs, Checklist list){
 		Stack<String> stack = new Stack<String>();
 		int i=0;
+		int j=0;
 		for(String s : sequences.keySet()){
-			stack.push(s);
-			i++;
+			if(sequences.getSequence(s).getLength() > length){
+				stack.push(s);
+				i++;
+			}
+			else j++;
 		}
-		logger.debug(i+" sequences to blast, adding to TaskManager");
+		logger.debug(i+" sequences to blast,"+j+" skipped as too small, adding to TaskManager");
 		SubTask_Blast blast = new SubTask_Blast(seqs, stack, false, list, this.output, this.clipname);
 		blast.setBlastDetails(blast_prg, blast_bin, blast_db, blast_params);
 		blast.setCore(true);

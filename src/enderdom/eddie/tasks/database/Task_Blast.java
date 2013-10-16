@@ -1,14 +1,22 @@
 package enderdom.eddie.tasks.database;
 
 import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Properties;
 import java.util.Stack;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
+import enderdom.eddie.exceptions.BlastOneBaseException;
+import enderdom.eddie.exceptions.EddieDBException;
+import enderdom.eddie.exceptions.EddieGenericException;
+import enderdom.eddie.exceptions.GeneralBlastException;
 
 import enderdom.eddie.bio.homology.blast.BlastObject;
 import enderdom.eddie.bio.homology.blast.BlastxHelper;
@@ -40,9 +48,10 @@ public class Task_Blast extends TaskXT{
 	//filecount, fileerror, fileskip, hspcount-up, hspcount-skip, hspcount-error
 	private int[] counts;
 	private boolean force;
-	Stack<String> errfiles;
-	Stack<String> errfilesmin;
+	private Stack<String> errfiles;
+	private Stack<String> errfilesmin;
 	private boolean ignoreErrors;
+	private int ass_run_id;
 	
 	public Task_Blast(){
 		setHelpHeader("--This is the Help Message for the the blast Task--");
@@ -65,12 +74,14 @@ public class Task_Blast extends TaskXT{
 		force = cmd.hasOption("force");
 		run_id = getOption(cmd, "run_id", -1);
 		input = getOption(cmd, "i", null);
+		ass_run_id = getOption(cmd, "a", -1);
 		//date = getOption(cmd, "date", null);
 	}
 	
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("r","run_id", true, "Force set run id"));
+		options.addOption(new Option("a","assemnly_run_id", true, "Assembly run id, needed if contig names are the same as other assemblies"));
 		//options.addOption(new Option("date", true, "Set date when blast was run*, use format "+Tools_System.SQL_DATE_FORMAT+", [RECOMMENDED]"));
 		options.addOption(new Option("i","input", true, "Input folder or file"));
 		options.addOption(new Option("force", false, "Force blast records to be updated"));
@@ -88,6 +99,7 @@ public class Task_Blast extends TaskXT{
 		return this.options;
 	}
 
+	//All The Exceptions!!
 	public void run(){
 		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running Blast Upload Task @ "+Tools_System.getDateNow());
@@ -102,6 +114,7 @@ public class Task_Blast extends TaskXT{
 			manager = ui.getDatabaseManager(password);
 			try{
 				manager.open();
+				setCompleteState(TaskState.ERROR);
 				if(in.isDirectory()){
 					files = in.list();
 					String p = Tools_System.getFilepathSeparator();
@@ -113,18 +126,31 @@ public class Task_Blast extends TaskXT{
 					int i=0;
 					for(;i < files.length; i++){
 						if(!ignore[i]){
+							boolean err =false;
 							try{
 								uploadBlastFile(files[i]);
 								counts[0]++;
 							}
-							catch(Exception e){
+							catch(BlastOneBaseException e){
 								logger.error("Failed to parse file " + files[i],e);
+								err=true;
+							} catch (XMLStreamException e) {
+								logger.error("Failed to parse file " + files[i],e);
+								err=true;
+							} catch (IOException e) {
+								logger.error("Failed to parse file " + files[i],e);
+								err=true;
+							} catch (GeneralBlastException e) {
+								logger.error("Failed to parse file " + files[i],e);
+								err=true;
+							}
+							if(err){
 								counts[1]++;
 								errfiles.push(files[i]);
 							}
 							checklist.update(files[i]);
 							if(counts[1] > 1 && !ignoreErrors){
-								throw new Exception("Errors in blast upload, quitting, run with -ignore to skip errors");
+								throw new EddieGenericException("Errors in blast upload, quitting, run with -ignore to skip errors");
 							}
 						}
 						else{
@@ -144,31 +170,49 @@ public class Task_Blast extends TaskXT{
 					//Also log this information, for nohup and whatnot
 					logger.info("Blast Parsing: " + "Parsed:"+counts[0]+" Skipped:"+counts[2]+" Errored:"+counts[1]);
 					logger.info("Uploaded:"+counts[3]+" Updated:"+counts[6]+" Skipped:"+counts[4]+" Errored:"+counts[5]);
-
+					
 				}
 				else{
 					try{
 						uploadBlastFile(input);
 					}
-					catch(Exception e){
+					catch(EddieGenericException e){
 						logger.error("Failed to parse file " + in.getName(),e);
-						setCompleteState(TaskState.ERROR);
-						return;
+					} catch (BlastOneBaseException e) {
+						logger.error("Failed to parse file " + in.getName(),e);
+					} catch (XMLStreamException e) {
+						logger.error("Failed to parse file " + in.getName(),e);
+					} catch (IOException e) {
+						logger.error("Failed to parse file " + in.getName(),e);
+					} catch (GeneralBlastException e) {
+						logger.error("Failed to parse file " + in.getName(),e);
 					}
 				}
 				checklist.complete();
+				setCompleteState(TaskState.FINISHED);
 			}
-			catch(Exception e){
-				logger.error("Failed database or somethinG",e);
-				setCompleteState(TaskState.ERROR);
-				return;
+			catch(EddieGenericException e){
+				logger.error("Too many errors occured, run with -ignore or fix issue",e);
+			} catch (InstantiationException e) {
+				logger.error("Couldn't create class ",e);
+			} catch (IllegalAccessException e) {
+				logger.error("Database manager failed to initialise",e);
+			} catch (ClassNotFoundException e) {
+				logger.error("Database manager failed to initialise",e);
+			} catch (SQLException e) {
+				logger.error("Database manager failed to initialise",e);
+			} catch (EddieDBException e) {
+				logger.error("Eddie database exception, probably incorrect database version ",e);
+			} catch (InterruptedException e) {
+				logger.error("Database failure",e);
 			}
 		}
 		logger.debug("Finished running Blast Upload Task @ "+Tools_System.getDateNow());
-	    setCompleteState(TaskState.FINISHED);
 	}
 	
-	public void uploadBlastFile(String filename) throws Exception{
+	public void uploadBlastFile(String filename) throws EddieGenericException, BlastOneBaseException,
+			XMLStreamException, IOException, GeneralBlastException{
+		
 		MultiblastParser parse = new MultiblastParser(MultiblastParser.BASICBLAST, new File(filename));
 		manager.getBioSQL().largeInsert(manager.getCon(), true);
 		int parsecount=0;
@@ -181,6 +225,16 @@ public class Task_Blast extends TaskXT{
 				}
 				if(run_id > 0){
 					helper.setRun_id(run_id);
+					if(ass_run_id > 0){
+						helper.setParent_runID(ass_run_id);
+					}
+					else if(ignoreErrors){
+						logger.warn("No assembly id set");
+					}
+					else{
+						throw new EddieGenericException("Assembly run id needs to be set" +
+								", if you don't want to set then use -g option");
+					}
 				}
 				else{
 					helper.setDate(Tools_System.getDateNow(Tools_System.SQL_DATE_FORMAT));
@@ -200,7 +254,7 @@ public class Task_Blast extends TaskXT{
 					this.run_id = helper.getRun_id();
 					logger.debug("Run id was not available so was created and set as " + run_id);
 				}
-				else if(run_id < 0) throw new Exception("No run ID attributed to blast");
+				else if(run_id < 0) throw new EddieGenericException("No run ID attributed to blast");
 				
 				parsecount++;
 				if(parsecount%1000==0){

@@ -136,6 +136,8 @@ public interface BioSQL {
 	 * 
 	 * 
 	 */
+	public int getBioEntry(Connection con, String identifier, String accession, int biodatabase, int runid);
+	
 	public int getBioEntry(Connection con, String identifier, String accession, int biodatabase);
 	
 	public Ontology getOntology(Connection con, String name);
@@ -158,6 +160,8 @@ public interface BioSQL {
 	 * @return
 	 */
 	public int getBioEntrywName(Connection con, String name);
+	
+	public int getBioEntrywName(Connection con, String name, int runid);
 	
 	/**
 	 * 

@@ -81,7 +81,7 @@ public class InterproMatch{
 				logger.error("Failed to pair term name "+parent.getName() +
 						" (id:"+parent.getTerm_id()+") and dbxref for " + identifier +" id("+acc+")");
 			}
-			int bioen = manager.getBioSQL().getBioEntry(manager.getCon(), parent.getProtein(), parent.getProtein(), manager.getEddieDBID());
+			int bioen = manager.getBioSQL().getBioEntry(manager.getCon(), parent.getProtein(), parent.getProtein(), manager.getEddieDBID(),-1);
 			if(bioen > 0){
 				for(int i=0; i < locations.size(); i++){
 					InterproLocation loc = locations.get(i);

@@ -268,7 +268,7 @@ public class Checklist {
 	}
 	
 	
-	public String[] getData(){
+	public LinkedList<String> getDataList(){
 		LinkedList<String> strs = new LinkedList<String>();
 		try{
 			System.out.println(task.getPath());
@@ -294,7 +294,11 @@ public class Checklist {
 		catch(Exception e){
 			logger.error("Failed dividing tags",e);
 		}
-		return strs.toArray(new String[0]);
+		return strs;
+	}
+	
+	public String[] getData(){
+		return getDataList().toArray(new String[0]);
 	}
 	
 	public boolean closeLastTask(){

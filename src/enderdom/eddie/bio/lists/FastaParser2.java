@@ -184,6 +184,7 @@ public class FastaParser2 implements Iterator<SequenceObject>{
 		if(builder.length() > 0){
 			setCurrent(fastq);
 			reader.close();
+			builder.setLength(0);
 		}
 	}
 	

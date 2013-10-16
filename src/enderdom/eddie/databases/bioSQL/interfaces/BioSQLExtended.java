@@ -152,7 +152,7 @@ public interface BioSQLExtended {
 	
 	public int getContigFromRead(DatabaseManager manager, int bioentry_id, int run_id);
 
-	public int getBioEntryId(DatabaseManager manager, String name, boolean fuzzy, int biodatabase_id);
+	public int getBioEntryId(DatabaseManager manager, String name, boolean fuzzy, int biodatabase_id, int runid);
 	
 	/**
 	 * @see #addBioentryDbxrefCols(Connection)

@@ -210,7 +210,8 @@ public class MySQL_BioSQL implements BioSQL {
 		boolean added = addBioEntry(con, biodatabase, taxon_id, name,
 				accession, identifier, division, description, version);
 		if (added) {
-			int bio_entry = getBioEntry(con, identifier, accession, biodatabase);
+			int bio_entry = getBioEntry(con, identifier, accession,
+					biodatabase, -1);
 			if (bio_entry != -1) {
 				return addBiosequence(con, version, seq.length(), alphabet,
 						seq, bio_entry);
@@ -443,17 +444,25 @@ public class MySQL_BioSQL implements BioSQL {
 			return null;
 		}
 	}
+	
+	public int getBioEntry(Connection con, String identifier, String accession,	int biodatabase) { 
+		return getBioEntry(con, identifier, accession, biodatabase, -1);
+	}
 
 	public int getBioEntry(Connection con, String identifier, String accession,
-			int biodatabase) {
+			int biodatabase, int runid) {
 		PreparedStatement stmt = null;
 
 		int entry = -1;
+		String where1 = "WHERE identifier=? AND biodatabase_id=?";
+		String where2 = "WHERE accession=? AND biodatabase_id=?";
+		String init = "SELECT bioentry_id FROM bioentry ";
+		init += runid > 0 ? "INNER JOIN bioentry_run USING(bioentry_id) " : "";
+		String run = runid > 0 ? " AND run_id=" + runid : "";
+
 		try {
-			BioEntryGET1 = init(con, BioEntryGET1,
-					"SELECT bioentry_id FROM bioentry WHERE identifier=? AND biodatabase_id=?");
-			BioEntryGET2 = init(con, BioEntryGET2,
-					"SELECT bioentry_id FROM bioentry WHERE accession=? AND biodatabase_id=?");
+			BioEntryGET1 = init(con, BioEntryGET1, init + where1 + run);
+			BioEntryGET2 = init(con, BioEntryGET2, init + where2 + run);
 
 			if (identifier == null) {
 				stmt = BioEntryGET2;
@@ -482,24 +491,30 @@ public class MySQL_BioSQL implements BioSQL {
 		return entry;
 	}
 
-	public int getBioEntrywName(Connection con, String name) {
+	public int getBioEntrywName(Connection con, String name, int runid) {
 		int entry = -1;
+		String init = "SELECT bioentry_id FROM bioentry ";
+		init+=runid >0 ? "INNER JOIN bioentry_run USING(bioentry_id) " : ""; 
+		String where = "WHERE name='"+ name + "'";
+		where += runid > 0 ? " AND run_id="+runid : "";
+		
 		try {
 			Statement st = con.createStatement();
-			ResultSet set = st
-					.executeQuery("SELECT bioentry_id FROM bioentry WHERE name='"
-							+ name + "'");
+			ResultSet set = st.executeQuery(init+where);
 			while (set.next()) {
 				entry = set.getInt("bioentry_id");
 				if (set.next())
-					logger.warn("Other ids are available with this name "
-							+ name);
+					logger.warn("Other ids are available with this name "+ name);
 				break;
 			}
 		} catch (SQLException sq) {
 			logger.error("Failed to get bioentry id with name: " + name, sq);
 		}
 		return entry;
+	}
+	
+	public int getBioEntrywName(Connection con, String name) {
+		return getBioEntrywName(con, name, -1);
 	}
 
 	public int getBioEntryRelationship(Connection con, int bioentry_object_id,
@@ -851,7 +866,7 @@ public class MySQL_BioSQL implements BioSQL {
 			TermRelationshipSET = init(con, TermRelationshipSET,
 					"INSERT INTO term_relationship (subject_term_id, predicate_term_id, "
 							+ "object_term_id, ontology_id) VALUES (?,?,?,?)");
-			
+
 			TermRelationshipSET.setInt(1, subject_id);
 			TermRelationshipSET.setInt(2, predicate_id);
 			TermRelationshipSET.setInt(3, object_id);
@@ -859,7 +874,8 @@ public class MySQL_BioSQL implements BioSQL {
 			TermRelationshipSET.execute();
 			return true;
 		} catch (SQLException sq) {
-			logger.error("Failed to add Term relationship with subject " + subject_id +" and object "+ object_id, sq);
+			logger.error("Failed to add Term relationship with subject "
+					+ subject_id + " and object " + object_id, sq);
 			return false;
 		}
 	}
@@ -886,14 +902,17 @@ public class MySQL_BioSQL implements BioSQL {
 		}
 	}
 
-	public boolean addDbxrefTerm(Connection con, int dbxref_id, int term_id, Integer rank) {
+	public boolean addDbxrefTerm(Connection con, int dbxref_id, int term_id,
+			Integer rank) {
 		try {
 			DbxrefTermSET = init(con, DbxrefTermSET,
 					"INSERT IGNORE INTO term_dbxref (dbxref_id, term_id, rank) VALUES (?,?,?)");
 			DbxrefTermSET.setInt(1, dbxref_id);
 			DbxrefTermSET.setInt(2, term_id);
-			if(rank == null)DbxrefTermSET.setNull(3, Types.INTEGER);
-			else DbxrefTermSET.setInt(3, rank); 
+			if (rank == null)
+				DbxrefTermSET.setNull(3, Types.INTEGER);
+			else
+				DbxrefTermSET.setInt(3, rank);
 			DbxrefTermSET.execute();
 			return true;
 		} catch (SQLException sq) {
@@ -903,13 +922,14 @@ public class MySQL_BioSQL implements BioSQL {
 	}
 
 	public void largeInsert(Connection con, boolean start) {
-		try{
+		try {
 			Statement st = con.createStatement();
-			if(start)st.execute("START TRANSACTION;");
-			else st.execute("COMMIT;");
+			if (start)
+				st.execute("START TRANSACTION;");
+			else
+				st.execute("COMMIT;");
 			st.close();
-		}
-		catch(SQLException sq){
+		} catch (SQLException sq) {
 			logger.error("Failed in method large insert", sq);
 		}
 	}

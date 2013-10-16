@@ -37,7 +37,8 @@ public class BlastxHelper {
 	 * blast run had the same settings, lump these together,
 	 * alternatively -1 (settable by Task)    
 	 */
-	public int date_range = 21; 
+	public int date_range = 21;
+	private int parent_run; 
 	
 	
 	public BlastxHelper(BlastObject o){
@@ -217,7 +218,7 @@ public class BlastxHelper {
 		}
 		if(contig_id < 1){
 			nom = blastx.getBlastTagContents("BlastOutput_query-def");
-			contig_id =  manager.getBioSQLXT().getBioEntryId(manager, nom, fuzzy, manager.getEddieDBID());
+			contig_id =  manager.getBioSQLXT().getBioEntryId(manager, nom, fuzzy, manager.getEddieDBID(), parent_run);
 		}
 		if(contig_id < 1){
 			logger.error("Failed to upload to mysql as query-ID for "+nom+", was not found in database");
@@ -267,5 +268,9 @@ public class BlastxHelper {
 				return values;
 			}
 		}
+	}
+
+	public void setParent_runID(int ass_run_id) {
+		this.parent_run = ass_run_id;
 	}
 }

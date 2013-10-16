@@ -116,7 +116,7 @@ public class Task_dbTools extends TaskXT{
 		manager.open();
 		SequenceList list;
 		if(contig != null && output != null){
-			int m = manager.getBioSQLXT().getBioEntryId(manager, contig, true, manager.getEddieDBID());
+			int m = manager.getBioSQLXT().getBioEntryId(manager, contig, true, manager.getEddieDBID(), -1);
 			if(m == -1){
 				Logger.getRootLogger().error("Failed to retrieve the ID for contig " + contig);
 			}

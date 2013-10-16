@@ -2,6 +2,7 @@ package enderdom.eddie.tasks.database;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -10,8 +11,7 @@ import org.apache.log4j.Logger;
 
 import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.assembly.ACERecord;
-import enderdom.eddie.bio.lists.Fasta;
-import enderdom.eddie.bio.lists.FastaParser;
+import enderdom.eddie.bio.lists.FastaParser2;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.SequenceObject;
 
@@ -50,7 +50,6 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	private String identifier;
 	private String programname;
 	private int runid;
-	private BioFileType type;
 	private boolean notrim;
 	
 	public Task_Assembly2DB(){
@@ -78,7 +77,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		options.addOption(new Option("c","uploadcontigs", false, "Uploads a contigs from ACE (run separate from uploadreads)"));
 		options.addOption(new Option("m","mapcontigs", false, "Map Contigs to reads, reads should have been uploaded, can be done in parallel with -c"));
 		options.addOption(new Option("bid","identifier", true, "Uses this as the base identifier for contigs, such as CLCbio_Contig_"));
-		//options.addOption(new Option("species", false, "Drags out the default Species")); //TODO
+		//options.addOption(new Option("species", false, "Drags out the default Species"));
 		//options.addOption(new Option("taxon_id", false, "Set the taxon_id"));
 		options.addOption(new Option("pid","programname", true, "Set Assembly program namer"));
 		options.addOption(new Option("runid", true, "Preset the run id (id column from db), " +
@@ -92,7 +91,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		return this.options;
 	}
 	
-	//TODO implement use of the checklist
+	//TODO checklist messed up due to largeInsert
 	public void run(){
 		setCompleteState(TaskState.STARTED);
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
@@ -110,25 +109,14 @@ public class Task_Assembly2DB extends TaskXTwIO{
 			if(uploadreads){
 				logger.debug("Running upload reads...");
 				File file = new File(this.input);
-				if(file.exists()){
-					type = Tools_Bio_File.detectFileType(input);
-					boolean fastq = false;
-					if(type == BioFileType.FASTQ){
-						fastq=true;
-						logger.debug("File is detected as Fastq");
-					}
-					Fasta fasta = new Fasta();
-					fasta = new Fasta();
-					fasta.setFastq(true);
-					FastaParser parser = new FastaParser(fasta);
-					if(!notrim)parser.setShorttitles(true);
-					
+				if(file.exists()){					
 					try{
-						logger.debug("Parsing....");
-						if(fastq)parser.parseFastq(file);
-						else parser.parseFasta(file);
 						
+						logger.debug("Starting checklist");					
 						super.checklist.start(this.args);
+						
+						logger.debug("Initialising Parser...");
+						FastaParser2 parser = new FastaParser2(file, !notrim, false, false);
 						
 						BioSQL bs = manager.getBioSQL();
 						int biodatabase_id = manager.getEddieDBID();
@@ -138,6 +126,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 							logger.error("Nobiodatase entry for Eddie");
 							return;
 						}
+						logger.debug("Retrieving Run id");
 						if(runid < 1){
 							this.runid=spawnRun(manager);
 							if(this.runid < 1){
@@ -148,52 +137,48 @@ public class Task_Assembly2DB extends TaskXTwIO{
 							else logger.debug("Run ID assigned as " + runid);
 						}
 						int count =0;
-						int size = fasta.getNoOfSequences();
-						logger.info("Fasta contains " + size + " sequences" );
+						HashSet<String> seqs = null;
+						int rem = 0;
+						
 						if(checklist.inRecovery()){
 							logger.debug("Checklist is in recovery, trimming completed data");
-							String[] seqs = checklist.getData();
-							int rem = 0;
-							for(int i =0 ; i < seqs.length;i++){
-								fasta.remove(seqs[i]);
-								rem++;
-							}
-							logger.info(rem+" sequences skipped due to already uploaded");
+							seqs = new HashSet<String>(checklist.getDataList());
 						}
-						logger.debug("Cacheing....");
 						
-						while(fasta.hasNext()){
-							SequenceObject o = fasta.next();
-							if(!bs.addSequence(manager.getCon(), biodatabase_id, null, o.getIdentifier(), o.getIdentifier(),
-									this.identifier+count, "READ", null, 0, o.getSequence(), BioSQL.alphabet_DNA)){
-								logger.error("An error occured uploading " + o.getIdentifier());
-								break;
+						while(parser.hasNext()){
+							SequenceObject o = parser.next();
+							if(seqs != null && seqs.contains(o.getIdentifier())){
+								rem++;
+								logger.info(rem+" sequences skipped due to already uploaded");
 							}
-							int bioentry = bs.getBioEntry(manager.getCon(), this.identifier+count, o.getIdentifier(), biodatabase_id);
-							if(bioentry < 0){
-								throw new EddieGenericException("Failed to retrieve bioentry id after adding sequence");
+							else{
+								if(!bs.addSequence(manager.getCon(), biodatabase_id, null, o.getIdentifier(), o.getIdentifier(),
+										this.identifier+(count+rem), "READ", null, 0, o.getSequence(), BioSQL.alphabet_DNA)){
+									logger.error("An error occured uploading " + o.getIdentifier());
+									break;
+								}
+								int bioentry = bs.getBioEntry(manager.getCon(), this.identifier+(count+rem), o.getIdentifier(), biodatabase_id);
+								if(bioentry < 0){
+									throw new EddieGenericException("Failed to retrieve bioentry id after adding sequence");
+								}
+								manager.getBioSQLXT().addRunBioentry(manager, bioentry, this.runid);
+								
+								count++;
+								if(count%10000 == 0){
+									System.out.println();
+									logger.debug("Uploading cached statements...");
+									bs.largeInsert(manager.getCon(),false);
+									bs.largeInsert(manager.getCon(),true);
+								}
+								System.out.print("\r"+(count) + " Sequences    ");
+								checklist.update(o.getIdentifier());
 							}
-							manager.getBioSQLXT().addRunBioentry(manager, bioentry, this.runid);
 							
-							count++;
-							if(count%10000 == 0){
-								System.out.println();
-								logger.debug("Uploading cached statements...");
-								bs.largeInsert(manager.getCon(),false);
-								bs.largeInsert(manager.getCon(),true);
-							}
-							System.out.print("\r"+(count) + " of " +size + "       ");
-							checklist.update(o.getIdentifier());
 						}
 						System.out.println();
 						logger.debug("Uploading cached statements...");
 						bs.largeInsert(manager.getCon(),false);
-						if(count != size){
-							logger.error("Failed to upload all the sequences, seqs uploaded: " +count + " in fasta " + size);
-						}
-						else{
-							checklist.complete();
-						}
+						checklist.complete();
 					}
 					catch(IOException io){
 						logger.error("Failed to parse fasta/q file "  +input, io);

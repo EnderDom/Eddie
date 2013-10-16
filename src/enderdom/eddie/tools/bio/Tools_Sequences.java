@@ -217,7 +217,7 @@ public class Tools_Sequences {
 			try{
 				manager.open();
 				logger.debug("Database connection open...");
-				int bioentry = manager.getBioSQLXT().getBioEntryId(manager, contig, fuzzy, manager.getEddieDBID());
+				int bioentry = manager.getBioSQLXT().getBioEntryId(manager, contig, fuzzy, manager.getEddieDBID(), -1);
 				if(bioentry > 0){
 					seq = new GenericSequence(manager.getBioSQL().getSequence(manager.getCon(), bioentry));				
 					manager.close();

@@ -13,6 +13,7 @@ import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
 import enderdom.eddie.databases.bioSQL.mysql.MySQL_BioSQL;
 import enderdom.eddie.databases.bioSQL.mysql.MySQL_Extended;
 import enderdom.eddie.databases.general.mysql.Tools_SQL_MySQL;
+import enderdom.eddie.exceptions.EddieDBException;
 //import databases.bioSQL.pgsql.PgSQL_BioSQL;
 //import databases.bioSQL.pgsql.PgSQL_Extended;
 import enderdom.eddie.tasks.internal.Task_DatabaseUpdate;
@@ -56,7 +57,9 @@ public class DatabaseManager {
 		this.password = pass;
 	}
 	
-	public boolean open() throws Exception{
+	public boolean open() throws InstantiationException,
+		IllegalAccessException, ClassNotFoundException, 
+			SQLException, EddieDBException, InterruptedException{
 		if(openDefaultConnection() != null){
 			return true;
 		}
@@ -65,7 +68,8 @@ public class DatabaseManager {
 		}
 	}
 	
-	public synchronized Connection openConnection(String dbtype, String driver, String dbhost, String dbname, String dbuser, String dbpass) throws Exception{
+	public synchronized Connection openConnection(String dbtype, String driver, String dbhost, String dbname, String dbuser, String dbpass) 
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, EddieDBException, InterruptedException{
 		this.dbtype=dbtype;
 		if(driver==null || driver.length() == 0){
 			if(dbtype.equals("mysql"))driver="com.mysql.jdbc.Driver";
@@ -107,11 +111,13 @@ public class DatabaseManager {
 		return defaultsets;
 	}
 	
-	public Connection openDefaultConnection() throws Exception{
+	public Connection openDefaultConnection() throws InstantiationException, 
+		IllegalAccessException, ClassNotFoundException, SQLException, EddieDBException, InterruptedException{
 		return openDefaultConnection(getDatabaseSettings(this.loader));
 	}
 	
-	private Connection openDefaultConnection(String[] mydb) throws Exception{
+	private Connection openDefaultConnection(String[] mydb) throws InstantiationException, 
+		IllegalAccessException, ClassNotFoundException, SQLException, EddieDBException, InterruptedException{
 		if(password == null)password = ui.requiresUserPassword("Password for access to "+mydb[2] + " database for user " + mydb[4], "Password Request");
 		if(password != null && password.length() > 0){
 			return this.openConnection(mydb[0], mydb[1], mydb[2], mydb[3], mydb[4], password);
@@ -119,7 +125,9 @@ public class DatabaseManager {
 		else return null;
 	}
 	
-	public void setDatabase(String s) throws Exception{
+	public void setDatabase(String s) throws InstantiationException,
+		IllegalAccessException, ClassNotFoundException, SQLException,
+			EddieDBException, InterruptedException{
 		this.database = s;
 		openDefaultConnection();
 	}
@@ -136,7 +144,7 @@ public class DatabaseManager {
 		return this.con;
 	}
 	
-	public boolean createNewDatabase(String dbname) throws Exception{
+	public boolean createNewDatabase(String dbname){
 		try {
 			if(this.dbtype.equals("mysql")){
 				Statement st = con.createStatement();
@@ -262,7 +270,7 @@ public class DatabaseManager {
 		}
 	}
 	
-	public synchronized boolean checkVersion() throws Exception{
+	public synchronized boolean checkVersion() throws EddieDBException, InterruptedException{
 		double vers = this.getBioSQLXT().getDatabaseVersion(this);
 		if(vers < databaseversion && vers != -1){
 			UserResponse i = ui.requiresUserYNI("Do you want to update this version of the database " +
@@ -279,13 +287,13 @@ public class DatabaseManager {
 						UserResponse s = ui.requiresUserYNI("Update has timed out. Continue waiting? (y/n)", "Update timeout");
 						if(s == UserResponse.YES) timeout = 120000;
 						else {
-							throw new Exception("Timeout expired error thrown");
+							throw new EddieDBException("Timeout expired error thrown");
 						}
 					}
 				}
 			}
 			else if(i == UserResponse.NO){
-				throw new Exception("User chose not continue the task, error thrown to break thread");
+				throw new EddieDBException("User chose not continue the task, error thrown to break thread");
 			}
 			else{
 				logger.warn("User chose to ignore warnings. Problems may ensue");

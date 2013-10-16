@@ -104,7 +104,7 @@ public class DBContigMap {
 			if(eddiedbid < 0)return false;
 		}
 		return (this.contig_id=manager.getBioSQL().getBioEntry(manager.getCon(),
-				contig_name, null, eddiedbid)) > -1; 
+				contig_name, null, eddiedbid,-1)) > -1; 
 	}
 	
 
