@@ -23,6 +23,8 @@ import enderdom.eddie.exceptions.EddieGenericException;
 
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
+import enderdom.eddie.tools.Tools_CLI;
+import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Assembly;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
@@ -50,11 +52,15 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	private String programname;
 	private int runid;
 	private boolean notrim;
+	private int[] limits;
+	//Counts uploads
+	private int mysqlcount;
+	private static int uponcount =5000; 
 	
 	public Task_Assembly2DB(){
 		setHelpHeader("--This is the Help Message for the Assemby2DB Task--");
 	}
-	
+
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
 		uploadreads=cmd.hasOption("uploadreads");
@@ -66,6 +72,25 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		this.unpad = cmd.hasOption("pad");
 		this.runid = getOption(cmd, "runid", -1);
 		this.notrim = cmd.hasOption("notrim");
+		String numbs = getOption(cmd, "T", null);
+		if(numbs!=null){
+			Integer i = null;
+			if(numbs.contains(",")){
+				String[] ns = numbs.split(",");
+				limits = new int[ns.length];
+				for(int j =0;j < limits.length;j++){
+					i=Tools_String.parseString2Int(ns[j].trim());
+					if(i != null)limits[j]=i;
+				}
+			}
+			else if((i=Tools_String.parseString2Int(numbs.trim())) !=null){
+				limits = new int[]{i};
+			}
+			else{
+				logger.error("Failed to parse numbs should be something like: 1,3,4 but was like "+ numbs);
+			}
+			logger.debug("Parsed "+limits.length+" run id limits");
+		}
 	}
 	
 	public void buildOptions(){
@@ -75,15 +100,32 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		//options.addOption(new Option("r","remaploc", false, "Remap read Locations with ACE file (only if upload already run)"));
 		options.addOption(new Option("c","uploadcontigs", false, "Uploads a contigs from ACE (run separate from uploadreads)"));
 		options.addOption(new Option("m","mapcontigs", false, "Map Contigs to reads, reads should have been uploaded, can be done in parallel with -c"));
-		options.addOption(new Option("bid","identifier", true, "Uses this as the base identifier for contigs, such as CLCbio_Contig_"));
+		options.addOption(new Option("T","limitRunIDs", true, "Retrieve contigs with these run ids from upload contig selection, separate with , " +
+				"(This is necessary in case names in ace file are not unique)"));
+		options.addOption(new Option("bid","identifier", true, "Uses this as the base identifier for contigs when using -c , such as CLCbio_Contig_"));
 		//options.addOption(new Option("species", false, "Drags out the default Species"));
 		//options.addOption(new Option("taxon_id", false, "Set the taxon_id"));
-		options.addOption(new Option("pid","programname", true, "Set Assembly program namer"));
-		options.addOption(new Option("runid", true, "Preset the run id (id column from db), " +
-				"this bypasses questioning if multiple assemblies with same assembler program (for mapping use assembly run id)"));
+		options.addOption(new Option("pid","programname", true, "Set Assembly program name, needed if no run id set"));
+		options.addOption(new Option("runid", true, "Map assemblies to this runid. For normal assembly mapping, runid and limitRunIDs should be the same."));
 		options.addOption(new Option("noTrim", false, "Don't trim names to whitespace"));
 		options.removeOption("w");
 		options.removeOption("o");
+	}
+	
+	public void printHelpMessage(){
+		String newline = Tools_System.getNewline(); 
+		String example = newline+newline+"Examples:"+newline;
+		example+="To upload source read file (note run id is the run id for the sequencing run): "+newline;
+		example+="     -task sqluploader -i source_reads.fasta -u -r 1"+newline;
+		example+="To upload contigs from an assembly which used above reads: "+newline;
+		example+="     -task sqluploader -i assemble_reads.ace -u -r 2 -bid Unique_Contig_Name_ "+newline;
+		example+="To map contigs to reads: "+newline;
+		example+="     -task sqluploader -i assemble_reads.ace -m -r 2 -T 2 "+newline;
+		example+="To map a meta assembly made from multiple other assemblies : "+newline;
+		example+="     -task sqluploader -i meta_assembly.ace -m -r 5 -T 2,3,4 -bid Meta_Contig_"+newline;
+		example+="NOTE: Meta assembly run is 5 and the assemblies it utilised are runs 2,3 and 4," +
+				" which need to have been previously uploaded";
+		Tools_CLI.printHelpMessage(getHelpHeader(), example, this.options);
 	}
 	
 	public Options getOptions(){
@@ -135,7 +177,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 							}
 							else logger.debug("Run ID assigned as " + runid);
 						}
-						int count =0;
+						mysqlcount =0;
+						int count=1;
 						HashSet<String> seqs = null;
 						int rem = 0;
 						
@@ -152,7 +195,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 							}
 							else{
 								if(!bs.addSequence(manager.getCon(), biodatabase_id, null, o.getIdentifier(), o.getIdentifier(),
-										this.identifier+(count+rem), "READ", null, 0, o.getSequence(), BioSQL.alphabet_DNA)){
+										this.identifier+(count +rem), "READ", null, 0, o.getSequence(), BioSQL.alphabet_DNA)){
 									logger.error("An error occured uploading " + o.getIdentifier());
 									break;
 								}
@@ -161,15 +204,16 @@ public class Task_Assembly2DB extends TaskXTwIO{
 									throw new EddieGenericException("Failed to retrieve bioentry id after adding sequence");
 								}
 								manager.getBioSQLXT().addRunBioentry(manager, bioentry, this.runid);
-								
+								mysqlcount++;
 								count++;
-								if(count%10000 == 0){
+								
+								if(mysqlcount%uponcount == 0){
 									System.out.println();
 									logger.debug("Uploading cached statements...");
 									bs.largeInsert(manager.getCon(),false);
 									bs.largeInsert(manager.getCon(),true);
 								}
-								System.out.print("\r"+(count) + " Sequences    ");
+								System.out.print("\r"+(count ) + " Sequences    ");
 								checklist.update(o.getIdentifier());
 							}		
 						}
@@ -212,7 +256,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 						try{				
 							ACEFileParser parser = new ACEFileParser(file);
 							ACERecord record = null;
-							int count =1;
+							mysqlcount =1;
+							int count =0;
 							boolean mapping = true;
 							String[] done = null;
 							if(checklist.inRecovery()) {
@@ -241,7 +286,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 												manager.getBioSQLXT().addRunBioentry(manager, bioentry, this.runid);
 											}
 											if(mapcontigs && mapping){
-												mapping = mapReads(record, manager, this.identifier+count, biodatabase_id, runid, count);
+												mapping = mapReads(record, manager, this.identifier+count, biodatabase_id, runid, count, limits);
 												if(!mapping){
 													UserResponse j =ui.requiresUserYNI("Mapping failed for some reason, Continue uploading contigs without mapping to reads?", "Mapping Failure Message");
 													if(j != UserResponse.YES)return;
@@ -253,7 +298,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 											System.out.print("\r"+"Contig No.: "+count+"Skipped Contig ");
 										}					
 										count++;
-										if(count%10000==0){
+										mysqlcount++; 
+										if(mysqlcount%uponcount==0){
 											bs.largeInsert(manager.getCon(),false);
 											bs.largeInsert(manager.getCon(),true);
 										}
@@ -291,18 +337,26 @@ public class Task_Assembly2DB extends TaskXTwIO{
 				}
 				ACEFileParser parser = new ACEFileParser(new File(input));
 				int count=0;
+				if(limits != null){
+					String lim = new String();
+					for(int i=0;i < limits.length; i++)lim+=limits[i]+",";
+					logger.debug("Mapping to a limited number of runs in effect, only ids: "+lim);
+				}
 	
 				manager.getBioSQL().largeInsert(manager.getCon(),true);
+				ACERecord record = null;
 				while(parser.hasNext()){
 					count++;
-					ACERecord record = parser.next();
-					if(!mapReads(record, manager, record.getContigName(), manager.getEddieDBID(), this.runid, count)){
+					record = parser.next();
+					if(!mapReads(record, manager, record.getContigName(), manager.getEddieDBID(), this.runid, count, limits)){
 						logger.error("Failed to upload "+ record.getContigName());
 					}
-					if(count%10000==0){
+					mysqlcount++;
+					if(mysqlcount%uponcount==0){
 						manager.getBioSQL().largeInsert(manager.getCon(),false);
 						manager.getBioSQL().largeInsert(manager.getCon(),true);
 					}
+					record = null;
 				}
 				System.out.println();
 				manager.getBioSQL().largeInsert(manager.getCon(),false);
@@ -349,11 +403,24 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		return run.uploadRun(manager);	
 	}
 
-	public boolean mapReads(ACERecord record, DatabaseManager manager, String identifier, int biodatabase_id, int runid, int count){
+	public boolean mapReads(ACERecord record, DatabaseManager manager, String identifier, int biodatabase_id, int runid, int count, int[] limits){
 		BioSQL bs = manager.getBioSQL();
 		BioSQLExtended bsxt = manager.getBioSQLXT();
-		int bioentry_id = bs.getBioEntry(manager.getCon(), identifier, identifier, biodatabase_id);
-		if(bioentry_id < 1)bioentry_id=bs.getBioEntrywName(manager.getCon(), identifier);
+		int bioentry_id = -1;
+		if(limits != null){
+			for(int i =0;i < limits.length;i++){
+				bioentry_id = bs.getBioEntry(manager.getCon(), identifier, identifier, biodatabase_id, limits[i]);
+				if(bioentry_id > 0)break;
+			}
+			if(bioentry_id < 1){
+				for(int i =0;i < limits.length;i++){
+					bioentry_id=bs.getBioEntrywName(manager.getCon(), identifier, limits[i]);
+				}
+			}
+		}
+		else bioentry_id = bs.getBioEntry(manager.getCon(), identifier, identifier, biodatabase_id); 
+		
+		if(bioentry_id < 1 && limits == null)bioentry_id=bs.getBioEntrywName(manager.getCon(), identifier);
 		if(bioentry_id > 0){
 			int i =0;
 			for(String read : record.getReadNames()){
@@ -386,6 +453,12 @@ public class Task_Assembly2DB extends TaskXTwIO{
 						comp = 1;
 						//TODO add better strand info
 					}
+					mysqlcount++;
+					if(mysqlcount%uponcount==0){
+						manager.getBioSQL().largeInsert(manager.getCon(),false);
+						manager.getBioSQL().largeInsert(manager.getCon(),true);
+					}
+					
 					//As ace isn't normally trimmed, assumes not trimmed
 					if(!bsxt.mapRead2Contig(manager, bioentry_id, read_id, 0, runid, start, end, false)){
 						logger.error("Read mapping has failed");
