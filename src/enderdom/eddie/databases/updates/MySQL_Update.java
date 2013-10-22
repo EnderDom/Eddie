@@ -1,4 +1,4 @@
-package enderdom.eddie.database.updates;
+package enderdom.eddie.databases.updates;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

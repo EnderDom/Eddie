@@ -74,6 +74,11 @@ public class FastaParser2 implements Iterator<SequenceObject>{
 		init(stream, shorttitles1, noPhred, isQual);
 	}
 	
+	//Default Settings
+	public FastaParser2(File f) throws IOException {init(new FileInputStream(f), true, false, false);}
+	
+	public FastaParser2(){}
+	
 	
 	/**
 	 * Initialising Method 
@@ -153,7 +158,8 @@ public class FastaParser2 implements Iterator<SequenceObject>{
 		current = null;
 		boolean qual = false;
 		int currentlength =0;
-		while ((line = reader.readLine()) != null && current == null){
+		if(reader == null)return;
+		while ((line = reader.readLine()) != null){
 			if(line.startsWith("@") && !fastq)fastq=true;
 			if(line.startsWith(">") || line.startsWith("@") && currentlength==0){
 				if(builder.length() != 0){
@@ -185,6 +191,7 @@ public class FastaParser2 implements Iterator<SequenceObject>{
 			setCurrent(fastq);
 			reader.close();
 			builder.setLength(0);
+			reader = null;
 		}
 	}
 	

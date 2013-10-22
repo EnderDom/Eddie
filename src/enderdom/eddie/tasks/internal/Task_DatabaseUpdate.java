@@ -3,8 +3,8 @@ package enderdom.eddie.tasks.internal;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import enderdom.eddie.database.updates.MySQL_Update;
 import enderdom.eddie.databases.manager.DatabaseManager;
+import enderdom.eddie.databases.updates.MySQL_Update;
 import enderdom.eddie.tasks.BasicTask;
 import enderdom.eddie.tasks.TaskState;
 

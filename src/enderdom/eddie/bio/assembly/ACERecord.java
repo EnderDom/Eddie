@@ -96,7 +96,7 @@ public class ACERecord extends BasicContig{
 				position++;
 			}
 		}
-		sequencebuffer = new StringBuilder();
+		sequencebuffer.setLength(0);
 		currentread=readname;
 	}
 
@@ -129,9 +129,9 @@ public class ACERecord extends BasicContig{
 			sequences.get(contigname).setQuality(quality);
 		}
 		setReadName(currentread);
-		this.sequencebuffer = null;
-		this.contigbuffer = null;
-		this.qualitybuffer = null;
+		this.sequencebuffer.setLength(0);
+		this.contigbuffer.setLength(0);
+		this.qualitybuffer.setLength(0);
 		setFinalised(true);
 	}
 

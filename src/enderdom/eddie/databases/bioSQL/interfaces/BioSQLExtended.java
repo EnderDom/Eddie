@@ -110,8 +110,10 @@ public interface BioSQLExtended {
 	public HashMap<String, String>getContigNameNIdentifier(DatabaseManager dbman, int run_id);
 	
 	
-	/** INDEV function
-	 * 
+	/**
+	 * Supports uploading same mapping again if
+	 * contig, read and run ids are the same, will 
+	 * just update the values of start, stop, trimmmed 
 	 * 
 	 * @param manager database manager
 	 * @param contig_id to map to read, this should be a bioentry_id previously identified

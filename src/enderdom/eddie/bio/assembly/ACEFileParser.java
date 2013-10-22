@@ -173,7 +173,7 @@ public class ACEFileParser implements Iterator<Contig>{
 			}
 		}
 		catch(IOException io){
-			logger.error("Failed to parse file", io);
+			logger.error("Failed to parse file at line "+ currentline, io);
 		}
 		if(currentline == null){
 			currentsw = EOF;

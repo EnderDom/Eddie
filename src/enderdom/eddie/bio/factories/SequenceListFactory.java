@@ -15,7 +15,7 @@ import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
 
 public class SequenceListFactory {
-
+	
 	public SequenceListFactory(){
 		
 	}
