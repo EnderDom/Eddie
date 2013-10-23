@@ -133,7 +133,6 @@ public class ACEWriter {
 			if(writeDS){
 				out.write(getDSHeader());
 			}
-			out.write(newline);
 			readcount++;
 		}
 		if(writeCT){

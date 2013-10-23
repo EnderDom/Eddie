@@ -52,6 +52,7 @@ public class Task_Blast extends TaskXT{
 	private Stack<String> errfilesmin;
 	private boolean ignoreErrors;
 	private int ass_run_id;
+	private int parsecount=0;
 	
 	public Task_Blast(){
 		setHelpHeader("--This is the Help Message for the the blast Task--");
@@ -128,7 +129,9 @@ public class Task_Blast extends TaskXT{
 						if(!ignore[i]){
 							boolean err =false;
 							try{
+								manager.getBioSQL().largeInsert(manager.getCon(), true);
 								uploadBlastFile(files[i]);
+								manager.getBioSQL().largeInsert(manager.getCon(), false);
 								counts[0]++;
 							}
 							catch(BlastOneBaseException e){
@@ -214,8 +217,8 @@ public class Task_Blast extends TaskXT{
 			XMLStreamException, IOException, GeneralBlastException{
 		
 		MultiblastParser parse = new MultiblastParser(MultiblastParser.BASICBLAST, new File(filename));
-		manager.getBioSQL().largeInsert(manager.getCon(), true);
-		int parsecount=0;
+		
+
 		while(parse.hasNext()){
 			BlastObject o = parse.next();
 			if(o != null){

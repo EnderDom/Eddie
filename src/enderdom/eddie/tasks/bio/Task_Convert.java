@@ -122,12 +122,19 @@ public class Task_Convert extends TaskXTwIO{
 			}
 			else if(conversiontype==ACE2ALN){
 				try {
+					if(id_tag == null){
+						logger.error("Need to set -name of contig");
+						return;
+					}
 					output = checkEndings(new String[]{".aln"}, ".aln", output);
 					File out = new File(output);
 					
 					ContigList l = SequenceListFactory.getContigList(in);
 					logger.debug("Retrieving " + id_tag);
-					logger.info("saved to "+l.getContig(id_tag).saveFile(out, BioFileType.CLUSTAL_ALN)[0]);
+					if(l.getContig(id_tag) != null){
+						logger.info("saved to "+l.getContig(id_tag).saveFile(out, BioFileType.CLUSTAL_ALN)[0]);
+					}
+					else logger.error("Could not find "+id_tag + " contig in list");
 				} catch (Exception e) {
 					logger.error("Failed to parse and convert" + input, e);
 				}
