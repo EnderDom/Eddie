@@ -20,9 +20,12 @@ import net.sf.samtools.SAMFileHeader.SortOrder;
 import enderdom.eddie.bio.factories.SequenceListFactory;
 import enderdom.eddie.bio.sequence.Contig;
 import enderdom.eddie.bio.sequence.GenericSequence;
+import enderdom.eddie.bio.sequence.GenericSequenceXT;
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.bio.sequence.SequenceObject;
+import enderdom.eddie.bio.sequence.SequenceObjectXT;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
+import enderdom.eddie.tools.bio.Tools_Fasta;
 
 public class SAMParseWrapper {
 	
@@ -41,7 +44,7 @@ public class SAMParseWrapper {
 			header.getSortOrder();
 		}
 		catch(Exception e){
-			logger.warn("SortOrder is not recognised by picard.");
+			logger.warn("SortOrder is not recognised by samtools.");
 			header.setSortOrder(SortOrder.unsorted);
 		}
 		
@@ -61,9 +64,10 @@ public class SAMParseWrapper {
 		//Populate Contig List with references
 		for(SAMSequenceRecord g : conts){
 			Contig c = new BasicContig(g.getSequenceName());
-			SequenceObject s = null;
-			s = refs!=null ? refs.getSequence(g.getSequenceName()) :new GenericSequence(g.getSequenceName(), "", 0);
-			s.setPositionInList(0);
+			SequenceObjectXT s = null;
+			s = refs!=null ? refs.getSequence(g.getSequenceName()).getAsSeqObjXT()
+					: new GenericSequenceXT(g.getSequenceName(), "");
+			if(s.getQuality() == null)s.setQuality(Tools_Fasta.getEmptyQual(s.getLength()));
 			c.setConsensus(s);
 			contigs.put(g.getSequenceName(), c);
 		}
@@ -77,7 +81,7 @@ public class SAMParseWrapper {
 			if(contigs.containsKey(re.getReferenceName())){
 				Contig c = contigs.get(re.getReferenceName());
 				String[] redseqs = generateAlignedRead(re, c);
-				SequenceObject o = new GenericSequence(re.getReadName(), redseqs[0], redseqs[1], c.createPosition());
+				SequenceObjectXT o = new GenericSequenceXT(re.getReadName(), redseqs[0], redseqs[1]);
 				c.addSequenceObject(o);
 				c.setOffset(o.getIdentifier(), 0,0);//No offset needed as read is aligned
 				System.out.print("\r"+(count++));
@@ -109,8 +113,10 @@ public class SAMParseWrapper {
 			position+=block.getLength();
 		}
 		
-		return qual == null ? new String[]{b.toString(), null}:new String[]{b.toString(),q.toString()};
+		return qual == null ? new String[]{b.toString(), null}
+			: new String[]{b.toString(),q.toString()};
 	}
+	
 	
 	
 }

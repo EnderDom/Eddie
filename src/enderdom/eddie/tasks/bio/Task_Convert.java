@@ -31,6 +31,7 @@ public class Task_Convert extends TaskXTwIO{
 	private static int SAM2ALN = 5;
 	private static int FASTQ2FASTA = 6;
 	private static int FASTA2FASTQ = 7;
+	private static int SAM2ACE = 8;
 	private boolean noscrub;
 	Logger logger = Logger.getRootLogger();
 	String id_tag;
@@ -49,11 +50,12 @@ public class Task_Convert extends TaskXTwIO{
 		if(cmd.hasOption("xml2fasta"))conversiontype = XML2FASTA;
 		if(cmd.hasOption("ace2aln"))conversiontype = ACE2ALN;
 		if(cmd.hasOption("sam2aln"))conversiontype = SAM2ALN;
+		if(cmd.hasOption("sam2ace"))conversiontype = SAM2ACE;
 		if(cmd.hasOption("fastq2fasta"))conversiontype = FASTQ2FASTA;
 		if(cmd.hasOption("fasta2fastq"))conversiontype = FASTA2FASTQ;
 		id_tag = getOption(cmd, "name", "id");
 		seq_tag = getOption(cmd, "seq", "sequence");
-		ref = getOption(cmd, "refFile", null);
+		ref = getOption(cmd, "ref", null);
 		noscrub = cmd.hasOption("noScrub");
 		qual = getOption(cmd, "qual", null);
 	}
@@ -70,9 +72,10 @@ public class Task_Convert extends TaskXTwIO{
 		options.addOption(new Option("xml2fasta", false, "Grabs 2 tags in xml and makes fasta (-name and -seq)"));
 		options.addOption(new Option("ace2aln", false, "Converts one ACE contig (specified by -name) to align"));
 		options.addOption(new Option("sam2aln", false, "Converts one SAM contig (specified by -name) to align"));
+		options.addOption(new Option("sam2ace", false, "Converts one SAM file to ACE file (EXPERIMENTAL)"));
 		options.addOption(new Option("name", true, "For sequence name tag in xml or assembly file"));
 		options.addOption(new Option("seq", true, "For sequence tag in xml"));
-		options.addOption(new Option("refFile", true, "Reference file (fasta/q with consensus contigs) for SAM"));
+		options.addOption(new Option("ref", true, "Reference file (fasta/q with consensus contigs) for SAM"));
 		options.addOption(new Option("noScrub", false, "Don't scrub '*' when converting from ace to fasta"));
 		options.addOption(new Option("fasta2fastq", false, "Convert Fasta and Qual file to Fastq"));
 		options.addOption(new Option("q","qual", true, "Quality file if needed"));
@@ -177,6 +180,20 @@ public class Task_Convert extends TaskXTwIO{
 				} 
 				catch (Exception e) {
 					logger.error("Failed to load SAM file",e);
+				}
+			}
+			else if(conversiontype == SAM2ACE){
+				if(ref ==null)logger.error("SAM file needs a reference fasta with consensus in");
+				else{
+					try {
+						output = checkEndings(new String[]{".ace", ".ACE"}, ".ace", output);
+						
+						File out = new File(output);
+						ContigList list = SequenceListFactory.getContigList(input, ref);
+						list.save(out, BioFileType.ACE);
+					} catch (Exception e) {
+						logger.error("Failed to convert SAM to ACE", e);
+					}		
 				}
 			}
 			else{

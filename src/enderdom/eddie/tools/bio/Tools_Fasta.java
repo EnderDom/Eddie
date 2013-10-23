@@ -154,5 +154,24 @@ public class Tools_Fasta {
 		}
 		else return true;
 	}
+	
+	
+	public static String getEmptyQualasPhred(int l){
+		StringBuilder b = new StringBuilder();
+		while(l>0){
+			b.append('!');
+			l--;
+		}
+		return b.toString();
+	}
+	
+	public static String getEmptyQual(int l){
+		StringBuilder b = new StringBuilder();
+		while(l>0){
+			b.append("0 ");
+			l--;
+		}
+		return b.toString();
+	}
 
 }

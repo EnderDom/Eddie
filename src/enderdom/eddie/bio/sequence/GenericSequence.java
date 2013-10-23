@@ -19,29 +19,15 @@ public class GenericSequence implements SequenceObject{
 	protected String Identifier;
 	protected String quality; //QUALITY STORED AS FASTQ 
 	protected int type = -1;
-	protected int positioninlist = -1;
 	Logger logger = Logger.getRootLogger();
 	
 	public GenericSequence(String Identifier){
 		this.Identifier = Identifier;
 	}
-	
-	public GenericSequence(String Identifier, int position){
-		this.Identifier = Identifier;
-		this.positioninlist = position;
-	}
-	
-	public GenericSequence(String Identifier, String sequence, int position){
-		this.Identifier = Identifier;
-		this.positioninlist = position;
-		this.sequence = sequence;
-	}
-	
-	public GenericSequence(String Identifier, String sequence, String quality, int position){
+
+	public GenericSequence(String Identifier, String sequence){
 		this.Identifier = Identifier;
 		this.sequence = sequence;
-		this.quality = quality;
-		this.positioninlist = position;
 	}
 	
 	public GenericSequence(String Identifier, String sequence, String quality){
@@ -49,12 +35,7 @@ public class GenericSequence implements SequenceObject{
 		this.sequence = sequence;
 		this.quality = quality;
 	}
-	
-	public GenericSequence(String Identifier, String sequence){
-		this.Identifier = Identifier;
-		this.sequence = sequence;
-	}
-	
+
 	private GenericSequence replicate(){
 		if(this.quality !=null)
 			return new GenericSequence(new String(this.Identifier), new String(this.sequence), new String(this.quality));
@@ -225,14 +206,6 @@ public class GenericSequence implements SequenceObject{
 	}
 
 
-	public int getPositionInList() {
-		return this.positioninlist;
-	}
-	
-	public void setPositionInList(int i) {
-		positioninlist = i;
-	}
-
 	public boolean qualCheck(){
 		return quality.length() == sequence.length();
 	}
@@ -250,5 +223,11 @@ public class GenericSequence implements SequenceObject{
 		}
 		return ret;
 	}
+
+	public SequenceObjectXT getAsSeqObjXT() {
+		return new GenericSequenceXT(this.Identifier, this.sequence, this.quality);
+	}
+	
+	
 	
 }

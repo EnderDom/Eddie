@@ -147,10 +147,6 @@ public interface SequenceObject{
 	
 	public boolean hasQuality();
 	
-	public int getPositionInList();
-	
-	public void setPositionInList(int i);
-	
 	/**
 	 * Returns the actual length at this index, ie returns the index minus all
 	 * the gaps in the sequence
@@ -158,5 +154,7 @@ public interface SequenceObject{
 	 * @return integer representing the actual length here
 	 */
 	public int getLengthAtIndex(int index);
+	
+	public SequenceObjectXT getAsSeqObjXT();
 	
 }

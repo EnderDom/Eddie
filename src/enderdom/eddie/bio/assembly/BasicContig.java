@@ -3,6 +3,7 @@ package enderdom.eddie.bio.assembly;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
@@ -12,6 +13,7 @@ import enderdom.eddie.bio.lists.ClustalAlign;
 import enderdom.eddie.bio.sequence.BasicRegion;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.Contig;
+import enderdom.eddie.bio.sequence.GenericSequence;
 import enderdom.eddie.bio.sequence.SequenceObject;
 import enderdom.eddie.bio.sequence.GenericSequenceXT;
 import enderdom.eddie.bio.sequence.SequenceObjectXT;
@@ -35,23 +37,25 @@ import enderdom.eddie.ui.BasicPropertyLoader;
  */
 public class BasicContig implements Contig{
 
-	protected LinkedHashMap<String, SequenceObjectXT> sequences;
-	protected String contigname;
+	protected HashMap<String, SequenceObjectXT> sequences;
+	protected HashMap<Integer, String> readpos;
+	protected SequenceObjectXT consensus;
 	protected Logger logger = Logger.getRootLogger();
 	protected int iteratorcount = 0;
-	protected int position = 1;
 	protected ArrayList<BasicRegion> regions;
 	private boolean noQual2fastq;
 	protected BioFileType type;
 	
 	public BasicContig(){
 		this.sequences = new LinkedHashMap<String, SequenceObjectXT>();
-		this.contigname = "Unnamed_"+BasicPropertyLoader.numbercache++;
+		this.readpos = new HashMap<Integer, String>();
+		consensus = new GenericSequenceXT("Unnamed_"+BasicPropertyLoader.numbercache++);
 	}
 	
 	public BasicContig(String contig){
 		this.sequences = new LinkedHashMap<String, SequenceObjectXT>();
-		this.contigname = contig;
+		this.readpos = new HashMap<Integer, String>();
+		consensus = new GenericSequenceXT(contig);
 	}
 	
 	//Not all the relevant for ACErecord but
@@ -64,10 +68,8 @@ public class BasicContig implements Contig{
 		int[] lens = new int[this.getNoOfSequences()];
 		int i=0;
 		for(String s : sequences.keySet()){
-			if(!s.equals(contigname)){
-				lens[i] = sequences.get(s).getLength();
-				i++;
-			}
+			lens[i] = sequences.get(s).getLength();
+			i++;
 		}
 		return lens;
 	}
@@ -76,10 +78,9 @@ public class BasicContig implements Contig{
 		int[] lens = new int[this.getNoOfSequences()];
 		int i=0;
 		for(String s : sequences.keySet()){
-			if(!s.equals(contigname)){
-				lens[i] = sequences.get(s).getActualLength();
-				i++;
-			}
+			lens[i] = sequences.get(s).getActualLength();
+			i++;
+
 		}
 		return lens;
 	}
@@ -96,31 +97,23 @@ public class BasicContig implements Contig{
 	 * @return number of reads in this contig
 	 */
 	public int getNoOfSequences() {
-		return this.sequences.size()-1;
+		return this.sequences.size();
 	}
 
 	public synchronized SequenceObject getSequence(int i) {
-		for(String s : sequences.keySet()){
-			if(sequences.get(s).getPositionInList()-1 == i){
-				return sequences.get(s);
-			}
+		if(this.readpos.containsKey(i)){
+			return this.sequences.get(readpos.get(i));
 		}
-		return null;
+		else return null;
 	}
 	
 	public String getContigName() {
-		return this.contigname;
+		return this.consensus.getIdentifier();
 	}
 
 
 	public void setContigName(String s) {
-		if(contigname != null && this.sequences.containsKey(contigname)){
-			SequenceObjectXT o = this.getConsensus();
-			this.sequences.remove(o.getIdentifier());
-			o.setIdentifier(s);
-			this.sequences.put(s, o);
-		}
-		this.contigname = s;
+		this.consensus.setIdentifier(s);
 	}
 
 	public boolean hasNext() {
@@ -165,12 +158,11 @@ public class BasicContig implements Contig{
 	 * @return Consensus sequence as a SequenceObject
 	 */
 	public SequenceObjectXT getConsensus(){
-		return sequences.get(contigname);
+		return this.consensus;
 	}
-	
-
+		
 	public void setConsensus(SequenceObjectXT s) {
-		this.sequences.put(contigname, s);
+		this.consensus = s;
 	}
 
 	public boolean canAddSequenceObjects() {
@@ -178,8 +170,7 @@ public class BasicContig implements Contig{
 	}
 
 	public void addSequenceObject(SequenceObjectXT object) {
-		object.setPositionInList(position);
-		position++;
+		this.readpos.put(this.sequences.size(), object.getIdentifier());
 		this.sequences.put(object.getIdentifier(), object);
 	}
 
@@ -188,7 +179,13 @@ public class BasicContig implements Contig{
 	}
 
 	public void removeSequenceObject(String name) {
-		this.sequences.remove(name);
+		if(this.sequences.containsKey(name)){
+			int p =-1;
+			while(!readpos.get(p++).equals(name));
+			while(p++ < readpos.size())readpos.put(p--, readpos.get(p));
+			readpos.remove(p--);
+			this.sequences.remove(name);
+		}
 	}
 	
 	public BioFileType getFileType() {
@@ -202,11 +199,8 @@ public class BasicContig implements Contig{
 	public String[] saveFile(File file, BioFileType filetype) throws IOException, UnsupportedTypeException {
 		if(filetype == BioFileType.CLUSTAL_ALN){
 			ClustalAlign align = new ClustalAlign();
+			align.addSequenceObject(consensus);
 			for(String k : this.sequences.keySet()){
-				if(sequences.get(k).getPositionInList()==0){
-					align.addSequenceObject(sequences.get(k));
-				}
-				else{
 					SequenceObjectXT o = sequences.get(k);
 					int off = o.getOffset(0);
 					if(off < 0){
@@ -216,7 +210,6 @@ public class BasicContig implements Contig{
 						o.extendLeft(off);
 					}
 					align.addSequenceObject(o);
-				}
 			}
 			return align.saveFile(file, filetype);
 		}
@@ -260,24 +253,12 @@ public class BasicContig implements Contig{
 
 	private void checkSequence(String s) {
 		if(!sequences.containsKey(s)){
-			sequences.put(s, new GenericSequenceXT(s, position));
-			position++;
+			this.addSequenceObject(new GenericSequence(s));
 		}
-	}
-
-	public int createPosition() {
-		return this.position++;
 	}
 
 	public String[] getReadNames() {
-		String[] str = new String[this.getNoOfSequences()];
-		for(String s : this.sequences.keySet()){
-			int i = this.sequences.get(s).getPositionInList()-1;
-			if(i != -1){
-				str[i] = this.sequences.get(s).getIdentifier();
-			}
-		}
-		return str;
+		return this.sequences.keySet().toArray(new String[0]);
 	}
 
 	public int getOffset(String s, int base) {
@@ -328,6 +309,9 @@ public class BasicContig implements Contig{
 	 * @param readname
 	 */
 	public void addRegion(int i1, int i2, String readname, int base){		
+		if(regions == null){
+			regions = new ArrayList<BasicRegion>();
+		}
 		regions.add(new BasicRegion(i1-base, i2-base, 0, readname));
 	}
 
@@ -340,30 +324,17 @@ public class BasicContig implements Contig{
 	}
 
 	public void setConsensusCompliment(char c) {
-		if(this.getConsensus() == null){
-			if(this.getContigName() == null){
-				logger.error("Contig name must be set before adding contig information");
-			}
-			this.setConsensus(new GenericSequenceXT(contigname, 0));
-		}
 		this.getConsensus().setCompliment(c);
 	}
 
+	//Don't add consensus, use setConsensus
 	public void addSequenceObject(SequenceObject object) {
-		this.sequences.put(object.getIdentifier(), new GenericSequenceXT(object.getIdentifier(), object.getSequence(), object.getQuality(), position));
-		position++;
+		this.addSequenceObject(object.getAsSeqObjXT());
 	}
-
-	public void setConsensus(SequenceObject s) {
-		this.sequences.put(s.getIdentifier(), new GenericSequenceXT(s.getIdentifier(), s.getSequence(), s.getQuality(), 0));
-		this.contigname = s.getIdentifier();
-	}
-	
 
 	public char getCharAtRelative2Contig(String s, int position, int base) {
 		return this.sequences.get(s).getSequence().charAt((position-base)+this.sequences.get(s).getOffset(0));
 	}
-	
 
 	public boolean isNoQual2fastq() {
 		return noQual2fastq;

@@ -473,7 +473,7 @@ public class MySQL_BioSQL implements BioSQL {
 			st.close();
 			
 		} catch (SQLException sq) {
-			logger.error("Failed to get bioentry id with name: " + name, sq);
+			logger.error("Failed to get bioentry id with name: " + name + " using SQL "+init+where, sq);
 		}
 		return entry;
 	}

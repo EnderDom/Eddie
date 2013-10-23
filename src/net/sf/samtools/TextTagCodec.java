@@ -196,9 +196,8 @@ class TextTagCodec {
             	
             	try{
             		if(!warned){
-            			Logger.getRootLogger().warn("The input has broken specs for SAM with floats were only signed ints are allowed");
-            			Logger.getRootLogger().warn("Workaround in place, doubles are converted to ints, this may lead to data loss");
-            			Logger.getRootLogger().warn("However this may be indicative of a bug in the software ouputting this file.");
+            			Logger.getRootLogger().warn("SAM with floats were only signed ints are allowed," +
+            					" nobody follows the specs :( converting to ints...");
             			warned = true;
             		}
             		return new Double(stringVal).intValue();

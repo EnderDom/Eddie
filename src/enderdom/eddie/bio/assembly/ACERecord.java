@@ -92,8 +92,7 @@ public class ACERecord extends BasicContig{
 				sequences.get(currentread).setSequence(sequencebuffer.toString());
 			}
 			else{
-				sequences.put(currentread, new GenericSequenceXT(currentread, sequencebuffer.toString(), position));
-				position++;
+				this.addSequenceObject(new GenericSequenceXT(currentread, sequencebuffer.toString()));
 			}
 		}
 		sequencebuffer.setLength(0);
@@ -120,14 +119,8 @@ public class ACERecord extends BasicContig{
 	 */
 	public void finalise(){
 		String quality = isNoQual2fastq()? Tools_Fasta.Qual2Fastq(this.qualitybuffer.toString()) : this.qualitybuffer.toString();
-		if(sequences.get(contigname)==null){
-			sequences.put(contigname, new GenericSequenceXT(this.contigname, this.contigbuffer.toString(), 
-					quality,0));
-		}
-		else{
-			sequences.get(contigname).setSequence(this.contigbuffer.toString());
-			sequences.get(contigname).setQuality(quality);
-		}
+		consensus.setSequence(this.contigbuffer.toString());
+		consensus.setQuality(quality);
 		setReadName(currentread);
 		this.sequencebuffer.setLength(0);
 		this.contigbuffer.setLength(0);
@@ -141,10 +134,10 @@ public class ACERecord extends BasicContig{
 	 * @return read at i as GenericSequence
 	 */
 	public SequenceObject getRead(int i){
-		for(String key : sequences.keySet()){
-			if(sequences.get(key).getPositionInList()-1==i)return sequences.get(key); 
+		if(this.readpos.containsKey(i)){
+			return this.sequences.get(this.readpos.get(i));
 		}
-		return null;
+		else return null;
 	}
 	
 	/**
@@ -165,7 +158,12 @@ public class ACERecord extends BasicContig{
 	 * using index
 	 */
 	public int getReadIndex(String name){
-		return sequences.get(name).getPositionInList()-1;
+		for(int i : this.readpos.keySet()){
+			if(this.readpos.get(i).equals(name)){
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	

@@ -8,27 +8,21 @@ public class GenericSequenceXT extends GenericSequence implements SequenceObject
 	
 	public GenericSequenceXT(String Identifier) {
 		super(Identifier);
-		
-	}
-
-	public GenericSequenceXT(String Identifier, int position){
-		super(Identifier, position);
-	}
-	
-	public GenericSequenceXT(String Identifier, String sequence, int position){
-		super(Identifier, sequence, position);
-	}
-	
-	public GenericSequenceXT(String Identifier, String sequence, String quality, int position){
-		super(Identifier, sequence,quality, position);
-	}
-	
+		init();
+	}	
 	public GenericSequenceXT(String Identifier, String sequence, String quality){
 		super(Identifier, sequence, quality);
+		init();
 	}
 	
 	public GenericSequenceXT(String Identifier, String sequence){
 		super(Identifier, sequence);
+		init();
+	}
+	
+	public void init(){
+		compliments = 'U';
+		offsets = new int[]{0,0,0,0,0};
 	}
 	
 	public void setOffset(int offset, int base){

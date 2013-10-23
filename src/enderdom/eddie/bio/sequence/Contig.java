@@ -22,7 +22,7 @@ public interface Contig extends SequenceList {
 	
 	public SequenceObjectXT getConsensus(); 
 	
-	public void setConsensus(SequenceObject s);
+	public void setConsensus(SequenceObjectXT o);
 	
 	public char getConsensusCompliment();
 	
@@ -79,8 +79,6 @@ public interface Contig extends SequenceList {
 	
 	//Gets char based on underlying file, ie includes '*' in consensuse
 	public char getCharAtRelative2Contig(String s, int position, int base);
-
-	public int createPosition();
 	
 	public String[] getReadNames();
 	
@@ -88,7 +86,6 @@ public interface Contig extends SequenceList {
 	
 	public ArrayList<BasicRegion> getRegions();
 	
-
 	public boolean isNoQual2fastq();
 
 	public void setNoQual2fastq(boolean noQual2fastq);

@@ -36,7 +36,6 @@ public class FastaParser2 implements Iterator<SequenceObject>{
 	private StringBuilder builder;
 	private String name;
 	private boolean shorttitles;
-	private int counter;
 	private boolean noQualasPhred;
 	private boolean fastq;
 	
@@ -94,7 +93,6 @@ public class FastaParser2 implements Iterator<SequenceObject>{
 		this.parseQual = isQual;
 		builder = new StringBuilder();
 		name = new String();
-		counter=-1;
 		reader = new BufferedReader(new InputStreamReader(stream));
 		parseNext();
 	}
@@ -203,18 +201,18 @@ public class FastaParser2 implements Iterator<SequenceObject>{
 	private void setCurrent(boolean fastqQual){
 		if(parseQual && !noQualasPhred && !fastq){
 			current = new GenericSequence(name, null, 
-					Tools_Fasta.Qual2Fastq(builder.toString()), counter++);
+					Tools_Fasta.Qual2Fastq(builder.toString()));
 		}
 		else if(parseQual && noQualasPhred && !fastq){
 			current = new GenericSequence(name, null, 
-					builder.toString(), counter++);
+					builder.toString());
 		}
 		else if(fastqQual){
 			current.setQuality(builder.toString());
 		}
 		else{
 			current = new GenericSequence(name, builder.toString(), 
-					null, counter++);
+					null);
 		}
 	}
 

@@ -55,7 +55,9 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	private int[] limits;
 	//Counts uploads
 	private int mysqlcount;
-	private static int uponcount =5000; 
+	private static int uponcount =5000;
+	//TODO add user changable option
+	private boolean check = true;
 	
 	public Task_Assembly2DB(){
 		setHelpHeader("--This is the Help Message for the Assemby2DB Task--");
@@ -194,12 +196,19 @@ public class Task_Assembly2DB extends TaskXTwIO{
 								logger.info(rem+" sequences skipped due to already uploaded");
 							}
 							else{
-								if(!bs.addSequence(manager.getCon(), biodatabase_id, null, o.getIdentifier(), o.getIdentifier(),
-										this.identifier+(count +rem), "READ", null, 0, o.getSequence(), BioSQL.alphabet_DNA)){
-									logger.error("An error occured uploading " + o.getIdentifier());
-									break;
+								int bioentry = -1;
+								if(check){
+									bioentry = bs.getBioEntry(manager.getCon(), this.identifier+(count+rem), o.getIdentifier(), biodatabase_id);
+									System.out.print("\r"+(count ) + " Sequences    Skipped    ");
 								}
-								int bioentry = bs.getBioEntry(manager.getCon(), this.identifier+(count+rem), o.getIdentifier(), biodatabase_id);
+								if(bioentry < 1){
+									if(!bs.addSequence(manager.getCon(), biodatabase_id, null, o.getIdentifier(), o.getIdentifier(),
+											this.identifier+(count +rem), "READ", null, 0, o.getSequence(), BioSQL.alphabet_DNA)){
+										logger.error("An error occured uploading " + o.getIdentifier());
+										break;
+									}
+									bioentry = bs.getBioEntry(manager.getCon(), this.identifier+(count+rem), o.getIdentifier(), biodatabase_id);
+								}
 								if(bioentry < 0){
 									throw new EddieGenericException("Failed to retrieve bioentry id after adding sequence");
 								}
@@ -209,16 +218,14 @@ public class Task_Assembly2DB extends TaskXTwIO{
 								
 								if(mysqlcount%uponcount == 0){
 									System.out.println();
-									logger.debug("Uploading cached statements...");
 									bs.largeInsert(manager.getCon(),false);
 									bs.largeInsert(manager.getCon(),true);
 								}
-								System.out.print("\r"+(count ) + " Sequences    ");
+								System.out.print("\r"+(count ) + " Sequences                  ");
 								checklist.update(o.getIdentifier());
 							}		
 						}
 						System.out.println();
-						logger.debug("Uploading cached statements...");
 						bs.largeInsert(manager.getCon(),false);
 						checklist.complete();
 					}
@@ -279,7 +286,10 @@ public class Task_Assembly2DB extends TaskXTwIO{
 												seq=seq.replaceAll("\\*", "");
 											}
 											//NOTE: Name is truncated here to fit in, this will need to be taken into account elsewhere!
-											if(name.length() > 35)name = name.substring(0, 30)+"..." + count;
+											if(name.length() > 39){
+												name = name.substring(0, 30)+"..." + count;
+												logger.warn("Contig names need to be shorter than 40 characters, name will be truncated to "+name);
+											}
 											if(!bs.addSequence(manager.getCon(), biodatabase_id, null, name, this.identifier+count, this.identifier+count, "CONTIG", record.getContigName(), 0, seq, BioSQL.alphabet_DNA))break;
 											if(runid > 0){
 												int bioentry = bs.getBioEntry(manager.getCon(), this.identifier+count, this.identifier+count, biodatabase_id);
@@ -415,6 +425,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 			if(bioentry_id < 1){
 				for(int i =0;i < limits.length;i++){
 					bioentry_id=bs.getBioEntrywName(manager.getCon(), identifier, limits[i]);
+					if(bioentry_id > 0)break;
 				}
 			}
 		}
@@ -469,7 +480,6 @@ public class Task_Assembly2DB extends TaskXTwIO{
 			}
 			return true;
 		}
-		
 		else{
 			logger.error("Could not retrieve bioentry_id with identifier: "+identifier);
 			return false;
