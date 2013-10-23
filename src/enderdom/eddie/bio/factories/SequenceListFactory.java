@@ -12,6 +12,7 @@ import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.ContigList;
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
+import enderdom.eddie.exceptions.EddieGenericException;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
 
 public class SequenceListFactory {
@@ -131,16 +132,16 @@ public class SequenceListFactory {
 		}
 	}
 	
-	public static ContigList getContigList(String input) throws Exception{
+	public static ContigList getContigList(String input) throws EddieGenericException, IOException, UnsupportedTypeException{
 		File i = new File(input);
 		if(!i.exists()){
-			throw new Exception("File: " + input + " does not exist");
+			throw new EddieGenericException("File: " + input + " does not exist");
 		}
 		else if(i.isDirectory()){
-			throw new Exception("File: " + input + " is a directory");//TODO support directory
+			throw new EddieGenericException("File: " + input + " is a directory");
 		}
 		else{
-			return getContigList(input);
+			return getContigList(i);
 		}
 	}
 	
