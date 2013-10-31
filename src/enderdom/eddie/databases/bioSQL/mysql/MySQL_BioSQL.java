@@ -53,15 +53,16 @@ public class MySQL_BioSQL implements BioSQL {
 		Statement st = con.createStatement();
 		ResultSet set = st.executeQuery("SHOW VARIABLES LIKE \"%version%\";");
 		String v = null;
-		while (set.next())
+		while (set.next()){
 			v = set.getString(1);
+		}
+		set.close();
+		st.close();
 		if (v.indexOf(".") != -1) {
-			Integer i = Tools_String.parseString2Int(v.substring(0,
-					v.indexOf(".")));
+			Integer i = Tools_String.parseString2Int(v.substring(0, v.indexOf(".")));
 			if (i != null) {
 				System.out.println(v + " of " + i);
-				if (i > 3)
-					return true;
+				if (i > 3)return true;
 				else {
 					innodb = "TYPE";
 					return false;
@@ -152,18 +153,17 @@ public class MySQL_BioSQL implements BioSQL {
 		boolean added = addBioEntry(con, biodatabase, taxon_id, name,
 				accession, identifier, division, description, version);
 		if (added) {
-			int bio_entry = getBioEntry(con, identifier, accession,
-					biodatabase, -1);
+			int bio_entry = getBioEntry(con, identifier, accession, biodatabase, -1);
 			if (bio_entry != -1) {
 				return addBiosequence(con, version, seq.length(), alphabet,
 						seq, bio_entry);
-			} else {
+			} 
+			else {
 				logger.error("Failed to return sequence added");
 				return false;
 			}
-		} else {
-			return false;
-		}
+		} 
+		else return false;
 	}
 
 	public boolean addOntology(Connection con, String name, String definition) {
@@ -348,8 +348,9 @@ public class MySQL_BioSQL implements BioSQL {
 			ResultSet set = st.executeQuery(sql.toString());
 			logger.debug(sql.toString());
 			int size = 0;
-			while (set.next())
+			while (set.next()){
 				size++;
+			}
 			String[][] result = new String[size][fields.length];
 			set.first();
 			int i = 0;
@@ -360,7 +361,7 @@ public class MySQL_BioSQL implements BioSQL {
 				}
 				i++;
 			} while (set.next());
-			
+			set.close();
 			st.close();
 			return result;
 		} catch (SQLException sq) {
@@ -381,7 +382,7 @@ public class MySQL_BioSQL implements BioSQL {
 				names[1] = set.getString("accession");
 				names[2] = set.getString("identifier");
 			}
-			
+			set.close();
 			st.close();
 			return names;
 		} catch (SQLException sq) {
@@ -470,6 +471,7 @@ public class MySQL_BioSQL implements BioSQL {
 				}
 				break;
 			}
+			set.close();
 			st.close();
 			
 		} catch (SQLException sq) {
@@ -501,6 +503,7 @@ public class MySQL_BioSQL implements BioSQL {
 			while (set.next()) {
 				entry = set.getInt("bioentry_relationship_id");
 			}
+			set.close();
 			BioEntryRelationshipGET.close();
 
 		} catch (SQLException sq) {
@@ -523,7 +526,7 @@ public class MySQL_BioSQL implements BioSQL {
 				o.setName(set.getString("name"));
 				o.setDefinition(set.getString("definition"));
 			}
-			
+			set.close();
 			stmt.close();
 			return o;
 		} catch (SQLException se) {
@@ -566,8 +569,8 @@ public class MySQL_BioSQL implements BioSQL {
 							set.getString("identifier"),
 							set.getString("is_obsolete"));
 				}
+				set.close();
 				stmt.close();
-				
 			}
 			return t;
 		} catch (SQLException se) {
@@ -596,6 +599,7 @@ public class MySQL_BioSQL implements BioSQL {
 				t.setOntology_id(set.getInt("ontology_id"));
 				t.setTermRel_id(set.getInt("term_relationship_id"));
 			}
+			set.close();
 			TermRelationshipGET.close();
 			return t;
 		} catch (SQLException sq) {
@@ -619,6 +623,7 @@ public class MySQL_BioSQL implements BioSQL {
 			while (set.next()) {
 				id = set.getInt("seqfeature_id");
 			}
+			set.close();
 			SeqfeatureGET.close();
 			return id;
 		} catch (SQLException se) {
@@ -639,6 +644,7 @@ public class MySQL_BioSQL implements BioSQL {
 			while (set.next()) {
 				id = set.getInt("location_id");
 			}
+			set.close();
 			LocationGET.close();
 			return id;
 		} catch (SQLException se) {
@@ -657,7 +663,7 @@ public class MySQL_BioSQL implements BioSQL {
 			while (set.next()) {
 				str = set.getString("seq");
 			}
-			
+			set.close();
 			st.close();
 		} catch (SQLException e) {
 			logger.error("Failed to get sequence for contig id " + bioentry_id,
@@ -677,6 +683,8 @@ public class MySQL_BioSQL implements BioSQL {
 			while (set.next()) {
 				i = set.getInt("dbxref_id");
 			}
+			set.close();
+			DBxrefGET.close();
 			return i;
 		} catch (SQLException sq) {
 			logger.error("Failed to get dbxref", sq);
@@ -808,6 +816,7 @@ public class MySQL_BioSQL implements BioSQL {
 			while (set.next()){
 				ret = set.getInt("taxon_id");
 			}
+			set.close();
 			TaxonGET.close();
 			return ret;
 		} catch (SQLException sq) {
@@ -827,6 +836,7 @@ public class MySQL_BioSQL implements BioSQL {
 			TaxonNameSET.setString(2, name);
 			TaxonNameSET.setString(3, name_class);
 			TaxonNameSET.execute();
+			TaxonNameSET.close();	
 			return true;
 		} catch (SQLException sq) {
 			logger.error("Failed to add Taxon name ", sq);

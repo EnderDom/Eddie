@@ -16,6 +16,7 @@ import enderdom.eddie.tasks.bio.Task_SeqList;
 import enderdom.eddie.tasks.bio.Task_UniVec;
 import enderdom.eddie.tasks.database.Task_AddRunData;
 import enderdom.eddie.tasks.database.Task_Assembly2DB;
+import enderdom.eddie.tasks.database.Task_AssemblyReport;
 import enderdom.eddie.tasks.database.Task_BioSQLDB;
 import enderdom.eddie.tasks.database.Task_Blast;
 import enderdom.eddie.tasks.database.Task_BlastAnalysis2;
@@ -137,6 +138,10 @@ public class TaskList {
 			tasks[1][15] = "taxonomy";
 			tasks[2][15] = "Taxonomy related tools";
 			
+			tasks[0][16] = Task_AssemblyReport.class.getName(); 
+			tasks[1][16] = "assemblyreport";
+			tasks[2][16] = "Meta assembly report tool";
+			
 			//Upload estSCAN stuff
 			tasks[0][17] = Task_ESTUpload.class.getName(); 
 			tasks[1][17] = "estUpload";
@@ -145,7 +150,6 @@ public class TaskList {
 			tasks[0][18] = Task_IPRupload.class.getName(); 
 			tasks[1][18] = "iprUpload";
 			tasks[2][18] = "Upload IPR data";	
-			
 			
 			tasks[0][19] = Task_BlastAnalysis2.class.getName(); 
 			tasks[1][19] = "blastanalysis2";

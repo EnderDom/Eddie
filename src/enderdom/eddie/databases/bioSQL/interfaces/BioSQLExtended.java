@@ -375,4 +375,36 @@ public interface BioSQLExtended {
 	 */
 	public boolean resetDepth(DatabaseManager manager);
 	
+	
+	public int getSimilarRun(DatabaseManager manager, Run run, int date_range);
+	
+	/**
+	 * 
+	 * 
+	 * 
+	 * @param manager
+	 * @param hit
+	 * @param hsp
+	 * @param evalue
+	 * @param run_id
+	 * @param meta_assembly
+	 * @return a int array of size 2, index 0 holds
+	 * the number of aa in the database that was matched. 
+	 * index 1 holds the number of contig bps which matched already 
+	 * matched database matches ie total matching bps-number of
+	 */
+	public int[] getDbCoverageAssembly(DatabaseManager manager, int hit, int hsp, double evalue, int run_id, boolean meta_assembly);
+	
+	
+	/**
+	 * 
+	 * @param manager
+	 * @param run_id
+	 * @return matrix of column count 4 and row count of any size
+	 * 0 = bioentry_id of contig
+	 * 1 = String name of contig
+	 * 2 = Length of the contig
+	 * 3 = Assembler used for contig
+	 */
+	public String[][] getListOfContigsfromMetaAssembly(DatabaseManager manager, int run_id);
 }

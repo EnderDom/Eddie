@@ -125,13 +125,12 @@ public class Task_Blast extends TaskXT{
 						trimRecovered(checklist.getData());
 					}
 					int i=0;
+					manager.getBioSQL().largeInsert(manager.getCon(), true);
 					for(;i < files.length; i++){
 						if(!ignore[i]){
 							boolean err =false;
 							try{
-								manager.getBioSQL().largeInsert(manager.getCon(), true);
 								uploadBlastFile(files[i]);
-								manager.getBioSQL().largeInsert(manager.getCon(), false);
 								counts[0]++;
 							}
 							catch(BlastOneBaseException e){
@@ -161,6 +160,7 @@ public class Task_Blast extends TaskXT{
 						}
 						System.out.print("\rFile No.: "+i+" 		");
 					}
+					manager.getBioSQL().largeInsert(manager.getCon(), false);
 					dealErrors();
 
 					String s = Tools_System.getNewline();
@@ -173,7 +173,6 @@ public class Task_Blast extends TaskXT{
 					//Also log this information, for nohup and whatnot
 					logger.info("Blast Parsing: " + "Parsed:"+counts[0]+" Skipped:"+counts[2]+" Errored:"+counts[1]);
 					logger.info("Uploaded:"+counts[3]+" Updated:"+counts[6]+" Skipped:"+counts[4]+" Errored:"+counts[5]);
-					
 				}
 				else{
 					try{
@@ -218,7 +217,6 @@ public class Task_Blast extends TaskXT{
 		
 		MultiblastParser parse = new MultiblastParser(MultiblastParser.BASICBLAST, new File(filename));
 		
-
 		while(parse.hasNext()){
 			BlastObject o = parse.next();
 			if(o != null){
@@ -272,7 +270,6 @@ public class Task_Blast extends TaskXT{
 		}
 		parse.close();
 		parse = null;
-		manager.getBioSQL().largeInsert(manager.getCon(), false);
 	}
 	
 	private void trimRecovered(String[] data){

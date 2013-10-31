@@ -5,7 +5,6 @@ import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 
-import enderdom.eddie.databases.legacy.DBInterface;
 import enderdom.eddie.tasks.TaskLike;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tools.Tools_Fun;
@@ -20,7 +19,6 @@ import enderdom.eddie.tools.Tools_Fun;
 public class TaskManager extends Thread{
 
 	Logger logger = Logger.getRootLogger();
-	DBInterface db;
 	int corepoollimit;
 	int auxilpoollimit;
 	private Stack<TaskLike> CoreTasks; // Holds Awaiting Tasks

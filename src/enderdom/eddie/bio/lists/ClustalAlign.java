@@ -137,11 +137,22 @@ public class ClustalAlign extends BasicSequenceList{
 	private void save(File file, int linelen) throws IOException{
 		FileWriter fstream = new FileWriter(file);
 		BufferedWriter out = new BufferedWriter(fstream);
-		String neline = Tools_System.getNewline();
-		out.write("CLUSTAL 2.1 multiple sequence alignment"+neline+neline+neline);
-		out.flush();
+		save2writer(out, linelen, false);
+		out.close();
+		fstream.close();
+	}
+	
+	private void save2writer(BufferedWriter out, int linelen, boolean html) throws IOException{
+		String neline = (html) ?  "<br/>" : Tools_System.getNewline() ;
+		if(!html){
+			out.write("CLUSTAL 2.1 multiple sequence alignment"+neline+neline+neline);
+		}
+		else out.write("<p style=\"font-family:'Monospaced','Courier New', 'Courier';font-size=12px;\">");
 		int count = 0;
 		int maxlength = Tools_Math.getMaxValue(this.getListOfLens());
+		
+		
+		
 		for(String name : sequences.keySet()){
 			if(sequences.get(name).getLength() < maxlength){
 				sequences.get(name).extendRight(maxlength-sequences.get(name).getLength());
@@ -149,26 +160,30 @@ public class ClustalAlign extends BasicSequenceList{
 			if(name.length() > namespacemax)namespacemax=name.length();
 			
 		}
+		String gap = "      ";
+		String towrite = null;
 		while(count+linelen < maxlength){
 			for(String name : sequences.keySet()){
 				if(sequences.get(name).getLength() < maxlength){
 					sequences.get(name).extendRight(maxlength-sequences.get(name).getLength());
 				}
 				//TODO sort out this mess, kinda hacked it as i was writing my thesis :(
-				
-				out.write(Tools_String.getStringofLenX(name, namespacemax) + "      "+sequences.get(name).getSequence().substring(count, count+linelen) + neline);
-				out.flush();
+				towrite = Tools_String.getStringofLenX(name, namespacemax) +
+						gap+sequences.get(name).getSequence().substring(count, count+linelen) + neline;
+				if(html)towrite.replaceAll(" ", "&nbsp;");
+				out.write(towrite);
 			}
-			out.write(Tools_String.getStringofLenX("", namespacemax)+"      "+getClustAnnnot(sequences, count, count+linelen)+neline);
+            towrite = Tools_String.getStringofLenX("", namespacemax)+gap+getClustAnnnot(sequences, count, count+linelen)+neline;
+            if(html)towrite.replaceAll(" ", "&nbsp;");
+            out.write(towrite);
 			out.write(neline+neline);
-			out.flush();
 			count = count + linelen;
 		}
 		for(String name : sequences.keySet()){
-			out.write(Tools_String.getStringofLenX(name, namespacemax) + "      "+sequences.get(name).getSequence().substring(count, maxlength) + neline);
-			out.flush();
+			towrite = Tools_String.getStringofLenX(name, namespacemax) + gap+sequences.get(name).getSequence().substring(count, maxlength) + neline;
+			if(html)towrite.replaceAll(" ", "&nbsp;");
+			out.write(towrite);
 		}
-		out.close();
 	}
 
 	//TODO complete for . and : symbols

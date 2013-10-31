@@ -1,8 +1,6 @@
 package enderdom.eddie.databases.bioSQL.psuedoORM;
 
 import java.util.Date;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.ParseException;
 
 import org.apache.log4j.Logger;
@@ -202,32 +200,8 @@ public class Run {
 		return validationErrors;
 	}
 
-	//TODO move this to the mysql stuff
-	@Deprecated
 	public int getSimilarRun(DatabaseManager manager, int date_range){
-		int ret = -1;
-		long range =date_range;
-		
-		try{
-			String query = "SELECT run_id, run_date FROM run WHERE " +
-					"runtype='"+this.runtype+"' AND program='"+this.program+"' AND version='"+
-					this.version+"' AND dbname='"+this.dbname+"' AND params='"+this.params+"'";
-			ResultSet set = manager.runSQLQuery(query);
-			while(set.next()){
-				java.sql.Date r = set.getDate("run_date");
-				long l = Math.abs(r.getTime()-this.getDate().getTime());
-				l /=86400; //(60*60*24)
-				if(l < range){
-					range = l;
-					ret=set.getInt("run_id");
-				}
-			}
-			return ret;
-		}
-		catch(SQLException sq){
-			logger.error("Failed to conduct SQL for similar runs", sq);
-			return -1;
-		}
+		return manager.getBioSQLXT().getSimilarRun(manager, this, date_range);
 	}
 	
 	public static String[] getRunInsertTips(){

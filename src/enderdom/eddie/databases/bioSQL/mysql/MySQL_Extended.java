@@ -12,7 +12,6 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.LinkedList;
-
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.tools.Tools_Array;
@@ -298,7 +297,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			while(set.next()){
 				r = set.getString("DatabaseVersion");
 			}
-			
+			set.close();
 			st.close();
 			Double b = null;
 			if(r.startsWith("v")){
@@ -343,7 +342,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			while(set.next()){
 				db = set.getInt("biodatabase_id");
 			}
-			
+			set.close();
 			st.close();
 		}
 		catch(SQLException se){
@@ -361,7 +360,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			while(set.next()){
 				names.put(set.getString("name"),set.getString("identifier"));
 			}
-			
+			set.close();
 			st.close();
 		}
 		catch(SQLException sq){
@@ -383,6 +382,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			}
 			int[][] ret = new int[4][values.size()/4];
 			for(int i =0; i < values.size();i++)ret[i%4][i/4] = values.get(i);
+			set.close();
 			readFromContigGET.close();
 			return ret;
 		}
@@ -400,11 +400,14 @@ public class MySQL_Extended implements BioSQLExtended{
 			contigFromReadGET.setInt(1,bioentry_id);
 			contigFromReadGET.setInt(2,run_id);
 			set = contigFromReadGET.executeQuery();
-			contigFromReadGET.close();
+			int ret = 0;
 			while(set.next()){
-				return set.getInt(1);
-			}	
-			return -1;
+				ret= set.getInt(1);
+				break;
+			}
+			set.close();
+			contigFromReadGET.close();
+			return ret;
 		}
 		catch(SQLException sq){
 			logger.error("Failed to get reads using contig id", sq);
@@ -460,6 +463,7 @@ public class MySQL_Extended implements BioSQLExtended{
 				i = set.getInt(1);
 				break;
 			}
+			set.close();
 			dbxrefEXIST.close();
 			return i > 0;
 		} 
@@ -521,7 +525,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			while(set.next()){
 				ins.add(set.getInt(1));
 			}
-			
+			set.close();
 			st.close();
 			return Tools_Array.ListInt2int(ins);
 		}
@@ -536,13 +540,16 @@ public class MySQL_Extended implements BioSQLExtended{
 		try{
 			Statement st = manager.getCon().createStatement();
 			set = st.executeQuery(sql);
+			Run r = null;
 			while(set.next()){
-				return new Run(run_id, set.getDate(1) ,set.getString(2), set.getInt(3),
+				r= new Run(run_id, set.getDate(1) ,set.getString(2), set.getInt(3),
 						set.getString(4), set.getString(5), set.getString(6), 
 						set.getString(7),set.getString(8), set.getString(9));
+				break;
 			}
-			
-			return null;
+			set.close();
+			st.close();
+			return r;
 		}
 		catch(SQLException sq){
 			logger.error("Failed to get run id." , sq);
@@ -577,6 +584,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			while(set.next()){
 				i= set.getInt("run_id");
 			}
+			set.close();
 			runGET.close();
 			return i;
 		}
@@ -596,6 +604,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			while(set.next()){
 				biosequences.add(new BasicBioSequence(bioentry_id, set.getInt(1), set.getInt(2), set.getString(3), set.getString(4)));
 			}
+			set.close();
 			bioSequenceGET.close();
 			return biosequences.toArray(new BasicBioSequence[0]);
 		} 
@@ -741,7 +750,7 @@ public class MySQL_Extended implements BioSQLExtended{
 				ress[c] = set.getString(1);
 				c++;
 			}
-			
+			set.close();
 			st.close();
 		} 
 		catch (SQLException e) {
@@ -767,7 +776,7 @@ public class MySQL_Extended implements BioSQLExtended{
 				l.addSequenceObject(new GenericSequence(set.getString(2), set.getString(3)));
 			}
 			System.out.println();
-			
+			set.close();
 			st.close();
 		} 
 		catch (SQLException e) {
@@ -800,6 +809,7 @@ public class MySQL_Extended implements BioSQLExtended{
 				T.setRight_value(set.getInt("right_value"));
 				T.setLeft_value(set.getInt("left_value"));
 			}
+			set.close();
 			set = st.executeQuery("SELECT * FROM taxon_name WHERE taxon_id='"+biosql_id+"'");
 			while(set.next()){
 				if(set.getString("name_class").equals("ScientificName")){
@@ -809,8 +819,8 @@ public class MySQL_Extended implements BioSQLExtended{
 					T.setCommonname(set.getString("name"));
 				}
 			}
+			set.close();
 			st.close();
-			
 		}
 		catch(SQLException sq){
 			logger.error("Failed to get taxon stuff",sq);
@@ -843,7 +853,7 @@ public class MySQL_Extended implements BioSQLExtended{
 				System.out.print("\r "+c + " of "+retur[0].length + " is    "+ retur[1][c] +"   " );
 				c++;
 			}
-			
+			set.close();
 			st.close();
 			System.out.println();
 			return retur;
@@ -883,8 +893,8 @@ public class MySQL_Extended implements BioSQLExtended{
 	                " include.right_value) WHERE include.ncbi_taxon_id="+ncbi_taxon_id);
 			LinkedList<Integer> is = new LinkedList<Integer>();
 			while(set.next())is.add(set.getInt(1));
+			set.close();
 			st.close();
-			
 			return Tools_Array.ListInt2int(is);
 		}
 		catch(SQLException sq){
@@ -907,7 +917,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			set = st.executeQuery("SELECT COUNT(dbxref_id) AS count FROM dbxref WHERE ncbi_taxon_id IS NULL AND dbname='"+database+"'");
 			int size=-1;
 			while(set.next())size=set.getInt(1);
-			
+			set.close();
 			st.close();
 			return size;
 		}
@@ -955,9 +965,11 @@ public class MySQL_Extended implements BioSQLExtended{
 				}
 				
 				//Deal with missing records
+				set.close();
 				set = st.executeQuery("SELECT COUNT(DISTINCT(`parent_taxon_id`)) AS COUNT FROM `taxon` WHERE `parent_taxon_id`" +
 						" NOT IN (SELECT `ncbi_taxon_id` FROM taxon);");
 				while(set.next())records=set.getInt("COUNT");
+				set.close();
 				logger.debug(records+" ids found without records");
 				if(records != 0){
 					set = st.executeQuery("SELECT DISTINCT(`parent_taxon_id`) AS id FROM `taxon` WHERE `parent_taxon_id`" +
@@ -966,15 +978,15 @@ public class MySQL_Extended implements BioSQLExtended{
 					ids = new int[records+1];
 					int c=0;
 					while(set.next())ids[c++] = set.getInt("id");
-					
+	
 					for(int i =0;i < ids.length; i++){
 						if(ids[i] > 0){
 							new Taxonomy(ids[i]).upload2DB(manager, true);
 							System.out.print("\r"+(i+1)+" of "+ids.length +" complete");
 						}
 					}
+					
 				}
-				
 				
 				System.out.println();
 				iters++;
@@ -1012,6 +1024,8 @@ public class MySQL_Extended implements BioSQLExtended{
 					System.out.print("\r"+c+" of " + size*2 + "  phase 1      ");
 				}
 				System.out.println();
+				set.close();
+				st.close();
 				
 				logger.info("Updating database with ncbi taxons, any missing taxons will be added");
 				PreparedStatement pst = manager.getCon().prepareStatement("UPDATE dbxref SET ncbi_taxon_id=? WHERE dbxref_id=?");
@@ -1070,10 +1084,10 @@ public class MySQL_Extended implements BioSQLExtended{
 			layerdepth=1;
 			walktree(children, setleft, setright);
 			System.out.println();
+			set.close();
 			children.close();
 			setleft.close();
 			setright.close();
-			
 			return true;
 		}
 		catch(SQLException sq){
@@ -1094,6 +1108,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			children.setInt(1, current);
 			//I don't think we can execute another query
 			//before this is closed so will have to pop a list
+			set.close();
 			set = children.executeQuery();
 			LinkedList<Integer> ins = new LinkedList<Integer>();
 			while(set.next()){
@@ -1194,7 +1209,7 @@ public class MySQL_Extended implements BioSQLExtended{
 				count = set.getInt("COUNT");
 				break;
 			}
-			
+			set.close();
 			st.close();
 			return count;
 		}
@@ -1225,7 +1240,7 @@ public class MySQL_Extended implements BioSQLExtended{
 				count = set.getInt("COUNT");
 				break;
 			}
-			
+			set.close();
 			st.close();
 			return count;
 		}
@@ -1266,7 +1281,7 @@ public class MySQL_Extended implements BioSQLExtended{
 				out.write(set.getDouble(1) + " " + cumulative + n);
 				out.flush();
 			}
-			
+			set.close();
 			st.close();
 			out.close();
 			return true;
@@ -1304,7 +1319,7 @@ public class MySQL_Extended implements BioSQLExtended{
 				out.write(writ+set.getInt(3)+ n);
 				out.flush();
 			}
-			
+			set.close();
 			st.close();
 			out.close();
 			return true;
@@ -1335,5 +1350,152 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 	
 	
+	public int getSimilarRun(DatabaseManager manager, Run run, int date_range){
+		int ret = -1;
+		long range =date_range;
+		
+		try{
+			String query = "SELECT run_id, run_date FROM run WHERE " +
+					"runtype='"+run.getRuntype()+"' AND program='"+run.getProgram()+"' AND version='"+
+					run.getVersion()+"' AND dbname='"+run.getDbname()+"' AND params='"+run.getParams()+"'";
+			Statement st = manager.getCon().createStatement();
+			ResultSet set = st.executeQuery(query);
+			while(set.next()){
+				java.sql.Date r = set.getDate("run_date");
+				long l = Math.abs(r.getTime()-run.getDate().getTime());
+				l /=86400; //(60*60*24)
+				if(l < range){
+					range = l;
+					ret=set.getInt("run_id");
+				}
+			}
+			set.close();
+			st.close();
+			return ret;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to conduct SQL for similar runs", sq);
+			return -1;
+		}
+	}
+	
+	public int[] getDbCoverageAssembly(DatabaseManager manager, int hit, int hsp, double evalue, int run_id, boolean meta_assembly){
+		
+		int total =0;
+		int overrep=0;
+		String query =null;
+		if(!meta_assembly){
+			query = "SELECT dbxref_id, dbxref_startpos, dbxref_endpos " +
+				"FROM bioentry_dbxref WHERE hit_no<="+hit+" AND rank<="+hsp+" " +
+				"AND run_id="+run_id+" ORDER BY dbxref_id, dbxref_startpos, dbxref_endpos";
+		}
+		else{
+			query = "SELECT dbxref_id, dbxref_startpos, dbxref_endpos, bioentry_id  " +
+					"FROM bioentry_dbxref INNER JOIN assembly ON assembly.contig_bioentry_id=" +
+					"bioentry_dbxref.bioentry_id WHERE hit_no<="+hit+" AND rank<="+hsp+" " +
+					"AND assembly.run_id="+run_id+" GROUP BY bioentry_id ORDER BY dbxref_id, dbxref_startpos, dbxref_endpos";
+		}
+		
+		int dbxref=0;
+		int dbxref1=-1;
+		
+		LinkedList<Integer> starts = new LinkedList<Integer>();
+		LinkedList<Integer> stops = new LinkedList<Integer>();
+		int count=0;
+		logger.debug(query);
+		try{
+			Statement st = manager.getCon().createStatement();
+			set = st.executeQuery(query);
+			while(set.next()){
+				dbxref = set.getInt(1);
+				if(dbxref1>-1 && dbxref != dbxref1){
+					if(starts.size() == 1){
+						total+=stops.get(0)-starts.get(0);
+					}
+					else{
+						int[] ret = Tools_Array.getGapsAndCoverage(
+								Tools_Array.ListInt2int(starts), 
+							Tools_Array.ListInt2int(stops));
+						total+=ret[0];
+						overrep+= ret[1];
+					}
+					starts.clear();
+					stops.clear();
+				}
+				starts.add(set.getInt(2));
+				stops.add(set.getInt(3));
+				dbxref1=dbxref;
+				count++;
+				if(count%100==0)System.out.print("\r"+count+"      ");
+			}
+			set.close();
+			st.close();
+			if(starts.size() == 1){
+				total+=stops.get(0)-starts.get(0);
+			}
+			else if(starts.size() > 1){
+				int[] ret = Tools_Array.getGapsAndCoverage(
+						Tools_Array.ListInt2int(starts), 
+						Tools_Array.ListInt2int(stops));
+				total+=ret[0];
+				overrep+= ret[1];
+			}
+			System.out.println("\r"+count+"  Done    ");
+			return new int[]{total, overrep};
+		}
+		catch(SQLException sq){
+			logger.error("Failed to execute " + query, sq);
+		}
+		return new int[]{-1,-1};
+	}
+	
+	public String[][] getListOfContigsfromMetaAssembly(DatabaseManager manager, int run_id){
+
+		String[][] results = null;
+		
+		String query = "SELECT assembly.contig_bioentry_id, name, " +
+				"biosequence.length, run2.program FROM assembly " +
+				"INNER JOIN bioentry ON assembly.contig_bioentry_id" +
+				"=bioentry.bioentry_id INNER JOIN biosequence ON " +
+				"bioentry.bioentry_id=biosequence.bioentry_id " +
+				"INNER JOIN bioentry_dbxref ON assembly.contig_bioentry_id" +
+				"=bioentry_dbxref.bioentry_id INNER JOIN run ON run.run_id" +
+				"=bioentry_dbxref.run_id INNER JOIN run AS run2 ON " +
+				"run2.run_id=run.parent_id WHERE assembly.run_id="+run_id+" " +
+				"GROUP BY bioentry.bioentry_id ORDER BY " +
+				"bioentry_dbxref.run_id, biosequence.length DESC";
+		//I know right?
+		try{
+			Statement st = manager.getCon().createStatement();
+			ResultSet set = st.executeQuery(query);
+			LinkedList<String> bioentrys = new LinkedList<String>();
+			LinkedList<String> name = new LinkedList<String>();
+			LinkedList<String> program = new LinkedList<String>();
+			LinkedList<String> length = new LinkedList<String>();
+			
+			while(set.next()){
+				bioentrys.add(set.getInt(1)+"");
+				name.add(set.getString(2));
+				program.add(set.getString(3));
+				length.add(set.getString(4));
+			}
+			
+			results = new String[4][bioentrys.size()];
+			for(int i =0; i < bioentrys.size();i++){
+				results[0][i]=bioentrys.get(i);
+				results[1][i]=name.get(i);
+				results[2][i]=program.get(i);
+				results[3][i]=length.get(i);
+			}
+			
+			set.close();
+			st.close();
+			
+		}
+		catch(SQLException sq){
+			logger.error("Failed to run to following SQL (hold onto your butts): "+query, sq);
+		}
+		return results;
+	}
 	
 }

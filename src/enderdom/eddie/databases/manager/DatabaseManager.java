@@ -320,10 +320,6 @@ public class DatabaseManager {
 	public void setUi(UI ui) {
 		this.ui = ui;
 	}
-
-	public ResultSet runSQLQuery(String arg0) throws SQLException{
-		return this.con.createStatement().executeQuery(arg0);
-	}
 	
 	public String getDBTYPE(){
 		if(this.dbtype ==null){

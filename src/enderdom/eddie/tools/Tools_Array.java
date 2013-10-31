@@ -132,4 +132,40 @@ public abstract class Tools_Array {
 		for(int i=0;i< count.length;i++)count[i]+=count1[i];
 		return count;
 	}
+	
+	/**
+	 * 1----5----10 <--- Orig Length
+	 * 
+	 *      5--8     <--- Regions aligned
+	 *       6--9
+	 *      5-7       
+	 * 1-3 
+	 *  Data: int[][]{int[]{1,5,5,6}, int[]{3,7,8,9}}
+	 * 	Output: int[2][]{7,2}
+	 * 
+	 * Returns 7 positions cover with 2 positions in gaps between
+	 * 
+	 * @param starts Array of greater than 1 containing 
+	 * start points ordered by size low -> high with increasing index
+	 * @param stops array of equal length of starts containing 
+	 * each stop for the equivalent start at the same index 
+	 * @return a array of 2 values containing coverage and gap length
+	 */
+	public static int[] getGapsAndCoverage(int[] starts, int[] stops){
+		int max = Tools_Math.getMaxValue(stops);
+		int min = Tools_Math.getMinValue(starts);
+		int total = max-min;
+		int overrep=0;
+		for(int i =0; i < starts.length;i++){
+			overrep+=stops[i]-starts[i];
+		}
+		int value=0;
+		for(int i=0;i < starts.length-1;i++){
+			
+			if((value=starts[i+1]-stops[i])> 0){
+				total-=value;
+			}
+		}
+		return new int[]{total, overrep-total};
+	}
 }

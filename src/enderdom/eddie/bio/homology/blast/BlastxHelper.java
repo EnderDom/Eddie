@@ -174,7 +174,6 @@ public class BlastxHelper {
 	 * @return -1 if failed, return 0 if uploaded successfully, return >0
 	 * if some sequences already uploaded, value represents how many
 	 */
-	@SuppressWarnings("deprecation")
 	public int[] upload2BioSQL(DatabaseManager manager, boolean fuzzy, String dbname, boolean force){
 		int[] values = new int[]{-1,0,0};
 		String nom = null;

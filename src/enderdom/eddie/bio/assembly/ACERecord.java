@@ -10,7 +10,6 @@ import enderdom.eddie.tools.bio.Tools_Fasta;
 
 /**
  * 
- * @author Dominic Matthew Wood
  * This class basically holds the data for 1 contig
  * parsed from an .ace. It has grown a little akward, but
  * hopefully should become a bit of a black box.
@@ -25,6 +24,7 @@ import enderdom.eddie.tools.bio.Tools_Fasta;
  * as Strings and anywhere which requires return GenericSequence
  * have a new Construcion there.
  * 
+ * @author Dominic Matthew Wood
  */
 public class ACERecord extends BasicContig{
 
