@@ -1,5 +1,8 @@
 package enderdom.eddie.tools;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.log4j.Logger;
 
 import enderdom.eddie.tasks.StreamGobbler;
@@ -85,13 +88,24 @@ public abstract class Tools_Task {
                     + " " + cmd[2]);
 	        Runtime rt = Runtime.getRuntime();
 	        Process proc = rt.exec(cmd);
+	        /*
+	         * Needed because sometimes exit value returned 
+	         * but output has not yet been completely parsed
+	         * thus causing streamgobbler to continue parsing after 
+	         * the output called
+	         * 
+	         * Set to 2, 1 for each streamgobbler
+	         * 
+	         */
+	        CountDownLatch latch = new CountDownLatch(2);
+	        
 	        // any error message
 	        StreamGobbler errorGobbler = new 
-	            StreamGobbler(proc.getErrorStream(), "ERROR", cache);
+	            StreamGobbler(proc.getErrorStream(), "ERROR", cache, latch);
 	        
 	        // any output?
 	        StreamGobbler outputGobbler = new 
-	            StreamGobbler(proc.getInputStream(), "OUTPUT", cache);
+	            StreamGobbler(proc.getInputStream(), "OUTPUT", cache, latch);
 	        
 	        // kick them off
 	        errorGobbler.start();
@@ -104,6 +118,8 @@ public abstract class Tools_Task {
 	        	else Logger.getRootLogger().trace("Process Exited Normally");
 	        }
 	        else Logger.getRootLogger().error("Abnormal exit value");
+	        
+	        latch.await(30, TimeUnit.SECONDS);
 	        
 	        if(cache){
 	        	output = new StringBuffer[]{outputGobbler.getOutput(), errorGobbler.getOutput()};
