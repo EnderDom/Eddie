@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import enderdom.eddie.bio.factories.SequenceListFactory;
 import enderdom.eddie.bio.lists.ClustalAlign;
 import enderdom.eddie.bio.sequence.BasicRegion;
 import enderdom.eddie.bio.sequence.BioFileType;
@@ -100,7 +101,7 @@ public class BasicContig implements Contig{
 		return this.sequences.size();
 	}
 
-	public synchronized SequenceObject getSequence(int i) {
+	public SequenceObject getSequence(int i) {
 		if(this.readpos.containsKey(i)){
 			return this.sequences.get(readpos.get(i));
 		}
@@ -192,31 +193,23 @@ public class BasicContig implements Contig{
 		return type == null ? BioFileType.CONTIG_BASIC : type;
 	}
 
-	public SequenceObject getSequence(String s) {
+	public SequenceObjectXT getSequence(String s) {
 		return sequences.get(s);
 	}
 		
 	public String[] saveFile(File file, BioFileType filetype) throws IOException, UnsupportedTypeException {
 		if(filetype == BioFileType.CLUSTAL_ALN){
-			ClustalAlign align = new ClustalAlign();
-			align.addSequenceObject(consensus);
-			for(String k : this.sequences.keySet()){
-					SequenceObjectXT o = sequences.get(k);
-					int off = o.getOffset(0);
-					if(off < 0){
-						o.leftTrim(off*-1, 0);
-					}
-					else if(off > 0){
-						o.extendLeft(off);
-					}
-					align.addSequenceObject(o);
-			}
+			ClustalAlign align = SequenceListFactory.Contig2Clustal(this);
 			return align.saveFile(file, filetype);
 		}
 		else{
 			logger.error("Not implemented");
 			return null;
 		}
+	}
+	
+	public void getClustalAlign(){
+		
 	}
 
 	public int loadFile(File file, BioFileType filetype) throws UnsupportedTypeException {
@@ -286,7 +279,6 @@ public class BasicContig implements Contig{
 		return this.sequences.get(s).getCompliments();
 	}
 
-
 	/**
 	 * Sets the number of regions (BS)
 	 * 
@@ -327,11 +319,11 @@ public class BasicContig implements Contig{
 		this.getConsensus().setCompliment(c);
 	}
 
-	//Don't add consensus, use setConsensus
-	public void addSequenceObject(SequenceObject object) {
-		this.addSequenceObject(object.getAsSeqObjXT());
-	}
-
+//	//Don't add consensus, use setConsensus
+//	public void addSequenceObject(SequenceObject object) {
+//		this.addSequenceObject(object.getAsSeqObjXT());
+//	}
+//	
 	public char getCharAtRelative2Contig(String s, int position, int base) {
 		return this.sequences.get(s).getSequence().charAt((position-base)+this.sequences.get(s).getOffset(0));
 	}
@@ -347,6 +339,10 @@ public class BasicContig implements Contig{
 
 	public void setFileType(BioFileType t){
 		this.type = t;
+	}
+
+	public void addSequenceObject(SequenceObject object) {
+		this.addSequenceObject(object.getAsSeqObjXT());
 	}
 	
 }

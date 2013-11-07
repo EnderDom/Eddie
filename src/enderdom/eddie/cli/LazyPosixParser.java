@@ -9,7 +9,8 @@ import org.apache.log4j.Logger;
 public class LazyPosixParser extends PosixParser {
     
 	@Override
-    protected void processOption(String arg, @SuppressWarnings("rawtypes") ListIterator iter) throws ParseException
+	@SuppressWarnings("all")
+    protected void processOption(String arg, ListIterator iter) throws ParseException
     {
         try {
             super.processOption(arg, iter);

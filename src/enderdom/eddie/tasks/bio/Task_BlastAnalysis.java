@@ -28,7 +28,6 @@ import enderdom.eddie.ui.UI;
  * @author dominic
  *
  */
-@Deprecated
 public class Task_BlastAnalysis extends TaskXTwIO{
 	
 	private String blastfolders; //Path containing the blast files

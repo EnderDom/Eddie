@@ -16,9 +16,30 @@ public class Dbxref_Bioentry_Link {
 	private int bioentry_endpos;
 	private int bioentry_frame;
 	
-	public Dbxref_Bioentry_Link(){
-		
+	public Dbxref_Bioentry_Link(
+			int bioentry_id, int dbxref_id, 
+			int rank, int hit_no, 
+			int run_id, double evalue,
+			int score, int dbxref_startpos,
+			int dbxref_endpos, int dbxref_frame,
+			int bioentry_startpos, int bioentry_endpos, 
+			int bioentry_frame){
+		this.bioentry_id=bioentry_id;
+		this.dbxref_id=dbxref_id;
+		this.rank=rank;
+		this.hit_no=hit_no;
+		this.run_id=run_id;
+		this.evalue=evalue;
+		this.score=score;
+		this.dbxref_startpos=dbxref_startpos;
+		this.dbxref_endpos=dbxref_endpos;
+		this.dbxref_frame=dbxref_frame;
+		this.bioentry_startpos=bioentry_startpos;
+		this.bioentry_endpos=bioentry_endpos;
+		this.bioentry_frame=bioentry_frame;
 	}
+	
+	
 
 	public int getBioentry_id() {
 		return bioentry_id;

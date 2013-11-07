@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,11 +21,17 @@ import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.NCBI_DATABASE;
 import enderdom.eddie.tools.bio.Tools_Contig;
 import enderdom.eddie.tools.bio.Tools_NCBI;
+import enderdom.eddie.bio.assembly.BasicContig;
+import enderdom.eddie.bio.sequence.Contig;
 import enderdom.eddie.bio.sequence.GenericSequence;
+import enderdom.eddie.bio.sequence.GenericSequenceXT;
 import enderdom.eddie.bio.sequence.SequenceList;
+import enderdom.eddie.bio.sequence.SequenceObjectXT;
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
 import enderdom.eddie.databases.bioSQL.psuedoORM.BasicBioSequence;
 import enderdom.eddie.databases.bioSQL.psuedoORM.BioSequence;
+import enderdom.eddie.databases.bioSQL.psuedoORM.Dbxref;
+import enderdom.eddie.databases.bioSQL.psuedoORM.Dbxref_Bioentry_Link;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Taxonomy;
 import enderdom.eddie.databases.manager.DatabaseManager;
@@ -188,6 +195,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			"trimmed TINYINT,"+ //0 == not trimmed
 			"range_start INT(10),"+ //If trimmed this should just be the offset
 			"range_end INT(10),"+
+			"offset INT(10),"+
 			"UNIQUE (contig_bioentry_id,read_bioentry_id,run_id)"+
 			")"+MySQL_BioSQL.innodb+"=INNODB;";
 		try{
@@ -595,23 +603,82 @@ public class MySQL_Extended implements BioSQLExtended{
 	}
 	
 	public BioSequence[] getBioSequences(DatabaseManager manager, int bioentry_id){
-		String sql = "SELECT version, length, alphabet, seq FROM biosequence WHERE bioentry_id=?";
-		LinkedList<BasicBioSequence> biosequences = new LinkedList<BasicBioSequence>();
+		String sql = "SELECT biosequence.version, biosequence.length, biosequence.alphabet, " +
+				"biosequence.seq, bioentry.identifier FROM biosequence " +
+				"INNER JOIN bioentry USING(bioentry_id) WHERE bioentry_id=?";
+		LinkedList<BioSequence> biosequences = new LinkedList<BioSequence>();
 		try {
 			PreparedStatement bioSequenceGET = manager.getCon().prepareStatement(sql);
 			bioSequenceGET.setInt(1, bioentry_id);
 			set = bioSequenceGET.executeQuery();
 			while(set.next()){
-				biosequences.add(new BasicBioSequence(bioentry_id, set.getInt(1), set.getInt(2), set.getString(3), set.getString(4)));
+				BioSequence s = new BasicBioSequence(bioentry_id, set.getInt(1), set.getInt(2), set.getString(3), set.getString(4));
+				s.setIdentifier(set.getString(5));
+				biosequences.add(s);
 			}
 			set.close();
 			bioSequenceGET.close();
-			return biosequences.toArray(new BasicBioSequence[0]);
+			return biosequences.toArray(new BioSequence[0]);
 		} 
 		catch(SQLException e){
 			logger.error("Failed to insert assembly data into database", e);
 			return null;
 		}
+	}
+	
+	
+	public Dbxref getDbxRef(Connection con, int dbxref_id){
+		String query = new String("SELECT dbxref_id, dbname, accession, " +
+				"version, ncbi_taxon_id FROM dbxref WHERE dbxref_id="+dbxref_id);	
+		try{
+			Statement st = con.createStatement();
+			ResultSet set = st.executeQuery(query);
+			Dbxref d = null;
+			while(set.next()){
+				d= new Dbxref(set.getInt(1),set.getString(2),set.getString(3), 
+						set.getInt(4),set.getInt(5));
+			}
+			set.close();
+			st.close();
+			return d;
+		}
+		catch(SQLException e){
+			logger.error("Failed to retrieve dbxref record for dbxref id " + dbxref_id, e);
+		}
+		return null;
+	}
+	
+	public Dbxref_Bioentry_Link[] getDbxRef_Bioentry_Links(Connection con, int bioentry_id, int run_id){
+		String query = new String("SELECT bioentry_id, dbxref_id, rank, " +
+				"hit_no, run_id, evalue, score, dbxref_startpos, dbxref_endpos, dbxref_frame, " +
+				"bioentry_startpos, bioentry_endpos, bioentry_frame FROM bioentry_dbxref " +
+				"WHERE bioentry_id="+bioentry_id);
+		if(run_id > 0)query+=" AND run_id="+run_id;
+		
+		LinkedList<Dbxref_Bioentry_Link> dbxrefs = new LinkedList<Dbxref_Bioentry_Link>();
+		try{
+			Statement st = con.createStatement();
+			ResultSet set = st.executeQuery(query);
+			while(set.next()){
+				Dbxref_Bioentry_Link d = new Dbxref_Bioentry_Link(
+						set.getInt(1),set.getInt(2),
+						set.getInt(3),set.getInt(4),
+						set.getInt(5),set.getDouble(6),
+						set.getInt(7),set.getInt(8),
+						set.getInt(9),set.getInt(10),
+						set.getInt(11),set.getInt(12),
+						set.getInt(13)
+				);
+				dbxrefs.add(d);
+			}
+			set.close();
+			st.close();
+			return dbxrefs.toArray(new Dbxref_Bioentry_Link[0]);
+		}
+		catch(SQLException e){
+			logger.error("Failed to retrieve bioentry_dbxref_id link for bioentry id " + bioentry_id, e);
+		}
+		return null;
 	}
 	
 	/* *****************************************************************************************
@@ -759,15 +826,15 @@ public class MySQL_Extended implements BioSQLExtended{
 		return ress;
 	}
 
-	public SequenceList getContigsAsList(DatabaseManager manager, SequenceList l, int i) {
+	public SequenceList getContigsAsList(DatabaseManager manager, SequenceList l, int run_id) {
 		String sql;
 		Statement st;
-		if( i < 0){
+		if( run_id < 0){
 			sql = "SELECT bioentry.bioentry_id, bioentry.identifier, seq FROM biosequence INNER JOIN bioentry ON bioentry.bioentry_id=biosequence.bioentry_id WHERE division='CONTIG'";
 		}
 		else{
 			sql = "SELECT bioentry.bioentry_id, bioentry.identifier, seq FROM biosequence INNER JOIN bioentry ON bioentry.bioentry_id=biosequence.bioentry_id " +
-					"INNER JOIN assembly ON bioentry.bioentry_id=assembly.contig_bioentry_id WHERE division='CONTIG' AND run_id="+i;
+					"INNER JOIN assembly ON bioentry.bioentry_id=assembly.contig_bioentry_id WHERE division='CONTIG' AND run_id="+run_id;
 		}
 		try {
 			st = manager.getCon().createStatement();
@@ -786,6 +853,23 @@ public class MySQL_Extended implements BioSQLExtended{
 		return l;
 	}
 	
+
+
+	public Contig getContig(DatabaseManager manager, int bioentry_id) {
+		Contig c = new BasicContig();
+
+		BioSequence b = this.getBioSequences(manager, bioentry_id)[0];
+		SequenceObjectXT consensus = new GenericSequenceXT(b.getIdentifier(), b.getSequence());
+		c.setConsensus(consensus);
+		int[][] reads = this.getReads(manager, bioentry_id);
+		for(int i =0; i < reads[0].length;i++){
+			b = this.getBioSequences(manager, reads[0][i])[0];
+			SequenceObjectXT read = new GenericSequenceXT(b.getIdentifier(), b.getSequence());
+			read.setOffset(reads[3][i], 0);
+			c.addSequenceObject(read);
+		}
+		return c;
+	}
 	
 
 	public Taxonomy getTaxonomyFromSQL(DatabaseManager manager,
@@ -1497,5 +1581,5 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 		return results;
 	}
-	
+
 }

@@ -43,24 +43,23 @@ import java.util.Map;
  * @author <a href="mailto:jstrachan@apache.org">James Strachan</a>
  * @version $Revision: 680644 $, $Date: 2008-07-29 01:13:48 -0700 (Tue, 29 Jul 2008) $
  */
+@SuppressWarnings("rawtypes")
 public class Options implements Serializable{
     
 	private static final long serialVersionUID = 1L;
 
     /** a map of the options with the character key */
-    @SuppressWarnings("rawtypes")
+
+
 	private Map shortOpts = new HashMap();
 
     /** a map of the options with the long key */
-    @SuppressWarnings("rawtypes")
 	private Map longOpts = new HashMap();
 
     /** a map of the required options */
-    @SuppressWarnings("rawtypes")
 	private List requiredOpts = new ArrayList();
 
     /** a map of the option groups */
-    @SuppressWarnings("rawtypes")
 	private Map optionGroups = new HashMap();
 
     /**
@@ -69,10 +68,11 @@ public class Options implements Serializable{
      * @param group the OptionGroup that is to be added
      * @return the resulting Options instance
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-	public Options addOptionGroup(OptionGroup group)
-    {
-        Iterator options = group.getOptions().iterator();
+	
+	@SuppressWarnings("unchecked")
+	public Options addOptionGroup(OptionGroup group){
+        
+		Iterator options = group.getOptions().iterator();
 
         if (group.isRequired())
         {
@@ -95,12 +95,12 @@ public class Options implements Serializable{
         return this;
     }
 
-    /**
+    @SuppressWarnings("unchecked")
+	/**
      * Lists the OptionGroups that are members of this Options instance.
      *
      * @return a Collection of OptionGroup instances.
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
 	Collection getOptionGroups()
     {
         return new HashSet(optionGroups.values());
@@ -145,7 +145,7 @@ public class Options implements Serializable{
      * @param opt the option that is to be added
      * @return the resulting Options instance
      */
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	public Options addOption(Option opt)
     {
         String key = opt.getKey();
@@ -189,18 +189,19 @@ public class Options implements Serializable{
      *
      * @return read-only Collection of {@link Option} objects in this descriptor
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings("unchecked")
 	public Collection getOptions()
     {
         return Collections.unmodifiableCollection(helpOptions());
     }
 
-    /**
+    
+	/**
      * Returns the Options for use by the HelpFormatter.
      *
      * @return the List of Options
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings("unchecked")
 	List helpOptions()
     {
         return new ArrayList(shortOpts.values());
@@ -211,7 +212,7 @@ public class Options implements Serializable{
      *
      * @return List of required options
      */
-    @SuppressWarnings("rawtypes")
+
 	public List getRequiredOptions()
     {
         return requiredOpts;

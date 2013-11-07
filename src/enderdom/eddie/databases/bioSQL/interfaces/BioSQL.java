@@ -106,9 +106,24 @@ public interface BioSQL {
 	 * @param table
 	 * @param wheres
 	 * @param wherevalues
-	 * @return String matrix String[ReturnedResults.size()][fields.length]
+	 * @return String matrix String[fields.length][ReturnedResults.size()]
 	 */
 	public String[][] getGenericResults(Connection con, String[] fields, String table, String wheres[], String[] wherevalues);
+	
+	/**
+	 * Builds and executes a general SQL query to update a table
+	 * Very basic simplisitc method that will probably break if you
+	 * try to do anything complicated
+	 *  
+	 * @param con
+	 * @param fields
+	 * @param fieldvalues
+	 * @param table
+	 * @param wheres
+	 * @param wherevalues
+	 * @return String matrix String[ReturnedResults.size()][fields.length]
+	 */
+	public void genericUpdate(Connection con, String[] fields, String[] fieldvalues, String table, String wheres[], String[] wherevalues);
 	
 	/**
 	 * 
@@ -173,7 +188,7 @@ public interface BioSQL {
 	public String getSequence(Connection con, int bioentry_id);
 	
 	public int getDBxRef(Connection con, String dbname, String accession);
-
+	
 	public boolean addTermRelationship(Connection con, int subject_id,
 			int object_id, int predicate_id, int ontology_id);
 

@@ -198,16 +198,12 @@ public class Task_BlastAnalysis2 extends TaskXT{
 		System.out.println("------------");
 	}
 	
-	@SuppressWarnings("unused")
 	private void printRunStuff(int run_id){
 		Run run = manager.getBioSQLXT().getRun(manager, run_id);
 		Run parent = manager.getBioSQLXT().getRun(manager, run.getParent_id());
-		if(run != null){
-			System.out.println("Data for blast run (RunID:"
-				+run_id+") of assembly by " + parent.getProgram() + " on " + parent.getSource());
-		}
-		else{
-			System.out.println("This Data blast run attached to " + run_id);
-		}
+		String p = (run!=null) ?"Data for blast run (RunID:"
+				+run_id+") of assembly by " + parent.getProgram() + " on " + parent.getSource()
+				: "This Data blast run attached to " + run_id;
+		System.out.println(p);
 	}
 }

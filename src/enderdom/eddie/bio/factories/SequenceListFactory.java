@@ -9,8 +9,10 @@ import enderdom.eddie.bio.assembly.BasicContigList;
 import enderdom.eddie.bio.lists.ClustalAlign;
 import enderdom.eddie.bio.lists.Fasta;
 import enderdom.eddie.bio.sequence.BioFileType;
+import enderdom.eddie.bio.sequence.Contig;
 import enderdom.eddie.bio.sequence.ContigList;
 import enderdom.eddie.bio.sequence.SequenceList;
+import enderdom.eddie.bio.sequence.SequenceObjectXT;
 import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.exceptions.EddieGenericException;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
@@ -188,5 +190,22 @@ public class SequenceListFactory {
 			throw new UnsupportedTypeException("You are trying to get a sequence list from " 
 					+ filetype.toString() + " which is not yet supported");	
 		}
+	}
+	
+	public static ClustalAlign Contig2Clustal(Contig c){
+		ClustalAlign align = new ClustalAlign();
+		align.addSequenceObject(c.getConsensus());
+		for(String k : c.getReadNames()){
+				SequenceObjectXT o = c.getSequence(k);
+				int off = o.getOffset(0);
+				if(off < 0){
+					o.leftTrim(off*-1, 0);
+				}
+				else if(off > 0){
+					o.extendLeft(off);
+				}
+				align.addSequenceObject(o);
+		}
+		return align;
 	}
 }

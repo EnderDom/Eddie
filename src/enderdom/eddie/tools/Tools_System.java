@@ -94,6 +94,10 @@ public abstract class Tools_System{
     	return SystemUtils.FILE_SEPARATOR;
     }
     
+    public static String getPathSeparator(){
+    	return SystemUtils.FILE_SEPARATOR;
+    }
+    
     public static String getNewline(){
     	return SystemUtils.LINE_SEPARATOR;
     }

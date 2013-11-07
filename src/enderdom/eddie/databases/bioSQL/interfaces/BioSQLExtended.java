@@ -1,11 +1,14 @@
 package enderdom.eddie.databases.bioSQL.interfaces;
 
 import java.io.File;
+import java.sql.Connection;
 import java.sql.Date;
 import java.util.HashMap;
 
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.databases.bioSQL.psuedoORM.BioSequence;
+import enderdom.eddie.databases.bioSQL.psuedoORM.Dbxref;
+import enderdom.eddie.databases.bioSQL.psuedoORM.Dbxref_Bioentry_Link;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Taxonomy;
 import enderdom.eddie.databases.manager.DatabaseManager;
@@ -133,6 +136,8 @@ public interface BioSQLExtended {
 	public Run getRun(DatabaseManager manager, int run_id);
 	
 	public int getRunIdFromInfo(DatabaseManager manager, Run r);
+	
+	//public Contig getContig(DatabaseManager manager, int bioentry_id);
 
 	/**
 	 * Returns a 4xn matrix
@@ -201,6 +206,10 @@ public interface BioSQLExtended {
 	
 	public boolean setRun(DatabaseManager manager, Date date, String runtype, Integer parent_id,  String program, String version, String dbname, String source, String params, String comment);
 
+	public Dbxref_Bioentry_Link[] getDbxRef_Bioentry_Links(Connection con, int bioentry_id, int run_id);
+	
+	public Dbxref getDbxRef(Connection con, int dbxref_id);
+	
 	/**
 	 * Retrieve some contig names attached to the run of id 'r'
 	 * returns 'i' amount of names as a String[]

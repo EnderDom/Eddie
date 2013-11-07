@@ -24,6 +24,7 @@ import enderdom.eddie.tasks.database.Task_ESTUpload;
 import enderdom.eddie.tasks.database.Task_IPRupload;
 import enderdom.eddie.tasks.database.Task_Taxonomy;
 import enderdom.eddie.tasks.database.Task_dbTools;
+//import enderdom.eddie.tasks.internal.Task_Fix;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.ui.UI;
 
@@ -35,7 +36,6 @@ import enderdom.eddie.ui.UI;
  * I really don't like the idea. So add all Tasks in variable here and the UI
  * will retrieve them and act appropriately.
  */
-@SuppressWarnings("deprecation")
 public class TaskList {
 
 	private static String[][] tasks;
@@ -162,6 +162,10 @@ public class TaskList {
 			tasks[0][21] = Task_SeqList.class.getName(); 
 			tasks[1][21] = "seqlist";
 			tasks[2][21] = "Sequence list (clustal, fasta etc) tools";	
+			
+			//tasks[0][22] = Task_Fix.class.getName(); 
+			//tasks[1][22] = "quickfix";
+			//tasks[2][22] = "Fix database problems";
 			
 			return tasks;
 		}

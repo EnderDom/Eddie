@@ -12,6 +12,14 @@ public class Dbxref {
 	public Dbxref(){
 		
 	}
+	
+	public Dbxref(int dbxref_id, String dbname, String accession,int version, int taxon_id ){
+		this.dbxref_id=dbxref_id;
+		this.dbname=dbname;
+		this.accession=accession;
+		this.version=version;
+		this.taxon_id=taxon_id;
+	}
 
 	public int getDbxref_id() {
 		return dbxref_id;

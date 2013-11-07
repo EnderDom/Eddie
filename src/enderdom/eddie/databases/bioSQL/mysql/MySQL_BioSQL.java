@@ -351,12 +351,12 @@ public class MySQL_BioSQL implements BioSQL {
 			while (set.next()){
 				size++;
 			}
-			String[][] result = new String[size][fields.length];
+			String[][] result = new String[fields.length][size];
 			set.first();
 			int i = 0;
 			do {
 				for (int j = 0; j < fields.length; j++) {
-					result[i][j] = (set.getObject(fields[j]) != null) ? set
+					result[j][i] = (set.getObject(fields[j]) != null) ? set
 							.getObject(fields[j]).toString() : "NULL";
 				}
 				i++;
@@ -369,6 +369,41 @@ public class MySQL_BioSQL implements BioSQL {
 			return null;
 		}
 	}
+	
+
+	public void genericUpdate(Connection con, String[] fields,
+			String[] fieldvalues, String table, String[] wheres,
+			String[] wherevalues) {
+		StringBuffer sql = new StringBuffer("UPDATE "+table+" SET ");
+		for(int i =0 ; i < fields.length;i++){
+			sql.append(fields[i]+"=\""+fieldvalues[i]+"\"");
+			if (i != fields.length - 1){
+				sql.append(",");
+			}
+			sql.append(" ");
+		}
+		if (wheres != null) {
+			sql.append("WHERE ");
+			for (int i = 0; i < wheres.length; i++) {
+				sql.append(wheres[i]);
+				sql.append("=\"");
+				sql.append(wherevalues[i]);
+				sql.append("\" ");
+				if (i != wheres.length - 1)
+					sql.append("AND ");
+			}
+		}
+		try {
+			Statement st = con.createStatement();
+			logger.trace(sql.toString());
+			st.execute(sql.toString());			
+			st.close();
+		} catch (SQLException sq) {
+			logger.error("Failed to run generic BioSQL update with " + sql.toString(), sq);
+		}
+	}
+	
+	
 
 	public String[] getBioEntryNames(Connection con, int bioentry_id) {
 		try {
@@ -449,7 +484,6 @@ public class MySQL_BioSQL implements BioSQL {
 		}
 		stat1.close();
 		stat2.close();
-		if(!stmt.isClosed())stmt.close();
 		return entry;
 	}
 
@@ -692,6 +726,7 @@ public class MySQL_BioSQL implements BioSQL {
 		}
 	}
 
+
 	/**
 	 * Builds the Default bioSQL 1.0.1 schema
 	 * 
@@ -924,4 +959,5 @@ public class MySQL_BioSQL implements BioSQL {
 			logger.error("Failed in method large insert", sq);
 		}
 	}
+
 }

@@ -219,6 +219,8 @@ public abstract class Tools_String {
 		return list;
 	}
 	
+	
+	
 	public static String[] pattern2List(Pattern p, String s){
 		Matcher m = p.matcher(s);
 		LinkedList<String> strs = new LinkedList<String>();

@@ -15,7 +15,6 @@ import java.util.ArrayList;
 
 public interface Contig extends SequenceList {
 	
-	
 	public String getContigName();
 	
 	public void setContigName(String s);
@@ -27,6 +26,10 @@ public interface Contig extends SequenceList {
 	public char getConsensusCompliment();
 	
 	public void setConsensusCompliment(char c);
+	
+	public SequenceObjectXT getSequence(String s);
+	
+	public void addSequenceObject(SequenceObjectXT s);
 	
 	/**
 	 * Set the offset, how much to add to the leftmost base in order to align

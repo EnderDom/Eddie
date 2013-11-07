@@ -186,9 +186,10 @@ public class Run {
 		}
 		ret.append(newline);
 		ret.append(newline);
+		
 		for(int i =0; i < fields.length; i++){
-			for(int j = 0; j < fields[i].length; j++){
-				ret.append(fields[i][j]);
+			for(int j = 0; j < fields[0].length; j++){
+				ret.append(fields[j][i]);
 				ret.append("\t\t");
 			}
 			ret.append(newline);

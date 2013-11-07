@@ -142,7 +142,7 @@ public class ClustalAlign extends BasicSequenceList{
 		fstream.close();
 	}
 	
-	private void save2writer(BufferedWriter out, int linelen, boolean html) throws IOException{
+	public void save2writer(BufferedWriter out, int linelen, boolean html) throws IOException{
 		String neline = (html) ?  "<br/>" : Tools_System.getNewline() ;
 		if(!html){
 			out.write("CLUSTAL 2.1 multiple sequence alignment"+neline+neline+neline);
@@ -170,18 +170,19 @@ public class ClustalAlign extends BasicSequenceList{
 				//TODO sort out this mess, kinda hacked it as i was writing my thesis :(
 				towrite = Tools_String.getStringofLenX(name, namespacemax) +
 						gap+sequences.get(name).getSequence().substring(count, count+linelen) + neline;
-				if(html)towrite.replaceAll(" ", "&nbsp;");
+				if(html)towrite=towrite.replaceAll(" ", "&nbsp;");
+				
 				out.write(towrite);
 			}
             towrite = Tools_String.getStringofLenX("", namespacemax)+gap+getClustAnnnot(sequences, count, count+linelen)+neline;
-            if(html)towrite.replaceAll(" ", "&nbsp;");
+            if(html)towrite=towrite.replaceAll(" ", "&nbsp;");
             out.write(towrite);
 			out.write(neline+neline);
 			count = count + linelen;
 		}
 		for(String name : sequences.keySet()){
 			towrite = Tools_String.getStringofLenX(name, namespacemax) + gap+sequences.get(name).getSequence().substring(count, maxlength) + neline;
-			if(html)towrite.replaceAll(" ", "&nbsp;");
+			if(html)towrite=towrite.replaceAll(" ", "&nbsp;");
 			out.write(towrite);
 		}
 	}
@@ -205,6 +206,5 @@ public class ClustalAlign extends BasicSequenceList{
 		}
 		return b.toString();
 	}
-	
 	
 }
