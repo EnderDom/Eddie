@@ -22,7 +22,6 @@ import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.NCBI_DATABASE;
 import enderdom.eddie.tools.bio.Tools_NCBI;
-import enderdom.eddie.tools.bio.Tools_TAIR;
 
 public class Task_AssemblyReport extends TaskXT{
 
