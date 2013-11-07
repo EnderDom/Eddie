@@ -122,30 +122,13 @@ public class Task_AssemblyReport extends TaskXT{
 									out.write("<p>Evalue: " + link.getEvalue() + " ("+d.getDbname()+")</p>");
 									out.write("<p>Score: " + link.getScore() + " ("+d.getDbname()+")</p>");
 									String info = "<p>Protein Name: No info available</p>";
+									
+									String acc = d.getAccession();
 									if(d.getDbname().equalsIgnoreCase("refseq")){
-										try {
-											SequenceObject o = Tools_NCBI.getSequencewAcc(NCBI_DATABASE.protein, d.getAccession());
-											info = "<p>Protein Name:"+ o.getIdentifier() + "</p> ";
-										} catch (Exception e) {
-											logger.error("Failed to acquire protein name from accession " + d.getAccession(),e);
-										}
+										
 									}
-									else if(d.getDbname().equalsIgnoreCase("TAIR")){
-										String acc = d.getAccession();
-										int s = acc.lastIndexOf(".");
-										if(s != -1)acc=acc.substring(0, s);
-										String tairinfo = Tools_TAIR.getGeneDescription(acc);
-										System.out.println(tairinfo);
-										if(tairinfo != null && tairinfo.contains(Tools_System.getNewline())){
-											String[] splis = tairinfo.split(Tools_System.getNewline());
-											info ="<p>";
-											for(int k =1;k< splis.length;k++)info+=splis[k]+ " " ;
-											info+="</p>";
-										}
-										else if(tairinfo != null)info = "<p>"+tairinfo+"</p>";
-										else{
-											logger.error("Failed to access TAIR information from the database");	
-										}
+									else if(d.getDbname().equalsIgnoreCase("TAIR")){									
+										
 									}
 									else{
 										logger.error("No support for lookup of the " + d.getDbname() + " database currently");
