@@ -17,6 +17,7 @@ import enderdom.eddie.exceptions.EddieDBException;
 //import databases.bioSQL.pgsql.PgSQL_BioSQL;
 //import databases.bioSQL.pgsql.PgSQL_Extended;
 import enderdom.eddie.tasks.internal.Task_DatabaseUpdate;
+import enderdom.eddie.ui.EddieProperty;
 import enderdom.eddie.ui.PropertyLoader;
 import enderdom.eddie.ui.UI;
 import enderdom.eddie.ui.UserResponse;
@@ -74,7 +75,7 @@ public class DatabaseManager {
 		if(driver==null || driver.length() == 0){
 			if(dbtype.equals("mysql"))driver="com.mysql.jdbc.Driver";
 			else if(dbtype.equals("sqllite"))driver="org.sqlite.JDBC";
-			loader.setValue("DBDRIVER", driver);
+			loader.setValue(EddieProperty.DBDRIVER.toString(), driver);
 		}
 		Class.forName(driver).newInstance();
 		String mys = "jdbc:"+dbtype+"://"+dbhost;
@@ -103,11 +104,11 @@ public class DatabaseManager {
 
 	public static String[] getDatabaseSettings(PropertyLoader loader){
 		String[] defaultsets = new String[5];
-		defaultsets[0]=loader.getValue("DBTYPE");
-		defaultsets[1] =loader.getValue("DBDRIVER");
-		defaultsets[2] =loader.getValue("DBHOST");
-		defaultsets[3] =loader.getValue("DBNAME");
-		defaultsets[4] =loader.getValue("DBUSER");
+		defaultsets[0]=loader.getValue(EddieProperty.DBTYPE.toString());
+		defaultsets[1] =loader.getValue(EddieProperty.DBDRIVER.toString());
+		defaultsets[2] =loader.getValue(EddieProperty.DBHOST.toString());
+		defaultsets[3] =loader.getValue(EddieProperty.DBNAME.toString());
+		defaultsets[4] =loader.getValue(EddieProperty.DBUSER.toString());
 		return defaultsets;
 	}
 	
@@ -323,7 +324,7 @@ public class DatabaseManager {
 	
 	public String getDBTYPE(){
 		if(this.dbtype ==null){
-			this.dbtype =loader.getValue("DBTYPE");
+			this.dbtype =loader.getValue(EddieProperty.DBTYPE.toString());
 			System.out.println(this.dbtype);
 		}
 		return this.dbtype;

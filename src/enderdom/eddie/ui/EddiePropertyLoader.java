@@ -170,14 +170,14 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 		if(defaultkeys.length != defaultvalues.length)System.out.println("You're being derp Dominic :(");
 		
 		for(int i =0; i < defaultkeys.length; i++){
-			if(!this.props.containsKey(defaultkeys[i])){
-				this.props.put(defaultkeys[i], defaultvalues[i]);
+			if(!this.props.containsKey(defaultkeys[i].toString())){
+				this.props.put(defaultkeys[i].toString(), defaultvalues[i]);
 			}
 		}
 		
 		//Forced Overwrite properties
-		String[] tempkeys = new String[]{"SUBVERSION", "VERSION", 
-				"FULLVERSION", "EDITION"};
+		String[] tempkeys = new String[]{EddieProperty.SUBVERSION.toString(), EddieProperty.VERSION.toString(), 
+				EddieProperty.FULLVERSION.toString(), EddieProperty.EDITION.toString()};
 		String[] tempvalues = new String[]{EddiePropertyLoader.subversion+"",EddiePropertyLoader.engineversion+"",
 				(EddiePropertyLoader.subversion+EddiePropertyLoader.engineversion)+"", edition};
 		if(tempkeys.length != tempvalues.length)System.out.println("You're being derp Dominic :(");

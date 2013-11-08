@@ -16,6 +16,7 @@ import enderdom.eddie.tasks.TaskList;
 import enderdom.eddie.tools.Tools_CLI;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_UI;
+import enderdom.eddie.ui.EddieProperty;
 import enderdom.eddie.ui.PropertyLoader;
 import enderdom.eddie.ui.EddiePropertyLoader;
 import enderdom.eddie.ui.TaskManager;
@@ -117,8 +118,10 @@ public class EddieCLI implements UI {
 	}
 
 	public void buildTaskManager() {
-		Integer core = Tools_String.parseString2Int(load.getValueOrSet("CORETHREAD", "1"));
-		Integer auxil = Tools_String.parseString2Int(load.getValueOrSet("AUXILTHREAD", "5"));
+		Integer core = Tools_String.parseString2Int(
+				load.getValueOrSet(EddieProperty.CORETHREAD.toString(), "1"));
+		Integer auxil = Tools_String.parseString2Int(
+				load.getValueOrSet(EddieProperty.AUXILTHREAD.toString(), "5"));
 		if(core == null){
 			core = 1;
 			logger.error("Something has gone horribly wrong");

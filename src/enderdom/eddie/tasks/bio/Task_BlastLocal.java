@@ -20,6 +20,7 @@ import enderdom.eddie.tasks.subtasks.SubTask_Blast;
 import enderdom.eddie.tools.Tools_File;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.bio.Tools_Blast;
+import enderdom.eddie.ui.EddieProperty;
 import enderdom.eddie.ui.UI;
 
 
@@ -82,15 +83,15 @@ public class Task_BlastLocal extends TaskXTwIO{
 	
 	public void parseOpts(Properties props){
 		if(blast_db == null){
-			blast_db = props.getProperty("BLAST_DB_DIR");
+			blast_db = props.getProperty(EddieProperty.BLAST_DB_DIR.toString());
 		}
 		else{
 			if(blast_db.indexOf(Tools_System.getFilepathSeparator()) == -1){
-				blast_db = props.getProperty("BLAST_DB_DIR") + blast_db;
+				blast_db = props.getProperty(EddieProperty.BLAST_DB_DIR.toString()) + blast_db;
 			}
 		}
 		if(blast_bin == null){
-			blast_bin = props.getProperty("BLAST_BIN_DIR");
+			blast_bin = props.getProperty(EddieProperty.BLAST_BIN_DIR.toString());
 		}
 		logger.trace("Parse Options From props");
 	}

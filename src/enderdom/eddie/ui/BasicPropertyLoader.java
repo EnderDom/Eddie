@@ -191,13 +191,13 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
     
 	protected boolean startLog() {
 		String slash = Tools_System.getFilepathSeparator();
-		File logfolder = new File(getValue("WORKSPACE")+ slash + "logs");
+		File logfolder = new File(getValue(EddieProperty.WORKSPACE.toString())+ slash + "logs");
 		preLog("Initialising Log at  "+logfolder.getPath()+"...");
 		if (logfolder.isFile()) {
 			System.out.println("Failed To log is standard location!!");
 			int i = 0;
 			while (logfolder.isFile()) {
-				logfolder = new File(getValue("WORKSPACE")	+ slash + "logs" + i);
+				logfolder = new File(getValue(EddieProperty.WORKSPACE.toString())	+ slash + "logs" + i);
 			}
 		}
 		if (!logfolder.exists()) {

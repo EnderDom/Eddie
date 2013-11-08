@@ -17,6 +17,7 @@ import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.Tools_Task;
+import enderdom.eddie.ui.EddieProperty;
 import enderdom.eddie.ui.UI;
 
 public class Task_ESTScan extends TaskXT{
@@ -42,7 +43,7 @@ public class Task_ESTScan extends TaskXT{
 	public void parseOpts(Properties props){
 		logger.debug("Parse Options From props");
 		if(ESTScanBin == null){
-			ESTScanBin = props.getProperty("ESTSCAN_BIN");
+			ESTScanBin = props.getProperty(EddieProperty.ESTSCAN_BIN.toString());
 		}
 	}
 	

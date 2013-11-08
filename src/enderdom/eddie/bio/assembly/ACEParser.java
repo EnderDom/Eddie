@@ -16,6 +16,9 @@ import enderdom.eddie.tools.Tools_String;
  * Tool for Parsing Ace Files
  * 
  * Used this as a reference for format specifications http://www.cbcb.umd.edu/research/contig_representation.shtml
+ * 
+ * OLD Version, use ACEFileParser
+ * 
  */
 @Deprecated
 public class ACEParser {

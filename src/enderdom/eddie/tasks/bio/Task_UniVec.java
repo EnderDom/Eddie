@@ -40,6 +40,7 @@ import enderdom.eddie.tools.Tools_Web;
 import enderdom.eddie.tools.bio.Tools_Bio_File;
 import enderdom.eddie.tools.bio.Tools_Blast;
 import enderdom.eddie.tools.bio.Tools_Fasta;
+import enderdom.eddie.ui.EddieProperty;
 import enderdom.eddie.ui.UserResponse;
 
 /**
@@ -237,9 +238,9 @@ public class Task_UniVec extends TaskXTwIO{
 	
 	public void parseOpts(Properties props){
 		if(blast_bin == null){
-			blast_bin = props.getProperty("BLAST_BIN_DIR");
+			blast_bin = props.getProperty(EddieProperty.BLAST_BIN_DIR.toString());
 		}
-		workspace = props.getProperty("WORKSPACE");
+		workspace = props.getProperty(EddieProperty.WORKSPACE.toString());
 		logger.trace("Parse Options From props");
 	}
 	

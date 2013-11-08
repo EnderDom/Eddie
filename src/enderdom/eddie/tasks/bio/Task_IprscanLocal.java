@@ -22,6 +22,7 @@ import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.Tools_Task;
 import enderdom.eddie.tools.bio.Tools_Fasta;
+import enderdom.eddie.ui.EddieProperty;
 import enderdom.eddie.ui.UI;
 
 
@@ -80,7 +81,7 @@ public class Task_IprscanLocal extends TaskXTwIO{
 	
 	public void parseOpts(Properties props){
 		if(iprscanbin == null){
-			iprscanbin = props.getProperty("IPRSCAN_BIN");
+			iprscanbin = props.getProperty(EddieProperty.IPRSCAN_BIN.toString());
 		}
 		logger.trace("Parse Options From props");
 	}
