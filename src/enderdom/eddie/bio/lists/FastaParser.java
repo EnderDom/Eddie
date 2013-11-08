@@ -23,7 +23,10 @@ import enderdom.eddie.tools.bio.Tools_Fasta;
  * Parser to potentially decide what to do with all the
  * data (ie just pick out sequences wanted, drop quality,
  * etc...)
+ * 
+ * 
  */
+//TODO replace with FastaParser2
 public class FastaParser{
 
 	FastaHandler handler;
