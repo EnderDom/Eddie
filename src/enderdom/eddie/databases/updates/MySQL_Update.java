@@ -129,4 +129,13 @@ public class MySQL_Update{
 		st.close();
 		updateDatabase(manager);
 	}
+	
+	public static void updbto29(DatabaseManager manager)throws SQLException{
+		String s = "ALTER TABLE dbxref ADD description TEXT NOT NULL AFTER ncbi_taxon_id";
+		Statement st = manager.getCon().createStatement();
+		st.executeUpdate(s);
+		st.close();
+		updateDatabase(manager);
+	}
+	
 }

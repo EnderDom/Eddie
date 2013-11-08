@@ -7,8 +7,10 @@ import org.apache.commons.cli.Option;
 
 import enderdom.eddie.databases.manager.DatabaseManager;
 import enderdom.eddie.exceptions.EddieDBException;
+import enderdom.eddie.exceptions.EddieGenericException;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXTwIO;
+import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.Tools_Task;
 
@@ -22,6 +24,7 @@ public class Task_Fix extends TaskXTwIO{
 	private boolean trimdec;
 	
 	public Task_Fix(){
+		
 	}
 
 	public void parseArgsSub(CommandLine cmd){
@@ -77,8 +80,7 @@ public class Task_Fix extends TaskXTwIO{
 		logger.info("Prefix set to: " + prefix + " and dbname in database is " + dbname);
 		logger.info("Trim start and stop set to: " + start + " and " +stop);
 		logger.info("Trim decimal is "+trimdec);
-		
-		
+			
 		try {
 			if(manager.open()){
 				String[][] strs = manager.getBioSQL().getGenericResults(manager.getCon(),
@@ -94,22 +96,18 @@ public class Task_Fix extends TaskXTwIO{
 						String r = ret[0].toString();
 						String[] rt = r.split(System.getProperty("line.separator"));
 						r = rt[0];
-						int indstart = 0;
-						if((indstart=r.indexOf(entry)) !=-1){
-							indstart+=entry.length();
-							int indstart2 = (start != null) ? r.indexOf(start, indstart): indstart;
-							indstart2+= (start !=null)?start.length():0;
-							int indend = (stop != null) ? r.indexOf(stop, indstart2): r.length();
-							if(indstart > -1 && indend > indstart2){
-								String acc = r.substring(indstart2, indend);
-								acc =acc.trim();
-								if(trimdec && (indend = acc.lastIndexOf('.')) != -1)acc=acc.substring(0, indend);
-								manager.getBioSQL().genericUpdate(manager.getCon(), new String[]{"accession","version"},
-										new String[]{acc, "1"}, "dbxref", new String[]{"dbxref_id", "version"}, 
-										new String[]{strs[1][i], "0"});
+						if(r.indexOf(entry) !=-1){
+							try{
+							String acc = Tools_String.cutLineBetween(start, stop, r);
+							acc =acc.trim();
+							int indend;
+							if(trimdec && (indend = acc.lastIndexOf('.')) != -1)acc=acc.substring(0, indend);
+							manager.getBioSQL().genericUpdate(manager.getCon(), new String[]{"accession","version"},
+									new String[]{acc, "1"}, "dbxref", new String[]{"dbxref_id", "version"}, 
+									new String[]{strs[1][i], "0"});
 							}
-							else {
-								logger.error("Could not properly trim "+r+" using \""+start + "\" and \""+stop+"\"" );
+							catch(EddieGenericException e){
+								logger.error("Failed to properly parse accession form string "+ r);
 							}
 						}
 						else{

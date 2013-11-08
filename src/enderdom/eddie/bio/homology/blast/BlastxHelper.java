@@ -65,6 +65,10 @@ public class BlastxHelper {
 		return blastx.getHitTagContents("Hit_accession", index);
 	}
 	
+	public String getHitDescription(int index) throws Exception{
+		return blastx.getHitTagContents("Hit_def", index);
+	}
+	
 	public double getHspEvalue(int hit_num, int hsp_num)throws Exception{
 		String s = blastx.getHspTagContents("Hsp_evalue", hit_num, hsp_num);
 		return new BigDecimal(s).doubleValue();
@@ -232,9 +236,9 @@ public class BlastxHelper {
 				//Values set to 0 as no errors
 				values[0]=0;
 				for(int i =1; i < blastx.getNoOfHits()+1; i++){
-					String acc = getHitAccession(i);
+					String acc = getHitAccession(i);				
 					int dbx_ref =  manager.getBioSQL().getDBxRef(manager.getCon(), dbname, acc);
-					if(dbx_ref < 1)manager.getBioSQL().addDBxref(manager.getCon(), dbname, acc, 0);
+					if(dbx_ref < 1)manager.getBioSQL().addDBxref(manager.getCon(), dbname, acc, 0, this.getHitDescription(i));
 					dbx_ref =  manager.getBioSQL().getDBxRef(manager.getCon(), dbname, acc);
 					if(dbx_ref < 1){
 						logger.error("Could not upload accession " + acc);

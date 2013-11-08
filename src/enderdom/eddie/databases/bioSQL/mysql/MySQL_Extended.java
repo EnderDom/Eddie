@@ -171,6 +171,7 @@ public class MySQL_Extended implements BioSQLExtended{
 	public boolean addDbxTaxons(DatabaseManager manager){
 		String alters[] = new String[]{
 				"ALTER TABLE dbxref ADD COLUMN (ncbi_taxon_id INT(10) UNSIGNED);",
+				"ALTER TABLE dbxref ADD 'description' TEXT NOT NULL AFTER 'ncbi_taxon_id'",
 				"CREATE INDEX dbxref_tax  ON dbxref(ncbi_taxon_id);"
 		};
 		try{
@@ -629,14 +630,14 @@ public class MySQL_Extended implements BioSQLExtended{
 	
 	public Dbxref getDbxRef(Connection con, int dbxref_id){
 		String query = new String("SELECT dbxref_id, dbname, accession, " +
-				"version, ncbi_taxon_id FROM dbxref WHERE dbxref_id="+dbxref_id);	
+				"version, ncbi_taxon_id, description FROM dbxref WHERE dbxref_id="+dbxref_id);	
 		try{
 			Statement st = con.createStatement();
 			ResultSet set = st.executeQuery(query);
 			Dbxref d = null;
 			while(set.next()){
 				d= new Dbxref(set.getInt(1),set.getString(2),set.getString(3), 
-						set.getInt(4),set.getInt(5));
+						set.getInt(4),set.getInt(5), set.getString(6));
 			}
 			set.close();
 			st.close();

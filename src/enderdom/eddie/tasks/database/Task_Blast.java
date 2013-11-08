@@ -30,9 +30,6 @@ import enderdom.eddie.tools.Tools_System;
 
 /**
  * 
- * This will be put on the stack of
- * horrible tasks. FFS I can't code for toffee.
- * 
  * @author dominic
  *
  */

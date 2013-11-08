@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.Logger;
 
+import enderdom.eddie.exceptions.EddieGenericException;
 import enderdom.eddie.tools.comparators.StringLength_Comparator;
 
 
@@ -123,20 +124,21 @@ public abstract class Tools_String {
 		return containsDigits(str) ? true : str.matches(".*\\W.*");
 	}
 	
-	public static String cutLineBetween(String start, String end, String src) throws Exception{
+	public static String cutLineBetween(String start, String end, String src) throws EddieGenericException{
 		int i =0;
 		int j =0;
 		
-		
-		if((i=src.indexOf(start)) == -1 || (j=src.indexOf(end))== -1){
-			throw new Exception("IndexOutOfBounds Cannot cut string of len="+src.length() + " between "+i+ " : " +j);
+		if((i=src.indexOf(start)) == -1){
+			throw new EddieGenericException("IndexOutOfBounds Cannot cut string of len="+src.length() + " between "+i+ " : " +j);
 		}
 		i = i+start.length();
-		if(i > j){
-			throw new Exception("IndexOutOfBounds Cannot cut string of len="+src.length() + " between "+i+ " : " +j);
+		if((j=src.indexOf(end, i)) == -1){
+			throw new EddieGenericException("IndexOutOfBounds Cannot cut string of len="+src.length() + " between "+i+ " : " +j);
 		}
 		return src.substring(i,j);
 	}
+	
+	
 
 	/**
 	 *  Doesn't work for floats and negative numbers

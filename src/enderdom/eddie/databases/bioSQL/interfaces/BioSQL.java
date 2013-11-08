@@ -72,7 +72,7 @@ public interface BioSQL {
 	 * @param version
 	 * @return if insert was successful
 	 */
-	public boolean addDBxref(Connection con, String dbname, String accession, int version);
+	public boolean addDBxref(Connection con, String dbname, String accession, int version, String description);
 	
 	/**
 	 * 

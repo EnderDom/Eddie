@@ -10,7 +10,6 @@ import java.util.LinkedList;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
-import enderdom.eddie.bio.sequence.SequenceObject;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Dbxref;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Dbxref_Bioentry_Link;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
@@ -20,8 +19,6 @@ import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
-import enderdom.eddie.tools.bio.NCBI_DATABASE;
-import enderdom.eddie.tools.bio.Tools_NCBI;
 
 public class Task_AssemblyReport extends TaskXT{
 
@@ -118,21 +115,10 @@ public class Task_AssemblyReport extends TaskXT{
 								
 									Dbxref d = manager.getBioSQLXT().getDbxRef(manager.getCon(), link.getDbxref_id());
 									out.write("<p>Top Match: " + d.getAccession() + " ("+d.getDbname()+")</p>");
-									out.write("<p>Evalue: " + link.getEvalue() + " ("+d.getDbname()+")</p>");
-									out.write("<p>Score: " + link.getScore() + " ("+d.getDbname()+")</p>");
-									String info = "<p>Protein Name: No info available</p>";
-									
-									String acc = d.getAccession();
-									if(d.getDbname().equalsIgnoreCase("refseq")){
-										
-									}
-									else if(d.getDbname().equalsIgnoreCase("TAIR")){									
-										
-									}
-									else{
-										logger.error("No support for lookup of the " + d.getDbname() + " database currently");
-									}
-									out.write(info);
+									out.write("<p>Evalue: " + link.getEvalue() + ")</p>");
+									out.write("<p>Score: " + link.getScore() + ")</p>");
+									out.write("<p>Accession: " + d.getAccession() + ")</p>");
+									out.write("<p>Description: " + d.getDescription() + ")</p>");
 								}
 							}
 							out.write("</br></hr>");

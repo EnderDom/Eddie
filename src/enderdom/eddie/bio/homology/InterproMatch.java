@@ -73,7 +73,7 @@ public class InterproMatch{
 	public void upload(DatabaseManager manager, InterproObject parent) {
 		int acc = manager.getBioSQL().getDBxRef(manager.getCon(), dbname, identifier);
 		if(acc < 1){
-			manager.getBioSQL().addDBxref(manager.getCon(), dbname, identifier, 1);
+			manager.getBioSQL().addDBxref(manager.getCon(), dbname, identifier, 1, name);
 			acc = manager.getBioSQL().getDBxRef(manager.getCon(), dbname, identifier);
 		}
 		if(acc > 0){

@@ -39,7 +39,6 @@ public class MySQL_BioSQL implements BioSQL {
 
 	public static String innodb = "ENGINE";
 
-
 	/**
 	 * Check to see if mysql version is 4 or greater because they change syntax
 	 * from Type to Engine >3.3 and completely removed at 5.5 so this checks to
@@ -53,16 +52,18 @@ public class MySQL_BioSQL implements BioSQL {
 		Statement st = con.createStatement();
 		ResultSet set = st.executeQuery("SHOW VARIABLES LIKE \"%version%\";");
 		String v = null;
-		while (set.next()){
+		while (set.next()) {
 			v = set.getString(1);
 		}
 		set.close();
 		st.close();
 		if (v.indexOf(".") != -1) {
-			Integer i = Tools_String.parseString2Int(v.substring(0, v.indexOf(".")));
+			Integer i = Tools_String.parseString2Int(v.substring(0,
+					v.indexOf(".")));
 			if (i != null) {
 				System.out.println(v + " of " + i);
-				if (i > 3)return true;
+				if (i > 3)
+					return true;
 				else {
 					innodb = "TYPE";
 					return false;
@@ -76,7 +77,8 @@ public class MySQL_BioSQL implements BioSQL {
 	public boolean addBiosequence(Connection con, Integer version,
 			Integer length, String alphabet, String seq, int bioentry_id) {
 		try {
-			PreparedStatement BioSequenceSET = con.prepareStatement("INSERT INTO biosequence (bioentry_id, version, length, alphabet, seq) VALUES (?,?,?,?,?)");
+			PreparedStatement BioSequenceSET = con
+					.prepareStatement("INSERT INTO biosequence (bioentry_id, version, length, alphabet, seq) VALUES (?,?,?,?,?)");
 			BioSequenceSET.setInt(1, bioentry_id);
 			if (version == null)
 				BioSequenceSET.setNull(2, Types.INTEGER);
@@ -108,9 +110,10 @@ public class MySQL_BioSQL implements BioSQL {
 			Integer taxon_id, String name, String accession, String identifier,
 			String division, String description, int version) {
 		try {
-			PreparedStatement BioEntrySET = con.prepareStatement("INSERT INTO bioentry " +
-					"(biodatabase_id, taxon_id, name, accession, identifier, division, " +
-					"description, version) VALUES (?,?,?,?,?,?,?,?)");
+			PreparedStatement BioEntrySET = con
+					.prepareStatement("INSERT INTO bioentry "
+							+ "(biodatabase_id, taxon_id, name, accession, identifier, division, "
+							+ "description, version) VALUES (?,?,?,?,?,?,?,?)");
 
 			// Values that cannot be null
 			BioEntrySET.setInt(1, biodatabase); // <- Huh? PreparedStatement
@@ -153,17 +156,17 @@ public class MySQL_BioSQL implements BioSQL {
 		boolean added = addBioEntry(con, biodatabase, taxon_id, name,
 				accession, identifier, division, description, version);
 		if (added) {
-			int bio_entry = getBioEntry(con, identifier, accession, biodatabase, -1);
+			int bio_entry = getBioEntry(con, identifier, accession,
+					biodatabase, -1);
 			if (bio_entry != -1) {
 				return addBiosequence(con, version, seq.length(), alphabet,
 						seq, bio_entry);
-			} 
-			else {
+			} else {
 				logger.error("Failed to return sequence added");
 				return false;
 			}
-		} 
-		else return false;
+		} else
+			return false;
 	}
 
 	public boolean addOntology(Connection con, String name, String definition) {
@@ -213,9 +216,9 @@ public class MySQL_BioSQL implements BioSQL {
 			int object_bioentry_id, int subject_bioentry_id, int term_id,
 			Integer rank) {
 		try {
-			PreparedStatement BioEntryRelationshipSET = con.prepareStatement(
-					"INSERT INTO bioentry_relationship (object_bioentry_id, " +
-					"subject_bioentry_id, term_id, rank) VALUES (?,?,?,?)");
+			PreparedStatement BioEntryRelationshipSET = con
+					.prepareStatement("INSERT INTO bioentry_relationship (object_bioentry_id, "
+							+ "subject_bioentry_id, term_id, rank) VALUES (?,?,?,?)");
 			BioEntryRelationshipSET.setInt(1, object_bioentry_id);
 			BioEntryRelationshipSET.setInt(2, subject_bioentry_id);
 			BioEntryRelationshipSET.setInt(3, term_id);
@@ -235,7 +238,8 @@ public class MySQL_BioSQL implements BioSQL {
 	public boolean addSeqFeature(Connection con, int bioentry_id,
 			int type_term_id, int source_term_id, String display_name, int rank) {
 		try {
-			PreparedStatement SeqFeatureSET =con.prepareStatement("INSERT INTO seqfeature (bioentry_id, type_term_id, source_term_id, display_name, rank) VALUES (?,?,?,?,?)");
+			PreparedStatement SeqFeatureSET = con
+					.prepareStatement("INSERT INTO seqfeature (bioentry_id, type_term_id, source_term_id, display_name, rank) VALUES (?,?,?,?,?)");
 			SeqFeatureSET.setInt(1, bioentry_id);
 			SeqFeatureSET.setInt(2, type_term_id);
 			SeqFeatureSET.setInt(3, source_term_id);
@@ -258,10 +262,10 @@ public class MySQL_BioSQL implements BioSQL {
 			Integer dbxref_id, Integer term_id, Integer start_pos,
 			Integer stop_pos, int strand, int rank) {
 		try {
-			PreparedStatement LocationSET = con.prepareStatement(
-					"INSERT INTO location (seqfeature_id," +
-					"dbxref_id,term_id,start_pos,end_pos," +
-					"strand,rank) VALUES (?,?,?,?,?,?,?)");
+			PreparedStatement LocationSET = con
+					.prepareStatement("INSERT INTO location (seqfeature_id,"
+							+ "dbxref_id,term_id,start_pos,end_pos,"
+							+ "strand,rank) VALUES (?,?,?,?,?,?,?)");
 			LocationSET.setInt(1, seqfeature_id);
 			if (dbxref_id == null)
 				LocationSET.setNull(2, Types.INTEGER);
@@ -291,14 +295,16 @@ public class MySQL_BioSQL implements BioSQL {
 	}
 
 	public boolean addDBxref(Connection con, String dbname, String accession,
-			int version) {
+			int version, String description) {
+		if(description==null)description="";
 		try {
-			PreparedStatement DBxrefSET = con.prepareStatement(
-					"INSERT INTO dbxref (dbname, accession, " +
-					"version) VALUES (?,?,?)");
+			PreparedStatement DBxrefSET = con
+					.prepareStatement("INSERT INTO dbxref (dbname, accession, "
+							+ "version, description) VALUES (?,?,?,?)");
 			DBxrefSET.setString(1, dbname);
 			DBxrefSET.setString(2, accession);
 			DBxrefSET.setInt(3, version);
+			DBxrefSET.setString(4, description);
 			DBxrefSET.execute();
 			DBxrefSET.close();
 			return true;
@@ -348,7 +354,7 @@ public class MySQL_BioSQL implements BioSQL {
 			ResultSet set = st.executeQuery(sql.toString());
 			logger.debug(sql.toString());
 			int size = 0;
-			while (set.next()){
+			while (set.next()) {
 				size++;
 			}
 			String[][] result = new String[fields.length][size];
@@ -369,15 +375,14 @@ public class MySQL_BioSQL implements BioSQL {
 			return null;
 		}
 	}
-	
 
 	public void genericUpdate(Connection con, String[] fields,
 			String[] fieldvalues, String table, String[] wheres,
 			String[] wherevalues) {
-		StringBuffer sql = new StringBuffer("UPDATE "+table+" SET ");
-		for(int i =0 ; i < fields.length;i++){
-			sql.append(fields[i]+"=\""+fieldvalues[i]+"\"");
-			if (i != fields.length - 1){
+		StringBuffer sql = new StringBuffer("UPDATE " + table + " SET ");
+		for (int i = 0; i < fields.length; i++) {
+			sql.append(fields[i] + "=\"" + fieldvalues[i] + "\"");
+			if (i != fields.length - 1) {
 				sql.append(",");
 			}
 			sql.append(" ");
@@ -396,14 +401,14 @@ public class MySQL_BioSQL implements BioSQL {
 		try {
 			Statement st = con.createStatement();
 			logger.trace(sql.toString());
-			st.execute(sql.toString());			
+			st.execute(sql.toString());
 			st.close();
 		} catch (SQLException sq) {
-			logger.error("Failed to run generic BioSQL update with " + sql.toString(), sq);
+			logger.error(
+					"Failed to run generic BioSQL update with "
+							+ sql.toString(), sq);
 		}
 	}
-	
-	
 
 	public String[] getBioEntryNames(Connection con, int bioentry_id) {
 		try {
@@ -426,8 +431,9 @@ public class MySQL_BioSQL implements BioSQL {
 			return null;
 		}
 	}
-	
-	public int getBioEntry(Connection con, String identifier, String accession,	int biodatabase) {
+
+	public int getBioEntry(Connection con, String identifier, String accession,
+			int biodatabase) {
 		return getBioEntry(con, identifier, accession, biodatabase, -1);
 	}
 
@@ -438,26 +444,32 @@ public class MySQL_BioSQL implements BioSQL {
 		String init = "SELECT bioentry_id FROM bioentry ";
 		init += runid > 0 ? "INNER JOIN bioentry_run USING(bioentry_id) " : "";
 		String run = runid > 0 ? " AND run_id=" + runid : "";
-		try{
-			if(runid > 0){
-				PreparedStatement BioEntryGET1wR = con.prepareStatement(init+where1 + run);
-				PreparedStatement BioEntryGET2wR = con.prepareStatement(init+where2 + run);
-				return getBioEntry(BioEntryGET1wR, BioEntryGET2wR, identifier, accession, biodatabase);
+		try {
+			if (runid > 0) {
+				PreparedStatement BioEntryGET1wR = con.prepareStatement(init
+						+ where1 + run);
+				PreparedStatement BioEntryGET2wR = con.prepareStatement(init
+						+ where2 + run);
+				return getBioEntry(BioEntryGET1wR, BioEntryGET2wR, identifier,
+						accession, biodatabase);
+			} else {
+				PreparedStatement BioEntryGET1 = con.prepareStatement(init
+						+ where1);
+				PreparedStatement BioEntryGET2 = con.prepareStatement(init
+						+ where2);
+				return getBioEntry(BioEntryGET1, BioEntryGET2, identifier,
+						accession, biodatabase);
 			}
-			else{
-				PreparedStatement BioEntryGET1 = con.prepareStatement(init+where1);
-				PreparedStatement BioEntryGET2 = con.prepareStatement(init+where2);
-				return getBioEntry(BioEntryGET1, BioEntryGET2, identifier, accession, biodatabase);
-			}
-			
+
 		} catch (SQLException sq) {
 			logger.error("Failed to add Bioentry identifier", sq);
 			return -1;
 		}
 	}
-	
+
 	private int getBioEntry(PreparedStatement stat1, PreparedStatement stat2,
-			String identifier, String accession, int biodatabase) throws SQLException{
+			String identifier, String accession, int biodatabase)
+			throws SQLException {
 		int entry = -1;
 		PreparedStatement stmt = null;
 
@@ -490,30 +502,32 @@ public class MySQL_BioSQL implements BioSQL {
 	public int getBioEntrywName(Connection con, String name, int runid) {
 		int entry = -1;
 		String init = "SELECT bioentry_id FROM bioentry ";
-		init+=runid >0 ? "INNER JOIN bioentry_run USING(bioentry_id) " : ""; 
-		String where = "WHERE name='"+ name + "'";
-		where += runid > 0 ? " AND run_id="+runid : "";
-		
+		init += runid > 0 ? "INNER JOIN bioentry_run USING(bioentry_id) " : "";
+		String where = "WHERE name='" + name + "'";
+		where += runid > 0 ? " AND run_id=" + runid : "";
+
 		try {
 			Statement st = con.createStatement();
-			ResultSet set = st.executeQuery(init+where);
+			ResultSet set = st.executeQuery(init + where);
 			while (set.next()) {
 				entry = set.getInt("bioentry_id");
-				if (set.next()){
-					logger.warn("Other ids are available with this name "+ name);
-					logger.warn("SQL was " + init+where);
+				if (set.next()) {
+					logger.warn("Other ids are available with this name "
+							+ name);
+					logger.warn("SQL was " + init + where);
 				}
 				break;
 			}
 			set.close();
 			st.close();
-			
+
 		} catch (SQLException sq) {
-			logger.error("Failed to get bioentry id with name: " + name + " using SQL "+init+where, sq);
+			logger.error("Failed to get bioentry id with name: " + name
+					+ " using SQL " + init + where, sq);
 		}
 		return entry;
 	}
-	
+
 	public int getBioEntrywName(Connection con, String name) {
 		return getBioEntrywName(con, name, -1);
 	}
@@ -523,11 +537,11 @@ public class MySQL_BioSQL implements BioSQL {
 
 		int entry = -1;
 		try {
-			PreparedStatement BioEntryRelationshipGET = con.prepareStatement(
-					"SELECT bioentry_relationship_id " +
-					"FROM bioentry_relationship WHERE " +
-					"object_bioentry_id=? AND subject_bioentry_id=? " +
-					"AND term_id=?");
+			PreparedStatement BioEntryRelationshipGET = con
+					.prepareStatement("SELECT bioentry_relationship_id "
+							+ "FROM bioentry_relationship WHERE "
+							+ "object_bioentry_id=? AND subject_bioentry_id=? "
+							+ "AND term_id=?");
 
 			BioEntryRelationshipGET.setInt(1, bioentry_object_id);
 			BioEntryRelationshipGET.setInt(2, bioentry_subject_id);
@@ -541,8 +555,7 @@ public class MySQL_BioSQL implements BioSQL {
 			BioEntryRelationshipGET.close();
 
 		} catch (SQLException sq) {
-			logger.error(
-					"Failed to add Biosequence", sq);
+			logger.error("Failed to add Biosequence", sq);
 		}
 		return entry;
 	}
@@ -616,8 +629,8 @@ public class MySQL_BioSQL implements BioSQL {
 	public TermRelationship getTermRelationship(Connection con, int subject_id,
 			int object_id, int predicate_id, int ontology_id) {
 		try {
-			PreparedStatement TermRelationshipGET = con.prepareStatement(
-					"SELECT term_relationship.* FROM term_relationship "
+			PreparedStatement TermRelationshipGET = con
+					.prepareStatement("SELECT term_relationship.* FROM term_relationship "
 							+ "WHERE subject_term_id=? AND predicate_term_id=? AND object_term_id=? AND ontology_id=?");
 			TermRelationshipGET.setInt(1, subject_id);
 			TermRelationshipGET.setInt(2, predicate_id);
@@ -646,9 +659,9 @@ public class MySQL_BioSQL implements BioSQL {
 			int source_term_id, int rank) {
 		try {
 			int id = -1;
-			PreparedStatement SeqfeatureGET =con.prepareStatement(
-					"SELECT seqfeature_id FROM seqfeature WHERE bioentry_id=? " +
-					"AND type_term_id=? AND source_term_id=? AND rank=?");
+			PreparedStatement SeqfeatureGET = con
+					.prepareStatement("SELECT seqfeature_id FROM seqfeature WHERE bioentry_id=? "
+							+ "AND type_term_id=? AND source_term_id=? AND rank=?");
 			SeqfeatureGET.setInt(1, bioentry_id);
 			SeqfeatureGET.setInt(2, type_term_id);
 			SeqfeatureGET.setInt(3, source_term_id);
@@ -661,8 +674,8 @@ public class MySQL_BioSQL implements BioSQL {
 			SeqfeatureGET.close();
 			return id;
 		} catch (SQLException se) {
-			logger.error(
-					"Failed to retrieve seqfeature id with bioentry id "+bioentry_id, se);
+			logger.error("Failed to retrieve seqfeature id with bioentry id "
+					+ bioentry_id, se);
 			return -2;
 		}
 	}
@@ -670,8 +683,8 @@ public class MySQL_BioSQL implements BioSQL {
 	public int getLocation(Connection con, int seqfeature_id, int rank) {
 		try {
 			int id = -1;
-			PreparedStatement LocationGET = con.prepareStatement(
-					"SELECT location_id FROM location WHERE seqfeature_id=? AND rank=?");
+			PreparedStatement LocationGET = con
+					.prepareStatement("SELECT location_id FROM location WHERE seqfeature_id=? AND rank=?");
 			LocationGET.setInt(1, seqfeature_id);
 			LocationGET.setInt(2, rank);
 			set = LocationGET.executeQuery();
@@ -682,8 +695,7 @@ public class MySQL_BioSQL implements BioSQL {
 			LocationGET.close();
 			return id;
 		} catch (SQLException se) {
-			logger.error(
-					"Failed to retrieve location id "+ seqfeature_id, se);
+			logger.error("Failed to retrieve location id " + seqfeature_id, se);
 			return -2;
 		}
 	}
@@ -709,8 +721,8 @@ public class MySQL_BioSQL implements BioSQL {
 	public int getDBxRef(Connection con, String dbname, String accession) {
 		int i = -1;
 		try {
-			PreparedStatement DBxrefGET = con.prepareStatement(
-					"SELECT dbxref_id FROM dbxref WHERE dbname=? AND accession=?");
+			PreparedStatement DBxrefGET = con
+					.prepareStatement("SELECT dbxref_id FROM dbxref WHERE dbname=? AND accession=?");
 			DBxrefGET.setString(1, dbname);
 			DBxrefGET.setString(2, accession);
 			set = DBxrefGET.executeQuery();
@@ -725,7 +737,6 @@ public class MySQL_BioSQL implements BioSQL {
 			return -1;
 		}
 	}
-
 
 	/**
 	 * Builds the Default bioSQL 1.0.1 schema
@@ -843,12 +854,12 @@ public class MySQL_BioSQL implements BioSQL {
 
 	public int getTaxonIdwNCBI(Connection con, int ncbi_id) {
 		try {
-			PreparedStatement TaxonGET = con.prepareStatement(
-					"SELECT taxon_id FROM taxon WHERE ncbi_taxon_id=?");
+			PreparedStatement TaxonGET = con
+					.prepareStatement("SELECT taxon_id FROM taxon WHERE ncbi_taxon_id=?");
 			TaxonGET.setInt(1, ncbi_id);
 			set = TaxonGET.executeQuery();
 			int ret = -1;
-			while (set.next()){
+			while (set.next()) {
 				ret = set.getInt("taxon_id");
 			}
 			set.close();
@@ -863,15 +874,15 @@ public class MySQL_BioSQL implements BioSQL {
 	public boolean addTaxonName(Connection con, int taxon_id, String name,
 			String name_class) {
 		try {
-			PreparedStatement TaxonNameSET = con.prepareStatement(
-					"INSERT INTO taxon_name (taxon_id, name, name_class)"
+			PreparedStatement TaxonNameSET = con
+					.prepareStatement("INSERT INTO taxon_name (taxon_id, name, name_class)"
 							+ "VALUES (?,?,?)");
 
 			TaxonNameSET.setInt(1, taxon_id);
 			TaxonNameSET.setString(2, name);
 			TaxonNameSET.setString(3, name_class);
 			TaxonNameSET.execute();
-			TaxonNameSET.close();	
+			TaxonNameSET.close();
 			return true;
 		} catch (SQLException sq) {
 			logger.error("Failed to add Taxon name ", sq);
@@ -882,8 +893,8 @@ public class MySQL_BioSQL implements BioSQL {
 	public boolean addTermRelationship(Connection con, int subject_id,
 			int object_id, int predicate_id, int ontology_id) {
 		try {
-			PreparedStatement TermRelationshipSET = con.prepareStatement(
-					"INSERT INTO term_relationship (subject_term_id, predicate_term_id, "
+			PreparedStatement TermRelationshipSET = con
+					.prepareStatement("INSERT INTO term_relationship (subject_term_id, predicate_term_id, "
 							+ "object_term_id, ontology_id) VALUES (?,?,?,?)");
 
 			TermRelationshipSET.setInt(1, subject_id);
@@ -903,8 +914,8 @@ public class MySQL_BioSQL implements BioSQL {
 	public boolean addDbxrefTermPath(Connection con, int dbxref_id,
 			int term_id, int rank, String value) {
 		try {
-			PreparedStatement DbxrefTermValueSET = con.prepareStatement(
-					"INSERT IGNORE INTO dbxref_qualifier_value (dbxref_id, term_id, "
+			PreparedStatement DbxrefTermValueSET = con
+					.prepareStatement("INSERT IGNORE INTO dbxref_qualifier_value (dbxref_id, term_id, "
 							+ "rank, value) VALUES (?,?,?,?)");
 
 			DbxrefTermValueSET.setInt(1, dbxref_id);
@@ -926,8 +937,8 @@ public class MySQL_BioSQL implements BioSQL {
 	public boolean addDbxrefTerm(Connection con, int dbxref_id, int term_id,
 			Integer rank) {
 		try {
-			PreparedStatement DbxrefTermSET = con.prepareStatement(
-					"INSERT IGNORE INTO term_dbxref (dbxref_id, term_id, rank) VALUES (?,?,?)");
+			PreparedStatement DbxrefTermSET = con
+					.prepareStatement("INSERT IGNORE INTO term_dbxref (dbxref_id, term_id, rank) VALUES (?,?,?)");
 			DbxrefTermSET.setInt(1, dbxref_id);
 			DbxrefTermSET.setInt(2, term_id);
 			if (rank == null)
@@ -946,11 +957,10 @@ public class MySQL_BioSQL implements BioSQL {
 	public void largeInsert(Connection con, boolean start) {
 		try {
 			Statement st = con.createStatement();
-			if (start){
+			if (start) {
 				logger.debug("Starting mysql transaction");
 				st.execute("START TRANSACTION;");
-			}
-			else{
+			} else {
 				st.execute("COMMIT;");
 				logger.debug("Commiting cached transactions");
 			}
