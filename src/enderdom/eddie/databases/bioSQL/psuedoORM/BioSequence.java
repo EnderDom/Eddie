@@ -1,12 +1,10 @@
 package enderdom.eddie.databases.bioSQL.psuedoORM;
 
-public interface BioSequence {
+import enderdom.eddie.bio.sequence.SequenceObject;
+
+public interface BioSequence extends SequenceObject{
 
 	public abstract int getBioentry();
-
-	public abstract String getIdentifier();
-
-	public abstract void setIdentifier(String identifier);
 
 	public abstract int getVersion();
 
@@ -18,8 +16,5 @@ public interface BioSequence {
 
 	public abstract void setAlphabet(String alphabet);
 
-	public abstract String getSequence();
-
-	public abstract void setSequence(String sequence);
 
 }

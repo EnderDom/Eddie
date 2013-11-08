@@ -30,6 +30,7 @@ import enderdom.eddie.bio.sequence.SequenceObjectXT;
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
 import enderdom.eddie.databases.bioSQL.psuedoORM.BasicBioSequence;
 import enderdom.eddie.databases.bioSQL.psuedoORM.BioSequence;
+import enderdom.eddie.databases.bioSQL.psuedoORM.Bioentry;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Dbxref;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Dbxref_Bioentry_Link;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
@@ -456,6 +457,31 @@ public class MySQL_Extended implements BioSQLExtended{
 		return entry;
 	}
 	
+	public Bioentry getBioentry(Connection con, int bioentry_id){
+		String sql = "SELECT bioentry_id, biodatabase_id," +
+				"taxon_id, name, accession, identifier," +
+				" division, description, version FROM bioentry " +
+				"WHERE bioentry_id="+bioentry_id;
+		Bioentry e = null;
+		try{
+			Statement st = con.createStatement();
+			set = st.executeQuery(sql);
+			while(set.next()){
+				e = new Bioentry(set.getInt("bioentry_id"), set.getInt("biodatabase_id"),
+						set.getInt("taxon_id"), set.getString("name"), 
+						set.getString("accession"),	set.getString("identifier"),
+						set.getString("division"), set.getString("description"), 
+						set.getInt("version"));
+			}
+			set.close();
+			st.close();
+		}
+		catch(SQLException sq){
+			logger.error("Failed to retrieve the bioentry with bioentry_id: " + bioentry_id);
+		}
+		return e;
+	}
+	
 	public boolean existsDbxRefId(DatabaseManager manager, int bioentry_id, int dbxref_id, int run_id, int rank, int hit_no){
 		
 		String sql = "SELECT COUNT(1) AS bool FROM bioentry_dbxref WHERE bioentry_id=? AND dbxref_id=? AND run_id=? AND hit_no=? AND rank=?";
@@ -613,8 +639,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			bioSequenceGET.setInt(1, bioentry_id);
 			set = bioSequenceGET.executeQuery();
 			while(set.next()){
-				BioSequence s = new BasicBioSequence(bioentry_id, set.getInt(1), set.getInt(2), set.getString(3), set.getString(4));
-				s.setIdentifier(set.getString(5));
+				BioSequence s = new BasicBioSequence(set.getString(5),bioentry_id, set.getInt(1), set.getInt(2), set.getString(3), set.getString(4));
 				biosequences.add(s);
 			}
 			set.close();
@@ -1532,6 +1557,49 @@ public class MySQL_Extended implements BioSQLExtended{
 			logger.error("Failed to execute " + query, sq);
 		}
 		return new int[]{-1,-1};
+	}
+	
+	/**
+	 * 
+	 * @param manager
+	 * @param contig_id bioentry_id of contig to use to find reads shared with this contig
+	 * @param exclude_runs Exclude runs, ie Meta assemblies. If you don't exclude the meta assemblies
+	 * the will be included in the final count (usually doubling the contig_id contig, but in the case
+	 * of multiple different meta assemblies using these contigs this may screw everything up so
+	 * exclude them)
+	 * @return an array of int[2][n] where n is the number of contigs which share the same reads
+	 * as contig given by contig_id. These are stored in int[0][n] and
+	 *  ordered from highest to lowest and includes the given contig_id (at top presumably).
+	 *  int[1][n] includes the number of reads the contig, represented at int[0][n], shares
+	 *  with contig_id.
+	 */
+	public int[][] getSharedReads(DatabaseManager manager, int contig_id, int[] exclude_runs){
+		String query = "SELECT assembly.contig_bioentry_id AS ID, COUNT(*) AS COUNT " +
+				"FROM assembly WHERE read_bioentry_id IN " +
+				"(SELECT assembly.read_bioentry_id FROM assembly WHERE assembly.contig_bioentry_id="+contig_id+") ";
+		if(exclude_runs != null){
+			for(int i =0; i < exclude_runs.length;i++){
+				query+="AND run_id<>"+exclude_runs[i]+" ";
+			}
+		}
+		query+=	"GROUP BY assembly.contig_bioentry_id ORDER BY COUNT DESC";
+		try{
+			Statement st = manager.getCon().createStatement();
+			ResultSet set = st.executeQuery(query);
+			LinkedList<Integer> ids = new LinkedList<Integer>();
+			LinkedList<Integer> counts = new LinkedList<Integer>();
+			while(set.next()){
+				ids.add(set.getInt(1));
+				counts.add(set.getInt(2));
+			}
+			set.close();
+			st.close();
+			return new int[][]{Tools_Array.ListInt2int(ids), Tools_Array.ListInt2int(counts)};
+		}
+		catch(SQLException sq){
+			logger.error("Failed to run to following SQL for getSharedReads: "+query, sq);
+		}
+		return null;
 	}
 	
 	public String[][] getListOfContigsfromMetaAssembly(DatabaseManager manager, int run_id){

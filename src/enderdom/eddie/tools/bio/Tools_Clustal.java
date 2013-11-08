@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import enderdom.eddie.bio.lists.ClustalAlign;
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.tools.Tools_Math;
 
@@ -42,4 +43,13 @@ public class Tools_Clustal {
 		
 		out.close();
 	}
+	
+//	public static ClustalAlign getClustalAlign(String clustalcmd, SequenceList list){
+//		" -ALIGN -PWMATRIX=BLOSUM -INFILE="+input+" -OUTPUT=CLUSTAL -OUTFILE="+output+".aln"
+//		
+//		
+//		
+//		return null;
+//	}
+	
 }

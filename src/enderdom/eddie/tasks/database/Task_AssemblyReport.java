@@ -10,6 +10,12 @@ import java.util.LinkedList;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
+import enderdom.eddie.bio.lists.Fasta;
+import enderdom.eddie.bio.sequence.BasicSequenceList;
+import enderdom.eddie.bio.sequence.SequenceList;
+import enderdom.eddie.bio.sequence.SequenceObject;
+import enderdom.eddie.databases.bioSQL.psuedoORM.BioSequence;
+import enderdom.eddie.databases.bioSQL.psuedoORM.Bioentry;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Dbxref;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Dbxref_Bioentry_Link;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
@@ -104,28 +110,44 @@ public class Task_AssemblyReport extends TaskXT{
 						logger.debug(ncross-1+" store reset to last contig (compensating for remainder drift) at "
 								+indices[ncross-1] + " called " +contigs[1][indices[ncross-1]]);
 						for(int j =0;j< indices.length;j++){
-							out.write("<h3>Contig: "+contigs[1][indices[j]]+"</h4>");
-							out.write("<p>Length: "+contigs[2][indices[j]]+"<p>");
-							out.write("<p>Assembler: "+contigs[3][indices[j]]+"<p> </br></br>");
-							//TODO get all overlapping contigs
-							Dbxref_Bioentry_Link[] links = manager.getBioSQLXT().getDbxRef_Bioentry_Links(
-									manager.getCon(), Tools_String.parseString2Int(contigs[0][indices[j]]), -1);
-							for(Dbxref_Bioentry_Link link : links){
-								if(link.getHit_no() == 1 && link.getRank() == 1){
-								
-									Dbxref d = manager.getBioSQLXT().getDbxRef(manager.getCon(), link.getDbxref_id());
-									out.write("<p>Top Match: " + d.getAccession() + " ("+d.getDbname()+")</p>");
-									out.write("<p>Evalue: " + link.getEvalue() + ")</p>");
-									out.write("<p>Score: " + link.getScore() + ")</p>");
-									out.write("<p>Accession: " + d.getAccession() + ")</p>");
-									out.write("<p>Description: " + d.getDescription() + ")</p>");
+							//General Contig details
+							int contig_id = Tools_String.parseString2Int(contigs[0][indices[j]]);
+							out.write("<h2>Contig: "+contigs[1][indices[j]]+"</h2>");
+							out.write("<p>Length: "+contigs[2][indices[j]]+"</p>");
+							out.write("<p>Assembler: "+contigs[3][indices[j]]+"</p>");
+							out.write("<p>Eddie Bioentry_ID: "+contig_id+"</p>");			
+						
+							//Retrieve Shares
+							int[][] shares = manager.getBioSQLXT()
+									.getSharedReads(manager, contig_id, new int[]{this.run_id});
+							
+							double sizef = (double)shares[1][0];
+							out.write("<p>Reads "+sizef+"</p></br>");
+							//Blast dbxref details
+							writeDbxref(out, contig_id, manager);
+							
+							out.write("<h3>Matching Contigs</h3>");
+							 
+							SequenceList list = new Fasta();
+							
+							for(int k = 0 ; k < shares[0].length; k++){
+								if(shares[0][k] != contig_id){
+									Bioentry b = manager.getBioSQLXT().getBioentry(manager.getCon(), shares[0][k]);
+									SequenceObject seq = manager.getBioSQLXT().getBioSequences(manager, contig_id)[0];
+									list.addSequenceObject(seq);
+									out.write("<h4>Contig: "+b.getIdentifier()+"</h4>");
+									int perc = (int)((double)shares[1][k]/sizef*100.0);
+									out.write("<p>Shared Reads: "+shares[1][k]+" ("+perc+"%)</p>");
+									out.write("<p>Eddie Bioentry_ID: "+b.getBioentry_id()+"</p>");
+									writeDbxref(out, shares[0][i],manager);
 								}
 							}
-							out.write("</br></hr>");
+							
+							//TODO get clustal alignment
+							
+							out.write("</br><hr/>");
 						}
 					}
-					
-						
 					out.write("</body>");
 					out.close();
 				}
@@ -153,4 +175,21 @@ public class Task_AssemblyReport extends TaskXT{
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
 	    setCompleteState(TaskState.FINISHED);
 	}
+	
+	private void writeDbxref(BufferedWriter out, int contig_id, DatabaseManager manager) throws IOException{
+		Dbxref_Bioentry_Link[] links = manager.getBioSQLXT().getDbxRef_Bioentry_Links(
+				manager.getCon(), contig_id, -1);
+		out.write("<h4>Blast Details</h4>");
+		for(Dbxref_Bioentry_Link link : links){
+			if(link.getHit_no() == 1 && link.getRank() == 1){
+				Dbxref d = manager.getBioSQLXT().getDbxRef(manager.getCon(), link.getDbxref_id());
+				out.write("<p>Top Match: " + d.getAccession() + " ("+d.getDbname()+")</p>");
+				out.write("<p>Evalue: " + link.getEvalue() + "</p>");
+				out.write("<p>Score: " + link.getScore() + "</p>");
+				out.write("<p>Accession: " + d.getAccession() + "</p>");
+				out.write("<p>Description: " + d.getDescription() + ")</p>");
+			}
+		}
+	}
+	
 }

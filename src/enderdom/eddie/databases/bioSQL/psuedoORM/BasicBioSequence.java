@@ -1,34 +1,24 @@
 package enderdom.eddie.databases.bioSQL.psuedoORM;
 
-import enderdom.eddie.bio.sequence.SequenceObject;
+import enderdom.eddie.bio.sequence.GenericSequence;
 
-public class BasicBioSequence implements BioSequence {
+public class BasicBioSequence extends GenericSequence implements BioSequence {
 
 	private int bioentry;
 	private int version;
 	private int length;
 	private String alphabet;
-	private String sequence;
-	private String identifier;
 	
-	public BasicBioSequence(int b, int v, int l, String a, String s){
+	public BasicBioSequence(String id, int b, int v, int l, String a, String s){
+		super(id, s);
 		this.bioentry = b;
 		this.version = v;
 		this.length= l ;
 		this.alphabet = a;
-		this.sequence = s;
 	}
 	
 	public int getBioentry() {
 		return bioentry;
-	}
-
-	public String getIdentifier() {
-		return identifier;
-	}
-
-	public void setIdentifier(String identifier) {
-		this.identifier = identifier;
 	}
 	
 	public int getVersion() {
@@ -52,22 +42,6 @@ public class BasicBioSequence implements BioSequence {
 
 	public void setAlphabet(String alphabet) {
 		this.alphabet = alphabet;
-	}
-
-	public String getSequence() {
-		return sequence;
-	}
-
-	public void setSequence(String sequence) {
-		this.sequence = sequence;
-	}
-	
-	public boolean sequenceBasicCompare(String s){//TODO improve to a better comparison method
-		return this.sequence.toUpperCase().equals(s.toUpperCase());
-	}
-	
-	public boolean basicCompare(SequenceObject s) throws Exception{
-		return this.sequence.equals(s.getSequence());
 	}
 	
 }

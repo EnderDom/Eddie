@@ -118,7 +118,6 @@ public class MultiblastParser implements Iterator<BlastObject>, BlastParser{
 				}
 			}
 		}
-
 	}
 	
 	/**

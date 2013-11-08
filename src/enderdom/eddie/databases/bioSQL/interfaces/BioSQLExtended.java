@@ -7,6 +7,7 @@ import java.util.HashMap;
 
 import enderdom.eddie.bio.sequence.SequenceList;
 import enderdom.eddie.databases.bioSQL.psuedoORM.BioSequence;
+import enderdom.eddie.databases.bioSQL.psuedoORM.Bioentry;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Dbxref;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Dbxref_Bioentry_Link;
 import enderdom.eddie.databases.bioSQL.psuedoORM.Run;
@@ -160,6 +161,8 @@ public interface BioSQLExtended {
 	public int getContigFromRead(DatabaseManager manager, int bioentry_id, int run_id);
 
 	public int getBioEntryId(DatabaseManager manager, String name, boolean fuzzy, int biodatabase_id, int runid);
+	
+	public Bioentry getBioentry(Connection con, int bioentry_id);
 	
 	/**
 	 * @see #addBioentryDbxrefCols(Connection)
@@ -416,4 +419,20 @@ public interface BioSQLExtended {
 	 * 3 = Assembler used for contig
 	 */
 	public String[][] getListOfContigsfromMetaAssembly(DatabaseManager manager, int run_id);
+	
+	/**
+	 * 
+	 * @param manager
+	 * @param contig_id bioentry_id of contig to use to find reads shared with this contig
+	 * @param exclude_runs Exclude runs, ie Meta assemblies. If you don't exclude the meta assemblies
+	 * the will be included in the final count (usually doubling the contig_id contig, but in the case
+	 * of multiple different meta assemblies using these contigs this may screw everything up so
+	 * exclude them)
+	 * @return an array of int[2][n] where n is the number of contigs which share the same reads
+	 * as contig given by contig_id. These are stored in int[0][n] and
+	 *  ordered from highest to lowest and includes the given contig_id (at top presumably).
+	 *  int[1][n] includes the number of reads the contig, represented at int[0][n], shares
+	 *  with contig_id.
+	 */
+	public int[][] getSharedReads(DatabaseManager manager, int contig_id, int[] exclude_runs);
 }
