@@ -1,6 +1,7 @@
 package enderdom.eddie.tasks.internal;
 
 import java.sql.SQLException;
+import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -13,6 +14,7 @@ import enderdom.eddie.tasks.TaskXTwIO;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.tools.Tools_System;
 import enderdom.eddie.tools.Tools_Task;
+import enderdom.eddie.ui.EddieProperty;
 
 @Deprecated
 public class Task_Fix extends TaskXTwIO{
@@ -22,9 +24,14 @@ public class Task_Fix extends TaskXTwIO{
 	private String start;
 	private String stop;
 	private boolean trimdec;
+	private String blastcmdpath;
 	
 	public Task_Fix(){
 		
+	}
+	
+	public void parseOpts(Properties props){
+		blastcmdpath = props.getProperty(EddieProperty.BLAST_BIN_DIR.toString());
 	}
 
 	public void parseArgsSub(CommandLine cmd){
@@ -52,7 +59,7 @@ public class Task_Fix extends TaskXTwIO{
 	}
 	
 	public void printHelpMessage(){
-		System.out.println("This task pulls accessions loaded in a database based which are " +
+		System.out.println("This task pulls accessions loaded in a database which are " +
 				"based on local database accesions and renames them based on the accessions " +
 				"found 'hopefully in the database entry name' check with blastdbcmd");
 		super.printHelpMessage();
@@ -90,7 +97,7 @@ public class Task_Fix extends TaskXTwIO{
 				String query =null;
 				for(int i=0;i < strs[0].length;i++){
 					String entry = prefix+strs[0][i];
-					query = "blastdbcmd -db "+input+" -entry \""+entry+"\"";
+					query = blastcmdpath+"blastdbcmd -db "+input+" -entry \""+entry+"\"";
 					StringBuffer[] ret = Tools_Task.runProcess(query, true, false);
 					if(ret[0]!=null){
 						String r = ret[0].toString();

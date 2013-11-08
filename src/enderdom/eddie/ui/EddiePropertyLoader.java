@@ -36,9 +36,8 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 	public String modulename;
 	public int mode;
 	
-	private String[] defaultkeys;
+	private EddieProperty[] defaultkeys;
 	private String[] defaultvalues;
-	private String[] defaulttooltips;
 	
 	public EddiePropertyLoader(String[] args) {
 		setLogname("eddie.log");
@@ -151,34 +150,22 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 	public void setDefaultProperties(){
 		String slash = Tools_System.getFilepathSeparator();
 		//Properties to add if not already available
-		defaultkeys = new String[]{
-				"WORKSPACE","AUXILTHREAD","CORETHREAD", 
-				"BLAST_BIN_DIR","BLAST_DB_DIR", "ESTSCAN_BIN", 
-				"FILES_XML","PREFLNF","TESTDATADIR",
-				"DBTYPE","DBDRIVER","DBHOST", 
-				"DBNAME", "DBUSER","UNI_VEC_DB", "UNIVEC_URL",
-				"IPRSCAN_BIN", "COLORSTDOUT"
+		defaultkeys = new EddieProperty[]{
+				EddieProperty.WORKSPACE,EddieProperty.AUXILTHREAD,EddieProperty.CORETHREAD,
+				EddieProperty.BLAST_BIN_DIR,EddieProperty.BLAST_DB_DIR, EddieProperty.ESTSCAN_BIN, 
+				EddieProperty.FILES_XML,EddieProperty.PREFLNF,EddieProperty.TESTDATADIR,
+				EddieProperty.DBTYPE,EddieProperty.DBDRIVER,EddieProperty.DBHOST, 
+				EddieProperty.DBNAME,EddieProperty.DBUSER,EddieProperty.UNI_VEC_DB,
+				EddieProperty.UNIVEC_URL,EddieProperty.IPRSCAN_BIN,EddieProperty.COLORSTDOUT
 				 };
 		defaultvalues = new String[]{
 				propfile.getParent(), "5", "1", 
 				"/usr/bin/", "/home/dominic/bioapps/blast/db/", "/usr/bin/ESTScan",
 				"null", defaultlnf, propfile.getParent()+slash+"test", 
 				"mysql","com.mysql.jdbc.Driver", "Localhost", 
-				DatabaseManager.default_database, "user", "","ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec",
-				"/usr/bin/iprscan", "TRUE"
+				DatabaseManager.default_database, "user", "",
+				"ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec",	"/usr/bin/iprscan", "TRUE"
 				};
-		defaulttooltips = new String[]{
-				"Default Workspace directory", "Number of threads for core tasks (High CPU)", 
-				"Number of auxiliary task threads", "Directory path containing blast binaries (Should be a folder)", 
-				"Directory path containing blast databases", "Path for ESTscan binary", "Path for file to store file locations",
-				"Preferred Look & Feel", "Directory Path for test data", "Database type, ie mysql", "Database driver",
-				"Database host url", "Database name for Eddie", "Database user name", "Location of uni vec database",
-				"Default URL to download the fasta for univec data", 
-				"Location of local iprscan binary", 
-				"Logging and standard output can be colored if set to true, " +
-				"will need to delete old log4j.properties though"
-				
-		};
 		
 		if(defaultkeys.length != defaultvalues.length)System.out.println("You're being derp Dominic :(");
 		
@@ -197,30 +184,6 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 		for(int i =0; i < tempkeys.length; i++){
 				this.props.put(tempkeys[i], tempvalues[i]);
 		}
-	}
-
-	public String[][] getChangableStats(){
-		String[][] stats = new String[3][defaultkeys.length];
-		stats[0]=defaultkeys;
-		stats[1]=defaultvalues;
-		stats[2]=defaulttooltips;
-		return stats;
-	}
-	
-	public static String[][] getFullDBsettings(PropertyLoader load){
-		String[][] db = new String[3][5];
-		String[] d = new String[]{"DBTYPE", "DBDRIVER", "DBHOST","DBNAME","DBUSER"};
-		String[] s = new String[]{"Type of database, currently only mysql supported"
-		,"Database driver, this is unlikely to change"
-		,"Name or ip of computer that hosts database, if local, localhost or 129.0.0.1"
-		,"Name of database to store data",
-		"Your mysql username"};
-		for(int i =0 ; i < 5 ; i++){
-			db[0][i] = d[i];
-			db[1][i] = load.getValue(d[i]);
-			db[2][i] = s[i];
-		}
-		return db;
 	}
 	
 	public static double getVersion(){
