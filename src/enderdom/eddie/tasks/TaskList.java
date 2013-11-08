@@ -24,7 +24,6 @@ import enderdom.eddie.tasks.database.Task_ESTUpload;
 import enderdom.eddie.tasks.database.Task_IPRupload;
 import enderdom.eddie.tasks.database.Task_Taxonomy;
 import enderdom.eddie.tasks.database.Task_dbTools;
-import enderdom.eddie.tasks.internal.Task_Fix2;
 import enderdom.eddie.tools.Tools_String;
 import enderdom.eddie.ui.UI;
 
@@ -163,9 +162,9 @@ public class TaskList {
 			tasks[1][21] = "seqlist";
 			tasks[2][21] = "Sequence list (clustal, fasta etc) tools";	
 			
-			tasks[0][22] = Task_Fix2.class.getName(); 
-			tasks[1][22] = "quickfix";
-			tasks[2][22] = "Fix database problems";
+			//tasks[0][22] = Task_Fix.class.getName(); 
+			//tasks[1][22] = "quickfix";
+			//tasks[2][22] = "Fix database problems";
 			
 			return tasks;
 		}
