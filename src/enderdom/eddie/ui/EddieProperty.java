@@ -22,5 +22,6 @@ public enum EddieProperty {
 	SUBVERSION, 
 	VERSION, 
 	FULLVERSION, 
-	EDITION
+	EDITION,
+	CLUSTALW2BIN
 }

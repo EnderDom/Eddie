@@ -28,7 +28,7 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
      * though this one has been written from scratch
      */
     public static int engineversion = 4;
-    public static double subversion = 0.66;
+    public static double subversion = 0.68;
     public static String edition = "Development";
     public String[] actions;
 	
@@ -156,7 +156,8 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				EddieProperty.FILES_XML,EddieProperty.PREFLNF,EddieProperty.TESTDATADIR,
 				EddieProperty.DBTYPE,EddieProperty.DBDRIVER,EddieProperty.DBHOST, 
 				EddieProperty.DBNAME,EddieProperty.DBUSER,EddieProperty.UNI_VEC_DB,
-				EddieProperty.UNIVEC_URL,EddieProperty.IPRSCAN_BIN,EddieProperty.COLORSTDOUT
+				EddieProperty.UNIVEC_URL,EddieProperty.IPRSCAN_BIN,EddieProperty.COLORSTDOUT,
+				EddieProperty.CLUSTALW2BIN
 				 };
 		defaultvalues = new String[]{
 				propfile.getParent(), "5", "1", 
@@ -164,7 +165,8 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 				"null", defaultlnf, propfile.getParent()+slash+"test", 
 				"mysql","com.mysql.jdbc.Driver", "Localhost", 
 				DatabaseManager.default_database, "user", "",
-				"ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec",	"/usr/bin/iprscan", "TRUE"
+				"ftp://ftp.ncbi.nih.gov/pub/UniVec/UniVec",	"/usr/bin/iprscan", "TRUE",
+				"/usr/bin/clustalw2"
 				};
 		
 		if(defaultkeys.length != defaultvalues.length)System.out.println("You're being derp Dominic :(");

@@ -1,5 +1,6 @@
 package enderdom.eddie.bio.sequence;
 
+//SequenceObject with extra meta data (for contigs)
 public interface SequenceObjectXT extends SequenceObject{
 
 	public void setOffset(int offset, int base);

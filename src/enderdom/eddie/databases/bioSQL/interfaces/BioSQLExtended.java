@@ -130,13 +130,16 @@ public interface BioSQLExtended {
 	 * 
 	 * @return successful or not
 	 */
-	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, int read_id, int read_version, int runid, int start, int stop, boolean trimmed);
+	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, 
+			int read_id, int read_version, int runid, int start, int stop, int offset, boolean trimmed);
 	
 	public String[][] getUniqueStringFields(DatabaseManager manager, String[] fields, String table);
 	
 	public Run getRun(DatabaseManager manager, int run_id);
 	
 	public int getRunIdFromInfo(DatabaseManager manager, Run r);
+	
+	public int[] getRunIdFromBioentryIDs(Connection con, int bioentry_id);
 	
 	//public Contig getContig(DatabaseManager manager, int bioentry_id);
 
@@ -414,7 +417,7 @@ public interface BioSQLExtended {
 	 * @param run_id
 	 * @return matrix of column count 4 and row count of any size
 	 * 0 = bioentry_id of contig
-	 * 1 = String name of contig
+	 * 1 = String identifier of contig
 	 * 2 = Length of the contig
 	 * 3 = Assembler used for contig
 	 */
@@ -436,3 +439,4 @@ public interface BioSQLExtended {
 	 */
 	public int[][] getSharedReads(DatabaseManager manager, int contig_id, int[] exclude_runs);
 }
+

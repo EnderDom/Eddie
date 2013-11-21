@@ -14,7 +14,6 @@ import enderdom.eddie.bio.lists.ClustalAlign;
 import enderdom.eddie.bio.sequence.BasicRegion;
 import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.Contig;
-import enderdom.eddie.bio.sequence.GenericSequence;
 import enderdom.eddie.bio.sequence.SequenceObject;
 import enderdom.eddie.bio.sequence.GenericSequenceXT;
 import enderdom.eddie.bio.sequence.SequenceObjectXT;
@@ -101,7 +100,7 @@ public class BasicContig implements Contig{
 		return this.sequences.size();
 	}
 
-	public SequenceObject getSequence(int i) {
+	public SequenceObjectXT getSequence(int i) {
 		if(this.readpos.containsKey(i)){
 			return this.sequences.get(readpos.get(i));
 		}
@@ -121,7 +120,7 @@ public class BasicContig implements Contig{
 		return iteratorcount+1 < this.getNoOfSequences();
 	}
 
-	public SequenceObject next() {
+	public SequenceObjectXT next() {
 		iteratorcount++;
 		return this.getSequence(iteratorcount);
 	}
@@ -246,7 +245,7 @@ public class BasicContig implements Contig{
 
 	private void checkSequence(String s) {
 		if(!sequences.containsKey(s)){
-			this.addSequenceObject(new GenericSequence(s));
+			this.addSequenceObject(new GenericSequenceXT(s));
 		}
 	}
 

@@ -5,9 +5,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
+
 import enderdom.eddie.bio.lists.ClustalAlign;
+import enderdom.eddie.bio.sequence.BioFileType;
 import enderdom.eddie.bio.sequence.SequenceList;
+import enderdom.eddie.bio.sequence.UnsupportedTypeException;
 import enderdom.eddie.tools.Tools_Math;
+import enderdom.eddie.tools.Tools_Task;
+import enderdom.eddie.ui.EddieProperty;
+import enderdom.eddie.ui.UI;
 
 public class Tools_Clustal {
 
@@ -44,12 +51,24 @@ public class Tools_Clustal {
 		out.close();
 	}
 	
-//	public static ClustalAlign getClustalAlign(String clustalcmd, SequenceList list){
-//		" -ALIGN -PWMATRIX=BLOSUM -INFILE="+input+" -OUTPUT=CLUSTAL -OUTFILE="+output+".aln"
-//		
-//		
-//		
-//		return null;
-//	}
+	public static ClustalAlign getClustalAlign(UI ui, SequenceList list) throws IOException, UnsupportedTypeException{
+		File input = File.createTempFile("eddie1", ".fasta");
+		list.saveFile(input, BioFileType.FASTA);
+		File output = File.createTempFile("eddie2", ".aln");
+		String value = ui.getPropertyLoader().getValue(EddieProperty.CLUSTALW2BIN.toString());
+		value += " -ALIGN -PWMATRIX=BLOSUM -INFILE="+input.getPath()+" -OUTPUT=CLUSTAL -OUTFILE="+output.getPath();
+		Logger.getRootLogger().debug("About to execute cmd "+value+
+				" (if this fails check that "+EddieProperty.CLUSTALW2BIN.toString() + " is set to the correct location)");
+		StringBuffer[] buf = Tools_Task.runProcess(value, true);
+		Logger.getRootLogger().debug("Clustal CLI output: "+buf[0].toString());
+		
+		if(!output.exists()){
+			Logger.getRootLogger().error("Command: "+value+" failed to produce output file");
+			return null;
+		}
+		else{
+			return new ClustalAlign(output, BioFileType.CLUSTAL_ALN);
+		}
+	}
 	
 }

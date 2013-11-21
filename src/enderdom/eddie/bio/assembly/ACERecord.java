@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import enderdom.eddie.bio.sequence.BasicRegion;
 import enderdom.eddie.bio.sequence.GenericSequenceXT;
-import enderdom.eddie.bio.sequence.SequenceObject;
+import enderdom.eddie.bio.sequence.SequenceObjectXT;
 import enderdom.eddie.tools.bio.Tools_Fasta;
 
 
@@ -133,7 +133,7 @@ public class ACERecord extends BasicContig{
 	 * @param i
 	 * @return read at i as GenericSequence
 	 */
-	public SequenceObject getRead(int i){
+	public SequenceObjectXT getRead(int i){
 		if(this.readpos.containsKey(i)){
 			return this.sequences.get(this.readpos.get(i));
 		}
@@ -146,7 +146,7 @@ public class ACERecord extends BasicContig{
 	 * @return sequence for read named 'name',
 	 * else returns null if the read doesn't exist
 	 */
-	public SequenceObject getRead(String name){
+	public SequenceObjectXT getRead(String name){
 		return sequences.get(name);
 	}
 	

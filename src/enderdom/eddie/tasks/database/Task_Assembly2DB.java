@@ -108,7 +108,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		//options.addOption(new Option("species", false, "Drags out the default Species"));
 		//options.addOption(new Option("taxon_id", false, "Set the taxon_id"));
 		options.addOption(new Option("pid","programname", true, "Set Assembly program name, needed if no run id set"));
-		options.addOption(new Option("runid", true, "Map assemblies to this runid. For normal assembly mapping, runid and limitRunIDs should be the same."));
+		options.addOption(new Option("r","runid", true, "Map assemblies to this runid. For normal assembly mapping, runid and limitRunIDs should be the same."));
 		options.addOption(new Option("noTrim", false, "Don't trim names to whitespace"));
 		options.removeOption("w");
 		options.removeOption("o");
@@ -124,7 +124,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		example+="To map contigs to reads: "+newline;
 		example+="     -task sqluploader -i assemble_reads.ace -m -r 2 -T 2 "+newline;
 		example+="To map a meta assembly made from multiple other assemblies : "+newline;
-		example+="     -task sqluploader -i meta_assembly.ace -m -r 5 -T 2,3,4 -bid Meta_Contig_"+newline;
+		example+="     -task sqluploader -i meta_assembly.ace -m -r 5 -T 2,3,4"+newline;
 		example+="NOTE: Meta assembly run is 5 and the assemblies it utilised are runs 2,3 and 4," +
 				" which need to have been previously uploaded";
 		Tools_CLI.printHelpMessage(getHelpHeader(), example, this.options);
@@ -455,8 +455,9 @@ public class Task_Assembly2DB extends TaskXTwIO{
 				}
 				else{
 					int offset = record.getOffset(read, 0);
-					int start = offset;
-					int end = offset+record.getSequence(read).getLength();				
+					int[] starts = record.getSequence(read).getRange(1);
+					int start = starts[0];
+					int end = starts[1];				
 					char c = record.getCompliment(read);
 					@SuppressWarnings("unused")
 					int comp = 0;
@@ -469,9 +470,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 						manager.getBioSQL().largeInsert(manager.getCon(),false);
 						manager.getBioSQL().largeInsert(manager.getCon(),true);
 					}
-					
 					//As ace isn't normally trimmed, assumes not trimmed
-					if(!bsxt.mapRead2Contig(manager, bioentry_id, read_id, 0, runid, start, end, false)){
+					if(!bsxt.mapRead2Contig(manager, bioentry_id, read_id, 0, runid, start, end, offset, false)){
 						logger.error("Read mapping has failed");
 						return false;
 					}

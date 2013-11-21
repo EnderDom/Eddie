@@ -54,7 +54,7 @@ public class Task_BlastAnalysis2 extends TaskXT{
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("o", "output", true,  "Output file location"));
-		options.addOption(new Option("rb", "runBlast", true, "Set blast run id if needed"));
+		options.addOption(new Option("rb", "runBlast", true, "Set blast run id if needed (or for meta assemblies use meta assembly run id)"));
 		options.addOption(new Option("e", "evalue", true, "Evalue filter"));
 		options.addOption(new Option("numbhits", true, "Number of hits to limit to."));
 		options.addOption(new Option("unique", false, "Number of unique hits, ie number of hits matching "));
@@ -63,8 +63,6 @@ public class Task_BlastAnalysis2 extends TaskXT{
 		options.addOption(new Option("OP_cumulCount", false, "Outputs a cumulative score for this blast run"));
 		options.addOption(new Option("noheader", false, "Do not include header in output file"));
 		options.addOption(new Option("OP_dbCoverage", false, "Output the total coverage of a blast run "));
-		options.addOption(new Option("OP_dbCoverageMETA", false, "Output the total coverage for a meta " +
-				"assembly, set -rb to meta assembly run id"));
 	}
 
 	public void run(){
@@ -103,6 +101,9 @@ public class Task_BlastAnalysis2 extends TaskXT{
 				manager = ui.getDatabaseManager(this.password);
 				try{
 					if(manager.open()){
+						Run r = manager.getBioSQLXT().getRun(manager, blastRunID);
+						meta = r.getRuntype().equals(Run.RUNTYPE_ASSEMBLY_META);
+						if(meta)logger.info("Analysis detected as running on meta assembly");
 						int[] total = manager.getBioSQLXT().getDbCoverageAssembly(manager, this.hit_no,
 							1, evalue, blastRunID, meta);
 						logger.info("Coverage: " + total[0]);

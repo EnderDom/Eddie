@@ -151,8 +151,6 @@ public class ClustalAlign extends BasicSequenceList{
 		int count = 0;
 		int maxlength = Tools_Math.getMaxValue(this.getListOfLens());
 		
-		
-		
 		for(String name : sequences.keySet()){
 			if(sequences.get(name).getLength() < maxlength){
 				sequences.get(name).extendRight(maxlength-sequences.get(name).getLength());

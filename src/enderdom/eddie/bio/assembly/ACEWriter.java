@@ -150,6 +150,7 @@ public class ACEWriter {
 
 	private String getCTHeader() {
 		StringBuffer buffer = new StringBuffer();
+		buffer.append(newline);
 		buffer.append("CT{");
 		buffer.append(newline);
 		buffer.append(CTString);

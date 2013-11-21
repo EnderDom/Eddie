@@ -194,8 +194,8 @@ public class MySQL_Extended implements BioSQLExtended{
 			"read_bioentry_id INT(10) UNSIGNED NOT NULL,"+
 			"read_version SMALLINT,"+
 			"run_id INT(10) UNSIGNED NOT NULL,"+
-			"trimmed TINYINT,"+ //0 == not trimmed
-			"range_start INT(10),"+ //If trimmed this should just be the offset
+			"trimmed TINYINT,"+
+			"range_start INT(10),"+
 			"range_end INT(10),"+
 			"offset INT(10),"+
 			"UNIQUE (contig_bioentry_id,read_bioentry_id,run_id)"+
@@ -508,11 +508,10 @@ public class MySQL_Extended implements BioSQLExtended{
 		return false;
 	}
 
-	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, int read_id, int read_version, int runid, int start, int stop, boolean trimmed){
+	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, int read_id, int read_version, int runid, int start, int stop, int offset, boolean trimmed){
 		
-		String sql = "INSERT INTO assembly (contig_bioentry_id, read_bioentry_id, read_version, run_id, trimmed, range_start, range_end)" +
-				" VALUES (?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE trimmed=?,range_start=?, range_end=?";
-		
+		String sql = "INSERT INTO assembly (contig_bioentry_id, read_bioentry_id, read_version, run_id, trimmed, range_start, range_end, offset)" +
+				" VALUES (?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE trimmed=?,range_start=?, range_end=?";
 		try {
 			PreparedStatement assemblySET = manager.getCon().prepareStatement(sql);
 			assemblySET.setInt(1, contig_id);
@@ -531,6 +530,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			assemblySET.setInt(7, stop);
 			assemblySET.setInt(9, start);
 			assemblySET.setInt(10, stop);
+			assemblySET.setInt(11, offset);
 			assemblySET.execute();
 			assemblySET.close();
 			return addRunBioentry(manager, contig_id, runid);
@@ -627,6 +627,26 @@ public class MySQL_Extended implements BioSQLExtended{
 			logger.error("Failed to retrieve Run id", e);
 			return -1;
 		}
+	}
+	
+	public int[] getRunIdFromBioentryIDs(Connection con, int bioentry_id){
+		String sql = "SELECT run_id FROM bioentry_run WHERE bioentry_id="+bioentry_id;
+	
+		try{
+			Statement st = con.createStatement();
+			ResultSet set = st.executeQuery(sql);
+			LinkedList<Integer> ints = new LinkedList<Integer>();
+			while(set.next()){
+				ints.add(set.getInt(1));
+			}
+			set.close();
+			st.close();
+			return Tools_Array.ListInt2int(ints);
+		}
+		catch(SQLException e){
+			logger.error("Failed to retrieve run ids for bioentry_id:" + bioentry_id, e);
+		}
+		return null;
 	}
 	
 	public BioSequence[] getBioSequences(DatabaseManager manager, int bioentry_id){
@@ -1606,7 +1626,7 @@ public class MySQL_Extended implements BioSQLExtended{
 
 		String[][] results = null;
 		
-		String query = "SELECT assembly.contig_bioentry_id, name, " +
+		String query = "SELECT assembly.contig_bioentry_id, identifier, " +
 				"biosequence.length, run2.program FROM assembly " +
 				"INNER JOIN bioentry ON assembly.contig_bioentry_id" +
 				"=bioentry.bioentry_id INNER JOIN biosequence ON " +

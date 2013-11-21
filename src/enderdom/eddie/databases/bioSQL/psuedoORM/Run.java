@@ -32,6 +32,8 @@ public class Run {
 	public static String RUNTYPE_454 = "454";
 	public static String RUNTYPE_INTERPRO = "INTERPRO";
 	public static String RUNTYPE_TRANSLATE = "TRANSLATE";
+	public static String RUNTYPE_ASSEMBLY_META = "ASSEMBLY_META";
+	
 	
 	
 	
