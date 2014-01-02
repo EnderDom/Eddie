@@ -138,4 +138,14 @@ public class MySQL_Update{
 		updateDatabase(manager);
 	}
 	
+	public static void updbto30(DatabaseManager manager)throws SQLException{
+		String s = "ALTER TABLE bioentry_dbxref DROP PRIMARY KEY, ADD PRIMARY KEY (bioentry_id,dbxref_id,rank,hit_no,run_id)";
+		Statement st = manager.getCon().createStatement();
+		st.executeUpdate(s);
+		st.close();
+		updateDatabase(manager);
+	}
+	
+	
+	
 }

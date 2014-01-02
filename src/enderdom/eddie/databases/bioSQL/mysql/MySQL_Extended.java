@@ -239,7 +239,7 @@ public class MySQL_Extended implements BioSQLExtended{
 				"ALTER TABLE bioentry_dbxref ADD COLUMN (bioentry_endpos INT);",
 				"ALTER TABLE bioentry_dbxref ADD COLUMN (bioentry_frame TINYINT);",
 				"CREATE INDEX bioentry_dbxref_evalue ON bioentry_dbxref(evalue);",
-				"ALTER TABLE bioentry_dbxref DROP PRIMARY KEY, ADD PRIMARY KEY (bioentry_id,dbxref_id,rank);",
+				"ALTER TABLE bioentry_dbxref DROP PRIMARY KEY, ADD PRIMARY KEY (bioentry_id,dbxref_id,rank,hit_no,run_id);",
 		};
 		try{
 			Statement st = manager.getCon().createStatement();

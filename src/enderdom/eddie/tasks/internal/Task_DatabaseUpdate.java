@@ -90,6 +90,15 @@ public class Task_DatabaseUpdate extends BasicTask{
 					return;	
 				}
 			}
+			else if(upfrom == 2.9){
+				try{
+					dbto30();
+				} catch (SQLException e) {
+					logger.error("Error updating ",e);
+					setCompleteState(TaskState.ERROR);
+					return;	
+				}
+			}
 			else{
 				logger.error("Can't update any further");
 			}
@@ -146,5 +155,13 @@ public class Task_DatabaseUpdate extends BasicTask{
 			System.out.println("There was no support for mysql before 2.8, eh?");
 		}
 		upfrom=2.9;
+	}
+	
+	public void dbto30() throws SQLException{
+		if(manager.getDBTYPE().equals("mysql"))  MySQL_Update.updbto30(manager);
+		else{
+			System.out.println("There was no support for mysql before 3.0, eh?");
+		}
+		upfrom=3.0;
 	}
 }
