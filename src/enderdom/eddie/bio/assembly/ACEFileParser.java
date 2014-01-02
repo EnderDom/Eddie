@@ -16,10 +16,8 @@ import enderdom.eddie.bio.sequence.Contig;
 
 /**
  * 
- * An eventual replacement for the ACEParser
  * 
  * Similar to SAMTextParser
- * 
  * 
  * Used this as a reference for format specifications http://www.cbcb.umd.edu/research/contig_representation.shtml
  * though somewhat lacking in general :(

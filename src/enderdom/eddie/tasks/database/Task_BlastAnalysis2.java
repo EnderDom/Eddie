@@ -58,7 +58,7 @@ public class Task_BlastAnalysis2 extends TaskXT{
 		options.addOption(new Option("e", "evalue", true, "Evalue filter"));
 		options.addOption(new Option("numbhits", true, "Number of hits to limit to."));
 		options.addOption(new Option("unique", false, "Number of unique hits, ie number of hits matching "));
-		options.addOption(new Option("OP_contig", false, "Number of contig hits (Default op if not picked)"));
+		options.addOption(new Option("OP_contig", false, "Number of contig hits"));
 		options.addOption(new Option("OP_read", false, "Number of read hits extrapolated from contigs"));
 		options.addOption(new Option("OP_cumulCount", false, "Outputs a cumulative score for this blast run"));
 		options.addOption(new Option("noheader", false, "Do not include header in output file"));
@@ -68,34 +68,38 @@ public class Task_BlastAnalysis2 extends TaskXT{
 	public void run(){
 		setCompleteState(TaskState.STARTED);
 		logger.debug("Started running Assembly Task @ "+Tools_System.getDateNow());
+		boolean task = false;
 		if(OP_contig || OP_read){
-		try{
-			manager = ui.getDatabaseManager(this.password);
-			if(manager.open()){
-				if(blastRunID != -1){
-					if(OP_read)printHitReadCount(blastRunID);
-					else printHitCount(blastRunID);
-				}
-				else{
-					int[] runs = manager.getBioSQLXT().getRunId(manager, null, Run.RUNTYPE_blast);
-					for(int i =0 ; i < runs.length ; i++){
-						if(OP_read)printHitReadCount(runs[i]);
-						else printHitCount(runs[i]);
+			task=true;
+			try{
+				manager = ui.getDatabaseManager(this.password);
+				if(manager.open()){
+					if(blastRunID != -1){
+						if(OP_read)printHitReadCount(blastRunID);
+						else printHitCount(blastRunID);
+					}
+					else{
+						int[] runs = manager.getBioSQLXT().getRunId(manager, null, Run.RUNTYPE_blast);
+						for(int i =0 ; i < runs.length ; i++){
+							if(OP_read)printHitReadCount(runs[i]);
+							else printHitCount(runs[i]);
+						}
 					}
 				}
+				else logger.error("Failed to open manager");
 			}
-			else logger.error("Failed to open manager");
-		}
-		catch(Exception e){
-			logger.error("Failed to run database",e);
-			this.setCompleteState(TaskState.ERROR);
-		}
+			catch(Exception e){
+				logger.error("Failed to run database",e);
+				this.setCompleteState(TaskState.ERROR);
+			}
 		}
 		if(cumulcount){
+			task=true;
 			if(output!=null)CumulativeCount();
 			else logger.error("output not set for OP_c");
 		}
 		if(dbcoverage){
+			task=true;
 			logger.debug("Database coverage analysis begun");
 			if(this.blastRunID >0){
 				manager = ui.getDatabaseManager(this.password);
@@ -132,11 +136,13 @@ public class Task_BlastAnalysis2 extends TaskXT{
 					logger.error("Failed to open database", e);
 				}
 			}
-			else{
+			if(!task){
 				logger.error("Blast run id needs to be set");
 			}
 		}
-		
+		else{
+			logger.warn("No specific option set, pick OP_* for task to run");
+		}
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
 	    setCompleteState(TaskState.FINISHED);
 	}
