@@ -183,8 +183,14 @@ public class Task_BlastAnalysis2 extends TaskXT{
 	private void printHitReadCount(int run_id){
 		int hit_count = manager.getBioSQLXT().getHitCountwReadCount(manager, run_id, evalue, hit_no, 1, -1);
 		if(hit_count == 0){
-			logger.warn("Hit count at 0 suggests you haven't mapped contigs to reads");
-			logger.warn("Run -task sqluploader -opts");
+			logger.warn("Hit count at 0 ");
+			Run r = manager.getBioSQLXT().getRun(manager, run_id);
+			if(r !=null && !r.getRuntype().equalsIgnoreCase(Run.RUNTYPE_blast)){
+				logger.warn("Expected run type is "+Run.RUNTYPE_blast+" but this is "+ r.getRuntype()+ " check you are using the correct ");
+			}
+			else{
+				logger.warn("Runtype is correct but no hits, have you mapped contigs to reads? ");
+			}
 		}
 		
 		System.out.println("----INFO----");
