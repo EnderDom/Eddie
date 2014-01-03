@@ -136,11 +136,11 @@ public class Task_BlastAnalysis2 extends TaskXT{
 					logger.error("Failed to open database", e);
 				}
 			}
-			if(!task){
+			else{
 				logger.error("Blast run id needs to be set");
 			}
 		}
-		else{
+		if(!task){
 			logger.warn("No specific option set, pick OP_* for task to run");
 		}
 		logger.debug("Finished running Assembly Task @ "+Tools_System.getDateNow());
@@ -189,7 +189,7 @@ public class Task_BlastAnalysis2 extends TaskXT{
 				logger.warn("Expected run type is "+Run.RUNTYPE_blast+" but this is "+ r.getRuntype()+ " check you are using the correct ");
 			}
 			else{
-				logger.warn("Runtype is correct but no hits, have you mapped contigs to reads? ");
+				logger.warn("Runtype is correct but no hits, have you mapped contigs to reads?");
 			}
 		}
 		
