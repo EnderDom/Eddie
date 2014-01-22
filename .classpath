@@ -1,21 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-<<<<<<< HEAD
-        <classpathentry excluding="lib/" kind="src" path="src"/>
-        <classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-        <classpathentry kind="lib" path="lib/commons-cli-1.2.jar"/>
-        <classpathentry kind="lib" path="lib/commons-lang3-3.1.jar"/>
-        <classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
-        <classpathentry kind="lib" path="lib/sam-1.65.jar"/>
-        <classpathentry kind="lib" path="lib/picard-1.65.jar"/>
-        <classpathentry kind="lib" path="lib/core-1.8.2.jar"/>
-        <classpathentry kind="lib" path="lib/mysql-connector-java-5.1.6.jar"/>
-        <classpathentry kind="lib" path="lib/woodstox-core-lgpl-4.1.4.jar"/>
-        <classpathentry kind="lib" path="lib/commons-io-2.2.jar"/>
-        <classpathentry kind="lib" path="lib/stax2-api-3.1.1.jar"/>
-        <classpathentry kind="output" path="bin"/>
-</classpath>
-=======
 	<classpathentry excluding="lib/" kind="src" path="src"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/commons-cli-1.2.jar"/>
@@ -30,5 +14,3 @@
 	<classpathentry kind="lib" path="lib/stax2-api-3.1.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
-
->>>>>>> 5302a29fbd318a7d85e82a785c1561a43c6107a2
