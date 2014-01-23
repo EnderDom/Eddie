@@ -158,7 +158,7 @@ public class FastaParser2 implements Iterator<SequenceObject>{
 		int currentlength =0;
 		if(reader == null)return;
 		while ((line = reader.readLine()) != null){
-			if(line.startsWith("@") && !fastq)fastq=true;
+			if(!fastq)if(line.startsWith("@"))fastq=true;
 			if(line.startsWith(">") || line.startsWith("@") && currentlength==0){
 				if(builder.length() != 0){
 					setCurrent(qual);

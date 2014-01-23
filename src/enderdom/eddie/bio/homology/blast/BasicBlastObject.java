@@ -13,7 +13,6 @@ import enderdom.eddie.tools.Tools_String;
 public class BasicBlastObject implements BlastObject{
 
 	//All data is 1-based
-	protected static final long serialVersionUID = -5499555843635862257L;
 	private int[] hits;
 	protected Logger logger = Logger.getRootLogger();
 	protected static String hit_id = "HIT";

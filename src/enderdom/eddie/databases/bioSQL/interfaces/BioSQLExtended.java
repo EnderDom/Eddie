@@ -64,6 +64,7 @@ public interface BioSQLExtended {
 	public boolean addBioentryDbxrefCols(DatabaseManager dbman);
 	
 	//public boolean addBiosequenceRunID(DatabaseManager dbman);
+
 	
 	/**
 	 * This table is supposed to store data of the specifics
@@ -133,8 +134,42 @@ public interface BioSQLExtended {
 	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, 
 			int read_id, int read_version, int runid, int start, int stop, int offset, boolean trimmed);
 	
+	/**
+	 * Removes the links between contigs and reads in the 
+	 * assembly table of the database
+	 * 
+	 * @param manager
+	 * @param run_id
+	 * @return Number of records removed, returns -1 if errored, throws warning if records still persist
+	 */
+	public int unmapAssembly(DatabaseManager manager, int run_id);
+	
+	/**
+	 * Remove any bioentries that are linked to the run via the 
+	 * bioentry_run database
+	 * @param manager
+	 * @param run_id
+	 * @return The nummber of removed records, -1 returned if errored.
+	 */
+	public int removeBioentrysWRunID(DatabaseManager manager, int run_id);
+	
+	/**
+	 * Removes run with designated run id
+	 * 
+	 * @param manager
+	 * @param run_id
+	 * @return true if no error occured
+	 */
+	public boolean removeRun(DatabaseManager manager, int run_id);
+	
 	public String[][] getUniqueStringFields(DatabaseManager manager, String[] fields, String table);
 	
+	/**
+	 * 
+	 * @param manager
+	 * @param run_id
+	 * @return Run ORM with run_id specified, or null if no run with that id
+	 */
 	public Run getRun(DatabaseManager manager, int run_id);
 	
 	public int getRunIdFromInfo(DatabaseManager manager, Run r);

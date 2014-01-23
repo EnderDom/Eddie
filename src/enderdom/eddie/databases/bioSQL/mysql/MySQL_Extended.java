@@ -507,6 +507,8 @@ public class MySQL_Extended implements BioSQLExtended{
 		}
 		return false;
 	}
+	
+	
 
 	public boolean mapRead2Contig(DatabaseManager manager, int contig_id, int read_id, int read_version, int runid, int start, int stop, int offset, boolean trimmed){
 		
@@ -540,7 +542,71 @@ public class MySQL_Extended implements BioSQLExtended{
 			return false;
 		}
 	}
+	
+	/* *****************************************************************************************
+	 * 
+	 * 
+	 *										REMOVE (DELETES)
+	 * 
+	 * 
+	 *******************************************************************************************/
 
+	
+	public int unmapAssembly(DatabaseManager manager, int run_id){
+		try{
+			Statement st = manager.getCon().createStatement();
+			set = st.executeQuery("SELECT COUNT(contig_bioentry_id*) FROM "+BioSQLExtended.assembly+" WHERE run_id="+run_id);
+			set.next();
+			int c=set.getInt(1);
+			st.execute("DELETE FROM "+BioSQLExtended.assembly+" WHERE run_id="+run_id);
+			set = st.executeQuery("SELECT COUNT(contig_bioentry_id*) FROM "+BioSQLExtended.assembly+" WHERE run_id="+run_id);
+			set.next();
+			int d = set.getInt(1);
+			if(d!=0)logger.warn("Failed to remove all records with run_id="+ run_id + " after explict expression, new ones uploaded?");
+			set.close();
+			st.close();
+			return c-d;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to unmap assembly for "+run_id , sq);
+			return -1;
+		}
+	}
+
+	public int removeBioentrysWRunID(DatabaseManager manager, int run_id){
+		try{
+			Statement st = manager.getCon().createStatement();
+			set = st.executeQuery("SELECT COUNT(bioentry_id*) FROM bioentry INNER JOIN bioentry_run USING(bioentry_id) WHERE run_id="+run_id);
+			set.next();
+			int c=set.getInt(1);
+			st.execute("DELETE FROM bioentry INNER JOIN bioentry_run USING(bioentry_id) WHERE run_id="+run_id);
+			set = st.executeQuery("SELECT COUNT(bioentry_id*) FROM bioentry INNER JOIN bioentry_run USING(bioentry_id) WHERE run_id="+run_id);
+			set.next();
+			int d = set.getInt(1);
+			if(d!=0)logger.warn("Failed to remove all records with run_id="+ run_id + " after explict expression, new ones uploaded?");
+			set.close();
+			st.close();
+			return c-d;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to unmap assembly for "+run_id , sq);
+			return -1;
+		}
+	}
+	
+	public boolean removeRun(DatabaseManager manager, int run_id){
+		try{
+			Statement st = manager.getCon().createStatement();
+			st.execute("DELETE FROM run WHERE run_id="+run_id);
+			st.close();
+			return true;
+		}
+		catch(SQLException sq){
+			logger.error("Failed to unmap assembly for "+run_id , sq);
+			return false;
+		}
+	}
+	
 	
 	/* *****************************************************************************************
 	 * 

@@ -3,6 +3,7 @@ package enderdom.eddie.tasks.database;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -13,6 +14,7 @@ import enderdom.eddie.bio.assembly.ACEFileParser;
 import enderdom.eddie.bio.assembly.ACERecord;
 import enderdom.eddie.bio.lists.FastaParser2;
 import enderdom.eddie.bio.sequence.BioFileType;
+import enderdom.eddie.bio.sequence.Contig;
 import enderdom.eddie.bio.sequence.SequenceObject;
 
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQL;
@@ -57,7 +59,10 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	private int mysqlcount;
 	private static int uponcount =5000;
 	//TODO add user changable option
-	private boolean check = true;
+	private boolean check;
+	private boolean unmap;
+	private boolean remContigs;
+	private boolean runWipe;
 	
 	public Task_Assembly2DB(){
 		setHelpHeader("--This is the Help Message for the Assemby2DB Task--");
@@ -97,6 +102,8 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	
 	public void buildOptions(){
 		super.buildOptions();
+		options.removeOption("w");
+		options.removeOption("o");
 		options.addOption(new Option("pad", false, "Leave padding characters in upload(*/-)"));
 		options.addOption(new Option("u","uploadreads", false, "Uploads a read Fasta or Fastq file"));
 		//options.addOption(new Option("r","remaploc", false, "Remap read Locations with ACE file (only if upload already run)"));
@@ -110,8 +117,9 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		options.addOption(new Option("pid","programname", true, "Set Assembly program name, needed if no run id set"));
 		options.addOption(new Option("r","runid", true, "Map assemblies to this runid. For normal assembly mapping, runid and limitRunIDs should be the same."));
 		options.addOption(new Option("noTrim", false, "Don't trim names to whitespace"));
-		options.removeOption("w");
-		options.removeOption("o");
+		options.addOption(new Option("unmap", false, "Unmap contigs from reads for the designated run id"));
+		options.addOption(new Option("removeContigs", false, "Remove all contigs associated with this run id"));
+		options.addOption(new Option("removeRun", false, "Does unmap as well as removing the run id, use with removeContigs for full wipe"));
 	}
 	
 	public void printHelpMessage(){
@@ -345,7 +353,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 							", see -task runDatabase -list");
 					return;
 				}
-				ACEFileParser parser = new ACEFileParser(new File(input));
+				Iterator<Contig> parser = new ACEFileParser(new File(input));
 				int count=0;
 				if(limits != null){
 					String lim = new String();
@@ -354,7 +362,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 				}
 	
 				manager.getBioSQL().largeInsert(manager.getCon(),true);
-				ACERecord record = null;
+				Contig record = null;
 				while(parser.hasNext()){
 					count++;
 					record = parser.next();
@@ -370,6 +378,31 @@ public class Task_Assembly2DB extends TaskXTwIO{
 				}
 				System.out.println();
 				manager.getBioSQL().largeInsert(manager.getCon(),false);
+			}
+			else if(unmap == true ||remContigs == true ||runWipe == true){
+				Run r = manager.getBioSQLXT().getRun(manager, runid);
+				if(unmap == true || runWipe == true){
+					logger.info("Remove mapping of assembly to reads for "+r.getProgram()+" on "+r.getSource());
+					int removed = manager.getBioSQLXT().unmapAssembly(manager, runid);
+					logger.info("Removed " + removed + " links");
+				}
+				if(remContigs == true){
+					if(r.getRuntype() != Run.RUNTYPE_ASSEMBLY){
+						logger.error("This function only removes contigs if they " +
+								"are associated with a runid that is an assembly");
+						logger.error("This run is designated as a " + r.getRuntype() 
+								+ " and as such is not expected to have any associated contigs");
+					}
+					else{
+						logger.info("Remove sequence for "+r.getProgram()+" on "+r.getSource());
+						int removed = manager.getBioSQLXT().removeBioentrysWRunID(manager, runid);
+						logger.info("Removed " + removed + " sequences");
+					}
+				}
+				if(runWipe == true){
+					manager.getBioSQLXT().removeRun(manager, runid);
+					logger.debug("Removed run with run id " + runid);
+				}
 			}
 			else{
 				logger.error("No option selected");
@@ -413,7 +446,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		return run.uploadRun(manager);	
 	}
 
-	public boolean mapReads(ACERecord record, DatabaseManager manager, String identifier, int biodatabase_id, int runid, int count, int[] limits){
+	public boolean mapReads(Contig record, DatabaseManager manager, String identifier, int biodatabase_id, int runid, int count, int[] limits){
 		BioSQL bs = manager.getBioSQL();
 		BioSQLExtended bsxt = manager.getBioSQLXT();
 		int bioentry_id = -1;

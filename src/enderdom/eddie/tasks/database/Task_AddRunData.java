@@ -51,6 +51,7 @@ public class Task_AddRunData extends TaskXT{
 		options.addOption(new Option("com","comment", true, "Any additional comments about the run"));
 		options.addOption(new Option("src","source", true, "Source of the Data eg \"Arabiopsis root cDNA\""));
 		options.addOption(new Option("list", false, "List all current run programs/versions/dbs"));
+		options.addOption(new Option("rem", "removeRun", true, "Remove the run (only the run id) with run id specified"));
 	}
 
 	
