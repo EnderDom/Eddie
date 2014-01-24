@@ -555,11 +555,11 @@ public class MySQL_Extended implements BioSQLExtended{
 	public int unmapAssembly(DatabaseManager manager, int run_id){
 		try{
 			Statement st = manager.getCon().createStatement();
-			set = st.executeQuery("SELECT COUNT(contig_bioentry_id*) FROM "+BioSQLExtended.assembly+" WHERE run_id="+run_id);
+			set = st.executeQuery("SELECT COUNT(contig_bioentry_id) FROM "+BioSQLExtended.assembly+" WHERE run_id="+run_id);
 			set.next();
 			int c=set.getInt(1);
 			st.execute("DELETE FROM "+BioSQLExtended.assembly+" WHERE run_id="+run_id);
-			set = st.executeQuery("SELECT COUNT(contig_bioentry_id*) FROM "+BioSQLExtended.assembly+" WHERE run_id="+run_id);
+			set = st.executeQuery("SELECT COUNT(contig_bioentry_id) FROM "+BioSQLExtended.assembly+" WHERE run_id="+run_id);
 			set.next();
 			int d = set.getInt(1);
 			if(d!=0)logger.warn("Failed to remove all records with run_id="+ run_id + " after explict expression, new ones uploaded?");
@@ -576,11 +576,15 @@ public class MySQL_Extended implements BioSQLExtended{
 	public int removeBioentrysWRunID(DatabaseManager manager, int run_id){
 		try{
 			Statement st = manager.getCon().createStatement();
-			set = st.executeQuery("SELECT COUNT(bioentry_id*) FROM bioentry INNER JOIN bioentry_run USING(bioentry_id) WHERE run_id="+run_id);
+			set = st.executeQuery("SELECT COUNT(bioentry_id) FROM bioentry INNER JOIN bioentry_run USING(bioentry_id) WHERE run_id="+run_id);
 			set.next();
 			int c=set.getInt(1);
-			st.execute("DELETE FROM bioentry INNER JOIN bioentry_run USING(bioentry_id) WHERE run_id="+run_id);
-			set = st.executeQuery("SELECT COUNT(bioentry_id*) FROM bioentry INNER JOIN bioentry_run USING(bioentry_id) WHERE run_id="+run_id);
+			
+			if(c>10000)logger.info("Attempting to remove " + c + " record from 2 tables, this may take a while...");
+			else logger.debug("Attempting to remove " + c + " record from 2 tables");
+			
+			st.execute("DELETE bioentry, bioentry_run FROM bioentry INNER JOIN bioentry_run USING(bioentry_id) WHERE run_id="+run_id);
+			set = st.executeQuery("SELECT COUNT(bioentry_id) FROM bioentry INNER JOIN bioentry_run USING(bioentry_id) WHERE run_id="+run_id);
 			set.next();
 			int d = set.getInt(1);
 			if(d!=0)logger.warn("Failed to remove all records with run_id="+ run_id + " after explict expression, new ones uploaded?");

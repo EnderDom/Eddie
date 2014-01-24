@@ -16,6 +16,7 @@ public class Task_AddRunData extends TaskXT{
 	private Run run;
 	private boolean list;
 	private DatabaseManager manager;
+	private int remove;
 	
 	public Task_AddRunData(){
 		logger.debug("Task_AddRunData has been initalised");
@@ -37,6 +38,7 @@ public class Task_AddRunData extends TaskXT{
 		String s = getOption(cmd, "parent", null);
 		run.setParent_id(s==null?null:Tools_String.parseString2Int(s));
 		this.list = cmd.hasOption("list");
+		remove = getOption(cmd, "removeRun", -1);
 	}
 	
 	public void buildOptions(){
@@ -67,6 +69,10 @@ public class Task_AddRunData extends TaskXT{
 			manager.open();
 			if(this.list){
 				System.out.println(run.list(manager));
+			}
+			else if(remove > -1){
+				manager.getBioSQLXT().removeRun(manager, remove);
+				logger.debug("Removed run with run id " + remove);
 			}
 			else{
 				if(run.validate()){

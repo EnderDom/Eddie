@@ -10,9 +10,10 @@ import org.apache.log4j.Logger;
 
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQL;
 import enderdom.eddie.databases.bioSQL.interfaces.BioSQLExtended;
+import enderdom.eddie.databases.bioSQL.interfaces.SQLGeneral;
 import enderdom.eddie.databases.bioSQL.mysql.MySQL_BioSQL;
 import enderdom.eddie.databases.bioSQL.mysql.MySQL_Extended;
-import enderdom.eddie.databases.general.mysql.Tools_SQL_MySQL;
+import enderdom.eddie.databases.bioSQL.mysql.MySQL_General;
 import enderdom.eddie.exceptions.EddieDBException;
 //import databases.bioSQL.pgsql.PgSQL_BioSQL;
 //import databases.bioSQL.pgsql.PgSQL_Extended;
@@ -39,6 +40,7 @@ public class DatabaseManager {
 	private String dbtype;
 	private BioSQL biosql;
 	private BioSQLExtended biosqlext;
+	private SQLGeneral sqlgen;
 	private int biodatabase_id =-1;
 	private static double databaseversion =3.0;
 	private boolean isOpen;
@@ -222,6 +224,21 @@ public class DatabaseManager {
 		}
 		return this.biosqlext;
 	}
+	
+	public SQLGeneral getSQLGeneral(){
+		if(this.sqlgen == null){
+			if(this.dbtype.equals("mysql")){
+				this.sqlgen = new MySQL_General();
+			}
+			else if(this.dbtype.equals("postgresql")){
+				//this.biosqlext = new PgSQL_Extended();
+			}
+			else{
+				logger.warn("Database type not set or not recognised");
+			}
+		}
+		return this.sqlgen;
+	}
 
 	
 	/** Automatically adds Eddie if not already added
@@ -244,7 +261,7 @@ public class DatabaseManager {
 	
 	public int getTableCount() throws Exception{
 		if(this.dbtype.equals("mysql")){
-			return Tools_SQL_MySQL.getTableCount(getCon());
+			return getSQLGeneral().getTableCount(getCon());
 		}
 		else if(this.dbtype.equals("banana")){
 			logger.error("Fruit in database error.");
@@ -329,4 +346,5 @@ public class DatabaseManager {
 		}
 		return this.dbtype;
 	}
+
 }

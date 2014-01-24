@@ -90,7 +90,7 @@ public class Task_Fix extends TaskXTwIO{
 			
 		try {
 			if(manager.open()){
-				String[][] strs = manager.getBioSQL().getGenericResults(manager.getCon(),
+				String[][] strs = manager.getSQLGeneral().getResults(manager.getCon(),
 						new String[]{"accession", "dbxref_id"}, "dbxref", new String[]{"dbname", "version"}, 
 						new String[]{dbname, "0"});
 				logger.info("To change " + strs[0].length + " results");
@@ -109,7 +109,7 @@ public class Task_Fix extends TaskXTwIO{
 							acc =acc.trim();
 							int indend;
 							if(trimdec && (indend = acc.lastIndexOf('.')) != -1)acc=acc.substring(0, indend);
-							manager.getBioSQL().genericUpdate(manager.getCon(), new String[]{"accession","version"},
+							manager.getSQLGeneral().update(manager.getCon(), new String[]{"accession","version"},
 									new String[]{acc, "1"}, "dbxref", new String[]{"dbxref_id", "version"}, 
 									new String[]{strs[1][i], "0"});
 							}

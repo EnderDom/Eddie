@@ -98,6 +98,9 @@ public class Task_Assembly2DB extends TaskXTwIO{
 			}
 			logger.debug("Parsed "+limits.length+" run id limits");
 		}
+		this.unmap = cmd.hasOption("unmap");
+		this.remContigs = cmd.hasOption("removeContigs");
+		this.runWipe = cmd.hasOption("removeRun");
 	}
 	
 	public void buildOptions(){
@@ -117,9 +120,9 @@ public class Task_Assembly2DB extends TaskXTwIO{
 		options.addOption(new Option("pid","programname", true, "Set Assembly program name, needed if no run id set"));
 		options.addOption(new Option("r","runid", true, "Map assemblies to this runid. For normal assembly mapping, runid and limitRunIDs should be the same."));
 		options.addOption(new Option("noTrim", false, "Don't trim names to whitespace"));
-		options.addOption(new Option("unmap", false, "Unmap contigs from reads for the designated run id"));
-		options.addOption(new Option("removeContigs", false, "Remove all contigs associated with this run id"));
-		options.addOption(new Option("removeRun", false, "Does unmap as well as removing the run id, use with removeContigs for full wipe"));
+		options.addOption(new Option("U","unmap", false, "Unmap contigs from reads for the designated run id"));
+		options.addOption(new Option("C","removeContigs", false, "Remove all contigs associated with this run id"));
+		options.addOption(new Option("R","removeRun", false, "Does unmap as well as removing the run id, use with removeContigs for full wipe"));
 	}
 	
 	public void printHelpMessage(){
@@ -146,7 +149,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 	public void run(){
 		setCompleteState(TaskState.STARTED);
 		Logger.getRootLogger().debug("Started running Assembly Task @ "+Tools_System.getDateNow());
-		this.checklist = openChecklist(ui);
+		
 		DatabaseManager manager = this.ui.getDatabaseManager(password);
 		try{
 			manager.open();
@@ -158,6 +161,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 				}
 			}
 			if(uploadreads){
+				this.checklist = openChecklist(ui);
 				logger.debug("Running upload reads...");
 				if(input == null)logger.fatal("Input is null!");
 				File file = new File(this.input);
@@ -248,6 +252,7 @@ public class Task_Assembly2DB extends TaskXTwIO{
 			}
 			//UPLOADING CONTIGS
 			else if(uploadcontigs){
+				this.checklist = openChecklist(ui);
 				logger.debug("Running upload contigs...");
 				File file = new File(this.input);
 				if(file.exists()){
@@ -346,7 +351,6 @@ public class Task_Assembly2DB extends TaskXTwIO{
 			}
 			else if(mapcontigs){
 				logger.debug("Running map contigs to reads...");
-				this.checklist.complete();
 				if(this.runid < 0){
 					logger.error("Assembly run id is required for mapping contigs, " +
 							"please find the run id of this assembly" +
@@ -382,21 +386,23 @@ public class Task_Assembly2DB extends TaskXTwIO{
 			else if(unmap == true ||remContigs == true ||runWipe == true){
 				Run r = manager.getBioSQLXT().getRun(manager, runid);
 				if(unmap == true || runWipe == true){
-					logger.info("Remove mapping of assembly to reads for "+r.getProgram()+" on "+r.getSource());
+					logger.info("Remove mapping of assembly to reads for "
+							+r.getProgram()+" on "+r.getSource() +"...");
 					int removed = manager.getBioSQLXT().unmapAssembly(manager, runid);
 					logger.info("Removed " + removed + " links");
 				}
 				if(remContigs == true){
-					if(r.getRuntype() != Run.RUNTYPE_ASSEMBLY){
+					if(!r.getRuntype().contentEquals(Run.RUNTYPE_ASSEMBLY)){
 						logger.error("This function only removes contigs if they " +
 								"are associated with a runid that is an assembly");
 						logger.error("This run is designated as a " + r.getRuntype() 
 								+ " and as such is not expected to have any associated contigs");
 					}
 					else{
-						logger.info("Remove sequence for "+r.getProgram()+" on "+r.getSource());
+						logger.info("Remove sequence for "+r.getProgram()+" on "+r.getSource()+"...");
 						int removed = manager.getBioSQLXT().removeBioentrysWRunID(manager, runid);
-						logger.info("Removed " + removed + " sequences");
+						if(removed <0)logger.warn("Down stream error");
+						else logger.info("Removed " + removed + " sequences");
 					}
 				}
 				if(runWipe == true){

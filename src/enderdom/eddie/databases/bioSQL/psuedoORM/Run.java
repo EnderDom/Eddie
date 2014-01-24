@@ -26,15 +26,14 @@ public class Run {
 	private String comment;
 	private String version;
 	private String[] validationErrors = {"","",""};
-	public static String[] runfields = new String[]{"run_date", "runtype", "parent_id", "program", "version", "dbname", "source", "params", "comment"};
+	public static String[] runfields = new String[]{"run_date", "runtype",
+		"parent_id", "program", "version", "dbname", "source", "params", "comment"};
 	public static String RUNTYPE_ASSEMBLY = "ASSEMBLY";
 	public static String RUNTYPE_blast = "blast";
 	public static String RUNTYPE_454 = "454";
 	public static String RUNTYPE_INTERPRO = "INTERPRO";
 	public static String RUNTYPE_TRANSLATE = "TRANSLATE";
 	public static String RUNTYPE_ASSEMBLY_META = "ASSEMBLY_META";
-	
-	
 	
 	
 	public Run(int r, Date time, String runtype, Integer parent, String program,
@@ -154,7 +153,8 @@ public class Run {
 	//Note, converts util.Date to sql.Date, see http://stackoverflow.com/questions/530012/how-to-convert-java-util-date-to-java-sql-date
 	public int uploadRun(DatabaseManager manager){
 		if(manager.getBioSQLXT().setRun(manager, Tools_System.util2sql(getDate()),
-				getRuntype(), getParent_id(), getProgram(), getVersion(), getDbname(), getSource(), getParams(), getComment())){
+				getRuntype(), getParent_id(), getProgram(), getVersion(),
+				getDbname(), getSource(), getParams(), getComment())){
 			return manager.getBioSQLXT().getRunIdFromInfo(manager, this);
 		}
 		else{
@@ -179,20 +179,21 @@ public class Run {
 
 	public String list(DatabaseManager manager) {
 		String[] columns = new String[]{"run_id","runtype", "program", "version", "dbname", "source"};
-		String[][] fields = manager.getBioSQL().getGenericResults(manager.getCon(), columns, BioSQLExtended.runtable, null, null);
+		String[][] fields = manager.getSQLGeneral().getResults(manager.getCon(), 
+				columns, BioSQLExtended.runtable, null, null);
 		StringBuffer ret = new StringBuffer();
 		String newline = Tools_System.getNewline();
 		for(int i =0; i < columns.length; i++){
 			ret.append(columns[i]);
-			ret.append("\t\t");
+			ret.append(", ");
 		}
 		ret.append(newline);
 		ret.append(newline);
 		
-		for(int i =0; i < fields.length; i++){
-			for(int j = 0; j < fields[0].length; j++){
+		for(int i =0; i < fields[0].length; i++){
+			for(int j = 0; j < fields.length; j++){
 				ret.append(fields[j][i]);
-				ret.append("\t\t");
+				ret.append(", ");
 			}
 			ret.append(newline);
 		}
@@ -208,8 +209,11 @@ public class Run {
 	}
 	
 	public static String[] getRunInsertTips(){
-		return new String[]{"Date when run was started FORMAT MUST BE: DD-MM-YYYY","Runtype, ie assembly or blast",
-				"Name of the program run ie Blastx","Version","Database name ie nr (Can be left blank)","Parameters used, ie -word_size 10"," Any comments you want to add"};
+		return new String[]{"Date when run was started FORMAT MUST BE: DD-MM-YYYY",
+				"Runtype, ie assembly or blast",
+				"Name of the program run ie Blastx",
+				"Version","Database name ie nr (Can be left blank)",
+				"Parameters used, ie -word_size 10"," Any comments you want to add"};
 	}
 
 	public Run getParent(DatabaseManager manager){
