@@ -11,12 +11,15 @@ import enderdom.eddie.databases.manager.DatabaseManager;
 import enderdom.eddie.tasks.TaskState;
 import enderdom.eddie.tasks.TaskXT;
 import enderdom.eddie.tools.Tools_System;
+import enderdom.eddie.ui.EddieProperty;
 import enderdom.eddie.ui.EddiePropertyLoader;
 
 public class Task_BioSQLDB extends TaskXT{
 
 	private boolean setup;
 	private String table;
+	private String setDB;
+	private boolean showDB;
 	
 	public Task_BioSQLDB(){
 		setHelpHeader("--This is the Help Message for the the AdminBioSQLDB Task--");
@@ -24,13 +27,17 @@ public class Task_BioSQLDB extends TaskXT{
 	
 	public void parseArgsSub(CommandLine cmd){
 		super.parseArgsSub(cmd);
-		if(cmd.hasOption("setup"))setup=true;
-		if(cmd.hasOption("table"))table = cmd.getOptionValue("table");
+		setup=cmd.hasOption("setup");
+		table = getOption(cmd, "table", null);
+		setDB = getOption(cmd, "setDB", null);
+		showDB = cmd.hasOption("showDB");
 	}
 	
 	public void buildOptions(){
 		super.buildOptions();
 		options.addOption(new Option("setup", false, "Perform default setup"));
+		options.addOption(new Option("setDB", true, "Switch to a different database"));
+		options.addOption(new Option("showDB", false, "Show current database in use"));
 		options.addOption(new Option("table", true,  "Add a specific non-biosql table or table mod, use -table list for list of tables"));
 	}
 	
@@ -44,6 +51,18 @@ public class Task_BioSQLDB extends TaskXT{
 		if(testmode){
 			runTest();
 			return;
+		}
+		if(showDB || setDB != null){
+				System.out.println("------");
+				System.out.println("Current Database is:");
+				System.out.println(ui.getPropertyLoader().getValue(EddieProperty.DBNAME.toString()));
+				if(setDB != null){
+					ui.getPropertyLoader().setValue(EddieProperty.DBNAME.toString(), setDB);
+					ui.getPropertyLoader().update();
+					System.out.println("Now set to:");
+					System.out.println(setDB);
+				}
+				System.out.println("------");
 		}
 		if(table != null && table.contentEquals("list") ){
 			System.out.println("---List of Tables Available---");

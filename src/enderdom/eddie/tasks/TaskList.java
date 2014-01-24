@@ -104,12 +104,12 @@ public class TaskList {
 			
 			//SQL Upload tools
 			tasks[0][9] = Task_Assembly2DB.class.getName();
-			tasks[1][9] = "sqluploader";
-			tasks[2][9] = "upload sequence/assembly data to the SQL database";
+			tasks[1][9] = "assembly2db";
+			tasks[2][9] = "upload/map assembly data to the SQL database";
 	
 			//Upload Run Info
 			tasks[0][10] = Task_AddRunData.class.getName();
-			tasks[1][10] = "runDatabase";
+			tasks[1][10] = "runTable";
 			tasks[2][10] = "add/get run information to/from database, (needed for other data upload)";
 			
 			//Blast Upload

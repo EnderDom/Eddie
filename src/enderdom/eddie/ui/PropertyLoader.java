@@ -30,6 +30,8 @@ public interface PropertyLoader {
 	
 	public boolean savePropertyFile(String filename, Properties props);
 	
+	public void update();
+	
 	public String getPropertyFilePath();
 	
 	public void parseArgs(String[] args);

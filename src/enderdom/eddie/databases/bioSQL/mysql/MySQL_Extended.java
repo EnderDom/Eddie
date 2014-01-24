@@ -558,6 +558,8 @@ public class MySQL_Extended implements BioSQLExtended{
 			set = st.executeQuery("SELECT COUNT(contig_bioentry_id) FROM "+BioSQLExtended.assembly+" WHERE run_id="+run_id);
 			set.next();
 			int c=set.getInt(1);
+			if(c>10000)logger.info("Attempting to remove " + c + " records...");
+			else logger.debug("Attempting to remove " + c + " record from 2 tables");
 			st.execute("DELETE FROM "+BioSQLExtended.assembly+" WHERE run_id="+run_id);
 			set = st.executeQuery("SELECT COUNT(contig_bioentry_id) FROM "+BioSQLExtended.assembly+" WHERE run_id="+run_id);
 			set.next();

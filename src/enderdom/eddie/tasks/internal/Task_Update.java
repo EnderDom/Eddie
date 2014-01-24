@@ -13,7 +13,7 @@ public class Task_Update extends TaskXT{
 	public double update2;
 	
 	public Task_Update(double d, double d2){
-		update1= d;
+		update1=d;
 		update2=d;
 	}
 	
