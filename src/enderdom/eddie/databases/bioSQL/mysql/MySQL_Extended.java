@@ -666,30 +666,23 @@ public class MySQL_Extended implements BioSQLExtended{
 	
 	
 	public int getRunIdFromInfo(DatabaseManager manager, Run r){
-		String sql = "SELECT run_id FROM run WHERE run_date=? AND" +
-				" runtype=? AND parent_id=? AND program=? AND " +
-				"version=? AND dbname=? AND source=? AND params=? AND comment=?";
+		StringBuffer sql2 = new StringBuffer("SELECT run_id FROM run WHERE");
+		
 		try{
-			PreparedStatement runGET = manager.getCon().prepareStatement(sql);
-			runGET.setDate(1, Tools_System.util2sql(r.getDate()));
-			runGET.setString(2, r.getRuntype());
-			if(r.getParent_id() != null) runGET.setInt(3, r.getParent_id());
-			else runGET.setNull(3, Types.INTEGER);
-			if(r.getProgram() != null) runGET.setString(4, r.getProgram());
-			else runGET.setNull(4, Types.VARCHAR);
-			if(r.getVersion() != null) runGET.setString(5, r.getVersion());
-			else runGET.setNull(5, Types.VARCHAR);
-			if(r.getDbname() != null) runGET.setString(6, r.getDbname());
-			else runGET.setNull(6, Types.VARCHAR);
-			if(r.getSource() != null) runGET.setString(7, r.getSource());
-			else runGET.setNull(7, Types.VARCHAR);
-			if(r.getParams() != null) runGET.setString(8, r.getParams());
-			else runGET.setNull(8, Types.VARCHAR);
-			if(r.getComment() != null) runGET.setString(9, r.getComment());
-			else runGET.setNull(9, Types.VARCHAR);
 			
-			sql = runGET.toString();
-			set = runGET.executeQuery();
+			sql2.append(" run_date='"+r.getDateValue(Tools_System.SQL_DATE_FORMAT2)+"'");
+			sql2.append(" AND runtype='"+r.getRuntype()+"'");
+			if(r.getParent_id() != null) sql2.append(" AND parent_id="+r.getParent_id());
+			if(r.getProgram() != null) sql2.append(" AND program='"+r.getProgram()+"'");
+			if(r.getVersion() != null) sql2.append(" AND version='"+r.getVersion()+"'");
+			if(r.getDbname() != null) sql2.append(" AND dbname='"+r.getDbname()+"'");
+			if(r.getSource() != null) sql2.append(" AND source='"+r.getSource()+"'");
+			if(r.getParams() != null) sql2.append(" AND params='"+r.getParams()+"'");
+			if(r.getComment() != null) sql2.append(" AND comment='"+r.getComment()+"'");	
+			
+			Statement runGET = manager.getCon().createStatement();
+			logger.trace(sql2.toString());
+			set = runGET.executeQuery(sql2.toString());
 			int i =-1;
 			while(set.next()){
 				i= set.getInt("run_id");
@@ -699,7 +692,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			return i;
 		}
 		catch(SQLException e){
-			logger.error("Failed to retrieve Run id using SQL: " + sql, e);
+			logger.error("Failed to retrieve Run id using SQL: " + sql2.toString(), e);
 			return -1;
 		}
 	}

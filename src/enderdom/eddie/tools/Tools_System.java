@@ -11,6 +11,7 @@ public abstract class Tools_System{
 
     public static final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
     public static final String SQL_DATE_FORMAT = "dd-MM-yyyy";
+    public static final String SQL_DATE_FORMAT2 = "yyyy-MM-dd";
     
 	
     public static final String getDateNow(){

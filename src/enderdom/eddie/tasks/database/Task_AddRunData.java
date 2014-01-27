@@ -76,7 +76,8 @@ public class Task_AddRunData extends TaskXT{
 			}
 			else{
 				if(run.validate()){
-					run.uploadRun(manager);
+					int run_id = run.uploadRun(manager);
+					System.out.println("RUN_ID:"+run_id);
 					logger.debug("Run Uploaded");
 				}
 				else{
