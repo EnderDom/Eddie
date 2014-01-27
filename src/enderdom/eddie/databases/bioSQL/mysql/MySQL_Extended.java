@@ -666,7 +666,9 @@ public class MySQL_Extended implements BioSQLExtended{
 	
 	
 	public int getRunIdFromInfo(DatabaseManager manager, Run r){
-		String sql = "SELECT run_id FROM run WHERE run_date=?, runtype=?, parent_id=?, program=?, version=?, dbname=?, source=?, params=?, comment=?";
+		String sql = "SELECT run_id FROM run WHERE run_date=? AND" +
+				" runtype=? AND parent_id=? AND program=? AND " +
+				"version=? AND dbname=? AND source=? AND params=? AND comment=?";
 		try{
 			PreparedStatement runGET = manager.getCon().prepareStatement(sql);
 			runGET.setDate(1, Tools_System.util2sql(r.getDate()));
@@ -686,6 +688,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			if(r.getComment() != null) runGET.setString(9, r.getComment());
 			else runGET.setNull(9, Types.VARCHAR);
 			
+			sql = runGET.toString();
 			set = runGET.executeQuery();
 			int i =-1;
 			while(set.next()){
@@ -696,7 +699,7 @@ public class MySQL_Extended implements BioSQLExtended{
 			return i;
 		}
 		catch(SQLException e){
-			logger.error("Failed to retrieve Run id", e);
+			logger.error("Failed to retrieve Run id using SQL: " + sql, e);
 			return -1;
 		}
 	}
@@ -891,10 +894,12 @@ public class MySQL_Extended implements BioSQLExtended{
 
 	
 	public boolean setRun(DatabaseManager manager, Date date, String runtype, Integer parent, String program, String version, String dbname, String source, String params, String comment){		
+		String forerr = "No SQL statement generated";
 		try{
 			PreparedStatement runSET = manager.getCon().prepareStatement(
-					"(run_date, runtype, parent_id, program, version, dbname, " +
-					"source, params, comment) VALUES (?,?,?,?,?,?,?,?,?);");
+					"INSERT INTO run (run_date, runtype, parent_id, program," +
+					" version, dbname, source, params, comment) VALUES (?,?,?," +
+					"?,?,?,?,?,?);");
 			runSET.setDate(1, date);
 			runSET.setString(2, runtype);
 			if(parent == null)runSET.setNull(3, Types.INTEGER);
@@ -911,13 +916,14 @@ public class MySQL_Extended implements BioSQLExtended{
 			if(comment == null)runSET.setNull(9, Types.VARCHAR);
 			else runSET.setString(9, comment);
 			
-			logger.trace("Attempting to execute " + runSET.toString());
+			forerr= runSET.toString();
+			logger.trace("Attempting to execute " + forerr);
 			runSET.execute();
 			runSET.close();
 			return true;
 		}
 		catch(SQLException sq){
-			logger.error("Failed to insert run", sq);
+			logger.error("Failed to insert run, SQL: "+forerr, sq);
 			return false;
 		}
 	}

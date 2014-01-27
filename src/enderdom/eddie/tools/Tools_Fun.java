@@ -1,5 +1,7 @@
 package enderdom.eddie.tools;
 
+import enderdom.eddie.ui.EddiePropertyLoader;
+
 /*
  * because sometimes its fun to dick around
  */
@@ -35,13 +37,14 @@ public abstract class Tools_Fun {
 	}
 	
 	public static void printAbout(){
-		System.out.println("");
+		System.out.println("--Eddie v"+EddiePropertyLoader.getFullVersion()+"--");
 		System.out.println("");
 		System.out.println("Author: Dominic Matthew Wood");
 		System.out.println("About: A mindless jerk who'll be the first against the wall when the revolution comes.");
 		System.out.println("Current Position: Recieving psychotherapy at the Walter Bishop Institute for Borked Scientists");
 		System.out.println("Contact: Please speak to Lead Psychotherapist at the Institute");
 		System.out.println("");
+		//@COMPILE_INFO_INJECT
 		System.out.println("Message of the Day:");
 		System.out.println(getRandomMessage());
 	}
