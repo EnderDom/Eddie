@@ -17,6 +17,7 @@ public class Task_AddRunData extends TaskXT{
 	private boolean list;
 	private DatabaseManager manager;
 	private int remove;
+	private boolean addanyway;
 	
 	public Task_AddRunData(){
 		logger.debug("Task_AddRunData has been initalised");
@@ -39,6 +40,7 @@ public class Task_AddRunData extends TaskXT{
 		run.setParent_id(s==null?null:Tools_String.parseString2Int(s));
 		this.list = cmd.hasOption("list");
 		remove = getOption(cmd, "removeRun", -1);
+		this.addanyway = cmd.hasOption("add");
 	}
 	
 	public void buildOptions(){
@@ -46,14 +48,19 @@ public class Task_AddRunData extends TaskXT{
 		options.addOption(new Option("prt","parent", true, "Parent run id"));
 		options.addOption(new Option("prg","program", true, "Name of program used for run"));
 		options.addOption(new Option("ver","version", true, "Version of program run"));
-		options.addOption(new Option("rtp","run_type", true, "Run type (eg. BLAST, ASSEMBLY...), see list of current types"));
-		options.addOption(new Option("rdt","run_date", true, "Run date, date of run "+Tools_System.SQL_DATE_FORMAT));
+		options.addOption(new Option("rtp","run_type", true, "Run type (eg. BLAST, ASSEMBLY...)," +
+				" see list of current types"));
+		options.addOption(new Option("rdt","run_date", true, "Run date, date of run "
+				+Tools_System.SQL_DATE_FORMAT));
 		options.addOption(new Option("dbn","dbname", true, "Database name, if any database used"));
 		options.addOption(new Option("par","params", true, "Program parameters"));
 		options.addOption(new Option("com","comment", true, "Any additional comments about the run"));
 		options.addOption(new Option("src","source", true, "Source of the Data eg \"Arabiopsis root cDNA\""));
 		options.addOption(new Option("list", false, "List all current run programs/versions/dbs"));
-		options.addOption(new Option("rem", "removeRun", true, "Remove the run (only the run id) with run id specified"));
+		options.addOption(new Option("add", false, "Add run record even if a run with identical " +
+				"fields already exists"));
+		options.addOption(new Option("rem", "removeRun", true, "Remove the run (only the run id) " +
+				"with run id specified"));
 	}
 
 	
@@ -76,9 +83,16 @@ public class Task_AddRunData extends TaskXT{
 			}
 			else{
 				if(run.validate()){
-					int run_id = run.uploadRun(manager);
+					int run_id =-1;
+					if(!addanyway) run_id=manager.getBioSQLXT().getRunIdFromInfo(manager, run);
+					if(run_id !=-1){
+						logger.warn("Run already uploaded with all these values, " +
+								"this run will not be added, to add anyway use -add parameter");
+					}
+					else run_id = run.uploadRun(manager); 
 					System.out.println("RUN_ID:"+run_id);
-					logger.debug("Run Uploaded");
+					if(run_id < 1) logger.error("Failed to retrieve run id");
+					else logger.debug("Task completed");
 				}
 				else{
 					for(String s : run.getValidationErrors())logger.error(s);

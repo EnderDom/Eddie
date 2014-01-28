@@ -152,6 +152,7 @@ public class Run {
 
 	//Note, converts util.Date to sql.Date, see http://stackoverflow.com/questions/530012/how-to-convert-java-util-date-to-java-sql-date
 	public int uploadRun(DatabaseManager manager){
+		
 		if(manager.getBioSQLXT().setRun(manager, Tools_System.util2sql(getDate()),
 				getRuntype(), getParent_id(), getProgram(), getVersion(),
 				getDbname(), getSource(), getParams(), getComment())){

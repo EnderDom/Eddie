@@ -183,11 +183,11 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 		defaults.setProperty("log4j.appender.rollingFile.layout.ConversionPattern", "[%5p] %t (%F:%L) - %m%n");
 		//Mirror in console
 		defaults.setProperty("log4j.appender.stdout","org.apache.log4j.ConsoleAppender");
-		//defaults.setProperty("log4j.appender.stdout.layout",  "org.apache.log4j.PatternLayout");
 		defaults.setProperty("log4j.appender.stdout.layout.ConversionPattern",  "[%5p] %t (%F:%L) - %m%n");
 		if(this.getValueOrSet("COLORSTDOUT", "TRUE").equals("TRUE")){
 			defaults.setProperty("log4j.appender.stdout.layout","enderdom.eddie.ui.ANSIColorLayout");
 		}
+		else defaults.setProperty("log4j.appender.stdout.layout",  "org.apache.log4j.PatternLayout"); 
 		defaults.setProperty("log4j.rootLogger", "WARN, rollingFile, stdout");
 		return defaults;
 	}    
