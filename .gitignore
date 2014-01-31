@@ -4,6 +4,7 @@ Eddie.jar
 logs/
 eddie.properties
 compile.sh
+.settings
 #OS Specific stuff
 #
 #Dolphin

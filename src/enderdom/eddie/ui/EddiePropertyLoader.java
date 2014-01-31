@@ -201,4 +201,8 @@ public class EddiePropertyLoader extends BasicPropertyLoader{
 		return false;
 	}
 	
+	public void update(){
+		savePropertyFile(propfile, this.getPropertyObject());
+	}
+	
 }

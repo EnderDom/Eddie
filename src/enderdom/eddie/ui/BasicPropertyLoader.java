@@ -157,7 +157,7 @@ public abstract class BasicPropertyLoader implements PropertyLoader {
 	}
 	
 	public void update(){
-		savePropertyFile(propfile, props);
+		savePropertyFile(propfile, this.getPropertyObject());
 	}
 	
 	public boolean isLogging(){
