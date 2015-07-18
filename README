@@ -1,8 +1,16 @@
+---EXPLANATION---
+
+So the java source code is published here as part of my thesis. It was added to 
+intermittently between 2009-2014, since then I have a become a software developer
+as a career. The code here has been made publicly available as part of the publication
+of my thesis. However I do not expect it to of any real use to anyone else, it 
+has been made available as a matter of principle. It may contain errors, be of poor 
+quality and no longer represents my current level of skill.
+
+
 ---GENERAL---
 
 Eddie v4.7
-
-Fourth Total rewrite of the Dominic's Database & Script Manager for Biology
 
 Currently requires
 
